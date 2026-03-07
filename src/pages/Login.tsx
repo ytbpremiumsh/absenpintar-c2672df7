@@ -1,20 +1,32 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { School, Eye, EyeOff } from "lucide-react";
+import { School, Eye, EyeOff, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 const Login = () => {
   const navigate = useNavigate();
+  const { signIn } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    navigate("/dashboard");
+    setLoading(true);
+    const { error } = await signIn(email, password);
+    setLoading(false);
+    if (error) {
+      toast.error("Login gagal: " + error);
+    } else {
+      toast.success("Login berhasil!");
+      navigate("/dashboard");
+    }
   };
 
   return (
@@ -40,10 +52,11 @@ const Login = () => {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="admin@sekolah.com"
+                  placeholder="admin@admin.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="h-11"
+                  required
                 />
               </div>
               <div className="space-y-2">
@@ -56,6 +69,7 @@ const Login = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="h-11 pr-10"
+                    required
                   />
                   <button
                     type="button"
@@ -66,10 +80,15 @@ const Login = () => {
                   </button>
                 </div>
               </div>
-              <Button type="submit" className="w-full h-11 gradient-primary hover:opacity-90 transition-opacity">
-                Masuk
+              <Button type="submit" disabled={loading} className="w-full h-11 gradient-primary hover:opacity-90 transition-opacity">
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Masuk"}
               </Button>
             </form>
+            <div className="mt-4 p-3 rounded-lg bg-secondary text-xs text-muted-foreground">
+              <p className="font-medium mb-1">Demo Login:</p>
+              <p>Email: admin@admin.com</p>
+              <p>Password: admin123</p>
+            </div>
           </CardContent>
         </Card>
 
