@@ -1,10 +1,30 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
-import { Outlet } from "react-router-dom";
+import { Outlet, Navigate } from "react-router-dom";
 import { Bell } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useAuth } from "@/hooks/useAuth";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function AppLayout() {
+  const { user, profile, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Skeleton className="h-8 w-32" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  const initials = profile?.full_name
+    ? profile.full_name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()
+    : "U";
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
@@ -14,7 +34,7 @@ export function AppLayout() {
             <div className="flex items-center gap-2">
               <SidebarTrigger />
               <span className="text-sm font-medium text-muted-foreground hidden sm:inline">
-                SD Islam Terpadu Al-Hikmah
+                {profile?.full_name || "Dashboard"}
               </span>
             </div>
             <div className="flex items-center gap-3">
@@ -24,7 +44,7 @@ export function AppLayout() {
               </button>
               <Avatar className="h-8 w-8">
                 <AvatarFallback className="gradient-primary text-primary-foreground text-xs font-semibold">
-                  AD
+                  {initials}
                 </AvatarFallback>
               </Avatar>
             </div>

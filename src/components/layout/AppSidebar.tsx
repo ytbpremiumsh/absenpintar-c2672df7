@@ -9,7 +9,8 @@ import {
   LogOut,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import {
   Sidebar,
   SidebarContent,
@@ -40,13 +41,20 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
+  const navigate = useNavigate();
+  const { signOut } = useAuth();
   const isActive = (path: string) => location.pathname === path;
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/login");
+  };
 
   return (
     <Sidebar collapsible="icon" className="border-r-0">
       <SidebarHeader className="p-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-primary">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-primary shrink-0">
             <School className="h-5 w-5 text-primary-foreground" />
           </div>
           {!collapsed && (
@@ -67,17 +75,8 @@ export function AppSidebar() {
             <SidebarMenu>
               {mainNav.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive(item.url)}
-                    tooltip={item.title}
-                  >
-                    <NavLink
-                      to={item.url}
-                      end
-                      className="hover:bg-sidebar-accent/50"
-                      activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
-                    >
+                  <SidebarMenuButton asChild isActive={isActive(item.url)} tooltip={item.title}>
+                    <NavLink to={item.url} end className="hover:bg-sidebar-accent/50" activeClassName="bg-sidebar-accent text-sidebar-primary font-medium">
                       <item.icon className="h-4 w-4" />
                       {!collapsed && <span>{item.title}</span>}
                     </NavLink>
@@ -96,17 +95,8 @@ export function AppSidebar() {
             <SidebarMenu>
               {settingsNav.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive(item.url)}
-                    tooltip={item.title}
-                  >
-                    <NavLink
-                      to={item.url}
-                      end
-                      className="hover:bg-sidebar-accent/50"
-                      activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
-                    >
+                  <SidebarMenuButton asChild isActive={isActive(item.url)} tooltip={item.title}>
+                    <NavLink to={item.url} end className="hover:bg-sidebar-accent/50" activeClassName="bg-sidebar-accent text-sidebar-primary font-medium">
                       <item.icon className="h-4 w-4" />
                       {!collapsed && <span>{item.title}</span>}
                     </NavLink>
@@ -121,7 +111,11 @@ export function AppSidebar() {
       <SidebarFooter className="p-3">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton tooltip="Logout" className="text-sidebar-foreground/60 hover:text-sidebar-foreground">
+            <SidebarMenuButton
+              tooltip="Logout"
+              className="text-sidebar-foreground/60 hover:text-sidebar-foreground"
+              onClick={handleLogout}
+            >
               <LogOut className="h-4 w-4" />
               {!collapsed && <span>Logout</span>}
             </SidebarMenuButton>
