@@ -644,7 +644,12 @@ const Students = () => {
                     <div className="h-8 w-8 rounded-lg gradient-primary flex items-center justify-center shrink-0">
                       <GraduationCap className="h-4 w-4 text-primary-foreground" />
                     </div>
-                    <div className="flex-1"><span className="font-semibold text-sm">Kelas {cls}</span></div>
+                    <div className="flex-1">
+                      <span className="font-semibold text-sm">Kelas {cls}</span>
+                      {waliKelasMap[cls] && (
+                        <span className="text-xs text-muted-foreground ml-2">— {waliKelasMap[cls]}</span>
+                      )}
+                    </div>
                     <Badge variant="secondary" className="text-xs">{classStudents.length} siswa</Badge>
                   </button>
                   <AnimatePresence>
