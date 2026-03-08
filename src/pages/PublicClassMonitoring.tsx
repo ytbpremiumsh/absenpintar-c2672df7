@@ -16,6 +16,9 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
 
 interface StudentStatus {
   id: string;
@@ -44,6 +47,7 @@ const PublicClassMonitoring = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [confirmStudent, setConfirmStudent] = useState<StudentStatus | null>(null);
   const [processing, setProcessing] = useState(false);
+  const [successPopup, setSuccessPopup] = useState<StudentStatus | null>(null);
   const prevPickedIds = useRef<Set<string>>(new Set());
   const initialLoad = useRef(true);
 
@@ -62,7 +66,6 @@ const PublicClassMonitoring = () => {
 
       setSchoolName(json.school?.name || "Smart Pickup");
 
-      // Only get students for this specific class
       const classStudents: StudentStatus[] = json.classes[decodedClass] || [];
 
       // Announce newly picked up students (skip first load)
@@ -70,11 +73,14 @@ const PublicClassMonitoring = () => {
         const newPicked = classStudents.filter(
           (s) => s.status === "picked_up" && !prevPickedIds.current.has(s.id)
         );
-        newPicked.forEach((s) => announcePickup(s.name, s.class));
+        newPicked.forEach((s) => {
+          announcePickup(s.name, s.class);
+          setSuccessPopup(s);
+          setTimeout(() => setSuccessPopup(null), 5000);
+        });
       }
       initialLoad.current = false;
 
-      // Update previous picked IDs
       prevPickedIds.current = new Set(classStudents.filter(s => s.status === "picked_up").map(s => s.id));
 
       setStudents(classStudents);
@@ -123,6 +129,8 @@ const PublicClassMonitoring = () => {
       } else {
         toast.success(`${student.name} berhasil ditandai pulang!`);
         announcePickup(student.name, student.class);
+        setSuccessPopup(student);
+        setTimeout(() => setSuccessPopup(null), 5000);
         fetchData(true);
       }
     } catch (err) {
@@ -229,7 +237,7 @@ const PublicClassMonitoring = () => {
 
         {/* Student list */}
         <div className="space-y-4">
-          {/* Waiting - with approve button */}
+          {/* Waiting */}
           {waiting.length > 0 && (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
@@ -348,6 +356,35 @@ const PublicClassMonitoring = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Success Popup */}
+      <Dialog open={!!successPopup} onOpenChange={(open) => !open && setSuccessPopup(null)}>
+        <DialogContent className="max-w-sm text-center">
+          <DialogHeader>
+            <DialogTitle className="sr-only">Siswa Berhasil Pulang</DialogTitle>
+          </DialogHeader>
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="flex flex-col items-center gap-4 py-4"
+          >
+            <div className="h-20 w-20 rounded-full bg-success/15 flex items-center justify-center">
+              <CheckCircle2 className="h-12 w-12 text-success" />
+            </div>
+            <div className="space-y-1">
+              <h2 className="text-xl font-bold text-foreground">Berhasil Pulang!</h2>
+              <p className="text-lg font-semibold text-primary">{successPopup?.name}</p>
+              <p className="text-sm text-muted-foreground">Kelas {successPopup?.class} • NIS: {successPopup?.student_id}</p>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+            </p>
+            <Button onClick={() => setSuccessPopup(null)} variant="outline" className="mt-2">
+              Tutup
+            </Button>
+          </motion.div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

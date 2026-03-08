@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
   UserCheck, UserX, Clock, School, Users, RefreshCw,
   GraduationCap, Activity, TrendingUp, Volume2,
-  Eye, EyeOff,
+  Eye, EyeOff, CheckCircle2,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
@@ -18,6 +18,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
 
 interface StudentStatus {
   id: string;
@@ -160,6 +163,7 @@ const PublicMonitoring = () => {
   const [columns, setColumns] = useState("2");
   const prevPickedIds = useRef<Set<string>>(new Set());
   const initialLoad = useRef(true);
+  const [successPopup, setSuccessPopup] = useState<StudentStatus | null>(null);
 
   const fetchData = async (showRefresh = false) => {
     if (!schoolId) return;
@@ -177,10 +181,13 @@ const PublicMonitoring = () => {
         const newPicked = allStudents.filter(
           (s) => s.status === "picked_up" && !prevPickedIds.current.has(s.id)
         );
-        newPicked.forEach((s) => announcePickup(s.name, s.class));
+        newPicked.forEach((s) => {
+          announcePickup(s.name, s.class);
+          setSuccessPopup(s);
+          setTimeout(() => setSuccessPopup(null), 5000);
+        });
         prevPickedIds.current = new Set(allStudents.filter(s => s.status === "picked_up").map(s => s.id));
       } else {
-        // Initialize prevPickedIds on first load without announcing
         const allStudents: StudentStatus[] = [];
         Object.values(json.classes as Record<string, StudentStatus[]>).forEach((arr) => allStudents.push(...arr));
         prevPickedIds.current = new Set(allStudents.filter(s => s.status === "picked_up").map(s => s.id));
@@ -280,10 +287,9 @@ const PublicMonitoring = () => {
         </div>
       </header>
 
-      {/* Inactive Banner */}
       {!isActive && (
         <div className="bg-destructive/10 border-b border-destructive/20 py-3 px-4 text-center">
-          <p className="text-sm font-medium text-destructive">⏸ Sistem kepulangan sedang nonaktif. Data tetap ditampilkan untuk referensi.</p>
+          <p className="text-sm font-medium text-destructive">⏸ Sistem kepulangan sedang nonaktif.</p>
         </div>
       )}
 
@@ -386,6 +392,35 @@ const PublicMonitoring = () => {
           </div>
         </div>
       </div>
+
+      {/* Success Popup */}
+      <Dialog open={!!successPopup} onOpenChange={(open) => !open && setSuccessPopup(null)}>
+        <DialogContent className="max-w-sm text-center">
+          <DialogHeader>
+            <DialogTitle className="sr-only">Siswa Berhasil Pulang</DialogTitle>
+          </DialogHeader>
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="flex flex-col items-center gap-4 py-4"
+          >
+            <div className="h-20 w-20 rounded-full bg-success/15 flex items-center justify-center">
+              <CheckCircle2 className="h-12 w-12 text-success" />
+            </div>
+            <div className="space-y-1">
+              <h2 className="text-xl font-bold text-foreground">Berhasil Pulang!</h2>
+              <p className="text-lg font-semibold text-primary">{successPopup?.name}</p>
+              <p className="text-sm text-muted-foreground">Kelas {successPopup?.class} • NIS: {successPopup?.student_id}</p>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+            </p>
+            <Button onClick={() => setSuccessPopup(null)} variant="outline" className="mt-2">
+              Tutup
+            </Button>
+          </motion.div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
