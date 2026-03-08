@@ -1,1 +1,10 @@
-project_id = "qsqugriuvnrdgpbovfma"
+project_id = "mtertpzbuhwlikzpzmvs"
+
+[functions.seed-demo]
+verify_jwt = false
+
+[functions.create-user]
+verify_jwt = false
+
+[functions.public-monitoring]
+verify_jwt = false

@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Search, QrCode, Trash2, Loader2, Users, GraduationCap, Phone, ChevronDown, ChevronRight, Download, Eye } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Plus, Search, QrCode, Trash2, Loader2, Users, GraduationCap, Phone, ChevronDown, ChevronRight, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -18,6 +19,7 @@ const Students = () => {
   const { profile } = useAuth();
   const [search, setSearch] = useState("");
   const [students, setStudents] = useState<any[]>([]);
+  const [classes, setClasses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
@@ -29,36 +31,32 @@ const Students = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  // Auto-filter by class from URL param
   useEffect(() => {
     const classParam = searchParams.get("class");
     if (classParam) setActiveFilter(classParam);
   }, [searchParams]);
 
-  const fetchStudents = async () => {
+  const fetchData = async () => {
     if (!profile?.school_id) return;
-    const { data } = await supabase
-      .from("students")
-      .select("*")
-      .eq("school_id", profile.school_id)
-      .order("class")
-      .order("name");
-    setStudents(data || []);
+    const [studentsRes, classesRes] = await Promise.all([
+      supabase.from("students").select("*").eq("school_id", profile.school_id).order("class").order("name"),
+      supabase.from("classes").select("*").eq("school_id", profile.school_id).order("name"),
+    ]);
+    setStudents(studentsRes.data || []);
+    setClasses(classesRes.data || []);
     setLoading(false);
-    // Auto-expand all classes
-    if (data) {
-      const classes = new Set(data.map((s: any) => s.class));
-      setExpandedClasses(classes);
+    if (studentsRes.data) {
+      setExpandedClasses(new Set(studentsRes.data.map((s: any) => s.class)));
     }
   };
 
   useEffect(() => {
-    fetchStudents();
+    fetchData();
   }, [profile?.school_id]);
 
   const handleAdd = async () => {
-    if (!profile?.school_id || !form.name || !form.student_id) {
-      toast.error("Nama dan NIS wajib diisi");
+    if (!profile?.school_id || !form.name || !form.student_id || !form.class) {
+      toast.error("Nama, Kelas, dan NIS wajib diisi");
       return;
     }
     setSaving(true);
@@ -79,7 +77,7 @@ const Students = () => {
     toast.success("Siswa berhasil ditambahkan!");
     setDialogOpen(false);
     setForm({ name: "", class: "", student_id: "", parent_name: "", parent_phone: "" });
-    fetchStudents();
+    fetchData();
   };
 
   const handleDelete = async (id: string) => {
@@ -89,7 +87,7 @@ const Students = () => {
       return;
     }
     toast.success("Siswa dihapus");
-    fetchStudents();
+    fetchData();
   };
 
   const toggleClass = (cls: string) => {
@@ -109,7 +107,6 @@ const Students = () => {
       s.parent_name.toLowerCase().includes(search.toLowerCase())
   );
 
-  // Group by class
   const groupedByClass = useMemo(() => {
     const groups: Record<string, any[]> = {};
     const list = activeFilter === "all" ? filtered : filtered.filter((s) => s.class === activeFilter);
@@ -124,6 +121,13 @@ const Students = () => {
     const set = new Set(students.map((s) => s.class));
     return Array.from(set).sort();
   }, [students]);
+
+  // Merge classes from table + from students for dropdown
+  const classOptions = useMemo(() => {
+    const fromTable = classes.map((c: any) => c.name);
+    const fromStudents = students.map((s: any) => s.class);
+    return Array.from(new Set([...fromTable, ...fromStudents])).sort();
+  }, [classes, students]);
 
   return (
     <div className="space-y-6">
@@ -151,7 +155,16 @@ const Students = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Kelas</Label>
-                  <Input placeholder="TK-A" value={form.class} onChange={(e) => setForm({ ...form, class: e.target.value })} />
+                  <Select value={form.class} onValueChange={(val) => setForm({ ...form, class: val })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih Kelas" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {classOptions.map((cls) => (
+                        <SelectItem key={cls} value={cls}>{cls}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label>NIS</Label>
@@ -174,34 +187,20 @@ const Students = () => {
         </Dialog>
       </div>
 
-      {/* Stats per Class */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        <Card
-          className={`shadow-card border-0 cursor-pointer transition-all hover:shadow-elevated ${activeFilter === "all" ? "ring-2 ring-primary" : ""}`}
-          onClick={() => setActiveFilter("all")}
-        >
-          <CardContent className="p-3 text-center">
-            <Users className="h-5 w-5 mx-auto mb-1 text-primary" />
-            <p className="text-lg font-bold">{students.length}</p>
-            <p className="text-[10px] text-muted-foreground font-medium">Semua Kelas</p>
-          </CardContent>
-        </Card>
-        {allClasses.map((cls) => {
-          const count = students.filter((s) => s.class === cls).length;
-          return (
-            <Card
-              key={cls}
-              className={`shadow-card border-0 cursor-pointer transition-all hover:shadow-elevated ${activeFilter === cls ? "ring-2 ring-primary" : ""}`}
-              onClick={() => setActiveFilter(cls)}
-            >
-              <CardContent className="p-3 text-center">
-                <GraduationCap className="h-5 w-5 mx-auto mb-1 text-primary" />
-                <p className="text-lg font-bold">{count}</p>
-                <p className="text-[10px] text-muted-foreground font-medium">{cls}</p>
-              </CardContent>
-            </Card>
-          );
-        })}
+      {/* Filter by class dropdown */}
+      <div className="flex flex-wrap items-center gap-3">
+        <Select value={activeFilter} onValueChange={setActiveFilter}>
+          <SelectTrigger className="w-48">
+            <SelectValue placeholder="Filter Kelas" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Semua Kelas</SelectItem>
+            {allClasses.map((cls) => (
+              <SelectItem key={cls} value={cls}>Kelas {cls}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Badge variant="secondary">{Object.values(groupedByClass).flat().length} siswa</Badge>
       </div>
 
       {/* Search */}
@@ -226,7 +225,6 @@ const Students = () => {
             <div className="divide-y">
               {Object.entries(groupedByClass).sort(([a], [b]) => a.localeCompare(b)).map(([cls, classStudents]) => (
                 <div key={cls}>
-                  {/* Class Header */}
                   <button
                     className="w-full flex items-center gap-3 px-4 py-3 hover:bg-secondary/50 transition-colors text-left"
                     onClick={() => toggleClass(cls)}
@@ -247,7 +245,6 @@ const Students = () => {
                     </Badge>
                   </button>
 
-                  {/* Class Students */}
                   <AnimatePresence>
                     {expandedClasses.has(cls) && (
                       <motion.div
@@ -288,9 +285,7 @@ const Students = () => {
                                     <span className="font-mono text-xs bg-secondary px-2 py-0.5 rounded">{student.student_id}</span>
                                   </TableCell>
                                   <TableCell className="hidden md:table-cell">
-                                    <div>
-                                      <p className="text-sm">{student.parent_name}</p>
-                                    </div>
+                                    <p className="text-sm">{student.parent_name}</p>
                                   </TableCell>
                                   <TableCell className="hidden lg:table-cell">
                                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -300,24 +295,10 @@ const Students = () => {
                                   </TableCell>
                                   <TableCell className="text-right">
                                     <div className="flex items-center justify-end gap-1">
-                                      <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8"
-                                        onClick={() => navigate(`/students/${student.id}`)}
-                                        title="Lihat Detail"
-                                      >
+                                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(`/students/${student.id}`)} title="Lihat Detail">
                                         <Eye className="h-4 w-4 text-primary" />
                                       </Button>
-                                      <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8"
-                                        onClick={() => {
-                                          setSelectedStudent(student);
-                                          setQrDialogOpen(true);
-                                        }}
-                                      >
+                                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setSelectedStudent(student); setQrDialogOpen(true); }}>
                                         <QrCode className="h-4 w-4 text-primary" />
                                       </Button>
                                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(student.id)}>
