@@ -207,7 +207,7 @@ const Monitoring = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
           { icon: Users, value: students.length, label: "Total Siswa", color: "text-primary", bg: "bg-primary/10" },
-          { icon: UserCheck, value: totalPicked, label: "Sudah Dijemput", color: "text-success", bg: "bg-success/10" },
+          { icon: UserCheck, value: totalPicked, label: "Sudah Pulang", color: "text-success", bg: "bg-success/10" },
           { icon: UserX, value: totalWaiting, label: "Menunggu", color: "text-destructive", bg: "bg-destructive/10" },
           { icon: Activity, value: `${percentage}%`, label: "Progress", color: "text-primary", bg: "gradient-primary" },
         ].map((stat, i) => (
