@@ -75,6 +75,7 @@ const App = () => (
               <Route path="/subscription" element={<Subscription />} />
               <Route path="/school-settings" element={<SchoolSettings />} />
               <Route path="/account-settings" element={<AccountSettings />} />
+              <Route path="/support" element={<SupportTickets />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
