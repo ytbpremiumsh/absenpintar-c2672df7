@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
   Check, Star, Zap, Crown, Loader2, Shield, Calendar, Clock,
-  ChevronRight, GraduationCap, Users, AlertTriangle, ExternalLink,
+  GraduationCap, Users, AlertTriangle, ExternalLink,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -127,6 +127,21 @@ const Subscription = () => {
     ? Math.max(0, Math.ceil((new Date(currentSub.expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
     : null;
 
+  // Subscription period progress
+  const periodProgress = (() => {
+    if (!currentSub?.started_at || !currentSub?.expires_at || isFree) return null;
+    const start = new Date(currentSub.started_at).getTime();
+    const end = new Date(currentSub.expires_at).getTime();
+    const now = Date.now();
+    const total = end - start;
+    const elapsed = now - start;
+    return Math.min(100, Math.max(0, (elapsed / total) * 100));
+  })();
+
+  const totalDays = currentSub?.started_at && currentSub?.expires_at
+    ? Math.ceil((new Date(currentSub.expires_at).getTime() - new Date(currentSub.started_at).getTime()) / (1000 * 60 * 60 * 24))
+    : null;
+
   const classPercent = usage.maxClasses >= 999 ? 0 : Math.min(100, (usage.classCount / usage.maxClasses) * 100);
   const studentPercent = usage.maxStudentsTotal
     ? Math.min(100, (usage.studentCount / usage.maxStudentsTotal) * 100)
@@ -171,6 +186,43 @@ const Subscription = () => {
           </div>
 
           <div className="p-5">
+            {/* Period Progress Card */}
+            {!isFree && periodProgress !== null && (
+              <div className="mb-5 p-4 rounded-xl bg-secondary/50 border border-border">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                    <Calendar className="h-3.5 w-3.5 text-primary" /> Masa Aktif Langganan
+                  </span>
+                  <span className={`text-xs font-bold ${daysLeft !== null && daysLeft <= 7 ? "text-warning" : "text-primary"}`}>
+                    {daysLeft} / {totalDays} hari
+                  </span>
+                </div>
+                <div className="h-3 rounded-full bg-muted overflow-hidden">
+                  <motion.div
+                    className={`h-full rounded-full ${
+                      daysLeft !== null && daysLeft <= 7
+                        ? "bg-gradient-to-r from-warning to-destructive"
+                        : "bg-gradient-to-r from-primary via-primary/80 to-success"
+                    }`}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${periodProgress}%` }}
+                    transition={{ duration: 1, ease: "easeOut" }}
+                  />
+                </div>
+                <div className="flex justify-between mt-1.5">
+                  <span className="text-[10px] text-muted-foreground">
+                    {new Date(currentSub.started_at).toLocaleDateString("id-ID", { day: "numeric", month: "short" })}
+                  </span>
+                  <span className={`text-[10px] font-medium ${daysLeft !== null && daysLeft <= 7 ? "text-warning" : "text-muted-foreground"}`}>
+                    {daysLeft !== null && daysLeft <= 7 ? `⚠ ${daysLeft} hari lagi` : `${Math.round(periodProgress)}% terpakai`}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">
+                    {new Date(currentSub.expires_at).toLocaleDateString("id-ID", { day: "numeric", month: "short" })}
+                  </span>
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-5">
               <div className="p-3 rounded-xl bg-success/5 border border-success/20 text-center">
                 <Shield className="h-4 w-4 text-success mx-auto mb-1" />

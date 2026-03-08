@@ -148,6 +148,20 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
+        {/* Export History - School/Premium only */}
+        {features.canExportReport && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-sidebar-foreground/40 text-[11px] uppercase tracking-widest font-semibold px-3 mb-1">
+              Laporan
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu className="space-y-0.5">
+                {renderNavItems([{ title: "Export Harian", url: "/export-history", icon: FileBarChart }])}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
         <SidebarGroup>
           <SidebarGroupLabel className="text-sidebar-foreground/40 text-[11px] uppercase tracking-widest font-semibold px-3 mb-1">
             Pengaturan
