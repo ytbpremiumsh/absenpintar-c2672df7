@@ -1,15 +1,15 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Loader2, MessageSquare, Clock, AlertCircle, CheckCircle2, Send, ArrowLeft, Shield, User } from "lucide-react";
+import { Loader2, MessageSquare } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import TicketThread from "@/components/tickets/TicketThread";
 
 const statusConfig: Record<string, { label: string; color: string }> = {
   open: { label: "Menunggu", color: "bg-warning/10 text-warning border-warning/20" },
@@ -29,13 +29,8 @@ const SuperAdminTickets = () => {
   const [schools, setSchools] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [selectedTicket, setSelectedTicket] = useState<any>(null);
-  const [replies, setReplies] = useState<any[]>([]);
-  const [replyText, setReplyText] = useState("");
   const [newStatus, setNewStatus] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [loadingReplies, setLoadingReplies] = useState(false);
   const [filter, setFilter] = useState("all");
-  const chatEndRef = useRef<HTMLDivElement>(null);
 
   const fetchData = async () => {
     const [ticketRes, schoolRes] = await Promise.all([
@@ -49,79 +44,34 @@ const SuperAdminTickets = () => {
     setLoading(false);
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchReplies = async (ticketId: string) => {
-    setLoadingReplies(true);
-    const { data } = await supabase
-      .from("ticket_replies")
-      .select("*")
-      .eq("ticket_id", ticketId)
-      .order("created_at", { ascending: true });
-    setReplies(data || []);
-    setLoadingReplies(false);
-    setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
-  };
+  useEffect(() => { fetchData(); }, []);
 
   const openTicket = (ticket: any) => {
     setSelectedTicket(ticket);
-    setReplyText("");
     setNewStatus(ticket.status);
-    fetchReplies(ticket.id);
   };
 
-  const handleSendReply = async () => {
+  const handleStatusChange = async (status: string) => {
     if (!selectedTicket || !user) return;
+    setNewStatus(status);
+    
+    await supabase.from("support_tickets").update({
+      status,
+      updated_at: new Date().toISOString(),
+    }).eq("id", selectedTicket.id);
 
-    setSubmitting(true);
-
-    // Update status if changed
-    if (newStatus !== selectedTicket.status) {
-      await supabase.from("support_tickets").update({
-        status: newStatus,
-        updated_at: new Date().toISOString(),
-      }).eq("id", selectedTicket.id);
-
-      // Send notification about status change
-      if (newStatus === "resolved") {
-        await supabase.from("notifications").insert({
-          school_id: selectedTicket.school_id,
-          title: `Tiket Selesai: ${selectedTicket.subject}`,
-          message: "Tiket bantuan Anda telah ditandai selesai oleh admin.",
-          type: "info",
-        });
-      }
-    }
-
-    // Insert reply if text provided
-    if (replyText.trim()) {
-      await supabase.from("ticket_replies").insert({
-        ticket_id: selectedTicket.id,
-        user_id: user.id,
-        message: replyText.trim(),
-        is_admin: true,
-      });
-
-      // Send notification
+    if (status === "resolved") {
       await supabase.from("notifications").insert({
         school_id: selectedTicket.school_id,
-        title: `Balasan Tiket: ${selectedTicket.subject}`,
-        message: replyText.trim().slice(0, 200),
+        title: `Tiket Selesai: ${selectedTicket.subject}`,
+        message: "Tiket bantuan Anda telah ditandai selesai oleh admin.",
         type: "info",
       });
     }
 
-    toast.success("Tiket berhasil diupdate!");
-    setReplyText("");
-
-    // Refresh
-    const updatedTicket = { ...selectedTicket, status: newStatus };
-    setSelectedTicket(updatedTicket);
-    fetchReplies(selectedTicket.id);
+    setSelectedTicket((prev: any) => prev ? { ...prev, status } : prev);
+    toast.success("Status tiket diperbarui");
     fetchData();
-    setSubmitting(false);
   };
 
   const filtered = filter === "all" ? tickets : tickets.filter((t) => t.status === filter);
@@ -129,113 +79,30 @@ const SuperAdminTickets = () => {
   const inProgressCount = tickets.filter((t) => t.status === "in_progress").length;
   const resolvedCount = tickets.filter((t) => t.status === "resolved").length;
 
-  // Detail view
   if (selectedTicket) {
-    const status = statusConfig[selectedTicket.status] || statusConfig.open;
-
     return (
-      <div className="space-y-4">
-        <Button variant="ghost" size="sm" onClick={() => setSelectedTicket(null)} className="text-muted-foreground">
-          <ArrowLeft className="h-4 w-4 mr-1" /> Kembali
-        </Button>
-
-        <Card className="border-0 shadow-card">
-          <CardContent className="p-4">
-            <div className="flex items-start justify-between gap-3 mb-1">
-              <div>
-                <h2 className="text-base font-bold text-foreground">{selectedTicket.subject}</h2>
-                <p className="text-xs text-muted-foreground">
-                  {schools[selectedTicket.school_id] || "Unknown"} • {new Date(selectedTicket.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
-                </p>
-              </div>
-              <Badge variant="outline" className={`text-[10px] ${status.color}`}>{status.label}</Badge>
+      <TicketThread
+        ticket={selectedTicket}
+        isAdmin={true}
+        schoolName={schools[selectedTicket.school_id]}
+        onBack={() => { setSelectedTicket(null); fetchData(); }}
+        onTicketUpdated={fetchData}
+        statusControl={
+          <div className="flex items-end gap-3">
+            <div className="w-40">
+              <Label className="text-[10px] text-muted-foreground">Status</Label>
+              <Select value={newStatus} onValueChange={handleStatusChange}>
+                <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="open">Menunggu</SelectItem>
+                  <SelectItem value="in_progress">Diproses</SelectItem>
+                  <SelectItem value="resolved">Selesai</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-
-            {/* Original message */}
-            <div className="bg-muted/50 rounded-lg p-3 mb-4 mt-3">
-              <p className="text-sm text-foreground whitespace-pre-wrap">{selectedTicket.message}</p>
-            </div>
-
-            {/* Chat thread */}
-            <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
-              {loadingReplies ? (
-                <div className="flex justify-center py-4"><Loader2 className="h-4 w-4 animate-spin" /></div>
-              ) : replies.length === 0 ? (
-                <p className="text-xs text-muted-foreground text-center py-4">Belum ada balasan</p>
-              ) : (
-                replies.map((r) => (
-                  <motion.div
-                    key={r.id}
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={`flex ${r.is_admin ? "justify-end" : "justify-start"}`}
-                  >
-                    <div className={`max-w-[80%] rounded-xl p-3 ${
-                      r.is_admin
-                        ? "bg-primary/10 border border-primary/10"
-                        : "bg-muted"
-                    }`}>
-                      <div className="flex items-center gap-1.5 mb-1">
-                        {r.is_admin ? <Shield className="h-3 w-3 text-primary" /> : <User className="h-3 w-3 text-muted-foreground" />}
-                        <span className="text-[10px] font-semibold text-foreground">
-                          {r.is_admin ? "Admin" : "Sekolah"}
-                        </span>
-                        <span className="text-[9px] text-muted-foreground">
-                          {new Date(r.created_at).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
-                          {" • "}
-                          {new Date(r.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "short" })}
-                        </span>
-                      </div>
-                      <p className="text-xs text-foreground/80 whitespace-pre-wrap">{r.message}</p>
-                    </div>
-                  </motion.div>
-                ))
-              )}
-              <div ref={chatEndRef} />
-            </div>
-
-            {/* Reply + status */}
-            <div className="mt-4 space-y-3 pt-3 border-t">
-              <div className="flex items-end gap-3">
-                <div className="w-40">
-                  <Label className="text-[10px] text-muted-foreground">Status</Label>
-                  <Select value={newStatus} onValueChange={setNewStatus}>
-                    <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="open">Menunggu</SelectItem>
-                      <SelectItem value="in_progress">Diproses</SelectItem>
-                      <SelectItem value="resolved">Selesai</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <Textarea
-                  placeholder="Tulis balasan..."
-                  rows={2}
-                  value={replyText}
-                  onChange={(e) => setReplyText(e.target.value)}
-                  className="flex-1 resize-none"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSendReply();
-                    }
-                  }}
-                />
-                <Button
-                  onClick={handleSendReply}
-                  disabled={submitting || (!replyText.trim() && newStatus === selectedTicket.status)}
-                  size="icon"
-                  className="gradient-primary text-primary-foreground h-auto"
-                >
-                  {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        }
+      />
     );
   }
 
@@ -246,7 +113,6 @@ const SuperAdminTickets = () => {
         <p className="text-muted-foreground text-xs sm:text-sm">Kelola tiket bantuan dari sekolah</p>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-3 gap-3">
         {[
           { label: "Menunggu", value: openCount, color: "text-warning" },
@@ -262,7 +128,6 @@ const SuperAdminTickets = () => {
         ))}
       </div>
 
-      {/* Filter */}
       <div className="flex gap-2">
         {[
           { value: "all", label: "Semua" },
@@ -276,7 +141,6 @@ const SuperAdminTickets = () => {
         ))}
       </div>
 
-      {/* List */}
       {loading ? (
         <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
       ) : filtered.length === 0 ? (
