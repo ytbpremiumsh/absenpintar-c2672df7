@@ -34,7 +34,7 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded }: PublicAtten
   const [cameraActive, setCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState("");
   const [alreadyRecorded, setAlreadyRecorded] = useState(false);
-  const [scanMethod, setScanMethod] = useState<"barcode" | "face">("barcode");
+  const [scanMethod, setScanMethod] = useState<"barcode" | "face" | "face_recognition">("barcode");
   const [faceScanning, setFaceScanning] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
