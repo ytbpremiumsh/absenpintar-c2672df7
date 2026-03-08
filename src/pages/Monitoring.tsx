@@ -132,7 +132,6 @@ const Monitoring = () => {
     if (error) {
       toast.error("Gagal membatalkan: " + error.message);
     } else {
-      toast.success(`Penjemputan ${student.name} dibatalkan`);
       fetchData();
     }
     setCancelStudent(null);
