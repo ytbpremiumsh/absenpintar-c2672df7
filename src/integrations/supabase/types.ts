@@ -209,6 +209,24 @@ export type Database = {
           },
         ]
       }
+      school_groups: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       school_integrations: {
         Row: {
           api_key: string | null
@@ -299,6 +317,7 @@ export type Database = {
         Row: {
           address: string | null
           created_at: string
+          group_id: string | null
           id: string
           logo: string | null
           name: string
@@ -306,6 +325,7 @@ export type Database = {
         Insert: {
           address?: string | null
           created_at?: string
+          group_id?: string | null
           id?: string
           logo?: string | null
           name: string
@@ -313,11 +333,20 @@ export type Database = {
         Update: {
           address?: string | null
           created_at?: string
+          group_id?: string | null
           id?: string
           logo?: string | null
           name?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "schools_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "school_groups"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       students: {
         Row: {

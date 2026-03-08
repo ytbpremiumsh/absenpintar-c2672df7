@@ -27,6 +27,7 @@ import SuperAdminPlans from "./pages/super-admin/SuperAdminPlans";
 import SuperAdminPayments from "./pages/super-admin/SuperAdminPayments";
 import SuperAdminSubscriptions from "./pages/super-admin/SuperAdminSubscriptions";
 import SuperAdminWhatsApp from "./pages/super-admin/SuperAdminWhatsApp";
+import SuperAdminBranches from "./pages/super-admin/SuperAdminBranches";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -52,6 +53,7 @@ const App = () => (
               <Route path="/super-admin/subscriptions" element={<SuperAdminSubscriptions />} />
               <Route path="/super-admin/payments" element={<SuperAdminPayments />} />
               <Route path="/super-admin/whatsapp" element={<SuperAdminWhatsApp />} />
+              <Route path="/super-admin/branches" element={<SuperAdminBranches />} />
             </Route>
             {/* School Admin / Staff */}
             <Route element={<AppLayout />}>
