@@ -73,14 +73,15 @@ const Classes = () => {
 
     setRenaming(true);
 
-    // Update class name in classes table
-    const { error: classError } = await supabase
-      .from("classes").update({ name: newName }).eq("id", renameTarget.id);
-
-    if (classError) {
-      toast.error("Gagal mengubah nama kelas: " + classError.message);
-      setRenaming(false);
-      return;
+    // Update class name in classes table (if it exists there)
+    if (renameTarget.id) {
+      const { error: classError } = await supabase
+        .from("classes").update({ name: newName }).eq("id", renameTarget.id);
+      if (classError) {
+        toast.error("Gagal mengubah nama kelas: " + classError.message);
+        setRenaming(false);
+        return;
+      }
     }
 
     // Update all students with old class name
