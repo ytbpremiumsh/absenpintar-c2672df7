@@ -20,6 +20,7 @@ const navItems = [
   { title: "Tiket Bantuan", url: "/super-admin/tickets", icon: LifeBuoy, group: "communication" },
   { title: "WhatsApp Gateway", url: "/super-admin/whatsapp", icon: MessageSquare, group: "integration" },
   { title: "Multi Cabang", url: "/super-admin/branches", icon: Building2, group: "integration" },
+  { title: "Landing Page", url: "/super-admin/landing", icon: Globe, group: "content" },
 ];
 
 const groups = [
