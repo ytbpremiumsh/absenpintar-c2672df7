@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { PremiumGate } from "@/components/PremiumGate";
 
 interface ClassTeacher {
   id: string;
@@ -159,6 +160,7 @@ const ManageWaliKelas = () => {
   }, {});
 
   return (
+    <PremiumGate featureLabel="Kelola Wali Kelas" requiredPlan="School">
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
@@ -276,6 +278,7 @@ const ManageWaliKelas = () => {
         </DialogContent>
       </Dialog>
     </div>
+    </PremiumGate>
   );
 };
 

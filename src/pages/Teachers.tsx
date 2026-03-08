@@ -6,6 +6,7 @@ import { GraduationCap, Users, Search, Phone, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { motion } from "framer-motion";
+import { PremiumGate } from "@/components/PremiumGate";
 
 const Teachers = () => {
   const { profile } = useAuth();
@@ -53,6 +54,7 @@ const Teachers = () => {
   }, [students, search]);
 
   return (
+    <PremiumGate featureLabel="Data Wali Murid" requiredPlan="Basic">
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Data Wali Murid</h1>
@@ -153,6 +155,7 @@ const Teachers = () => {
         </div>
       )}
     </div>
+    </PremiumGate>
   );
 };
 

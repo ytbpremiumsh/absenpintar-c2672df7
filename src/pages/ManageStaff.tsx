@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { PremiumGate } from "@/components/PremiumGate";
 
 interface StaffMember {
   user_id: string;
