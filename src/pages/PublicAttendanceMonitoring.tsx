@@ -261,11 +261,13 @@ const PublicAttendanceMonitoring = () => {
                               <Badge variant="secondary" className={`text-[9px] ${STATUS_BG[entry.status] || ""}`}>
                                 {STATUS_LABELS[entry.status] || entry.status}
                               </Badge>
-                              <Badge variant="outline" className={`text-[8px] px-1 py-0 ${
-                                (entry as any).attendance_type === "pulang" ? "border-warning/30 text-warning" : "border-success/30 text-success"
-                              }`}>
-                                {(entry as any).attendance_type === "pulang" ? "Pulang" : "Datang"}
-                              </Badge>
+                              {entry.status === "hadir" && (
+                                <Badge variant="outline" className={`text-[8px] px-1 py-0 ${
+                                  (entry as any).attendance_type === "pulang" ? "border-warning/30 text-warning" : "border-success/30 text-success"
+                                }`}>
+                                  {(entry as any).attendance_type === "pulang" ? "Pulang" : "Datang"}
+                                </Badge>
+                              )}
                               <span className="text-[9px] text-muted-foreground flex items-center gap-0.5">
                                 {entry.method === "rfid" ? <CreditCard className="h-2.5 w-2.5" /> : <Scan className="h-2.5 w-2.5" />} {METHOD_LABELS[entry.method] || entry.method}
                               </span>
