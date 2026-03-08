@@ -181,10 +181,11 @@ const SchoolSettings = () => {
                   </Button>
                 </div>
               ) : (
-                <div>
-                  <Input value={logo} onChange={(e) => setLogo(e.target.value)} placeholder="https://..." className="text-sm" />
-                  <p className="text-[10px] text-muted-foreground mt-1">Upload logo tersedia di paket School ke atas</p>
-                </div>
+                <Button variant="outline" size="sm" className="opacity-60 cursor-not-allowed"
+                  onClick={() => toast.error("Fitur Upload Logo tersedia di paket School ke atas. Silakan upgrade langganan.")}>
+                  <Upload className="h-4 w-4 mr-1" /> Upload Logo
+                  <Lock className="h-3 w-3 ml-1 text-warning" />
+                </Button>
               )}
             </div>
           </div>

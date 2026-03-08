@@ -314,16 +314,22 @@ const Students = () => {
 
           {/* Import */}
           <div className="relative">
-            <input type="file" accept=".xlsx,.xls" onChange={handleImportExcel} className="absolute inset-0 opacity-0 cursor-pointer" disabled={!features.canImportExport} />
-            <Button variant="outline" size="sm" className={!features.canImportExport ? "opacity-50" : ""}>
+            {features.canImportExport && (
+              <input type="file" accept=".xlsx,.xls" onChange={handleImportExcel} className="absolute inset-0 opacity-0 cursor-pointer" />
+            )}
+            <Button variant="outline" size="sm"
+              onClick={() => { if (!features.canImportExport) toast.error("Fitur Import tersedia di paket Basic ke atas. Silakan upgrade langganan."); }}
+              className={!features.canImportExport ? "opacity-60 cursor-not-allowed" : ""}>
               <Upload className="h-4 w-4 mr-1" /> Import
-              {!features.canImportExport && <Lock className="h-3 w-3 ml-1 text-muted-foreground" />}
+              {!features.canImportExport && <Lock className="h-3 w-3 ml-1 text-warning" />}
             </Button>
           </div>
           {/* Export */}
-          <Button variant="outline" size="sm" onClick={handleExportExcel} className={!features.canImportExport ? "opacity-50" : ""} disabled={!features.canImportExport}>
+          <Button variant="outline" size="sm"
+            onClick={() => { if (features.canImportExport) handleExportExcel(); else toast.error("Fitur Export tersedia di paket Basic ke atas. Silakan upgrade langganan."); }}
+            className={!features.canImportExport ? "opacity-60 cursor-not-allowed" : ""}>
             <Download className="h-4 w-4 mr-1" /> Export
-            {!features.canImportExport && <Lock className="h-3 w-3 ml-1 text-muted-foreground" />}
+            {!features.canImportExport && <Lock className="h-3 w-3 ml-1 text-warning" />}
           </Button>
           {/* Add Student */}
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -452,14 +458,24 @@ const Students = () => {
                                   </TableCell>
                                   <TableCell className="text-right">
                                     <div className="flex items-center justify-end gap-1">
-                                      {features.canUploadPhoto && (
-                                        <div className="relative">
-                                          <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer w-8 h-8" onChange={(e) => { if (e.target.files?.[0]) handlePhotoUpload(student.id, e.target.files[0]); }} />
-                                          <Button variant="ghost" size="icon" className="h-8 w-8" disabled={photoUploading === student.id}>
-                                            {photoUploading === student.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4 text-muted-foreground" />}
+                                      <div className="relative">
+                                        {features.canUploadPhoto ? (
+                                          <>
+                                            <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer w-8 h-8" onChange={(e) => { if (e.target.files?.[0]) handlePhotoUpload(student.id, e.target.files[0]); }} />
+                                            <Button variant="ghost" size="icon" className="h-8 w-8" disabled={photoUploading === student.id}>
+                                              {photoUploading === student.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4 text-muted-foreground" />}
+                                            </Button>
+                                          </>
+                                        ) : (
+                                          <Button variant="ghost" size="icon" className="h-8 w-8 opacity-50"
+                                            onClick={() => toast.error("Fitur Upload Foto tersedia di paket Basic ke atas")}>
+                                            <div className="relative">
+                                              <Camera className="h-4 w-4 text-muted-foreground" />
+                                              <Lock className="h-2.5 w-2.5 text-warning absolute -top-1 -right-1" />
+                                            </div>
                                           </Button>
-                                        </div>
-                                      )}
+                                        )}
+                                      </div>
                                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(`/students/${student.id}`)}><Eye className="h-4 w-4 text-primary" /></Button>
                                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setSelectedStudent(student); setQrDialogOpen(true); }}><QrCode className="h-4 w-4 text-primary" /></Button>
                                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(student.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
