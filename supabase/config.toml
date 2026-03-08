@@ -1,1 +1,4 @@
 project_id = "bohuglednqirnaearrkj"
+
+[functions.public-scan-attendance]
+verify_jwt = false
