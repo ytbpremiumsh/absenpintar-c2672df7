@@ -141,8 +141,8 @@ export function AppSidebar() {
                   onClick={copyPublicLink}
                   className="text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/60 rounded-xl px-4 py-3 transition-all duration-200"
                 >
-                  <Globe className="h-[22px] w-[22px]" />
-                  {!collapsed && <span className="text-base font-normal tracking-wide">Live Monitor</span>}
+                  <Globe className="h-4 w-4" />
+                  {!collapsed && <span className="text-sm">Live Monitor</span>}
                   {!collapsed && <Copy className="h-3.5 w-3.5 ml-auto opacity-40" />}
                 </SidebarMenuButton>
               </SidebarMenuItem>
