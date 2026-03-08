@@ -10,7 +10,6 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { motion, AnimatePresence } from "framer-motion";
-import { toast } from "sonner";
 import { announcePickup } from "@/lib/announcePickup";
 import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
 import {
