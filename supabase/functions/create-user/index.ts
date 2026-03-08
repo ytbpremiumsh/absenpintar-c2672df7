@@ -23,7 +23,6 @@ serve(async (req) => {
     let resolvedSchoolId = school_id;
 
     if (!resolvedSchoolId && npsn && school_name) {
-      // Check if school with this NPSN already exists (store npsn in address or check by name)
       const { data: existingSchool } = await supabaseAdmin
         .from('schools')
         .select('id')
@@ -33,7 +32,6 @@ serve(async (req) => {
       if (existingSchool) {
         resolvedSchoolId = existingSchool.id;
       } else {
-        // Create new school
         const { data: newSchool, error: schoolError } = await supabaseAdmin
           .from('schools')
           .insert({
@@ -109,9 +107,62 @@ serve(async (req) => {
             school_id: resolvedSchoolId,
             plan_id: freePlan.id,
             status: 'active',
-            expires_at: null, // Free = no expiry
+            expires_at: null,
           });
         }
+      }
+    }
+
+    // Send WhatsApp registration notification
+    if (phone) {
+      try {
+        // Fetch platform WA settings
+        const { data: settings } = await supabaseAdmin
+          .from('platform_settings')
+          .select('key, value')
+          .in('key', ['wa_registration_enabled', 'wa_api_url', 'wa_api_key', 'wa_registration_message']);
+
+        const settingsMap: Record<string, string> = {};
+        (settings || []).forEach((s: any) => { settingsMap[s.key] = s.value; });
+
+        if (settingsMap.wa_registration_enabled === 'true' && settingsMap.wa_api_url && settingsMap.wa_api_key) {
+          // Format phone number
+          let formattedPhone = phone.replace(/\D/g, '');
+          if (formattedPhone.startsWith('0')) {
+            formattedPhone = '62' + formattedPhone.substring(1);
+          }
+
+          // Build message with placeholders
+          const message = (settingsMap.wa_registration_message || 'Selamat datang, {name}!')
+            .replace(/{name}/g, full_name || '')
+            .replace(/{school}/g, school_name || '')
+            .replace(/{email}/g, email || '');
+
+          // Send via OneSender API
+          const waResponse = await fetch(settingsMap.wa_api_url, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${settingsMap.wa_api_key}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              recipient_type: 'individual',
+              to: formattedPhone,
+              type: 'text',
+              text: { body: message },
+            }),
+          });
+
+          if (!waResponse.ok) {
+            const waError = await waResponse.text();
+            console.error('WA registration notification failed:', waError);
+          } else {
+            console.log('WA registration notification sent to', formattedPhone);
+          }
+        }
+      } catch (waErr) {
+        // Don't fail registration if WA fails
+        console.error('WA notification error:', waErr);
       }
     }
 
