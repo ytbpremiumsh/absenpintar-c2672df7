@@ -33,6 +33,7 @@ import SupportTickets from "./pages/SupportTickets";
 import SuperAdminAnnouncements from "./pages/super-admin/SuperAdminAnnouncements";
 import SuperAdminTickets from "./pages/super-admin/SuperAdminTickets";
 import SuperAdminLanding from "./pages/super-admin/SuperAdminLanding";
+import SuperAdminRegistrationWA from "./pages/super-admin/SuperAdminRegistrationWA";
 import LandingPage from "./pages/LandingPage";
 import NotFound from "./pages/NotFound";
 
@@ -63,6 +64,7 @@ const App = () => (
               <Route path="/super-admin/announcements" element={<SuperAdminAnnouncements />} />
               <Route path="/super-admin/tickets" element={<SuperAdminTickets />} />
               <Route path="/super-admin/landing" element={<SuperAdminLanding />} />
+              <Route path="/super-admin/registration-wa" element={<SuperAdminRegistrationWA />} />
             </Route>
             {/* School Admin / Staff */}
             <Route element={<AppLayout />}>
