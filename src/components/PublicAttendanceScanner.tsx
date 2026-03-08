@@ -51,7 +51,7 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded }: PublicAtten
   const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
   // Lookup student via public edge function
-  const lookupAndRecord = useCallback(async (code: string, method: "barcode" | "face" = "barcode", studentId?: string) => {
+  const lookupAndRecord = useCallback(async (code: string, method: string = "barcode", studentId?: string) => {
     if (isLookingUp.current || scanPaused.current) return;
     if (!code && !studentId) return;
     isLookingUp.current = true;
