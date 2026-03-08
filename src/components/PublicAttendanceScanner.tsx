@@ -73,7 +73,7 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded }: PublicAtten
         // Already recorded
         setAlreadyRecorded(true);
         setScannedStudent(data.student);
-        setScanMethod(method);
+        setScanMethod(method as "barcode" | "face" | "face_recognition");
         setConfirmed(false);
         scanPaused.current = true;
         return;
@@ -87,7 +87,7 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded }: PublicAtten
       // Success - attendance recorded
       setAlreadyRecorded(false);
       setScannedStudent(data.student);
-      setScanMethod(method);
+      setScanMethod(method as "barcode" | "face" | "face_recognition");
       setConfirmed(true);
       scanPaused.current = true;
       toast.success(`Absensi ${data.student.name} berhasil dicatat!`);
