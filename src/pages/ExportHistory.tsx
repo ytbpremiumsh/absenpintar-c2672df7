@@ -122,6 +122,7 @@ const ExportHistory = () => {
   const isPremiumFeature = !features.canExportReport;
 
   return (
+    <PremiumGate featureLabel="Rekap & Export" featureKey="canExportReport" requiredPlan="Basic">
     <div className="space-y-5">
       <div>
         <h1 className="text-xl sm:text-2xl font-bold text-foreground">Rekap & Export Absensi</h1>
@@ -266,6 +267,7 @@ const ExportHistory = () => {
         )}
       </div>
     </div>
+    </PremiumGate>
   );
 };
 
