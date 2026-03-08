@@ -272,8 +272,8 @@ const LandingPage = () => {
                 <div className="relative rounded-2xl border border-border bg-background shadow-2xl shadow-foreground/10 overflow-hidden">
                   <div className="flex items-center gap-1.5 px-4 py-2.5 bg-muted/50 border-b border-border">
                     <div className="w-2.5 h-2.5 rounded-full bg-destructive/60" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-yellow-400/60" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-green-400/60" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-amber-400/60" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-400/60" />
                     <div className="ml-3 flex-1 h-5 rounded-md bg-muted/80" />
                   </div>
                   <div className="p-4 space-y-3">
