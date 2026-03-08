@@ -161,7 +161,7 @@ const LandingPage = () => {
             <p className="mt-3 text-muted-foreground max-w-md mx-auto">Semua yang Anda butuhkan untuk mengelola sistem penjemputan siswa</p>
           </motion.div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid sm:grid-cols-2 gap-6 max-w-4xl mx-auto">
             {features.map((f, i) => {
               const Icon = f.icon;
               return (
