@@ -1,1 +1,4 @@
 project_id = "phhrytxjlgwlmkewzoiz"
+
+[functions.public-monitoring]
+verify_jwt = false
