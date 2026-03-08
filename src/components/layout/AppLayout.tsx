@@ -1,7 +1,8 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { Outlet, Navigate, useNavigate } from "react-router-dom";
-import { Bell, Settings, LogOut, User, School, KeyRound } from "lucide-react";
+import { Settings, LogOut, School, KeyRound } from "lucide-react";
+import { NotificationBell } from "@/components/NotificationBell";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
