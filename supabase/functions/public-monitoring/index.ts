@@ -32,7 +32,7 @@ Deno.serve(async (req) => {
 
     let studentsQuery = supabase
       .from("students")
-      .select("id, name, class, parent_name, student_id")
+      .select("id, name, class, parent_name, student_id, photo_url")
       .eq("school_id", schoolId)
       .order("class")
       .order("name");

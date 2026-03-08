@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, UserCheck, UserX, ScanLine, TrendingUp, Clock, Calendar, GraduationCap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
 import { motion } from "framer-motion";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area } from "recharts";
 
@@ -13,10 +14,12 @@ interface StudentData {
   name: string;
   class: string;
   parent_name: string;
+  photo_url: string | null;
 }
 
 const Dashboard = () => {
   const { profile } = useAuth();
+  const features = useSubscriptionFeatures();
   const [totalStudents, setTotalStudents] = useState(0);
   const [pickedUp, setPickedUp] = useState(0);
   const [todayLogs, setTodayLogs] = useState<any[]>([]);
@@ -30,7 +33,7 @@ const Dashboard = () => {
     today.setHours(0, 0, 0, 0);
 
     const [studentsRes, logsRes] = await Promise.all([
-      supabase.from("students").select("id, name, class, parent_name").eq("school_id", schoolId),
+      supabase.from("students").select("id, name, class, parent_name, photo_url").eq("school_id", schoolId),
       supabase.from("pickup_logs").select("*").eq("school_id", schoolId).gte("pickup_time", today.toISOString()).order("pickup_time", { ascending: false }),
     ]);
 
@@ -192,9 +195,17 @@ const Dashboard = () => {
             const studentClass = getStudentClass(log);
             return (
               <div key={log.id} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-secondary/50 transition-colors">
-                <div className="h-9 w-9 rounded-full gradient-primary flex items-center justify-center text-primary-foreground text-xs font-bold shrink-0">
-                  {studentName.charAt(0)}
-                </div>
+                {(() => {
+                  const student = students.find(s => s.id === log.student_id);
+                  const photoUrl = student?.photo_url;
+                  return features.canUploadPhoto && photoUrl ? (
+                    <img src={photoUrl} alt={studentName} className="h-9 w-9 rounded-full object-cover shrink-0 border-2 border-success/30" />
+                  ) : (
+                    <div className="h-9 w-9 rounded-full gradient-primary flex items-center justify-center text-primary-foreground text-xs font-bold shrink-0">
+                      {studentName.charAt(0)}
+                    </div>
+                  );
+                })()}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold truncate">{studentName}</p>
                   <p className="text-[11px] text-muted-foreground">
