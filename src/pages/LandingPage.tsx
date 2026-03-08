@@ -231,17 +231,6 @@ const LandingPage = () => {
                     transition={{ delay: i * 0.1, duration: 0.4 }}
                     className="flex gap-4"
                   >
-                    <div className="flex-shrink-0 mt-0.5">
-                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                        <item.icon className="h-5 w-5 text-primary" />
-                      </div>
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-foreground">{item.title}</h4>
-                      <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
-                    </div>
-                  </motion.div>
-                ))}
               </div>
             </motion.div>
 
