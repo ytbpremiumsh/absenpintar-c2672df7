@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, ArrowDown, Shield, QrCode, Monitor, Users, GraduationCap, BarChart3, Clock, Bell, Globe, FileText, Settings, ChevronRight, CheckCircle2, Zap, Lock, Smartphone, Star, TrendingUp, Sparkles, Sun, Moon } from "lucide-react";
+import { Loader2, ArrowDown, Shield, QrCode, Monitor, Users, GraduationCap, BarChart3, Clock, Bell, Globe, FileText, Settings, ChevronRight, CheckCircle2, Zap, Lock, Smartphone, Star, TrendingUp, Sparkles, Sun, Moon, AlertTriangle, Lightbulb, XCircle, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { Navigate } from "react-router-dom";
 
