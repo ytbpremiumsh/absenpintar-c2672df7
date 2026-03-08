@@ -257,12 +257,12 @@ const Students = () => {
           <h1 className="text-2xl font-bold">Data Siswa</h1>
           <p className="text-muted-foreground text-sm">Kelola data siswa, QR Code, dan kategori kelas</p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-nowrap overflow-x-auto">
           {/* Naik Kelas */}
           <Dialog open={promoteDialogOpen} onOpenChange={setPromoteDialogOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" size="sm">
-                <ArrowRightLeft className="h-4 w-4 mr-1" /> Naik Kelas
+              <Button variant="outline" size="sm" className="shrink-0 text-xs px-2 sm:px-3">
+                <ArrowRightLeft className="h-3.5 w-3.5 sm:mr-1" /> <span className="hidden sm:inline">Naik Kelas</span>
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
@@ -328,34 +328,34 @@ const Students = () => {
           </Dialog>
 
           {/* Template Download */}
-          <Button variant="outline" size="sm" onClick={handleDownloadTemplate}>
-            <Download className="h-4 w-4 mr-1" /> Template
+          <Button variant="outline" size="sm" onClick={handleDownloadTemplate} className="shrink-0 text-xs px-2 sm:px-3">
+            <Download className="h-3.5 w-3.5 sm:mr-1" /> <span className="hidden sm:inline">Template</span>
           </Button>
 
           {/* Import */}
-          <div className="relative">
+          <div className="relative shrink-0">
             {features.canImportExport && (
               <input type="file" accept=".xlsx,.xls" onChange={handleImportExcel} className="absolute inset-0 opacity-0 cursor-pointer" />
             )}
             <Button variant="outline" size="sm"
               onClick={() => { if (!features.canImportExport) toast.error("Fitur Import tersedia di paket Basic ke atas. Silakan upgrade langganan."); }}
-              className={!features.canImportExport ? "opacity-60 cursor-not-allowed" : ""}>
-              <Upload className="h-4 w-4 mr-1" /> Import
+              className={`text-xs px-2 sm:px-3 ${!features.canImportExport ? "opacity-60 cursor-not-allowed" : ""}`}>
+              <Upload className="h-3.5 w-3.5 sm:mr-1" /> <span className="hidden sm:inline">Import</span>
               {!features.canImportExport && <Lock className="h-3 w-3 ml-1 text-warning" />}
             </Button>
           </div>
           {/* Export */}
           <Button variant="outline" size="sm"
             onClick={() => { if (features.canImportExport) handleExportExcel(); else toast.error("Fitur Export tersedia di paket Basic ke atas. Silakan upgrade langganan."); }}
-            className={!features.canImportExport ? "opacity-60 cursor-not-allowed" : ""}>
-            <Download className="h-4 w-4 mr-1" /> Export
+            className={`shrink-0 text-xs px-2 sm:px-3 ${!features.canImportExport ? "opacity-60 cursor-not-allowed" : ""}`}>
+            <Download className="h-3.5 w-3.5 sm:mr-1" /> <span className="hidden sm:inline">Export</span>
             {!features.canImportExport && <Lock className="h-3 w-3 ml-1 text-warning" />}
           </Button>
           {/* Add Student */}
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="gradient-primary hover:opacity-90 h-9">
-                <Plus className="h-4 w-4 mr-1" /> Tambah Siswa
+              <Button className="gradient-primary hover:opacity-90 h-9 shrink-0 text-xs px-2 sm:px-3">
+                <Plus className="h-3.5 w-3.5 sm:mr-1" /> <span className="hidden sm:inline">Tambah Siswa</span>
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
