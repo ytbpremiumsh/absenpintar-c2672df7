@@ -12,6 +12,7 @@ import ScanQR from "./pages/ScanQR";
 import Students from "./pages/Students";
 import History from "./pages/History";
 import Subscription from "./pages/Subscription";
+import PublicMonitoring from "./pages/PublicMonitoring";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/live/:schoolId" element={<PublicMonitoring />} />
             <Route element={<AppLayout />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/monitoring" element={<Monitoring />} />

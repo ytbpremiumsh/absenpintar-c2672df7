@@ -1,12 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScanLine, CheckCircle2, Camera, Search, ShieldCheck } from "lucide-react";
+import { ScanLine, CheckCircle2, Camera, Search, ShieldCheck, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { Html5Qrcode } from "html5-qrcode";
 
 interface FoundStudent {
   id: string;
@@ -24,15 +25,18 @@ const ScanQR = () => {
   const [scannedStudent, setScannedStudent] = useState<FoundStudent | null>(null);
   const [confirmed, setConfirmed] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const [cameraActive, setCameraActive] = useState(false);
+  const scannerRef = useRef<Html5Qrcode | null>(null);
+  const scannerDivId = "qr-reader";
 
-  const handleSearch = async () => {
-    if (!manualCode.trim() || !profile?.school_id) return;
+  const lookupStudent = async (code: string) => {
+    if (!code.trim() || !profile?.school_id) return;
 
     const { data, error } = await supabase
       .from("students")
       .select("*")
       .eq("school_id", profile.school_id)
-      .or(`student_id.eq.${manualCode},qr_code.eq.${manualCode}`)
+      .or(`student_id.eq.${code},qr_code.eq.${code}`)
       .maybeSingle();
 
     if (error || !data) {
@@ -42,7 +46,46 @@ const ScanQR = () => {
 
     setScannedStudent(data);
     setConfirmed(false);
+    // Stop camera after successful scan
+    stopCamera();
   };
+
+  const startCamera = async () => {
+    try {
+      const html5QrCode = new Html5Qrcode(scannerDivId);
+      scannerRef.current = html5QrCode;
+
+      await html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        (decodedText) => {
+          lookupStudent(decodedText);
+        },
+        () => {}
+      );
+      setCameraActive(true);
+    } catch (err) {
+      console.error("Camera error:", err);
+      toast.error("Gagal mengakses kamera. Pastikan izin kamera diberikan.");
+    }
+  };
+
+  const stopCamera = async () => {
+    if (scannerRef.current?.isScanning) {
+      await scannerRef.current.stop();
+    }
+    setCameraActive(false);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (scannerRef.current?.isScanning) {
+        scannerRef.current.stop();
+      }
+    };
+  }, []);
+
+  const handleSearch = () => lookupStudent(manualCode);
 
   const handleConfirm = async () => {
     if (!scannedStudent || !profile?.school_id) return;
@@ -79,15 +122,28 @@ const ScanQR = () => {
         <p className="text-muted-foreground text-sm">Scan kartu QR siswa untuk memproses penjemputan</p>
       </div>
 
-      {/* Camera placeholder */}
+      {/* Camera Scanner */}
       <Card className="shadow-card border-0 overflow-hidden">
         <CardContent className="p-0">
-          <div className="aspect-video bg-foreground/5 flex flex-col items-center justify-center gap-3">
-            <div className="h-16 w-16 rounded-2xl gradient-primary flex items-center justify-center">
-              <Camera className="h-8 w-8 text-primary-foreground" />
+          <div id={scannerDivId} className={cameraActive ? "" : "hidden"} />
+          {!cameraActive && (
+            <div className="aspect-video bg-foreground/5 flex flex-col items-center justify-center gap-3">
+              <div className="h-16 w-16 rounded-2xl gradient-primary flex items-center justify-center">
+                <Camera className="h-8 w-8 text-primary-foreground" />
+              </div>
+              <Button onClick={startCamera} className="gradient-primary hover:opacity-90">
+                <Camera className="h-4 w-4 mr-2" />
+                Aktifkan Kamera
+              </Button>
             </div>
-            <p className="text-sm text-muted-foreground text-center px-4">Kamera scanner akan aktif setelah integrasi html5-qrcode</p>
-          </div>
+          )}
+          {cameraActive && (
+            <div className="p-2 flex justify-center">
+              <Button variant="outline" size="sm" onClick={stopCamera}>
+                <X className="h-4 w-4 mr-1" /> Tutup Kamera
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -149,9 +205,6 @@ const ScanQR = () => {
                   <p>Penjemput: {scannedStudent.parent_name}</p>
                   <p>Waktu: {new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}</p>
                 </div>
-                <p className="text-xs text-success-foreground/60">
-                  Notifikasi WhatsApp akan dikirim ke {scannedStudent.parent_phone}
-                </p>
               </CardContent>
             </Card>
           </motion.div>

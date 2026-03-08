@@ -7,10 +7,13 @@ import {
   CreditCard,
   School,
   LogOut,
+  Globe,
+  Copy,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 import {
   Sidebar,
   SidebarContent,
@@ -42,12 +45,20 @@ export function AppSidebar() {
   const collapsed = state === "collapsed";
   const location = useLocation();
   const navigate = useNavigate();
-  const { signOut } = useAuth();
+  const { signOut, profile } = useAuth();
   const isActive = (path: string) => location.pathname === path;
 
   const handleLogout = async () => {
     await signOut();
     navigate("/login");
+  };
+
+  const copyPublicLink = () => {
+    if (profile?.school_id) {
+      const link = `${window.location.origin}/live/${profile.school_id}`;
+      navigator.clipboard.writeText(link);
+      toast.success("Link publik disalin!");
+    }
   };
 
   return (
@@ -83,6 +94,24 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Public Link */}
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-sidebar-foreground/40 text-[11px] uppercase tracking-wider">
+            Halaman Publik
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton tooltip="Salin Link Publik" onClick={copyPublicLink} className="text-sidebar-foreground/70 hover:text-sidebar-foreground">
+                  <Globe className="h-4 w-4" />
+                  {!collapsed && <span>Live Monitor</span>}
+                  {!collapsed && <Copy className="h-3 w-3 ml-auto opacity-50" />}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
