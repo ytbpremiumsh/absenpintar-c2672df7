@@ -29,6 +29,9 @@ import SuperAdminSubscriptions from "./pages/super-admin/SuperAdminSubscriptions
 import SuperAdminWhatsApp from "./pages/super-admin/SuperAdminWhatsApp";
 import SuperAdminBranches from "./pages/super-admin/SuperAdminBranches";
 import ExportHistory from "./pages/ExportHistory";
+import SupportTickets from "./pages/SupportTickets";
+import SuperAdminAnnouncements from "./pages/super-admin/SuperAdminAnnouncements";
+import SuperAdminTickets from "./pages/super-admin/SuperAdminTickets";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
