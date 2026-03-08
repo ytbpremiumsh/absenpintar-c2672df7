@@ -130,17 +130,21 @@ const ScanQR = () => {
     }
   }, [profile?.school_id]);
 
+  const faceTimeoutRef = useRef<number | null>(null);
+
   // Start face recognition interval
   const startFaceScanning = useCallback(() => {
     if (faceIntervalRef.current) return;
-    // Initial scan after 2s
-    const timeout = setTimeout(() => captureAndRecognize(), 2000);
+    faceTimeoutRef.current = window.setTimeout(() => captureAndRecognize(), 2000);
     faceIntervalRef.current = window.setInterval(() => {
       if (!scanPaused.current) captureAndRecognize();
     }, 4000);
-    // Store timeout for cleanup
-    return () => clearTimeout(timeout);
   }, [captureAndRecognize]);
+
+  const stopFaceScanning = useCallback(() => {
+    if (faceTimeoutRef.current) { clearTimeout(faceTimeoutRef.current); faceTimeoutRef.current = null; }
+    if (faceIntervalRef.current) { clearInterval(faceIntervalRef.current); faceIntervalRef.current = null; }
+  }, []);
 
   // When camera becomes active, start scanning
   useEffect(() => {
@@ -150,11 +154,17 @@ const ScanQR = () => {
       video.onloadedmetadata = () => {
         video.play().then(() => {
           startBarcodeScanning();
-          if (canFace) startFaceScanning();
+          if (canFace) {
+            console.log("Starting face recognition scanning...");
+            startFaceScanning();
+          }
         }).catch(err => console.error("Video play error:", err));
       };
+      return () => {
+        stopFaceScanning();
+      };
     }
-  }, [cameraActive, startBarcodeScanning, startFaceScanning, canFace]);
+  }, [cameraActive, startBarcodeScanning, startFaceScanning, stopFaceScanning, canFace]);
 
   const startCamera = async () => {
     setCameraError("");
@@ -175,7 +185,7 @@ const ScanQR = () => {
 
   const stopCamera = () => {
     if (scanIntervalRef.current) { clearInterval(scanIntervalRef.current); scanIntervalRef.current = null; }
-    if (faceIntervalRef.current) { clearInterval(faceIntervalRef.current); faceIntervalRef.current = null; }
+    stopFaceScanning();
     if (streamRef.current) { streamRef.current.getTracks().forEach(t => t.stop()); streamRef.current = null; }
     if (videoRef.current) videoRef.current.srcObject = null;
     setCameraActive(false);
