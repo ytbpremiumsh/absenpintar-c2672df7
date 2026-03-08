@@ -363,9 +363,9 @@ const Monitoring = () => {
       <AlertDialog open={!!confirmStudent} onOpenChange={(o) => !o && setConfirmStudent(null)}>
         <AlertDialogContent className="max-w-[90vw] sm:max-w-lg">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-base sm:text-lg">Konfirmasi Penjemputan</AlertDialogTitle>
+            <AlertDialogTitle className="text-base sm:text-lg">Konfirmasi Kepulangan</AlertDialogTitle>
             <AlertDialogDescription className="text-xs sm:text-sm">
-              Tandai <strong>{confirmStudent?.name}</strong> (Kelas {confirmStudent?.class}) sebagai sudah dijemput?
+              Tandai <strong>{confirmStudent?.name}</strong> (Kelas {confirmStudent?.class}) sebagai sudah pulang?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
