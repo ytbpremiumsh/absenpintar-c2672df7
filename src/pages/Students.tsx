@@ -314,16 +314,22 @@ const Students = () => {
 
           {/* Import */}
           <div className="relative">
-            <input type="file" accept=".xlsx,.xls" onChange={handleImportExcel} className="absolute inset-0 opacity-0 cursor-pointer" disabled={!features.canImportExport} />
-            <Button variant="outline" size="sm" className={!features.canImportExport ? "opacity-50" : ""}>
+            {features.canImportExport && (
+              <input type="file" accept=".xlsx,.xls" onChange={handleImportExcel} className="absolute inset-0 opacity-0 cursor-pointer" />
+            )}
+            <Button variant="outline" size="sm"
+              onClick={() => { if (!features.canImportExport) toast.error("Fitur Import tersedia di paket Basic ke atas. Silakan upgrade langganan."); }}
+              className={!features.canImportExport ? "opacity-60 cursor-not-allowed" : ""}>
               <Upload className="h-4 w-4 mr-1" /> Import
-              {!features.canImportExport && <Lock className="h-3 w-3 ml-1 text-muted-foreground" />}
+              {!features.canImportExport && <Lock className="h-3 w-3 ml-1 text-warning" />}
             </Button>
           </div>
           {/* Export */}
-          <Button variant="outline" size="sm" onClick={handleExportExcel} className={!features.canImportExport ? "opacity-50" : ""} disabled={!features.canImportExport}>
+          <Button variant="outline" size="sm"
+            onClick={() => { if (features.canImportExport) handleExportExcel(); else toast.error("Fitur Export tersedia di paket Basic ke atas. Silakan upgrade langganan."); }}
+            className={!features.canImportExport ? "opacity-60 cursor-not-allowed" : ""}>
             <Download className="h-4 w-4 mr-1" /> Export
-            {!features.canImportExport && <Lock className="h-3 w-3 ml-1 text-muted-foreground" />}
+            {!features.canImportExport && <Lock className="h-3 w-3 ml-1 text-warning" />}
           </Button>
           {/* Add Student */}
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
