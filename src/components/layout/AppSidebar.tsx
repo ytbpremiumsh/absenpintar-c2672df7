@@ -113,7 +113,7 @@ export function AppSidebar() {
             Menu Utama
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-0.5">{renderNavItems(mainNav)}</SidebarMenu>
+            <SidebarMenu className="space-y-1">{renderNavItems(mainNav)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
