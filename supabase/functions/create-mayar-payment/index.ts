@@ -62,6 +62,8 @@ serve(async (req) => {
         name: `Langganan ${plan.name} - ${school?.name || 'Sekolah'}`,
         amount: plan.price,
         description: `Paket ${plan.name} untuk ${school?.name || 'Sekolah'}`,
+        email: user.email || 'noemail@school.com',
+        mobile: '08000000000',
         redirectUrl: `${Deno.env.get('SUPABASE_URL')?.replace('.supabase.co', '.lovable.app')}/subscription?status=success`,
       }),
     });
