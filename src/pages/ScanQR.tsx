@@ -274,6 +274,7 @@ const ScanQR = () => {
     setManualCode("");
     setAlreadyRecorded(false);
     scanPaused.current = false;
+    facePaused.current = false;
   };
 
   return (
