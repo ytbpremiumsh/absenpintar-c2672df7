@@ -181,8 +181,70 @@ const LandingPage = () => {
         </motion.p>
       </section>
 
+      {/* Problem & Solution Section */}
+      <section className="py-20 sm:py-28 bg-muted/30">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          {/* Problems Header */}
+          <motion.div custom={0} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-14">
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-destructive mb-3 block">Latar Belakang</span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight">Kondisi Permasalahan</h2>
+            <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">Sistem penjemputan konvensional di sekolah Indonesia masih menyimpan banyak risiko dan ketidakefisienan.</p>
+          </motion.div>
+
+          {/* Problem Cards */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-16">
+            {PROBLEMS.map((p, i) => (
+              <motion.div key={p.title} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
+                className="group rounded-2xl p-6 transition-all duration-300 border bg-destructive/5 border-destructive/10 hover:border-destructive/20 hover:shadow-lg hover:shadow-destructive/5">
+                <p.icon className="h-7 w-7 text-destructive mb-3" />
+                <h3 className="font-bold text-foreground text-base mb-1.5">{p.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{p.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Divider Arrow */}
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="flex flex-col items-center mb-16">
+            <div className="h-14 w-14 rounded-full bg-gradient-to-br from-success to-success/80 flex items-center justify-center shadow-xl shadow-success/20">
+              <ArrowDown className="h-6 w-6 text-success-foreground" />
+            </div>
+            <p className="mt-3 font-bold text-success text-base">Solusi Kami</p>
+          </motion.div>
+
+          {/* Solutions Header */}
+          <motion.div custom={0} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-14">
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-success mb-3 block">Jawaban Tepat</span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight">Smart Pickup School System</h2>
+            <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">Sistem digital terintegrasi yang menyelesaikan setiap permasalahan penjemputan dengan teknologi modern.</p>
+          </motion.div>
+
+          {/* Solution Cards */}
+          <div className="grid sm:grid-cols-2 gap-5">
+            {SOLUTIONS_MAP.map((s, i) => (
+              <motion.div key={s.solution} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
+                className="rounded-2xl p-6 transition-all duration-300 border bg-success/5 border-success/10 hover:border-success/20 hover:shadow-lg hover:shadow-success/5">
+                <div className="flex items-start gap-4">
+                  <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-success to-success/80 flex items-center justify-center shrink-0 shadow-lg shadow-success/15">
+                    <s.icon className="h-5 w-5 text-success-foreground" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-destructive/10 text-destructive">{s.problem}</span>
+                      <ArrowRight className="h-3.5 w-3.5 text-success" />
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-success/10 text-success">{s.solution}</span>
+                    </div>
+                    <h3 className="font-bold text-foreground text-sm mb-1">{s.solution}</h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{s.desc}</p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Features Grid */}
-      <section id="features" className="py-20 sm:py-28 bg-muted/30">
+      <section id="features" className="py-20 sm:py-28">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <motion.div custom={0} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-14">
             <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-3 block">Fitur Unggulan</span>
