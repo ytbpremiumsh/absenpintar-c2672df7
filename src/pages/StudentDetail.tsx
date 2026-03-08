@@ -238,6 +238,7 @@ const StudentDetail = () => {
                 studentClass={student.class}
                 schoolName={school?.name}
                 schoolLogo={school?.logo}
+                customInstructions={qrInstructions.length > 0 ? qrInstructions : undefined}
               />
               <p className="text-xs text-muted-foreground mt-3 text-center">Scan kode ini untuk memproses penjemputan</p>
             </CardContent>
