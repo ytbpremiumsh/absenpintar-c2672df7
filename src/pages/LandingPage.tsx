@@ -96,24 +96,41 @@ const LandingPage = () => {
             </div>
           </motion.div>
 
-          {/* Hero Image below */}
-          {get("hero_image") && (
-            <motion.div
-              initial={{ opacity: 0, y: 40, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ duration: 0.7, delay: 0.3 }}
-              className="mt-16 max-w-4xl mx-auto"
-            >
+          {/* Hero Image */}
+          <motion.div
+            initial={{ opacity: 0, y: 40, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.7, delay: 0.3 }}
+            className="mt-14 max-w-5xl mx-auto"
+          >
+            {get("hero_image") ? (
               <div className="relative group">
-                <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 rounded-2xl blur-lg opacity-60 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="absolute -inset-2 bg-gradient-to-r from-primary/15 via-accent/10 to-primary/15 rounded-3xl blur-2xl opacity-50 group-hover:opacity-80 transition-opacity duration-500" />
                 <img
                   src={get("hero_image")}
                   alt="Hero"
-                  className="relative w-full rounded-2xl shadow-2xl shadow-foreground/10 border border-border/50 transition-transform duration-500 group-hover:scale-[1.01]"
+                  className="relative w-full rounded-2xl shadow-2xl shadow-foreground/10 border border-border/50 transition-transform duration-500 group-hover:scale-[1.005]"
                 />
               </div>
-            </motion.div>
-          )}
+            ) : (
+              <div className="relative">
+                <div className="absolute -inset-2 bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 rounded-3xl blur-2xl opacity-40" />
+                <div className="relative w-full aspect-[16/9] rounded-2xl bg-gradient-to-br from-muted/80 to-muted/40 flex items-center justify-center shadow-2xl shadow-foreground/10 border border-border/50">
+                  <School className="h-20 w-20 text-primary/15" />
+                </div>
+              </div>
+            )}
+          </motion.div>
+
+          {/* Caption */}
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8 }}
+            className="mt-8 text-center text-xs sm:text-sm text-muted-foreground max-w-3xl mx-auto leading-relaxed"
+          >
+            Sistem ini mampu mengelola penjemputan siswa secara otomatis, memantau status real-time, dan mengirim notifikasi WhatsApp ke orang tua. Dengan begitu, sekolah bisa mengelola kepulangan siswa lebih mudah dan aman.
+          </motion.p>
         </div>
       </section>
 
