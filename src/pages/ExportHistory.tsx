@@ -128,6 +128,31 @@ const ExportHistory = () => {
         <p className="text-muted-foreground text-xs sm:text-sm">Lihat statistik kehadiran dan export laporan per hari</p>
       </div>
 
+      {isPremiumFeature && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+          <Card className="border-0 shadow-card bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30">
+            <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+              <div className="flex items-center gap-3 flex-1">
+                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shrink-0">
+                  <Crown className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                    <Lock className="h-3.5 w-3.5" /> Fitur Premium
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    Export laporan ke Excel & PDF tersedia di paket <span className="font-semibold">Basic</span> ke atas. Upgrade sekarang untuk akses penuh!
+                  </p>
+                </div>
+              </div>
+              <Button size="sm" onClick={() => navigate("/subscription")} className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shrink-0">
+                <Crown className="h-3.5 w-3.5 mr-1.5" /> Upgrade Sekarang
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+
       <div className="grid grid-cols-3 gap-3">
         {[
           { label: "Total Absensi", value: totalThisMonth, color: "text-primary" },
