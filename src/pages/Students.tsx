@@ -16,6 +16,8 @@ import QRCodeDisplay from "@/components/QRCodeDisplay";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import * as XLSX from "xlsx";
+import JSZip from "jszip";
+import QRCodeStyling from "qr-code-styling";
 
 const Students = () => {
   const { profile } = useAuth();
@@ -218,6 +220,183 @@ const Students = () => {
     fetchData();
   };
 
+  const [downloadingQr, setDownloadingQr] = useState(false);
+
+  const generateQrFrame = (qrImg: HTMLImageElement, student: any): Promise<Blob> => {
+    return new Promise((resolve) => {
+      const canvasW = 1080;
+      const qrSize = 700;
+      const headerH = 340;
+      const instructions = qrInstructions.length > 0 ? qrInstructions : [
+        "Tunjukkan QR Code ini kepada guru/petugas piket",
+        "Petugas akan scan QR saat penjemputan",
+        "Orang tua/wali akan menerima notifikasi otomatis",
+        "Jangan berikan QR Code kepada orang lain",
+        "Segera lapor jika QR Code hilang/rusak",
+      ];
+      const instrLineH = 48;
+      const instrBoxH = 80 + instructions.length * instrLineH;
+      const noticeH = 80;
+      const footerH = 100;
+      const qrSectionH = qrSize + 60 + 120 + 70;
+      const canvasH = Math.max(1920, headerH + qrSectionH + 60 + instrBoxH + 30 + noticeH + footerH + 40);
+
+      const canvas = document.createElement("canvas");
+      canvas.width = canvasW;
+      canvas.height = canvasH;
+      const ctx = canvas.getContext("2d")!;
+
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvasW, canvasH);
+
+      const grad = ctx.createLinearGradient(0, 0, canvasW, 0);
+      grad.addColorStop(0, "hsl(234, 89%, 40%)");
+      grad.addColorStop(1, "hsl(260, 80%, 50%)");
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.roundRect(0, 0, canvasW, headerH, [0, 0, 40, 40]);
+      ctx.fill();
+
+      ctx.fillStyle = "#ffffff";
+      ctx.textAlign = "center";
+      if (schoolInfo.name) {
+        ctx.font = "bold 36px system-ui, sans-serif";
+        ctx.fillText(schoolInfo.name, canvasW / 2, 80, canvasW - 80);
+      }
+      ctx.font = "bold 56px system-ui, sans-serif";
+      ctx.fillText(student.name, canvasW / 2, 180, canvasW - 80);
+      ctx.font = "36px system-ui, sans-serif";
+      ctx.fillStyle = "rgba(255,255,255,0.85)";
+      ctx.fillText(`Kelas ${student.class}`, canvasW / 2, 250);
+
+      const qrX = (canvasW - qrSize) / 2;
+      const qrY = headerH + 120;
+      ctx.fillStyle = "#f3f4f6";
+      ctx.beginPath();
+      ctx.roundRect(qrX - 30, qrY - 30, qrSize + 60, qrSize + 60, 24);
+      ctx.fill();
+      ctx.strokeStyle = "#e5e7eb";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
+
+      ctx.fillStyle = "#374151";
+      ctx.textAlign = "center";
+      ctx.font = "bold 32px system-ui, sans-serif";
+      const nisY = qrY + qrSize + 70;
+      ctx.fillText(`NIS: ${student.student_id}`, canvasW / 2, nisY);
+
+      const instrStartY = nisY + 60;
+      const instrX = 100;
+      const instrW = canvasW - 200;
+      ctx.fillStyle = "#f0f4ff";
+      ctx.beginPath();
+      ctx.roundRect(instrX, instrStartY, instrW, instrBoxH, 20);
+      ctx.fill();
+      ctx.strokeStyle = "#c7d2fe";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillStyle = "#1e3a8a";
+      ctx.font = "bold 28px system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("📋 Petunjuk Penggunaan", canvasW / 2, instrStartY + 45);
+      ctx.fillStyle = "#374151";
+      ctx.font = "24px system-ui, sans-serif";
+      ctx.textAlign = "left";
+      instructions.forEach((line, i) => {
+        ctx.fillText(`${i + 1}. ${line}`, instrX + 30, instrStartY + 90 + i * instrLineH, instrW - 60);
+      });
+
+      const noticeY = instrStartY + instrBoxH + 30;
+      ctx.fillStyle = "#fef2f2";
+      ctx.beginPath();
+      ctx.roundRect(instrX, noticeY, instrW, noticeH, 16);
+      ctx.fill();
+      ctx.strokeStyle = "#fecaca";
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.fillStyle = "#991b1b";
+      ctx.font = "bold 22px system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("⚠️ QR Code ini bersifat rahasia & hanya untuk keperluan sekolah", canvasW / 2, noticeY + 50);
+
+      ctx.fillStyle = "#9ca3af";
+      ctx.font = "24px system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("Smart School Pickup System", canvasW / 2, canvasH - 60);
+
+      canvas.toBlob((blob) => resolve(blob!), "image/png");
+    });
+  };
+
+  const handleBulkDownloadQR = async (targetClass?: string) => {
+    const targetStudents = targetClass ? students.filter(s => s.class === targetClass) : students;
+    if (targetStudents.length === 0) {
+      toast.error("Tidak ada siswa untuk didownload");
+      return;
+    }
+
+    setDownloadingQr(true);
+    const toastId = toast.loading(`Membuat ${targetStudents.length} QR Code...`);
+
+    try {
+      const zip = new JSZip();
+      const folder = zip.folder(targetClass ? `QR-Kelas-${targetClass}` : "QR-Semua-Kelas")!;
+
+      for (let i = 0; i < targetStudents.length; i++) {
+        const student = targetStudents[i];
+        toast.loading(`Memproses ${i + 1}/${targetStudents.length}: ${student.name}`, { id: toastId });
+
+        const qrCode = new QRCodeStyling({
+          width: 700,
+          height: 700,
+          data: student.qr_code || student.student_id,
+          type: "canvas",
+          dotsOptions: { color: "hsl(234, 89%, 40%)", type: "rounded" },
+          cornersSquareOptions: { color: "hsl(234, 89%, 30%)", type: "extra-rounded" },
+          cornersDotOptions: { color: "hsl(260, 80%, 50%)", type: "dot" },
+          backgroundOptions: { color: "#ffffff" },
+        });
+
+        const qrRaw = await qrCode.getRawData("png");
+        if (!qrRaw) continue;
+        const qrBlob = qrRaw instanceof Blob ? qrRaw : new Blob([new Uint8Array(qrRaw as any)]);
+        const qrImg = new Image();
+        const qrUrl = URL.createObjectURL(qrBlob);
+
+        await new Promise<void>((resolve) => {
+          qrImg.onload = async () => {
+            const frameBlob = await generateQrFrame(qrImg, student);
+            const safeName = student.name.replace(/[^a-zA-Z0-9\s]/g, "").trim();
+            const subfolder = targetClass ? "" : `${student.class}/`;
+            if (!targetClass) {
+              folder.folder(student.class);
+            }
+            folder.file(`${subfolder}${safeName}-${student.student_id}.png`, frameBlob);
+            URL.revokeObjectURL(qrUrl);
+            resolve();
+          };
+          qrImg.src = qrUrl;
+        });
+      }
+
+      toast.loading("Membuat file ZIP...", { id: toastId });
+      const zipBlob = await zip.generateAsync({ type: "blob" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(zipBlob);
+      link.download = targetClass ? `QR-Kelas-${targetClass}.zip` : "QR-Semua-Kelas.zip";
+      link.click();
+      URL.revokeObjectURL(link.href);
+
+      toast.success(`${targetStudents.length} QR Code berhasil didownload!`, { id: toastId });
+    } catch (err) {
+      console.error(err);
+      toast.error("Gagal membuat QR Code", { id: toastId });
+    } finally {
+      setDownloadingQr(false);
+    }
+  };
+
   const toggleClass = (cls: string) => {
     setExpandedClasses((prev) => {
       const next = new Set(prev);
@@ -406,6 +585,24 @@ const Students = () => {
           </SelectContent>
         </Select>
         <Badge variant="secondary">{Object.values(groupedByClass).flat().length} siswa</Badge>
+
+        <div className="ml-auto flex items-center gap-2">
+          <Select onValueChange={(val) => {
+            if (val === "all") handleBulkDownloadQR();
+            else handleBulkDownloadQR(val);
+          }}>
+            <SelectTrigger className="w-auto gap-1.5" disabled={downloadingQr}>
+              {downloadingQr ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <QrCode className="h-3.5 w-3.5" />}
+              <span className="text-xs font-medium">Download QR</span>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">📦 Semua Kelas</SelectItem>
+              {allClasses.map((cls) => (
+                <SelectItem key={cls} value={cls}>📁 Kelas {cls} ({students.filter(s => s.class === cls).length} siswa)</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <Card className="shadow-card border-0">
