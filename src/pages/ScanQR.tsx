@@ -164,8 +164,7 @@ const ScanQR = () => {
     setConfirmed(true);
     toast.success("Penjemputan berhasil dicatat!");
     
-    // Announce via speech
-    announcePickup(scannedStudent.name, scannedStudent.class);
+    // Voice announcement moved to public monitoring pages
 
     setTimeout(() => {
       setScannedStudent(null);
