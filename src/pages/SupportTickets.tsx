@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useEffect, useRef } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { TicketPlus, Loader2, MessageSquare, Clock, CheckCircle2, AlertCircle } from "lucide-react";
+import { TicketPlus, Loader2, MessageSquare, Clock, CheckCircle2, AlertCircle, Send, ArrowLeft, Shield } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -35,6 +35,11 @@ const SupportTickets = () => {
   const [message, setMessage] = useState("");
   const [priority, setPriority] = useState("normal");
   const [selectedTicket, setSelectedTicket] = useState<any>(null);
+  const [replies, setReplies] = useState<any[]>([]);
+  const [replyText, setReplyText] = useState("");
+  const [sendingReply, setSendingReply] = useState(false);
+  const [loadingReplies, setLoadingReplies] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
   const fetchTickets = async () => {
     if (!profile?.school_id) return;
@@ -50,6 +55,24 @@ const SupportTickets = () => {
   useEffect(() => {
     fetchTickets();
   }, [profile?.school_id]);
+
+  const fetchReplies = async (ticketId: string) => {
+    setLoadingReplies(true);
+    const { data } = await supabase
+      .from("ticket_replies")
+      .select("*")
+      .eq("ticket_id", ticketId)
+      .order("created_at", { ascending: true });
+    setReplies(data || []);
+    setLoadingReplies(false);
+    setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+  };
+
+  const openTicket = (ticket: any) => {
+    setSelectedTicket(ticket);
+    setReplyText("");
+    fetchReplies(ticket.id);
+  };
 
   const handleCreate = async () => {
     if (!subject.trim() || !message.trim()) {
@@ -78,9 +101,130 @@ const SupportTickets = () => {
     setCreating(false);
   };
 
+  const handleSendReply = async () => {
+    if (!replyText.trim() || !selectedTicket || !user) return;
+    setSendingReply(true);
+    const { error } = await supabase.from("ticket_replies").insert({
+      ticket_id: selectedTicket.id,
+      user_id: user.id,
+      message: replyText.trim(),
+      is_admin: false,
+    });
+    if (error) {
+      toast.error("Gagal mengirim balasan");
+    } else {
+      setReplyText("");
+      fetchReplies(selectedTicket.id);
+    }
+    setSendingReply(false);
+  };
+
   const openCount = tickets.filter((t) => t.status === "open").length;
   const inProgressCount = tickets.filter((t) => t.status === "in_progress").length;
   const resolvedCount = tickets.filter((t) => t.status === "resolved").length;
+
+  // Detail view
+  if (selectedTicket) {
+    const status = statusConfig[selectedTicket.status] || statusConfig.open;
+    const isResolved = selectedTicket.status === "resolved";
+
+    return (
+      <div className="space-y-4">
+        <Button variant="ghost" size="sm" onClick={() => setSelectedTicket(null)} className="text-muted-foreground">
+          <ArrowLeft className="h-4 w-4 mr-1" /> Kembali
+        </Button>
+
+        <Card className="border-0 shadow-card">
+          <CardContent className="p-4">
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div>
+                <h2 className="text-base font-bold text-foreground">{selectedTicket.subject}</h2>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {new Date(selectedTicket.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                </p>
+              </div>
+              <Badge variant="outline" className={`text-[10px] ${status.color}`}>{status.label}</Badge>
+            </div>
+
+            {/* Original message */}
+            <div className="bg-muted/50 rounded-lg p-3 mb-4">
+              <p className="text-sm text-foreground whitespace-pre-wrap">{selectedTicket.message}</p>
+            </div>
+
+            {/* Chat thread */}
+            <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
+              {loadingReplies ? (
+                <div className="flex justify-center py-4"><Loader2 className="h-4 w-4 animate-spin" /></div>
+              ) : replies.length === 0 ? (
+                <p className="text-xs text-muted-foreground text-center py-4">Belum ada balasan</p>
+              ) : (
+                replies.map((r) => (
+                  <motion.div
+                    key={r.id}
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`flex ${r.is_admin ? "justify-start" : "justify-end"}`}
+                  >
+                    <div className={`max-w-[80%] rounded-xl p-3 ${
+                      r.is_admin
+                        ? "bg-primary/5 border border-primary/10"
+                        : "bg-muted"
+                    }`}>
+                      <div className="flex items-center gap-1.5 mb-1">
+                        {r.is_admin && <Shield className="h-3 w-3 text-primary" />}
+                        <span className="text-[10px] font-semibold text-foreground">
+                          {r.is_admin ? "Admin" : "Anda"}
+                        </span>
+                        <span className="text-[9px] text-muted-foreground">
+                          {new Date(r.created_at).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
+                          {" • "}
+                          {new Date(r.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "short" })}
+                        </span>
+                      </div>
+                      <p className="text-xs text-foreground/80 whitespace-pre-wrap">{r.message}</p>
+                    </div>
+                  </motion.div>
+                ))
+              )}
+              <div ref={chatEndRef} />
+            </div>
+
+            {/* Reply input */}
+            {isResolved ? (
+              <div className="mt-4 p-3 bg-success/5 rounded-lg border border-success/10 text-center">
+                <CheckCircle2 className="h-5 w-5 text-success mx-auto mb-1" />
+                <p className="text-xs text-success font-medium">Tiket ini telah ditandai selesai</p>
+              </div>
+            ) : (
+              <div className="mt-4 flex gap-2">
+                <Textarea
+                  placeholder="Tulis balasan..."
+                  rows={2}
+                  value={replyText}
+                  onChange={(e) => setReplyText(e.target.value)}
+                  className="flex-1 resize-none"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendReply();
+                    }
+                  }}
+                />
+                <Button
+                  onClick={handleSendReply}
+                  disabled={sendingReply || !replyText.trim()}
+                  size="icon"
+                  className="gradient-primary text-primary-foreground h-auto"
+                >
+                  {sendingReply ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -165,7 +309,7 @@ const SupportTickets = () => {
               <motion.div key={ticket.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
                 <Card
                   className="border-0 shadow-card cursor-pointer hover:shadow-md transition-shadow"
-                  onClick={() => setSelectedTicket(selectedTicket?.id === ticket.id ? null : ticket)}
+                  onClick={() => openTicket(ticket)}
                 >
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between gap-3">
@@ -184,19 +328,6 @@ const SupportTickets = () => {
                     <p className="text-[10px] text-muted-foreground/60 mt-2">
                       {new Date(ticket.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                     </p>
-
-                    {/* Expanded reply */}
-                    {selectedTicket?.id === ticket.id && ticket.admin_reply && (
-                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-3 pt-3 border-t">
-                        <p className="text-xs font-semibold text-foreground mb-1">Balasan Admin:</p>
-                        <p className="text-xs text-muted-foreground whitespace-pre-wrap">{ticket.admin_reply}</p>
-                        {ticket.replied_at && (
-                          <p className="text-[10px] text-muted-foreground/60 mt-1">
-                            {new Date(ticket.replied_at).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
-                          </p>
-                        )}
-                      </motion.div>
-                    )}
                   </CardContent>
                 </Card>
               </motion.div>
