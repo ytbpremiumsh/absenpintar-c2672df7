@@ -1,0 +1,131 @@
+import { useState, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Loader2, Save, ExternalLink, Copy } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+
+const KEYS = ["presentation_is_public", "presentation_title", "presentation_subtitle"];
+
+const SuperAdminPresentation = () => {
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [isPublic, setIsPublic] = useState(false);
+  const [title, setTitle] = useState("");
+  const [subtitle, setSubtitle] = useState("");
+
+  useEffect(() => {
+    const fetch = async () => {
+      const { data } = await supabase.from("platform_settings").select("key, value").in("key", KEYS);
+      if (data) {
+        const map = Object.fromEntries(data.map((d) => [d.key, d.value]));
+        setIsPublic(map.presentation_is_public === "true");
+        setTitle(map.presentation_title || "");
+        setSubtitle(map.presentation_subtitle || "");
+      }
+      setLoading(false);
+    };
+    fetch();
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    const updates = [
+      { key: "presentation_is_public", value: isPublic ? "true" : "false" },
+      { key: "presentation_title", value: title },
+      { key: "presentation_subtitle", value: subtitle },
+    ];
+    for (const u of updates) {
+      await supabase
+        .from("platform_settings")
+        .update({ value: u.value, updated_at: new Date().toISOString() })
+        .eq("key", u.key);
+    }
+    toast.success("Pengaturan presentasi berhasil disimpan!");
+    setSaving(false);
+  };
+
+  const presentationUrl = `${window.location.origin}/presentation`;
+
+  const copyLink = () => {
+    navigator.clipboard.writeText(presentationUrl);
+    toast.success("Link disalin ke clipboard!");
+  };
+
+  if (loading) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Halaman Presentasi</h1>
+          <p className="text-muted-foreground text-xs sm:text-sm">Kelola halaman perkenalan sistem untuk publik</p>
+        </div>
+        <Button onClick={handleSave} disabled={saving} className="gradient-primary text-primary-foreground">
+          {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+          Simpan
+        </Button>
+      </div>
+
+      {/* Visibility Toggle */}
+      <Card className="border-0 shadow-card">
+        <CardContent className="p-4 sm:p-6 space-y-4">
+          <h3 className="font-bold text-foreground text-sm">Akses Halaman</h3>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-foreground">Publik</p>
+              <p className="text-xs text-muted-foreground">Jika aktif, halaman presentasi bisa diakses siapa saja via link</p>
+            </div>
+            <Switch checked={isPublic} onCheckedChange={setIsPublic} />
+          </div>
+          {isPublic && (
+            <div className="flex items-center gap-2 bg-muted/50 rounded-lg p-3">
+              <Input value={presentationUrl} readOnly className="bg-transparent border-0 text-xs flex-1" />
+              <Button size="sm" variant="outline" onClick={copyLink}>
+                <Copy className="h-3.5 w-3.5 mr-1" /> Salin
+              </Button>
+              <Button size="sm" variant="outline" asChild>
+                <a href="/presentation" target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="h-3.5 w-3.5 mr-1" /> Buka
+                </a>
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Content Settings */}
+      <Card className="border-0 shadow-card">
+        <CardContent className="p-4 sm:p-6 space-y-4">
+          <h3 className="font-bold text-foreground text-sm">Konten Hero</h3>
+          <div className="space-y-1">
+            <Label className="text-xs">Judul Utama</Label>
+            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Smart Pickup School System" />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">Subtitle</Label>
+            <Input value={subtitle} onChange={(e) => setSubtitle(e.target.value)} placeholder="Sistem penjemputan modern..." />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Preview Info */}
+      <Card className="border-0 shadow-card bg-muted/30">
+        <CardContent className="p-4 sm:p-6">
+          <h3 className="font-bold text-foreground text-sm mb-2">Konten Presentasi</h3>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Halaman presentasi menampilkan 6 section utama secara otomatis berdasarkan fitur sistem:
+            <strong> Dashboard, Monitoring, Scan QR, Manajemen Kelas, Data Siswa, dan Data Wali Murid</strong>.
+            Masing-masing dilengkapi screenshot dan penjelasan detail. Ditambah 6 fitur tambahan:
+            Live Monitor Publik, Riwayat, Export, Notifikasi WA, Langganan, dan Pengaturan.
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default SuperAdminPresentation;
