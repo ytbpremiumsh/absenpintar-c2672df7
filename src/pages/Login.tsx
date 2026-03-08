@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,16 +21,22 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     const { error } = await signIn(email, password);
-    setLoading(false);
     if (error) {
+      setLoading(false);
       toast.error("Login gagal: " + error);
-    } else {
-      toast.success("Login berhasil!");
-      // Check if super_admin and redirect accordingly
-      const { data: roles } = await (await import("@/integrations/supabase/client")).supabase
-        .from("user_roles").select("role").eq("user_id", (await (await import("@/integrations/supabase/client")).supabase.auth.getUser()).data.user?.id || "");
+      return;
+    }
+    toast.success("Login berhasil!");
+    // Check role to redirect
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
       const isSuperAdmin = roles?.some((r: any) => r.role === "super_admin");
+      setLoading(false);
       navigate(isSuperAdmin ? "/super-admin" : "/dashboard");
+    } else {
+      setLoading(false);
+      navigate("/dashboard");
     }
   };
 
