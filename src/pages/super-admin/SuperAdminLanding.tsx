@@ -19,6 +19,7 @@ const LABELS: Record<string, string> = {
   hero_title: "Judul Hero",
   hero_subtitle: "Deskripsi Hero",
   hero_image: "Gambar Hero",
+  hero_caption: "Caption di bawah Gambar Hero",
   feature_1_title: "Fitur 1 - Judul",
   feature_1_desc: "Fitur 1 - Deskripsi",
   feature_1_icon: "Fitur 1 - Ikon (scan/monitor/message/chart)",
@@ -37,6 +38,17 @@ const LABELS: Record<string, string> = {
   feature_6_title: "Fitur 6 - Judul",
   feature_6_desc: "Fitur 6 - Deskripsi",
   feature_6_icon: "Fitur 6 - Ikon",
+  why_title: "Kenapa Harus - Judul",
+  why_desc: "Kenapa Harus - Deskripsi",
+  why_item_1_title: "Kenapa 1 - Judul",
+  why_item_1_desc: "Kenapa 1 - Deskripsi",
+  why_item_2_title: "Kenapa 2 - Judul",
+  why_item_2_desc: "Kenapa 2 - Deskripsi",
+  why_item_3_title: "Kenapa 3 - Judul",
+  why_item_3_desc: "Kenapa 3 - Deskripsi",
+  why_item_4_title: "Kenapa 4 - Judul",
+  why_item_4_desc: "Kenapa 4 - Deskripsi",
+  cta_banner_text: "Teks Banner CTA",
   footer_logo: "Logo Footer",
   footer_address: "Alamat",
   footer_email: "Email",
@@ -45,15 +57,18 @@ const LABELS: Record<string, string> = {
 };
 
 const SECTIONS = [
-  { title: "Hero Section", keys: ["hero_title", "hero_subtitle", "hero_image", "cta_text"] },
+  { title: "Hero Section", keys: ["hero_title", "hero_subtitle", "hero_image", "hero_caption", "cta_text"] },
   { title: "Fitur 1", keys: ["feature_1_title", "feature_1_desc", "feature_1_icon"] },
   { title: "Fitur 2", keys: ["feature_2_title", "feature_2_desc", "feature_2_icon"] },
   { title: "Fitur 3", keys: ["feature_3_title", "feature_3_desc", "feature_3_icon"] },
   { title: "Fitur 4", keys: ["feature_4_title", "feature_4_desc", "feature_4_icon"] },
   { title: "Fitur 5", keys: ["feature_5_title", "feature_5_desc", "feature_5_icon"] },
   { title: "Fitur 6", keys: ["feature_6_title", "feature_6_desc", "feature_6_icon"] },
+  { title: "Kenapa Harus Kami", keys: ["why_title", "why_desc", "why_item_1_title", "why_item_1_desc", "why_item_2_title", "why_item_2_desc", "why_item_3_title", "why_item_3_desc", "why_item_4_title", "why_item_4_desc"] },
+  { title: "Banner CTA", keys: ["cta_banner_text"] },
   { title: "Footer", keys: ["footer_logo", "footer_address", "footer_email", "footer_phone"] },
 ];
+
 
 const SuperAdminLanding = () => {
   const [items, setItems] = useState<ContentItem[]>([]);

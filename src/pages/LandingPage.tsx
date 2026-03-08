@@ -51,7 +51,7 @@ const LandingPage = () => {
   }));
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       {/* Navbar */}
       <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
@@ -101,7 +101,7 @@ const LandingPage = () => {
             initial={{ opacity: 0, y: 40, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.7, delay: 0.3 }}
-            className="mt-14 max-w-5xl mx-auto"
+            className="mt-14 max-w-4xl mx-auto px-2"
           >
             {get("hero_image") ? (
               <div className="relative group">
@@ -127,9 +127,9 @@ const LandingPage = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8 }}
-            className="mt-8 text-center text-xs sm:text-sm text-muted-foreground max-w-3xl mx-auto leading-relaxed"
+            className="mt-8 text-center text-xs sm:text-sm text-muted-foreground max-w-2xl mx-auto leading-relaxed px-2"
           >
-            Sistem ini mampu mengelola penjemputan siswa secara otomatis, memantau status real-time, dan mengirim notifikasi WhatsApp ke orang tua. Dengan begitu, sekolah bisa mengelola kepulangan siswa lebih mudah dan aman.
+            {get("hero_caption", "Sistem ini mampu mengelola penjemputan siswa secara otomatis, memantau status real-time, dan mengirim notifikasi WhatsApp ke orang tua. Dengan begitu, sekolah bisa mengelola kepulangan siswa lebih mudah dan aman.")}
           </motion.p>
         </div>
       </section>
@@ -180,7 +180,7 @@ const LandingPage = () => {
 
       {/* Why Choose Us */}
       <section className="py-16 sm:py-24 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4" />
+        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4" />
         <div className="max-w-6xl mx-auto px-4 sm:px-6 relative">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             {/* Left: Text Content */}
@@ -192,54 +192,37 @@ const LandingPage = () => {
             >
               <span className="text-primary font-semibold text-sm">Kenapa Harus {get("hero_title", "Smart Pickup")} ?</span>
               <h2 className="mt-3 text-2xl sm:text-3xl lg:text-4xl font-extrabold text-foreground leading-tight">
-                Solusi Lengkap untuk Keamanan Penjemputan Siswa.
+                {get("why_title", "Solusi Lengkap untuk Keamanan Penjemputan Siswa.")}
               </h2>
               <p className="mt-4 text-muted-foreground leading-relaxed">
-                Kami tidak hanya menyediakan alat, tapi juga solusi menyeluruh untuk membantu sekolah Anda mengelola penjemputan siswa dengan aman, cepat, dan terstruktur.
+                {get("why_desc", "Kami tidak hanya menyediakan alat, tapi juga solusi menyeluruh untuk membantu sekolah Anda mengelola penjemputan siswa dengan aman, cepat, dan terstruktur.")}
               </p>
 
               <div className="mt-8 space-y-6">
-                {[
-                  {
-                    icon: Layout,
-                    title: "Fitur Lengkap dan Terintegrasi",
-                    desc: "Semua kebutuhan penjemputan tersedia dalam satu platform, mulai dari scan QR hingga notifikasi otomatis.",
-                  },
-                  {
-                    icon: Smartphone,
-                    title: "Antarmuka Ramah Pengguna",
-                    desc: "Desain yang intuitif dan mudah digunakan, memungkinkan siapa pun mengelola penjemputan tanpa perlu keahlian teknis khusus.",
-                  },
-                  {
-                    icon: BarChart3,
-                    title: "Analisa Data Cerdas",
-                    desc: "Dapatkan insight berbasis data real-time untuk mendukung pengambilan keputusan yang tepat dan strategis.",
-                  },
-                  {
-                    icon: HeadphonesIcon,
-                    title: "Dukungan Pelanggan Premium 24/7",
-                    desc: "Tim support kami siap membantu Anda kapan saja dengan cepat, profesional, dan ramah.",
-                  },
-                ].map((item, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.1, duration: 0.4 }}
-                    className="flex gap-4"
-                  >
-                    <div className="flex-shrink-0 mt-0.5">
-                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                        <item.icon className="h-5 w-5 text-primary" />
+                {[1, 2, 3, 4].map((i) => {
+                  const icons = [Layout, Smartphone, BarChart3, HeadphonesIcon];
+                  const IconComp = icons[i - 1];
+                  return (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: (i - 1) * 0.1, duration: 0.4 }}
+                      className="flex gap-4"
+                    >
+                      <div className="flex-shrink-0 mt-0.5">
+                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                          <IconComp className="h-5 w-5 text-primary" />
+                        </div>
                       </div>
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-foreground">{item.title}</h4>
-                      <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
-                    </div>
-                  </motion.div>
-                ))}
+                      <div>
+                        <h4 className="font-bold text-foreground">{get(`why_item_${i}_title`)}</h4>
+                        <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{get(`why_item_${i}_desc`)}</p>
+                      </div>
+                    </motion.div>
+                  );
+                })}
               </div>
             </motion.div>
 
@@ -393,7 +376,7 @@ const LandingPage = () => {
                   Daftar Sekarang
                 </Button>
                 <h2 className="mt-6 text-2xl sm:text-3xl lg:text-4xl font-extrabold text-primary-foreground leading-tight">
-                  Kelola Penjemputan Lebih Mudah Bersama {get("hero_title", "Smart Pickup")}
+                  {get("cta_banner_text", "Kelola Penjemputan Lebih Mudah Bersama Smart Pickup")}
                 </h2>
               </motion.div>
 
