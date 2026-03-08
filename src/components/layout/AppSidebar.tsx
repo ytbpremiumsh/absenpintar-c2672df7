@@ -184,7 +184,7 @@ export function AppSidebar() {
             Pengaturan
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-0.5">{renderNavItems(settingsNav)}</SidebarMenu>
+            <SidebarMenu className="space-y-1">{renderNavItems(settingsNav)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
