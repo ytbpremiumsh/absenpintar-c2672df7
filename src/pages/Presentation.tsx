@@ -314,6 +314,80 @@ const Presentation = () => {
         </div>
       </section>
 
+      {/* Problem & Solution Section */}
+      <section className={`py-20 sm:py-32 px-4 ${sectionAlt}`}>
+        <div className="max-w-6xl mx-auto">
+          <motion.div custom={0} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
+            <span className={`text-[11px] font-bold uppercase tracking-[0.2em] ${dark ? "text-red-400" : "text-red-500"} mb-4 block`}>Latar Belakang</span>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">Kondisi Permasalahan</h2>
+            <p className={`mt-4 ${mutedText} max-w-2xl mx-auto`}>Sistem penjemputan konvensional di sekolah Indonesia masih menyimpan banyak risiko dan ketidakefisienan.</p>
+          </motion.div>
+
+          {/* Problems */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-20">
+            {[
+              { icon: AlertTriangle, title: "Keamanan Rentan", desc: "Tidak ada verifikasi identitas penjemput. Siapa saja bisa mengaku sebagai wali murid dan membawa pulang siswa tanpa proses pengecekan.", color: dark ? "text-red-400" : "text-red-500", borderColor: dark ? "border-red-500/20" : "border-red-200" },
+              { icon: XCircle, title: "Tidak Ada Rekam Jejak", desc: "Sekolah tidak memiliki catatan digital siapa yang menjemput, jam berapa, dan siswa mana yang sudah/belum dijemput setiap harinya.", color: dark ? "text-orange-400" : "text-orange-500", borderColor: dark ? "border-orange-500/20" : "border-orange-200" },
+              { icon: Clock, title: "Proses Lambat & Kacau", desc: "Saat jam pulang, area penjemputan menjadi tidak teratur. Guru kesulitan memantau ratusan siswa sekaligus tanpa sistem yang terstruktur.", color: dark ? "text-amber-400" : "text-amber-500", borderColor: dark ? "border-amber-500/20" : "border-amber-200" },
+              { icon: Users, title: "Orang Tua Cemas", desc: "Wali murid tidak mendapat informasi real-time apakah anaknya sudah dijemput atau masih menunggu, menimbulkan kekhawatiran.", color: dark ? "text-rose-400" : "text-rose-500", borderColor: dark ? "border-rose-500/20" : "border-rose-200" },
+              { icon: FileText, title: "Laporan Manual", desc: "Pencatatan penjemputan masih dilakukan secara manual di buku tulis, rawan hilang, tidak akurat, dan sulit diaudit.", color: dark ? "text-yellow-400" : "text-yellow-600", borderColor: dark ? "border-yellow-500/20" : "border-yellow-200" },
+              { icon: Globe, title: "Tidak Transparan", desc: "Tidak ada sistem monitoring yang bisa diakses orang tua. Informasi hanya tersedia bagi petugas di lokasi sekolah.", color: dark ? "text-pink-400" : "text-pink-500", borderColor: dark ? "border-pink-500/20" : "border-pink-200" },
+            ].map((p, i) => (
+              <motion.div key={p.title} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
+                className={`group relative rounded-2xl p-6 sm:p-8 transition-all duration-300 border ${dark ? "bg-red-950/10 border-red-500/10 hover:border-red-500/20" : "bg-red-50/50 border-red-100 hover:border-red-200 hover:shadow-lg hover:shadow-red-500/5"}`}>
+                <p.icon className={`h-8 w-8 ${p.color} mb-4`} />
+                <h3 className="font-bold text-lg mb-2">{p.title}</h3>
+                <p className={`${detailText} text-sm leading-relaxed`}>{p.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Divider Arrow */}
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={scaleIn} className="flex flex-col items-center mb-20">
+            <div className={`h-16 w-16 rounded-full ${dark ? "bg-gradient-to-br from-emerald-500 to-teal-600 shadow-emerald-500/30" : "bg-gradient-to-br from-emerald-500 to-teal-600 shadow-emerald-500/20"} flex items-center justify-center shadow-2xl`}>
+              <ArrowDown className="h-7 w-7 text-white" />
+            </div>
+            <p className={`mt-4 font-bold text-lg ${dark ? "text-emerald-400" : "text-emerald-600"}`}>Solusi Kami</p>
+          </motion.div>
+
+          {/* Solutions */}
+          <motion.div custom={0} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
+            <span className={`text-[11px] font-bold uppercase tracking-[0.2em] ${dark ? "text-emerald-400" : "text-emerald-500"} mb-4 block`}>Jawaban Tepat</span>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">Smart Pickup School System</h2>
+            <p className={`mt-4 ${mutedText} max-w-2xl mx-auto`}>Sistem digital terintegrasi yang menyelesaikan setiap permasalahan penjemputan dengan teknologi modern.</p>
+          </motion.div>
+
+          <div className="grid sm:grid-cols-2 gap-5">
+            {[
+              { icon: QrCode, problem: "Keamanan Rentan", solution: "Verifikasi QR Code & NIS", desc: "Setiap penjemput wajib memindai kartu QR Code unik siswa atau memasukkan NIS. Sistem memastikan hanya orang yang memiliki kartu yang bisa menjemput." },
+              { icon: BarChart3, problem: "Tidak Ada Rekam Jejak", solution: "Riwayat Digital Otomatis", desc: "Setiap aktivitas penjemputan tercatat otomatis: siapa yang menjemput, jam berapa, dan oleh siapa. Data tersimpan aman dan bisa di-export kapan saja." },
+              { icon: Monitor, problem: "Proses Lambat & Kacau", solution: "Monitoring Real-Time", desc: "Dashboard monitoring menampilkan status penjemputan seluruh kelas secara live. Guru bisa memantau dan mengelola proses dengan cepat dan terstruktur." },
+              { icon: Bell, problem: "Orang Tua Cemas", solution: "Notifikasi WhatsApp Instan", desc: "Wali murid langsung menerima pesan WhatsApp otomatis saat anaknya dijemput. Tidak perlu menunggu, tidak perlu bertanya — informasi langsung sampai." },
+              { icon: Globe, problem: "Tidak Transparan", solution: "Live Monitor Publik", desc: "Halaman monitoring publik bisa diakses wali murid tanpa login. Cukup buka link, dan status penjemputan anak terlihat secara real-time." },
+              { icon: Smartphone, problem: "Laporan Manual", solution: "Export & Analitik Digital", desc: "Laporan harian otomatis dalam format Excel. Dashboard analitik dengan grafik dan statistik untuk pengambilan keputusan berbasis data." },
+            ].map((s, i) => (
+              <motion.div key={s.solution} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
+                className={`rounded-2xl p-6 sm:p-8 transition-all duration-300 border ${dark ? "bg-emerald-950/10 border-emerald-500/10 hover:border-emerald-500/20" : "bg-emerald-50/50 border-emerald-100 hover:border-emerald-200 hover:shadow-lg hover:shadow-emerald-500/5"}`}>
+                <div className="flex items-start gap-4">
+                  <div className={`h-12 w-12 rounded-xl ${dark ? "bg-gradient-to-br from-emerald-500 to-teal-600 shadow-emerald-500/20" : "bg-gradient-to-br from-emerald-500 to-teal-600 shadow-emerald-500/15"} flex items-center justify-center shrink-0 shadow-lg`}>
+                    <s.icon className="h-5 w-5 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${dark ? "bg-red-500/15 text-red-400" : "bg-red-100 text-red-600"}`}>{s.problem}</span>
+                      <ArrowRight className={`h-3.5 w-3.5 ${dark ? "text-emerald-400" : "text-emerald-500"}`} />
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${dark ? "bg-emerald-500/15 text-emerald-400" : "bg-emerald-100 text-emerald-600"}`}>{s.solution}</span>
+                    </div>
+                    <h3 className="font-bold text-base mb-1">{s.solution}</h3>
+                    <p className={`${detailText} text-sm leading-relaxed`}>{s.desc}</p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Feature Sections */}
       <div id="features">
         {SECTIONS.map((section, idx) => (
