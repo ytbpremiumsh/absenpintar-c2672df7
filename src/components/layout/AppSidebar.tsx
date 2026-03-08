@@ -43,7 +43,6 @@ const dataNav = [
   { title: "Kelas", url: "/classes", icon: GraduationCap },
   { title: "Siswa", url: "/students", icon: Users },
   { title: "Wali Murid", url: "/teachers", icon: UserCheck },
-  { title: "Riwayat", url: "/history", icon: History },
 ];
 
 const settingsNav = [
