@@ -1,14 +1,21 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import {
-  UserCheck, UserX, Clock, School, Users, RefreshCw,
-  GraduationCap, Activity,
+  UserCheck, UserX, Clock, Users, RefreshCw,
+  GraduationCap, Activity, CheckCircle2, Volume2,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
+import { announcePickup } from "@/lib/announcePickup";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface StudentStatus {
   id: string;
@@ -35,10 +42,13 @@ const PublicClassMonitoring = () => {
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [confirmStudent, setConfirmStudent] = useState<StudentStatus | null>(null);
+  const [processing, setProcessing] = useState(false);
+  const prevPickedIds = useRef<Set<string>>(new Set());
 
   const decodedClass = className ? decodeURIComponent(className) : "";
 
-  const fetchData = async (showRefresh = false) => {
+  const fetchData = async (showRefresh = false, announceNew = false) => {
     if (!schoolId || !decodedClass) return;
     if (showRefresh) setIsRefreshing(true);
     try {
@@ -52,6 +62,18 @@ const PublicClassMonitoring = () => {
       setSchoolName(json.school?.name || "Smart Pickup");
       const allStudents: StudentStatus[] = [];
       Object.values(json.classes as Record<string, StudentStatus[]>).forEach((arr) => allStudents.push(...arr));
+      
+      // Announce newly picked up students
+      if (announceNew) {
+        const newPicked = allStudents.filter(
+          (s) => s.status === "picked_up" && !prevPickedIds.current.has(s.id)
+        );
+        newPicked.forEach((s) => announcePickup(s.name, s.class));
+      }
+
+      // Update previous picked IDs
+      prevPickedIds.current = new Set(allStudents.filter(s => s.status === "picked_up").map(s => s.id));
+
       setStudents(allStudents);
       setLastUpdated(new Date());
     } catch (err) {
@@ -67,13 +89,46 @@ const PublicClassMonitoring = () => {
     const interval = setInterval(() => fetchData(), 10000);
     const channel = supabase
       .channel(`public-class-${decodedClass}`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "pickup_logs" }, () => fetchData(true))
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "pickup_logs" }, () => fetchData(true, true))
       .subscribe();
     return () => {
       clearInterval(interval);
       supabase.removeChannel(channel);
     };
   }, [schoolId, decodedClass]);
+
+  const handlePublicPickup = async (student: StudentStatus) => {
+    if (!schoolId) return;
+    setProcessing(true);
+    try {
+      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/public-pickup`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        },
+        body: JSON.stringify({
+          school_id: schoolId,
+          student_id: student.id,
+          pickup_by: `Wali: ${student.parent_name}`,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        toast.error(json.error || "Gagal memproses penjemputan");
+      } else {
+        toast.success(`${student.name} berhasil dijemput!`);
+        announcePickup(student.name, student.class);
+        fetchData(true);
+      }
+    } catch (err) {
+      toast.error("Gagal terhubung ke server");
+    } finally {
+      setProcessing(false);
+      setConfirmStudent(null);
+    }
+  };
 
   const picked = students.filter((s) => s.status === "picked_up");
   const waiting = students.filter((s) => s.status === "waiting");
@@ -108,6 +163,7 @@ const PublicClassMonitoring = () => {
                 <div className="flex items-center gap-2 text-xs opacity-80">
                   <LiveDot />
                   <span>Monitoring Penjemputan Realtime</span>
+                  <Volume2 className="h-3 w-3 ml-1" />
                 </div>
               </div>
             </div>
@@ -129,21 +185,21 @@ const PublicClassMonitoring = () => {
 
       <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-3">
           {[
-            { icon: Users, value: students.length, label: "Total Siswa", color: "text-primary", bg: "bg-primary/10" },
+            { icon: Users, value: students.length, label: "Total", color: "text-primary", bg: "bg-primary/10" },
             { icon: UserCheck, value: picked.length, label: "Dijemput", color: "text-success", bg: "bg-success/10" },
             { icon: UserX, value: waiting.length, label: "Menunggu", color: "text-destructive", bg: "bg-destructive/10" },
           ].map((stat, i) => (
             <motion.div key={stat.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
               <Card className="border-0 shadow-card">
-                <CardContent className="p-4 flex items-center gap-3">
-                  <div className={`h-10 w-10 rounded-xl ${stat.bg} flex items-center justify-center`}>
-                    <stat.icon className={`h-5 w-5 ${stat.color}`} />
+                <CardContent className="p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
+                  <div className={`h-9 w-9 sm:h-10 sm:w-10 rounded-xl ${stat.bg} flex items-center justify-center`}>
+                    <stat.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${stat.color}`} />
                   </div>
                   <div>
-                    <p className={`text-2xl font-extrabold ${stat.color}`}>{stat.value}</p>
-                    <p className="text-[11px] text-muted-foreground font-medium">{stat.label}</p>
+                    <p className={`text-xl sm:text-2xl font-extrabold ${stat.color}`}>{stat.value}</p>
+                    <p className="text-[10px] sm:text-[11px] text-muted-foreground font-medium">{stat.label}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -170,14 +226,14 @@ const PublicClassMonitoring = () => {
 
         {/* Student list */}
         <div className="space-y-4">
-          {/* Waiting */}
+          {/* Waiting - with approve button */}
           {waiting.length > 0 && (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <div className="h-3 w-3 rounded-full bg-destructive animate-pulse" />
                 <h2 className="font-bold text-foreground">Belum Dijemput ({waiting.length})</h2>
               </div>
-              <div className="grid sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <AnimatePresence>
                   {waiting.map((s, i) => (
                     <motion.div key={s.id} layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
@@ -191,9 +247,14 @@ const PublicClassMonitoring = () => {
                             <p className="font-semibold text-sm text-foreground truncate">{s.name}</p>
                             <p className="text-xs text-muted-foreground">NIS: {s.student_id} • {s.parent_name}</p>
                           </div>
-                          <Badge variant="destructive" className="text-[10px] animate-pulse shrink-0">
-                            <UserX className="h-3 w-3 mr-1" /> Menunggu
-                          </Badge>
+                          <Button
+                            size="sm"
+                            onClick={() => setConfirmStudent(s)}
+                            className="shrink-0 text-xs h-8 px-3 bg-success hover:bg-success/90 text-success-foreground"
+                          >
+                            <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
+                            Jemput
+                          </Button>
                         </CardContent>
                       </Card>
                     </motion.div>
@@ -210,7 +271,7 @@ const PublicClassMonitoring = () => {
                 <div className="h-3 w-3 rounded-full bg-success" />
                 <h2 className="font-bold text-foreground">Sudah Dijemput ({picked.length})</h2>
               </div>
-              <div className="grid sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <AnimatePresence>
                   {picked.map((s, i) => (
                     <motion.div key={s.id} layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
@@ -262,6 +323,28 @@ const PublicClassMonitoring = () => {
           </div>
         </div>
       </div>
+
+      {/* Confirm Pickup Dialog */}
+      <AlertDialog open={!!confirmStudent} onOpenChange={() => setConfirmStudent(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Konfirmasi Penjemputan</AlertDialogTitle>
+            <AlertDialogDescription>
+              Apakah Anda yakin ingin menandai <strong>{confirmStudent?.name}</strong> (Kelas {confirmStudent?.class}) sebagai sudah dijemput oleh <strong>{confirmStudent?.parent_name}</strong>?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={processing}>Batal</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={processing}
+              onClick={() => confirmStudent && handlePublicPickup(confirmStudent)}
+              className="bg-success hover:bg-success/90 text-success-foreground"
+            >
+              {processing ? "Memproses..." : "Ya, Konfirmasi Jemput"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

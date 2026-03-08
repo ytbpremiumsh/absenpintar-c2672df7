@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.public-monitoring]
 verify_jwt = false
+
+[functions.public-pickup]
+verify_jwt = false

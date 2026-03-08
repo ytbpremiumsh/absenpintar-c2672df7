@@ -2,13 +2,13 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScanLine, CheckCircle2, Camera, Search, ShieldCheck, X, Volume2 } from "lucide-react";
+import { ScanLine, CheckCircle2, Camera, Search, ShieldCheck, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import jsQR from "jsqr";
-import { announcePickup } from "@/lib/announcePickup";
+
 
 interface FoundStudent {
   id: string;
@@ -103,9 +103,17 @@ const ScanQR = () => {
   const startCamera = async () => {
     setCameraError("");
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment", width: { ideal: 640 }, height: { ideal: 480 } }
-      });
+      // Try rear camera first, fallback to any camera for mobile compatibility
+      let stream: MediaStream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { exact: "environment" }, width: { ideal: 640 }, height: { ideal: 480 } }
+        });
+      } catch {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } }
+        });
+      }
       streamRef.current = stream;
       setCameraActive(true);
     } catch (err: any) {
@@ -164,8 +172,7 @@ const ScanQR = () => {
     setConfirmed(true);
     toast.success("Penjemputan berhasil dicatat!");
     
-    // Announce via speech
-    announcePickup(scannedStudent.name, scannedStudent.class);
+    // Voice announcement moved to public monitoring pages
 
     setTimeout(() => {
       setScannedStudent(null);
@@ -198,13 +205,16 @@ const ScanQR = () => {
           {cameraActive ? (
             <>
               <div className="relative bg-black" style={{ minHeight: 260 }}>
+                {/* @ts-ignore webkit attribute for iOS */}
                 <video
                   ref={videoRef}
                   className="w-full h-full object-cover"
                   autoPlay
                   playsInline
                   muted
-                  style={{ minHeight: 260 }}
+                  // @ts-ignore
+                  webkit-playsinline="true"
+                  style={{ minHeight: 260, WebkitTransform: "scaleX(1)" }}
                 />
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <div className={`w-44 h-44 border-2 rounded-lg transition-colors ${scanPaused.current ? "border-success opacity-100" : "border-primary opacity-70"}`} />
@@ -304,10 +314,6 @@ const ScanQR = () => {
                 <div className="text-success-foreground/90 space-y-0.5 text-xs sm:text-sm">
                   <p><strong>{scannedStudent.name}</strong></p>
                   <p>Kelas: {scannedStudent.class}</p>
-                  <div className="flex items-center justify-center gap-1 mt-1">
-                    <Volume2 className="h-3.5 w-3.5" />
-                    <span className="text-[11px]">Pengumuman suara diputar</span>
-                  </div>
                 </div>
               </CardContent>
             </Card>
