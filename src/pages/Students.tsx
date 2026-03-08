@@ -585,6 +585,24 @@ const Students = () => {
           </SelectContent>
         </Select>
         <Badge variant="secondary">{Object.values(groupedByClass).flat().length} siswa</Badge>
+
+        <div className="ml-auto flex items-center gap-2">
+          <Select onValueChange={(val) => {
+            if (val === "all") handleBulkDownloadQR();
+            else handleBulkDownloadQR(val);
+          }}>
+            <SelectTrigger className="w-auto gap-1.5" disabled={downloadingQr}>
+              {downloadingQr ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <QrCode className="h-3.5 w-3.5" />}
+              <span className="text-xs font-medium">Download QR</span>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">📦 Semua Kelas</SelectItem>
+              {allClasses.map((cls) => (
+                <SelectItem key={cls} value={cls}>📁 Kelas {cls} ({students.filter(s => s.class === cls).length} siswa)</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <Card className="shadow-card border-0">
