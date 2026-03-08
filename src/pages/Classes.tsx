@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { GraduationCap, Users, UserCheck, UserX, ChevronRight, Plus, Trash2, Loader2, Clock, AlertTriangle } from "lucide-react";
+import { GraduationCap, Users, UserCheck, UserX, ChevronRight, Plus, Trash2, Loader2, Clock, AlertTriangle, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -22,6 +22,10 @@ const Classes = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newClassName, setNewClassName] = useState("");
   const [saving, setSaving] = useState(false);
+  const [renameDialogOpen, setRenameDialogOpen] = useState(false);
+  const [renameTarget, setRenameTarget] = useState<{ id: string; oldName: string } | null>(null);
+  const [renameValue, setRenameValue] = useState("");
+  const [renaming, setRenaming] = useState(false);
 
   const fetchData = async () => {
     if (!profile?.school_id) return;
@@ -59,6 +63,45 @@ const Classes = () => {
     const { error } = await supabase.from("classes").delete().eq("id", id);
     if (error) { toast.error("Gagal menghapus kelas: " + error.message); return; }
     toast.success("Kelas dihapus");
+    fetchData();
+  };
+
+  const handleRenameClass = async () => {
+    if (!renameTarget || !renameValue.trim() || !profile?.school_id) return;
+    const newName = renameValue.trim();
+    if (newName === renameTarget.oldName) { setRenameDialogOpen(false); return; }
+
+    setRenaming(true);
+
+    // Update class name in classes table
+    const { error: classError } = await supabase
+      .from("classes").update({ name: newName }).eq("id", renameTarget.id);
+
+    if (classError) {
+      toast.error("Gagal mengubah nama kelas: " + classError.message);
+      setRenaming(false);
+      return;
+    }
+
+    // Update all students with old class name
+    const { error: studentError } = await supabase
+      .from("students").update({ class: newName })
+      .eq("school_id", profile.school_id).eq("class", renameTarget.oldName);
+
+    if (studentError) {
+      toast.error("Nama kelas berhasil diubah tapi gagal memperbarui data siswa: " + studentError.message);
+    }
+
+    // Update class_teachers
+    await supabase
+      .from("class_teachers").update({ class_name: newName })
+      .eq("school_id", profile.school_id).eq("class_name", renameTarget.oldName);
+
+    setRenaming(false);
+    setRenameDialogOpen(false);
+    setRenameTarget(null);
+    setRenameValue("");
+    toast.success(`Kelas "${renameTarget.oldName}" diubah menjadi "${newName}"`);
     fetchData();
   };
 
@@ -110,6 +153,24 @@ const Classes = () => {
           </DialogContent>
         </Dialog>
       </div>
+
+      {/* Rename Dialog */}
+      <Dialog open={renameDialogOpen} onOpenChange={setRenameDialogOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader><DialogTitle>Ubah Nama Kelas</DialogTitle></DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>Nama Kelas Baru</Label>
+              <Input placeholder="Masukkan nama kelas baru" value={renameValue}
+                onChange={(e) => setRenameValue(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleRenameClass()} />
+              <p className="text-xs text-muted-foreground">Semua data siswa dan wali kelas akan otomatis diperbarui.</p>
+            </div>
+            <Button onClick={handleRenameClass} disabled={renaming || !renameValue.trim()} className="w-full gradient-primary hover:opacity-90">
+              {renaming ? <Loader2 className="h-4 w-4 animate-spin" /> : "Simpan Perubahan"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Summary */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -173,10 +234,21 @@ const Classes = () => {
                       </div>
                       <div className="flex items-center gap-1">
                         {info.id && (
-                          <Button variant="ghost" size="icon" className="h-8 w-8"
-                            onClick={(e) => { e.stopPropagation(); handleDeleteClass(info.id!, cls); }}>
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
+                          <>
+                            <Button variant="ghost" size="icon" className="h-8 w-8"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setRenameTarget({ id: info.id!, oldName: cls });
+                                setRenameValue(cls);
+                                setRenameDialogOpen(true);
+                              }}>
+                              <Pencil className="h-4 w-4 text-muted-foreground" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8"
+                              onClick={(e) => { e.stopPropagation(); handleDeleteClass(info.id!, cls); }}>
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </>
                         )}
                         <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors cursor-pointer"
                           onClick={() => navigate(`/students?class=${encodeURIComponent(cls)}`)} />
