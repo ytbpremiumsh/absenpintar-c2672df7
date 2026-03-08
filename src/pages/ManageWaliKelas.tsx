@@ -41,6 +41,7 @@ const ManageWaliKelas = () => {
   const [formEmail, setFormEmail] = useState("");
   const [formPassword, setFormPassword] = useState("");
   const [formClass, setFormClass] = useState("");
+  const [formPhone, setFormPhone] = useState("");
 
   const schoolId = profile?.school_id;
 
