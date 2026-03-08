@@ -25,6 +25,7 @@ const Students = () => {
   const [search, setSearch] = useState("");
   const [students, setStudents] = useState<any[]>([]);
   const [classes, setClasses] = useState<any[]>([]);
+  const [waliKelasMap, setWaliKelasMap] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
@@ -50,11 +51,12 @@ const Students = () => {
 
   const fetchData = async () => {
     if (!profile?.school_id) return;
-    const [studentsRes, classesRes, instrRes, schoolRes] = await Promise.all([
+    const [studentsRes, classesRes, instrRes, schoolRes, waliRes] = await Promise.all([
       supabase.from("students").select("*").eq("school_id", profile.school_id).order("class").order("name"),
       supabase.from("classes").select("*").eq("school_id", profile.school_id).order("name"),
       supabase.from("qr_instructions").select("instruction_text").eq("school_id", profile.school_id).order("sort_order"),
       supabase.from("schools").select("name, logo").eq("id", profile.school_id).single(),
+      supabase.from("class_teachers").select("class_name, user_id").eq("school_id", profile.school_id),
     ]);
     setStudents(studentsRes.data || []);
     setClasses(classesRes.data || []);
@@ -64,6 +66,19 @@ const Students = () => {
     if (schoolRes.data) {
       setSchoolInfo({ name: schoolRes.data.name, logo: schoolRes.data.logo || undefined });
     }
+
+    // Build wali kelas map: class_name -> teacher name
+    const waliData = waliRes.data || [];
+    if (waliData.length > 0) {
+      const userIds = [...new Set(waliData.map((w) => w.user_id))];
+      const { data: profiles } = await supabase.from("profiles").select("user_id, full_name").in("user_id", userIds);
+      const profileMap = new Map<string, string>();
+      (profiles || []).forEach((p) => profileMap.set(p.user_id, p.full_name));
+      const map: Record<string, string> = {};
+      waliData.forEach((w) => { map[w.class_name] = profileMap.get(w.user_id) || ""; });
+      setWaliKelasMap(map);
+    }
+
     setLoading(false);
     if (studentsRes.data) {
       setExpandedClasses(new Set(studentsRes.data.map((s: any) => s.class)));
@@ -629,7 +644,12 @@ const Students = () => {
                     <div className="h-8 w-8 rounded-lg gradient-primary flex items-center justify-center shrink-0">
                       <GraduationCap className="h-4 w-4 text-primary-foreground" />
                     </div>
-                    <div className="flex-1"><span className="font-semibold text-sm">Kelas {cls}</span></div>
+                    <div className="flex-1">
+                      <span className="font-semibold text-sm">Kelas {cls}</span>
+                      {waliKelasMap[cls] && (
+                        <span className="text-xs text-muted-foreground ml-2">— {waliKelasMap[cls]}</span>
+                      )}
+                    </div>
                     <Badge variant="secondary" className="text-xs">{classStudents.length} siswa</Badge>
                   </button>
                   <AnimatePresence>
