@@ -36,7 +36,7 @@ function SuperAdminSidebar() {
   const isActive = (path: string) => path === "/super-admin" ? location.pathname === "/super-admin" : location.pathname.startsWith(path);
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-sidebar-border shadow-sm">
+    <Sidebar collapsible="icon" className="border-r border-sidebar-border shadow-sm font-['Nunito',sans-serif]">
       <SidebarHeader className="p-5 pb-4">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-destructive shrink-0 shadow-md">
