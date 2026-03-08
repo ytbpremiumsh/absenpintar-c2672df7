@@ -47,9 +47,10 @@ const ManageWaliKelas = () => {
   const fetchData = async () => {
     if (!schoolId) return;
 
-    const [assignmentsRes, classesRes] = await Promise.all([
+    const [assignmentsRes, classesRes, studentsRes] = await Promise.all([
       supabase.from("class_teachers").select("*").eq("school_id", schoolId),
       supabase.from("classes").select("name").eq("school_id", schoolId).order("name"),
+      supabase.from("students").select("class").eq("school_id", schoolId),
     ]);
 
     const rawData = assignmentsRes.data || [];
@@ -69,14 +70,15 @@ const ManageWaliKelas = () => {
       enriched.forEach((a) => {
         a.user_name = profileMap.get(a.user_id) || "Unknown";
       });
-
-      enriched.forEach((a) => {
-        a.user_name = profileMap.get(a.user_id) || "Unknown";
-      });
     }
 
+    // Merge class names from classes table and unique student classes
+    const classTableNames = (classesRes.data || []).map((c) => c.name);
+    const studentClassNames = [...new Set((studentsRes.data || []).map((s) => s.class))];
+    const allClasses = [...new Set([...classTableNames, ...studentClassNames])].sort();
+
     setAssignments(enriched);
-    setClasses((classesRes.data || []).map((c) => c.name));
+    setClasses(allClasses);
     setLoading(false);
   };
 
