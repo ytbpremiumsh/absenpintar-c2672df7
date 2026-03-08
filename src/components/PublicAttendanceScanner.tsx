@@ -36,7 +36,7 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded }: PublicAtten
   const [alreadyRecorded, setAlreadyRecorded] = useState(false);
   const [scanMethod, setScanMethod] = useState<"barcode" | "face" | "face_recognition">("barcode");
   const [faceScanning, setFaceScanning] = useState(false);
-  const [expanded, setExpanded] = useState(false);
+  
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -50,11 +50,12 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded }: PublicAtten
   const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
   const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-  // Lookup student via public edge function
+  // Lookup student via public edge function - directly records attendance
   const lookupAndRecord = useCallback(async (code: string, method: string = "barcode", studentId?: string) => {
-    if (isLookingUp.current || scanPaused.current) return;
+    if (isLookingUp.current) return;
     if (!code && !studentId) return;
     isLookingUp.current = true;
+    scanPaused.current = true;
 
     try {
       const res = await fetch(`${SUPABASE_URL}/functions/v1/public-scan-attendance`, {
@@ -70,34 +71,35 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded }: PublicAtten
       const data = await res.json();
 
       if (res.status === 409) {
-        // Already recorded
+        // Already recorded - show briefly then auto-dismiss
         setAlreadyRecorded(true);
         setScannedStudent(data.student);
         setScanMethod(method as "barcode" | "face" | "face_recognition");
         setConfirmed(false);
-        scanPaused.current = true;
+        toast.info(`${data.student.name} sudah tercatat hadir hari ini`);
+        setTimeout(() => resetState(), 3000);
         return;
       }
 
       if (!res.ok) {
         toast.error(data.error || "Siswa tidak ditemukan");
+        scanPaused.current = false;
         return;
       }
 
-      // Success - attendance recorded
+      // Success - attendance auto-verified as hadir
       setAlreadyRecorded(false);
       setScannedStudent(data.student);
       setScanMethod(method as "barcode" | "face" | "face_recognition");
       setConfirmed(true);
-      scanPaused.current = true;
-      toast.success(`Absensi ${data.student.name} berhasil dicatat!`);
+      toast.success(`✅ ${data.student.name} - Hadir!`);
       onAttendanceRecorded?.();
 
-      setTimeout(() => {
-        resetState();
-      }, 3000);
+      // Auto-dismiss after 3 seconds and resume scanning
+      setTimeout(() => resetState(), 3000);
     } catch (err: any) {
       toast.error("Gagal menghubungi server");
+      scanPaused.current = false;
     } finally {
       isLookingUp.current = false;
     }
@@ -147,9 +149,8 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded }: PublicAtten
       if (!res.ok) return;
 
       if (data.match && data.student) {
-        scanPaused.current = true;
         toast.success(`Wajah dikenali: ${data.student.name}`);
-        // Record attendance via public edge function
+        // Record attendance - lookupAndRecord handles scanPaused
         await lookupAndRecord("", "face_recognition", data.student.id);
       }
     } catch (err: any) {
@@ -240,9 +241,6 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded }: PublicAtten
     lookupAndRecord(manualCode.trim(), "barcode");
   };
 
-  const handleDismissAlready = () => {
-    resetState();
-  };
 
   return (
     <>
@@ -313,7 +311,8 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded }: PublicAtten
           </div>
         </div>
       </Card>
-      <Dialog open={alreadyRecorded && !!scannedStudent} onOpenChange={(open) => { if (!open) handleDismissAlready(); }}>
+      {/* Already recorded popup - auto-dismisses */}
+      <Dialog open={alreadyRecorded && !!scannedStudent} onOpenChange={(open) => { if (!open) resetState(); }}>
         <DialogContent className="max-w-[90vw] sm:max-w-sm p-0 overflow-hidden">
           <div className="bg-warning/10 p-4 text-center">
             <div className="flex items-center justify-center gap-2 text-warning">
@@ -336,14 +335,13 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded }: PublicAtten
               )}
               <h3 className="text-lg font-bold text-foreground">{scannedStudent.name}</h3>
               <p className="text-sm text-muted-foreground">Kelas: {scannedStudent.class} • NIS: {scannedStudent.student_id}</p>
-              <Button variant="outline" onClick={handleDismissAlready} className="w-full mt-2">OK</Button>
             </div>
           )}
         </DialogContent>
       </Dialog>
 
-      {/* Success popup */}
-      <Dialog open={confirmed && !!scannedStudent} onOpenChange={() => {}}>
+      {/* Success popup - auto-dismisses after 3s */}
+      <Dialog open={confirmed && !!scannedStudent} onOpenChange={(open) => { if (!open) resetState(); }}>
         <DialogContent className="max-w-[90vw] sm:max-w-sm border-0 bg-success p-0">
           <div className="p-6 text-center space-y-3">
             <CheckCircle2 className="h-14 w-14 text-success-foreground mx-auto" />
@@ -352,7 +350,7 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded }: PublicAtten
               <p><strong>{scannedStudent?.name}</strong></p>
               <p>Kelas: {scannedStudent?.class} • Status: Hadir</p>
               <p className="text-xs mt-1">
-                {scanMethod === "face" ? "via Face Recognition" : "via Barcode Scan"}
+                {scanMethod === "face_recognition" ? "via Face Recognition" : "via Barcode Scan"}
               </p>
             </DialogDescription>
           </div>
