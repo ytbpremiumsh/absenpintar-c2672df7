@@ -202,8 +202,8 @@ export function AppSidebar() {
               className="text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-xl px-4 py-3 transition-all duration-200"
               onClick={handleLogout}
             >
-              <LogOut className="h-[22px] w-[22px]" />
-              {!collapsed && <span className="text-base font-medium tracking-wide">Keluar</span>}
+              <LogOut className="h-4 w-4" />
+              {!collapsed && <span className="text-sm font-medium">Keluar</span>}
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
