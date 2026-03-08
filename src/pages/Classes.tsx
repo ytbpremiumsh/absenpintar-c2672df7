@@ -219,11 +219,10 @@ const Classes = () => {
             const percentage = info.students.length ? Math.round((totalRecorded / info.students.length) * 100) : 0;
             return (
               <motion.div key={cls} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-                <Card className="shadow-card border-0 hover:shadow-elevated transition-all cursor-pointer group">
+                <Card className="shadow-card border-0 hover:shadow-elevated transition-all group">
                   <CardContent className="p-5">
                     <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center gap-3 flex-1 cursor-pointer"
-                        onClick={() => navigate(`/students?class=${encodeURIComponent(cls)}`)}>
+                      <div className="flex items-center gap-3 flex-1">
                         <div className="h-12 w-12 rounded-xl gradient-primary flex items-center justify-center">
                           <GraduationCap className="h-6 w-6 text-primary-foreground" />
                         </div>
