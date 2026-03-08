@@ -205,33 +205,6 @@ const SchoolSettings = () => {
         </CardContent>
       </Card>
 
-      {/* Jam Masuk / Pulang */}
-      <Card className="border-0 shadow-card">
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <Clock className="h-4 w-4 text-primary" />
-            Jam Masuk & Pulang
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-xs text-muted-foreground">Atur jam masuk dan jam pulang sekolah. Sistem akan otomatis menampilkan status waktu di halaman scan.</p>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="start-time">Jam Masuk</Label>
-              <Input id="start-time" type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="end-time">Jam Pulang</Label>
-              <Input id="end-time" type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
-            </div>
-          </div>
-          <div className="bg-secondary/50 rounded-lg p-3 text-xs text-muted-foreground space-y-1">
-            <p>• <strong>Sebelum jam masuk:</strong> Status "Belum Masuk"</p>
-            <p>• <strong>Jam masuk – jam pulang:</strong> Status "Jam Sekolah"</p>
-            <p>• <strong>Setelah jam pulang:</strong> Status "Waktu Pulang" (penjemputan aktif)</p>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Waktu Absensi Datang & Pulang */}
       <Card className="border-0 shadow-card">
