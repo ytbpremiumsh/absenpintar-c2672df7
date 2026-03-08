@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FileSpreadsheet, FileText, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { FileSpreadsheet, FileText, Calendar, ChevronLeft, ChevronRight, Crown, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
@@ -18,6 +19,7 @@ const STATUS_LABELS: Record<string, string> = { hadir: "Hadir", izin: "Izin", sa
 const ExportHistory = () => {
   const { profile } = useAuth();
   const features = useSubscriptionFeatures();
+  const navigate = useNavigate();
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -117,16 +119,7 @@ const ExportHistory = () => {
   const daysWithActivity = Object.keys(dailyStats).length;
   const avgPerDay = daysWithActivity ? Math.round(totalThisMonth / daysWithActivity) : 0;
 
-  if (!features.canExportReport) {
-    return (
-      <div className="flex flex-col items-center justify-center py-20 text-center">
-        <FileSpreadsheet className="h-16 w-16 text-muted-foreground/20 mb-4" />
-        <h2 className="text-lg font-bold text-foreground mb-1">Fitur Rekap & Export</h2>
-        <p className="text-sm text-muted-foreground mb-4">Fitur ini tersedia untuk paket School dan Premium</p>
-        <Badge variant="secondary">🔒 Upgrade untuk mengakses</Badge>
-      </div>
-    );
-  }
+  const isPremiumFeature = !features.canExportReport;
 
   return (
     <div className="space-y-5">
@@ -134,6 +127,31 @@ const ExportHistory = () => {
         <h1 className="text-xl sm:text-2xl font-bold text-foreground">Rekap & Export Absensi</h1>
         <p className="text-muted-foreground text-xs sm:text-sm">Lihat statistik kehadiran dan export laporan per hari</p>
       </div>
+
+      {isPremiumFeature && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+          <Card className="border-0 shadow-card bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30">
+            <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+              <div className="flex items-center gap-3 flex-1">
+                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shrink-0">
+                  <Crown className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                    <Lock className="h-3.5 w-3.5" /> Fitur Premium
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    Export laporan ke Excel & PDF tersedia di paket <span className="font-semibold">Basic</span> ke atas. Upgrade sekarang untuk akses penuh!
+                  </p>
+                </div>
+              </div>
+              <Button size="sm" onClick={() => navigate("/subscription")} className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shrink-0">
+                <Crown className="h-3.5 w-3.5 mr-1.5" /> Upgrade Sekarang
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
 
       <div className="grid grid-cols-3 gap-3">
         {[
@@ -212,11 +230,11 @@ const ExportHistory = () => {
                     <p className="text-xs text-muted-foreground">{selectedLogs.length} absensi tercatat</p>
                   </div>
                   <div className="flex gap-1.5">
-                    <Button variant="outline" size="sm" onClick={() => exportDateExcel(selectedDate)} className="text-xs h-7 px-2">
-                      <FileSpreadsheet className="h-3 w-3 mr-1" /> Excel
+                    <Button variant="outline" size="sm" disabled={isPremiumFeature} onClick={() => isPremiumFeature ? toast.error("Upgrade ke paket Basic untuk export") : exportDateExcel(selectedDate)} className="text-xs h-7 px-2">
+                      <FileSpreadsheet className="h-3 w-3 mr-1" /> Excel {isPremiumFeature && <Lock className="h-3 w-3 ml-1" />}
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => exportDatePDF(selectedDate)} className="text-xs h-7 px-2">
-                      <FileText className="h-3 w-3 mr-1" /> PDF
+                    <Button variant="outline" size="sm" disabled={isPremiumFeature} onClick={() => isPremiumFeature ? toast.error("Upgrade ke paket Basic untuk export") : exportDatePDF(selectedDate)} className="text-xs h-7 px-2">
+                      <FileText className="h-3 w-3 mr-1" /> PDF {isPremiumFeature && <Lock className="h-3 w-3 ml-1" />}
                     </Button>
                   </div>
                 </div>
