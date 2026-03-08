@@ -1,40 +1,75 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { School, Users, CreditCard, TrendingUp, CheckCircle2, XCircle } from "lucide-react";
+import { School, Users, CreditCard, TrendingUp, CheckCircle2, GraduationCap, UserCheck, Clock, BarChart3 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 
 interface DashboardStats {
   totalSchools: number;
+  totalStudents: number;
+  totalStaff: number;
   activeSubscriptions: number;
+  pendingPayments: number;
   totalRevenue: number;
   recentPayments: any[];
   schools: any[];
+  monthlyRevenue: number;
 }
 
 const SuperAdminDashboard = () => {
   const [stats, setStats] = useState<DashboardStats>({
-    totalSchools: 0, activeSubscriptions: 0, totalRevenue: 0, recentPayments: [], schools: [],
+    totalSchools: 0, totalStudents: 0, totalStaff: 0,
+    activeSubscriptions: 0, pendingPayments: 0,
+    totalRevenue: 0, monthlyRevenue: 0,
+    recentPayments: [], schools: [],
   });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
-      const [schoolsRes, subsRes, paymentsRes] = await Promise.all([
-        supabase.from("schools").select("id, name, created_at, logo"),
+      const [schoolsRes, studentsRes, profilesRes, subsRes, paymentsRes, rolesRes] = await Promise.all([
+        supabase.from("schools").select("id, name, created_at, logo, address"),
+        supabase.from("students").select("id, school_id"),
+        supabase.from("profiles").select("id, school_id"),
         supabase.from("school_subscriptions").select("id, school_id, plan_id, status, started_at, expires_at, subscription_plans(name)"),
         supabase.from("payment_transactions").select("id, school_id, amount, status, paid_at, created_at, schools(name), subscription_plans(name)").order("created_at", { ascending: false }).limit(10),
+        supabase.from("user_roles").select("id, role"),
       ]);
 
       const schools = schoolsRes.data || [];
+      const students = studentsRes.data || [];
+      const profiles = profilesRes.data || [];
       const subs = subsRes.data || [];
       const payments = paymentsRes.data || [];
+      const roles = rolesRes.data || [];
+
       const activeSubs = subs.filter((s: any) => s.status === "active");
+      const pendingPayments = payments.filter((p: any) => p.status === "pending");
       const paidPayments = payments.filter((p: any) => p.status === "paid");
       const totalRevenue = paidPayments.reduce((sum: number, p: any) => sum + p.amount, 0);
 
-      setStats({ totalSchools: schools.length, activeSubscriptions: activeSubs.length, totalRevenue, recentPayments: payments, schools });
+      // Monthly revenue (current month)
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+      const monthlyRevenue = paidPayments
+        .filter((p: any) => p.paid_at && p.paid_at >= startOfMonth)
+        .reduce((sum: number, p: any) => sum + p.amount, 0);
+
+      // Count staff (non-super_admin roles)
+      const staffCount = roles.filter((r: any) => r.role !== "super_admin").length;
+
+      setStats({
+        totalSchools: schools.length,
+        totalStudents: students.length,
+        totalStaff: staffCount,
+        activeSubscriptions: activeSubs.length,
+        pendingPayments: pendingPayments.length,
+        totalRevenue,
+        monthlyRevenue,
+        recentPayments: payments,
+        schools,
+      });
       setLoading(false);
     };
     fetchStats();
@@ -44,9 +79,13 @@ const SuperAdminDashboard = () => {
 
   const statCards = [
     { icon: School, label: "Total Sekolah", value: stats.totalSchools, color: "text-primary", bg: "bg-primary/10" },
+    { icon: GraduationCap, label: "Total Siswa", value: stats.totalStudents.toLocaleString("id-ID"), color: "text-blue-600", bg: "bg-blue-500/10" },
+    { icon: UserCheck, label: "Total Pengguna", value: stats.totalStaff, color: "text-violet-600", bg: "bg-violet-500/10" },
     { icon: CheckCircle2, label: "Langganan Aktif", value: stats.activeSubscriptions, color: "text-success", bg: "bg-success/10" },
-    { icon: CreditCard, label: "Total Pendapatan", value: formatRupiah(stats.totalRevenue), color: "text-warning", bg: "bg-warning/10" },
-    { icon: TrendingUp, label: "Transaksi Terbaru", value: stats.recentPayments.length, color: "text-primary", bg: "gradient-primary" },
+    { icon: Clock, label: "Pembayaran Pending", value: stats.pendingPayments, color: "text-warning", bg: "bg-warning/10" },
+    { icon: CreditCard, label: "Total Pendapatan", value: formatRupiah(stats.totalRevenue), color: "text-emerald-600", bg: "bg-emerald-500/10" },
+    { icon: BarChart3, label: "Pendapatan Bulan Ini", value: formatRupiah(stats.monthlyRevenue), color: "text-primary", bg: "bg-primary/10" },
+    { icon: TrendingUp, label: "Transaksi Terbaru", value: stats.recentPayments.length, color: "text-primary-foreground", bg: "gradient-primary" },
   ];
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>;
@@ -92,7 +131,7 @@ const SuperAdminDashboard = () => {
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-bold text-foreground">{formatRupiah(p.amount)}</p>
-                    <Badge variant={p.status === "paid" ? "default" : "secondary"} className={`text-[10px] ${p.status === "paid" ? "bg-success/10 text-success border-success/20" : ""}`}>
+                    <Badge variant={p.status === "paid" ? "default" : "secondary"} className={`text-[10px] ${p.status === "paid" ? "bg-success/10 text-success border-success/20" : p.status === "pending" ? "bg-warning/10 text-warning border-warning/20" : ""}`}>
                       {p.status === "paid" ? "Lunas" : p.status === "pending" ? "Pending" : p.status}
                     </Badge>
                   </div>
@@ -118,7 +157,7 @@ const SuperAdminDashboard = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-foreground truncate">{s.name}</p>
-                    <p className="text-xs text-muted-foreground">Bergabung {new Date(s.created_at).toLocaleDateString("id-ID")}</p>
+                    <p className="text-xs text-muted-foreground">{s.address || "—"} • Bergabung {new Date(s.created_at).toLocaleDateString("id-ID")}</p>
                   </div>
                 </div>
               ))}
