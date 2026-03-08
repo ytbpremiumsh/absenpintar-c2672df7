@@ -83,8 +83,8 @@ export function AppSidebar() {
             className="text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground rounded-xl px-4 py-3 transition-all duration-200"
             activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-semibold shadow-sm"
           >
-            <item.icon className="h-[22px] w-[22px]" />
-            {!collapsed && <span className="text-base font-normal tracking-wide">{item.title}</span>}
+            <item.icon className="h-4 w-4" />
+            {!collapsed && <span className="text-sm">{item.title}</span>}
           </NavLink>
         </SidebarMenuButton>
       </SidebarMenuItem>
