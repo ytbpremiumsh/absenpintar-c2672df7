@@ -85,9 +85,9 @@ const Login = () => {
               </Button>
             </form>
             <div className="mt-4 p-3 rounded-lg bg-secondary text-xs text-muted-foreground">
-              <p className="font-medium mb-1">Demo Login:</p>
-              <p>Email: admin@admin.com</p>
-              <p>Password: admin123</p>
+              <p className="font-medium mb-1">📌 Akun Demo:</p>
+              <p>Email: <span className="font-mono">admin@admin.com</span></p>
+              <p>Password: <span className="font-mono">admin123</span></p>
             </div>
           </CardContent>
         </Card>
