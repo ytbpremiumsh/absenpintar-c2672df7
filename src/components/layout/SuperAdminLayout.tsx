@@ -16,6 +16,7 @@ const navItems = [
   { title: "Paket Langganan", url: "/super-admin/plans", icon: CreditCard },
   { title: "Langganan", url: "/super-admin/subscriptions", icon: CalendarCheck },
   { title: "Riwayat Pembayaran", url: "/super-admin/payments", icon: Receipt },
+  { title: "WhatsApp Gateway", url: "/super-admin/whatsapp", icon: MessageSquare },
 ];
 
 function SuperAdminSidebar() {
