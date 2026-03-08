@@ -19,6 +19,7 @@ const STATUS_LABELS: Record<string, string> = { hadir: "Hadir", izin: "Izin", sa
 const ExportHistory = () => {
   const { profile } = useAuth();
   const features = useSubscriptionFeatures();
+  const navigate = useNavigate();
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentMonth, setCurrentMonth] = useState(new Date());
