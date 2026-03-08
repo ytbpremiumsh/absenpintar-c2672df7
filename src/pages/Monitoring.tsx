@@ -5,16 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   UserCheck, UserX, Clock, Users, GraduationCap,
-  Activity, CheckCircle2, AlertTriangle, Thermometer, FileText,
+  Activity, CheckCircle2, AlertTriangle, Thermometer, FileText, Scan,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
@@ -40,6 +36,12 @@ const STATUS_LABELS: Record<string, string> = {
   alfa: "Alfa",
 };
 
+const METHOD_LABELS: Record<string, string> = {
+  barcode: "Barcode",
+  face_recognition: "Face Recognition",
+  manual: "Manual",
+};
+
 interface StudentWithStatus {
   id: string;
   name: string;
@@ -50,6 +52,18 @@ interface StudentWithStatus {
   status: "belum" | "hadir" | "izin" | "sakit" | "alfa";
   attendance_time?: string;
   log_id?: string;
+}
+
+interface LiveEntry {
+  id: string;
+  student_name: string;
+  student_class: string;
+  student_id_nis: string;
+  photo_url: string | null;
+  status: string;
+  method: string;
+  time: string;
+  created_at: string;
 }
 
 const LiveDot = () => (
@@ -66,6 +80,8 @@ const Monitoring = () => {
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [editStudent, setEditStudent] = useState<StudentWithStatus | null>(null);
   const [editStatus, setEditStatus] = useState("");
+  const [liveEntries, setLiveEntries] = useState<LiveEntry[]>([]);
+  const [newEntryId, setNewEntryId] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     if (!profile?.school_id) return;
@@ -74,7 +90,7 @@ const Monitoring = () => {
 
     const [studentsRes, logsRes] = await Promise.all([
       supabase.from("students").select("id, name, class, parent_name, student_id, photo_url").eq("school_id", schoolId),
-      supabase.from("attendance_logs").select("id, student_id, time, status").eq("school_id", schoolId).eq("date", today),
+      supabase.from("attendance_logs").select("id, student_id, time, status, method, created_at").eq("school_id", schoolId).eq("date", today).order("created_at", { ascending: false }),
     ]);
 
     const allStudents = studentsRes.data || [];
@@ -91,7 +107,24 @@ const Monitoring = () => {
       };
     });
 
+    // Build live entries
+    const entries: LiveEntry[] = logs.map((log: any) => {
+      const student = allStudents.find((s: any) => s.id === log.student_id);
+      return {
+        id: log.id,
+        student_name: student?.name || "Unknown",
+        student_class: student?.class || "",
+        student_id_nis: student?.student_id || "",
+        photo_url: student?.photo_url || null,
+        status: log.status,
+        method: log.method || "manual",
+        time: log.time,
+        created_at: log.created_at,
+      };
+    });
+
     setStudents(mapped);
+    setLiveEntries(entries);
     setLastUpdated(new Date());
   }, [profile?.school_id]);
 
@@ -99,7 +132,13 @@ const Monitoring = () => {
     fetchData();
     const channel = supabase
       .channel("monitoring-realtime")
-      .on("postgres_changes", { event: "*", schema: "public", table: "attendance_logs" }, () => fetchData())
+      .on("postgres_changes", { event: "*", schema: "public", table: "attendance_logs" }, (payload) => {
+        if (payload.eventType === "INSERT" && payload.new) {
+          setNewEntryId(payload.new.id as string);
+          setTimeout(() => setNewEntryId(null), 3000);
+        }
+        fetchData();
+      })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [fetchData]);
@@ -108,10 +147,8 @@ const Monitoring = () => {
     if (!editStudent || !editStatus || !profile?.school_id) return;
     
     if (editStudent.log_id) {
-      // Update existing
       await supabase.from("attendance_logs").update({ status: editStatus }).eq("id", editStudent.log_id);
     } else {
-      // Insert new
       const now = new Date();
       await supabase.from("attendance_logs").insert({
         school_id: profile.school_id,
@@ -207,6 +244,88 @@ const Monitoring = () => {
         </CardContent>
       </Card>
 
+      {/* LIVE FEED - Kedatangan Terbaru */}
+      <Card className="border-0 shadow-card overflow-hidden">
+        <div className="p-3 sm:p-4 border-b border-border flex items-center gap-2">
+          <div className="h-8 w-8 rounded-lg bg-success/10 flex items-center justify-center">
+            <Activity className="h-4 w-4 text-success" />
+          </div>
+          <div className="flex-1">
+            <h2 className="text-sm sm:text-base font-bold text-foreground">Live Feed — Kedatangan</h2>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">Menampilkan absensi terbaru secara realtime</p>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <LiveDot />
+            <span className="text-[10px] text-muted-foreground font-medium">LIVE</span>
+          </div>
+        </div>
+        <CardContent className="p-0">
+          {liveEntries.length === 0 ? (
+            <div className="p-8 text-center">
+              <Clock className="h-10 w-10 text-muted-foreground/30 mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">Belum ada siswa yang diabsen hari ini</p>
+              <p className="text-xs text-muted-foreground/60 mt-1">Data akan muncul otomatis saat siswa melakukan scan</p>
+            </div>
+          ) : (
+            <div className="max-h-[400px] overflow-y-auto divide-y divide-border">
+              <AnimatePresence initial={false}>
+                {liveEntries.slice(0, 30).map((entry, i) => {
+                  const isNew = entry.id === newEntryId;
+                  return (
+                    <motion.div
+                      key={entry.id}
+                      initial={{ opacity: 0, x: -30, backgroundColor: "hsl(var(--success) / 0.15)" }}
+                      animate={{ opacity: 1, x: 0, backgroundColor: "hsl(0 0% 100% / 0)" }}
+                      transition={{ duration: 0.4, backgroundColor: { duration: 2 } }}
+                      className={`flex items-center gap-3 p-3 sm:p-4 ${isNew ? "ring-2 ring-success/30 bg-success/5" : "hover:bg-muted/30"} transition-colors`}
+                    >
+                      {/* Avatar / Initial */}
+                      <div className={`h-10 w-10 sm:h-11 sm:w-11 rounded-full flex items-center justify-center font-bold text-sm shrink-0 ${
+                        entry.status === "hadir" ? "bg-success/15 text-success" :
+                        entry.status === "izin" ? "bg-warning/15 text-warning" :
+                        entry.status === "sakit" ? "bg-blue-50 text-blue-500" :
+                        "bg-destructive/15 text-destructive"
+                      }`}>
+                        {entry.photo_url ? (
+                          <img src={entry.photo_url} alt={entry.student_name} className="h-full w-full rounded-full object-cover" />
+                        ) : (
+                          entry.student_name.charAt(0)
+                        )}
+                      </div>
+
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <p className="font-semibold text-sm text-foreground truncate">{entry.student_name}</p>
+                          {isNew && (
+                            <Badge className="bg-success text-success-foreground text-[8px] px-1 py-0 animate-pulse">BARU</Badge>
+                          )}
+                        </div>
+                        <p className="text-[10px] sm:text-xs text-muted-foreground">
+                          {entry.student_class} • NIS: {entry.student_id_nis}
+                        </p>
+                      </div>
+
+                      {/* Status & Method */}
+                      <div className="flex flex-col items-end gap-1 shrink-0">
+                        <Badge variant="secondary" className={`text-[9px] sm:text-[10px] ${STATUS_BG[entry.status]?.replace("border-", "").split(" ")[0] || ""}`}>
+                          {STATUS_LABELS[entry.status] || entry.status}
+                        </Badge>
+                        <div className="flex items-center gap-1 text-[9px] sm:text-[10px] text-muted-foreground">
+                          <Scan className="h-2.5 w-2.5" />
+                          <span>{METHOD_LABELS[entry.method] || entry.method}</span>
+                        </div>
+                        <span className="text-[10px] font-mono text-muted-foreground">{entry.time?.slice(0, 5)}</span>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Class Cards */}
       <div className="space-y-3 sm:space-y-4">
         <div className="flex items-center gap-2">
@@ -263,43 +382,40 @@ const Monitoring = () => {
                         <div className="px-3 sm:px-4 pb-3 sm:pb-4 space-y-1.5 sm:space-y-2 border-t border-border pt-2 sm:pt-3">
                           {classStudents
                             .sort((a, b) => (a.status === "belum" ? 1 : -1))
-                            .map((s, i) => {
-                              const statusKey = s.status === "belum" ? "belum" : s.status;
-                              return (
-                                <motion.div key={s.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
-                                  transition={{ delay: i * 0.02 }}>
-                                  <div className={`flex items-center gap-2 sm:gap-3 rounded-xl p-2 sm:p-3 transition-all border ${
-                                    s.status === "belum" ? "bg-muted/50 border-border" : STATUS_BG[s.status] || "bg-muted/50 border-border"
+                            .map((s, i) => (
+                              <motion.div key={s.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: i * 0.02 }}>
+                                <div className={`flex items-center gap-2 sm:gap-3 rounded-xl p-2 sm:p-3 transition-all border ${
+                                  s.status === "belum" ? "bg-muted/50 border-border" : STATUS_BG[s.status] || "bg-muted/50 border-border"
+                                }`}>
+                                  <div className={`h-8 w-8 sm:h-9 sm:w-9 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm shrink-0 ${
+                                    s.status === "hadir" ? "bg-success/15 text-success" :
+                                    s.status === "belum" ? "bg-muted text-muted-foreground" :
+                                    "bg-destructive/15 text-destructive"
                                   }`}>
-                                    <div className={`h-8 w-8 sm:h-9 sm:w-9 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm shrink-0 ${
-                                      s.status === "hadir" ? "bg-success/15 text-success" :
-                                      s.status === "belum" ? "bg-muted text-muted-foreground" :
-                                      "bg-destructive/15 text-destructive"
-                                    }`}>
-                                      {s.name.charAt(0)}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                      <p className="font-semibold text-xs sm:text-sm text-foreground truncate">{s.name}</p>
-                                      <p className="text-[10px] sm:text-xs text-muted-foreground truncate">NIS: {s.student_id}</p>
-                                    </div>
-                                    <div className="flex items-center gap-1.5 shrink-0">
-                                      <Badge
-                                        variant="secondary"
-                                        className={`text-[9px] sm:text-[10px] cursor-pointer hover:opacity-80 ${
-                                          s.status === "belum" ? "" : STATUS_BG[s.status]?.replace("border-", "").split(" ")[0] || ""
-                                        }`}
-                                        onClick={(e) => { e.stopPropagation(); setEditStudent(s); setEditStatus(s.status === "belum" ? "" : s.status); }}
-                                      >
-                                        {s.status === "belum" ? "Belum Absen" : STATUS_LABELS[s.status]}
-                                      </Badge>
-                                      {s.attendance_time && (
-                                        <span className="text-[9px] text-muted-foreground">{s.attendance_time.slice(0, 5)}</span>
-                                      )}
-                                    </div>
+                                    {s.name.charAt(0)}
                                   </div>
-                                </motion.div>
-                              );
-                            })}
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-semibold text-xs sm:text-sm text-foreground truncate">{s.name}</p>
+                                    <p className="text-[10px] sm:text-xs text-muted-foreground truncate">NIS: {s.student_id}</p>
+                                  </div>
+                                  <div className="flex items-center gap-1.5 shrink-0">
+                                    <Badge
+                                      variant="secondary"
+                                      className={`text-[9px] sm:text-[10px] cursor-pointer hover:opacity-80 ${
+                                        s.status === "belum" ? "" : STATUS_BG[s.status]?.replace("border-", "").split(" ")[0] || ""
+                                      }`}
+                                      onClick={(e) => { e.stopPropagation(); setEditStudent(s); setEditStatus(s.status === "belum" ? "" : s.status); }}
+                                    >
+                                      {s.status === "belum" ? "Belum Absen" : STATUS_LABELS[s.status]}
+                                    </Badge>
+                                    {s.attendance_time && (
+                                      <span className="text-[9px] text-muted-foreground">{s.attendance_time.slice(0, 5)}</span>
+                                    )}
+                                  </div>
+                                </div>
+                              </motion.div>
+                            ))}
                         </div>
                       </motion.div>
                     )}
