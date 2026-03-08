@@ -26,6 +26,7 @@ const StudentDetail = () => {
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState({ name: "", class: "", student_id: "", parent_name: "", parent_phone: "" });
   const [saving, setSaving] = useState(false);
+  const [qrInstructions, setQrInstructions] = useState<string[]>([]);
 
   const fetchData = async () => {
     if (!id || !profile?.school_id) return;
