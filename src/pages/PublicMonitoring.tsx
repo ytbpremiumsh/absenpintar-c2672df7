@@ -34,13 +34,6 @@ const PublicMonitoring = () => {
   const fetchData = async () => {
     if (!schoolId) return;
     try {
-      const { data: result, error } = await supabase.functions.invoke("public-monitoring", {
-        body: null,
-        method: "GET",
-        headers: {},
-      });
-      
-      // Use fetch directly since we need query params
       const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/public-monitoring?school_id=${schoolId}`;
       const res = await fetch(url, {
         headers: { "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
