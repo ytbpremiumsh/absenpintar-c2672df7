@@ -196,6 +196,27 @@ const Subscription = () => {
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
+      {/* Payment Success Banner */}
+      {(paymentSuccess || searchParams.get("status") === "success") && (
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
+          <Card className="border-success/30 bg-success/5 shadow-card">
+            <div className="p-4 flex items-center gap-3">
+              <CheckCircle2 className="h-6 w-6 text-success shrink-0" />
+              <div>
+                <p className="text-sm font-bold text-foreground">
+                  {paymentSuccess ? "Pembayaran Berhasil!" : "Menunggu Konfirmasi Pembayaran..."}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {paymentSuccess
+                    ? "Paket langganan Anda telah diaktifkan secara otomatis."
+                    : "Sistem sedang memverifikasi pembayaran Anda. Halaman akan otomatis diperbarui."}
+                </p>
+              </div>
+              {!paymentSuccess && <Loader2 className="h-5 w-5 animate-spin text-primary shrink-0 ml-auto" />}
+            </div>
+          </Card>
+        </motion.div>
+      )}
       {/* Header: Current Plan Status */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <Card className="border-0 shadow-elevated overflow-hidden">
