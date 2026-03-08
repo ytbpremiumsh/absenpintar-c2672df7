@@ -13,6 +13,7 @@ import jsPDF from "jspdf";
 import "jspdf-autotable";
 import { motion } from "framer-motion";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { PremiumGate } from "@/components/PremiumGate";
 
 const STATUS_LABELS: Record<string, string> = { hadir: "Hadir", izin: "Izin", sakit: "Sakit", alfa: "Alfa" };
 
