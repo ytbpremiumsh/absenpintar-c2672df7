@@ -121,21 +121,64 @@ const QRCodeDisplay = ({ data, size = 200, studentName, studentClass, schoolName
       ctx.fillStyle = "#374151";
       ctx.textAlign = "center";
       ctx.font = "bold 32px system-ui, sans-serif";
-      const nisY = qrY + qrSize + 80;
+      const nisY = qrY + qrSize + 70;
       ctx.fillText(`NIS: ${data}`, canvasW / 2, nisY);
+
+      // Instructions section
+      const instrStartY = nisY + 60;
+      const instrX = 100;
+      const instrW = canvasW - 200;
+
+      // Instruction box background
+      ctx.fillStyle = "#f0f4ff";
+      ctx.beginPath();
+      ctx.roundRect(instrX, instrStartY, instrW, 340, 20);
+      ctx.fill();
+      ctx.strokeStyle = "#c7d2fe";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Instruction title
+      ctx.fillStyle = "#1e3a8a";
+      ctx.font = "bold 28px system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("📋 Petunjuk Penggunaan", canvasW / 2, instrStartY + 45);
+
+      // Instruction items
+      ctx.fillStyle = "#374151";
+      ctx.font = "24px system-ui, sans-serif";
+      ctx.textAlign = "left";
+      const lines = [
+        "1. Tunjukkan QR Code ini kepada guru/petugas piket",
+        "2. Petugas akan scan QR saat penjemputan",
+        "3. Orang tua/wali akan menerima notifikasi otomatis",
+        "4. Jangan berikan QR Code kepada orang lain",
+        "5. Segera lapor jika QR Code hilang/rusak",
+      ];
+      lines.forEach((line, i) => {
+        ctx.fillText(line, instrX + 30, instrStartY + 90 + i * 48, instrW - 60);
+      });
+
+      // Security notice
+      const noticeY = instrStartY + 360;
+      ctx.fillStyle = "#fef2f2";
+      ctx.beginPath();
+      ctx.roundRect(instrX, noticeY, instrW, 80, 16);
+      ctx.fill();
+      ctx.strokeStyle = "#fecaca";
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      ctx.fillStyle = "#991b1b";
+      ctx.font = "bold 22px system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("⚠️ QR Code ini bersifat rahasia & hanya untuk keperluan sekolah", canvasW / 2, noticeY + 50);
 
       // Footer
       ctx.fillStyle = "#9ca3af";
-      ctx.font = "28px system-ui, sans-serif";
-      ctx.fillText("Smart School Pickup System", canvasW / 2, canvasH - 80);
-
-      // Divider line
-      ctx.strokeStyle = "#e5e7eb";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(canvasW * 0.2, canvasH - 120);
-      ctx.lineTo(canvasW * 0.8, canvasH - 120);
-      ctx.stroke();
+      ctx.font = "24px system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("Smart School Pickup System", canvasW / 2, canvasH - 60);
 
       // Download
       const link = document.createElement("a");
