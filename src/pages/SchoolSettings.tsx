@@ -19,6 +19,10 @@ const SchoolSettings = () => {
   const [logo, setLogo] = useState("");
   const [startTime, setStartTime] = useState("07:00");
   const [endTime, setEndTime] = useState("14:00");
+  const [attStartTime, setAttStartTime] = useState("06:00");
+  const [attEndTime, setAttEndTime] = useState("12:00");
+  const [depStartTime, setDepStartTime] = useState("12:00");
+  const [depEndTime, setDepEndTime] = useState("17:00");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
