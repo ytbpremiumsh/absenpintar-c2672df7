@@ -172,7 +172,18 @@ const History = () => {
                   <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Belum ada riwayat penjemputan</TableCell></TableRow>
                 ) : filtered.map((log) => (
                   <TableRow key={log.id}>
-                    <TableCell className="font-medium">{log.students?.name || "-"}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {features.canUploadPhoto && log.students?.photo_url ? (
+                          <img src={log.students.photo_url} alt={log.students?.name} className="h-7 w-7 rounded-full object-cover shrink-0" />
+                        ) : (
+                          <div className="h-7 w-7 rounded-full gradient-primary flex items-center justify-center text-primary-foreground text-[10px] font-bold shrink-0">
+                            {(log.students?.name || "-").charAt(0)}
+                          </div>
+                        )}
+                        <span className="font-medium">{log.students?.name || "-"}</span>
+                      </div>
+                    </TableCell>
                     <TableCell className="hidden sm:table-cell">{log.students?.class || "-"}</TableCell>
                     <TableCell className="hidden md:table-cell">{log.students?.parent_name || "-"}</TableCell>
                     <TableCell className="hidden lg:table-cell">{log.pickup_by}</TableCell>

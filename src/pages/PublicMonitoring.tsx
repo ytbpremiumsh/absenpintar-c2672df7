@@ -57,10 +57,14 @@ const StudentCard = ({ student, index }: { student: StudentStatus; index: number
       <div className={`group relative flex items-center gap-3 rounded-xl p-3 transition-all duration-300 hover:shadow-elevated ${
         isPickedUp ? "bg-success/5 border border-success/20" : "bg-destructive/5 border border-destructive/20"
       }`}>
-        <div className={`relative h-10 w-10 rounded-full flex items-center justify-center font-bold text-sm shrink-0 ${
+        <div className={`relative h-10 w-10 rounded-full flex items-center justify-center font-bold text-sm shrink-0 overflow-hidden ${
           isPickedUp ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive"
         }`}>
-          {student.name.charAt(0)}
+          {student.photo_url ? (
+            <img src={student.photo_url} alt={student.name} className="h-full w-full object-cover" />
+          ) : (
+            student.name.charAt(0)
+          )}
           {!isPickedUp && <span className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-destructive animate-pulse border-2 border-card" />}
         </div>
         <div className="flex-1 min-w-0">

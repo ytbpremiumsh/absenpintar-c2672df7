@@ -195,9 +195,17 @@ const Dashboard = () => {
             const studentClass = getStudentClass(log);
             return (
               <div key={log.id} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-secondary/50 transition-colors">
-                <div className="h-9 w-9 rounded-full gradient-primary flex items-center justify-center text-primary-foreground text-xs font-bold shrink-0">
-                  {studentName.charAt(0)}
-                </div>
+                {(() => {
+                  const student = students.find(s => s.id === log.student_id);
+                  const photoUrl = student?.photo_url;
+                  return features.canUploadPhoto && photoUrl ? (
+                    <img src={photoUrl} alt={studentName} className="h-9 w-9 rounded-full object-cover shrink-0 border-2 border-success/30" />
+                  ) : (
+                    <div className="h-9 w-9 rounded-full gradient-primary flex items-center justify-center text-primary-foreground text-xs font-bold shrink-0">
+                      {studentName.charAt(0)}
+                    </div>
+                  );
+                })()}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold truncate">{studentName}</p>
                   <p className="text-[11px] text-muted-foreground">
