@@ -53,5 +53,5 @@ export function announcePickup(studentName: string, className: string, type: "pi
     };
 
     window.speechSynthesis.speak(utterance);
-  }, 300);
+  }, 500);
 }

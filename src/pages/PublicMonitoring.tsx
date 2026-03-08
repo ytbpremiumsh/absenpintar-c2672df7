@@ -186,11 +186,18 @@ const PublicMonitoring = () => {
         const newPicked = allStudents.filter(
           (s) => s.status === "picked_up" && !prevPickedIds.current.has(s.id)
         );
-        newPicked.forEach((s) => {
-          announcePickup(s.name, s.class);
-          setSuccessPopup(s);
+        if (newPicked.length > 0) {
+          // Show popup first, then announce with delay so DOM settles
+          const lastPicked = newPicked[newPicked.length - 1];
+          setSuccessPopup(lastPicked);
           setTimeout(() => setSuccessPopup(null), 5000);
-        });
+          // Stagger announcements after popup renders
+          newPicked.forEach((s, i) => {
+            setTimeout(() => {
+              announcePickup(s.name, s.class);
+            }, 600 + i * 3000);
+          });
+        }
         prevPickedIds.current = new Set(allStudents.filter(s => s.status === "picked_up").map(s => s.id));
       } else {
         const allStudents: StudentStatus[] = [];

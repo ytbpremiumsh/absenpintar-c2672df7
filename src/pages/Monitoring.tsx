@@ -10,13 +10,16 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { motion, AnimatePresence } from "framer-motion";
-import { toast } from "sonner";
 import { announcePickup } from "@/lib/announcePickup";
 import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
+import { toast } from "sonner";
 
 interface StudentWithStatus {
   id: string;
@@ -48,6 +51,7 @@ const Monitoring = () => {
   const [confirmStudent, setConfirmStudent] = useState<StudentWithStatus | null>(null);
   const [cancelStudent, setCancelStudent] = useState<StudentWithStatus | null>(null);
   const [resetConfirm, setResetConfirm] = useState(false);
+  const [successStudent, setSuccessStudent] = useState<StudentWithStatus | null>(null);
 
   const fetchData = useCallback(async () => {
     if (!profile?.school_id) return;
@@ -114,9 +118,13 @@ const Monitoring = () => {
     if (error) {
       toast.error("Gagal mencatat penjemputan");
     } else {
-      toast.success(`${student.name} berhasil ditandai pulang`);
-      announcePickup(student.name, student.class, "dismissed");
+      setSuccessStudent(student);
       fetchData();
+      // Delay announcement so popup DOM settles first
+      setTimeout(() => {
+        announcePickup(student.name, student.class, "dismissed");
+      }, 600);
+      setTimeout(() => setSuccessStudent(null), 4000);
     }
     setConfirmStudent(null);
   };
@@ -127,7 +135,6 @@ const Monitoring = () => {
     if (error) {
       toast.error("Gagal membatalkan: " + error.message);
     } else {
-      toast.success(`Penjemputan ${student.name} dibatalkan`);
       fetchData();
     }
     setCancelStudent(null);
@@ -144,7 +151,6 @@ const Monitoring = () => {
     if (error) {
       toast.error("Gagal reset: " + error.message);
     } else {
-      toast.success("Data penjemputan hari ini berhasil direset");
       fetchData();
     }
     setResetConfirm(false);
@@ -423,6 +429,28 @@ const Monitoring = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Success Popup */}
+      <Dialog open={!!successStudent} onOpenChange={(open) => !open && setSuccessStudent(null)}>
+        <DialogContent className="max-w-[90vw] sm:max-w-sm border-0 bg-success p-0">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Siswa Berhasil Pulang</DialogTitle>
+          </DialogHeader>
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="p-6 sm:p-8 text-center space-y-3"
+          >
+            <CheckCircle2 className="h-14 w-14 sm:h-16 sm:w-16 text-success-foreground mx-auto" />
+            <h2 className="text-lg sm:text-xl font-bold text-success-foreground">✅ Berhasil Pulang</h2>
+            <div className="text-success-foreground/90 space-y-0.5 text-sm">
+              <p><strong>{successStudent?.name}</strong></p>
+              <p>Kelas: {successStudent?.class}</p>
+              <p className="text-xs opacity-80">NIS: {successStudent?.student_id}</p>
+            </div>
+          </motion.div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
