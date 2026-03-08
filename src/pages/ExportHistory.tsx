@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FileSpreadsheet, FileText, Download, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { FileSpreadsheet, FileText, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
@@ -11,6 +11,7 @@ import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import { motion } from "framer-motion";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 const ExportHistory = () => {
   const { profile } = useAuth();
@@ -36,7 +37,6 @@ const ExportHistory = () => {
     fetchLogs();
   }, [profile?.school_id, currentMonth]);
 
-  // Group logs by date
   const dailyStats = useMemo(() => {
     const map: Record<string, number> = {};
     logs.forEach(l => {
@@ -46,14 +46,25 @@ const ExportHistory = () => {
     return map;
   }, [logs]);
 
-  // Calendar generation
+  // Line chart data
+  const chartData = useMemo(() => {
+    const year = currentMonth.getFullYear();
+    const month = currentMonth.getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const data = [];
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+      data.push({ day: d, jumlah: dailyStats[dateStr] || 0 });
+    }
+    return data;
+  }, [currentMonth, dailyStats]);
+
   const calendarDays = useMemo(() => {
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const days: { date: number; dateStr: string; count: number }[] = [];
-    
     for (let i = 0; i < firstDay; i++) days.push({ date: 0, dateStr: "", count: 0 });
     for (let d = 1; d <= daysInMonth; d++) {
       const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
@@ -125,7 +136,7 @@ const ExportHistory = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div>
         <h1 className="text-xl sm:text-2xl font-bold text-foreground">Riwayat Export Harian</h1>
         <p className="text-muted-foreground text-xs sm:text-sm">Lihat statistik dan export laporan per hari</p>
@@ -149,97 +160,123 @@ const ExportHistory = () => {
         ))}
       </div>
 
-      {/* Calendar */}
+      {/* Line Chart */}
       <Card className="border-0 shadow-card">
         <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-4">
-            <Button variant="ghost" size="sm" onClick={prevMonth}><ChevronLeft className="h-4 w-4" /></Button>
-            <h3 className="text-sm font-bold text-foreground">
-              {currentMonth.toLocaleDateString("id-ID", { month: "long", year: "numeric" })}
-            </h3>
-            <Button variant="ghost" size="sm" onClick={nextMonth}><ChevronRight className="h-4 w-4" /></Button>
-          </div>
-
-          {/* Day headers */}
-          <div className="grid grid-cols-7 gap-1 mb-1">
-            {["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"].map(d => (
-              <div key={d} className="text-center text-[10px] font-semibold text-muted-foreground py-1">{d}</div>
-            ))}
-          </div>
-
-          {/* Calendar grid */}
-          <div className="grid grid-cols-7 gap-1">
-            {calendarDays.map((day, idx) => (
-              <button key={idx} disabled={day.date === 0}
-                onClick={() => day.date > 0 && setSelectedDate(day.dateStr)}
-                className={`relative aspect-square rounded-lg flex flex-col items-center justify-center text-xs transition-all
-                  ${day.date === 0 ? "invisible" : "hover:bg-muted cursor-pointer"}
-                  ${selectedDate === day.dateStr ? "ring-2 ring-primary bg-primary/5" : ""}
-                  ${new Date().toISOString().slice(0, 10) === day.dateStr ? "bg-primary/5 font-bold" : ""}
-                `}>
-                <span className="text-foreground">{day.date || ""}</span>
-                {day.count > 0 && (
-                  <div className="flex items-center gap-0.5 mt-0.5">
-                    <span className={`h-1.5 w-1.5 rounded-full ${getDotColor(day.count)}`} />
-                    <span className="text-[8px] text-muted-foreground">{day.count}</span>
-                  </div>
-                )}
-              </button>
-            ))}
-          </div>
-
-          {/* Legend */}
-          <div className="flex items-center gap-3 mt-3 justify-center">
-            <div className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-primary/30" /><span className="text-[9px] text-muted-foreground">1-5</span></div>
-            <div className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-primary/60" /><span className="text-[9px] text-muted-foreground">6-15</span></div>
-            <div className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-primary" /><span className="text-[9px] text-muted-foreground">15+</span></div>
+          <h3 className="text-sm font-bold text-foreground mb-3">Statistik Penjemputan Harian</h3>
+          <div className="h-48">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <XAxis dataKey="day" tick={{ fontSize: 10 }} className="text-muted-foreground" tickLine={false} />
+                <YAxis tick={{ fontSize: 10 }} className="text-muted-foreground" tickLine={false} allowDecimals={false} />
+                <Tooltip
+                  contentStyle={{ fontSize: 12, borderRadius: 8, border: "none", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
+                  labelFormatter={(v) => `Tanggal ${v}`}
+                  formatter={(v: number) => [`${v} siswa`, "Dijemput"]}
+                />
+                <Line type="monotone" dataKey="jumlah" className="stroke-primary" strokeWidth={2} dot={false} activeDot={{ r: 4, className: "fill-primary" }} />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
         </CardContent>
       </Card>
 
-      {/* Selected date detail */}
-      {selectedDate && (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-          <Card className="border-0 shadow-card">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-3">
-                <div>
-                  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-primary" />
-                    {new Date(selectedDate).toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
-                  </h3>
-                  <p className="text-xs text-muted-foreground">{selectedLogs.length} siswa dijemput</p>
-                </div>
-                <div className="flex gap-1.5">
-                  <Button variant="outline" size="sm" onClick={() => exportDateExcel(selectedDate)} className="text-xs h-8">
-                    <FileSpreadsheet className="h-3.5 w-3.5 mr-1" /> Excel
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={() => exportDatePDF(selectedDate)} className="text-xs h-8">
-                    <FileText className="h-3.5 w-3.5 mr-1" /> PDF
-                  </Button>
-                </div>
-              </div>
+      {/* Calendar + Selected date side by side on desktop */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Compact Calendar */}
+        <Card className="border-0 shadow-card">
+          <CardContent className="p-3">
+            <div className="flex items-center justify-between mb-2">
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={prevMonth}><ChevronLeft className="h-3.5 w-3.5" /></Button>
+              <h3 className="text-xs font-bold text-foreground">
+                {currentMonth.toLocaleDateString("id-ID", { month: "long", year: "numeric" })}
+              </h3>
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={nextMonth}><ChevronRight className="h-3.5 w-3.5" /></Button>
+            </div>
 
-              {selectedLogs.length > 0 ? (
-                <div className="space-y-1.5 max-h-60 overflow-y-auto">
-                  {selectedLogs.map((l, i) => (
-                    <div key={l.id} className="flex items-center gap-2 p-2 rounded-lg bg-muted/50 text-sm">
-                      <span className="text-muted-foreground text-xs w-6">{i + 1}.</span>
-                      <span className="font-medium text-foreground flex-1">{l.students?.name || "-"}</span>
-                      <Badge variant="secondary" className="text-[10px]">{l.students?.class}</Badge>
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(l.pickup_time).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
-                      </span>
-                    </div>
-                  ))}
+            <div className="grid grid-cols-7 gap-0.5 mb-0.5">
+              {["Mi", "Se", "Sl", "Ra", "Ka", "Ju", "Sa"].map(d => (
+                <div key={d} className="text-center text-[9px] font-semibold text-muted-foreground py-0.5">{d}</div>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-7 gap-0.5">
+              {calendarDays.map((day, idx) => (
+                <button key={idx} disabled={day.date === 0}
+                  onClick={() => day.date > 0 && setSelectedDate(day.dateStr)}
+                  className={`relative rounded-md flex flex-col items-center justify-center text-[11px] py-1.5 transition-all
+                    ${day.date === 0 ? "invisible" : "hover:bg-muted cursor-pointer"}
+                    ${selectedDate === day.dateStr ? "ring-1.5 ring-primary bg-primary/10" : ""}
+                    ${new Date().toISOString().slice(0, 10) === day.dateStr ? "bg-primary/5 font-bold" : ""}
+                  `}>
+                  <span className="text-foreground leading-none">{day.date || ""}</span>
+                  {day.count > 0 && (
+                    <span className={`h-1 w-1 rounded-full mt-0.5 ${getDotColor(day.count)}`} />
+                  )}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-2 mt-2 justify-center">
+              <div className="flex items-center gap-0.5"><span className="h-1.5 w-1.5 rounded-full bg-primary/30" /><span className="text-[8px] text-muted-foreground">1-5</span></div>
+              <div className="flex items-center gap-0.5"><span className="h-1.5 w-1.5 rounded-full bg-primary/60" /><span className="text-[8px] text-muted-foreground">6-15</span></div>
+              <div className="flex items-center gap-0.5"><span className="h-1.5 w-1.5 rounded-full bg-primary" /><span className="text-[8px] text-muted-foreground">15+</span></div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Selected date detail */}
+        {selectedDate ? (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-0 shadow-card h-full">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-primary" />
+                      {new Date(selectedDate).toLocaleDateString("id-ID", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}
+                    </h3>
+                    <p className="text-xs text-muted-foreground">{selectedLogs.length} siswa dijemput</p>
+                  </div>
+                  <div className="flex gap-1.5">
+                    <Button variant="outline" size="sm" onClick={() => exportDateExcel(selectedDate)} className="text-xs h-7 px-2">
+                      <FileSpreadsheet className="h-3 w-3 mr-1" /> Excel
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => exportDatePDF(selectedDate)} className="text-xs h-7 px-2">
+                      <FileText className="h-3 w-3 mr-1" /> PDF
+                    </Button>
+                  </div>
                 </div>
-              ) : (
-                <p className="text-sm text-muted-foreground text-center py-4">Tidak ada data penjemputan</p>
-              )}
+
+                {selectedLogs.length > 0 ? (
+                  <div className="space-y-1.5 max-h-52 overflow-y-auto">
+                    {selectedLogs.map((l, i) => (
+                      <div key={l.id} className="flex items-center gap-2 p-2 rounded-lg bg-muted/50 text-sm">
+                        <span className="text-muted-foreground text-xs w-5">{i + 1}.</span>
+                        <span className="font-medium text-foreground flex-1 truncate">{l.students?.name || "-"}</span>
+                        <Badge variant="secondary" className="text-[10px]">{l.students?.class}</Badge>
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(l.pickup_time).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-4">Tidak ada data penjemputan</p>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+        ) : (
+          <Card className="border-0 shadow-card flex items-center justify-center">
+            <CardContent className="p-4 text-center">
+              <Calendar className="h-8 w-8 text-muted-foreground/20 mx-auto mb-2" />
+              <p className="text-xs text-muted-foreground">Pilih tanggal di kalender untuk melihat detail</p>
             </CardContent>
           </Card>
-        </motion.div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
