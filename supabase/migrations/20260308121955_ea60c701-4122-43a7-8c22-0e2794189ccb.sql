@@ -1,0 +1,1 @@
+ALTER TABLE public.school_integrations ADD COLUMN message_template text DEFAULT '📢 *Notifikasi Penjemputan*\n\nAnanda *{student_name}* (Kelas {class}) telah dijemput pada pukul {time}.\n\nDijemput oleh: {pickup_by}\n\n_Pesan otomatis dari Smart School Pickup System_';

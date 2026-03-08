@@ -7,6 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { MessageSquare, Save, Loader2, Send, School, Pencil, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -19,7 +20,18 @@ interface IntegrationData {
   api_url: string;
   api_key: string;
   is_active: boolean;
+  message_template: string;
 }
+
+const DEFAULT_TEMPLATE = `📢 *Notifikasi Penjemputan*\n\nAnanda *{student_name}* (Kelas {class}) telah dijemput pada pukul {time}.\n\nDijemput oleh: {pickup_by}\n\n_Pesan otomatis dari Smart School Pickup System_`;
+const TEMPLATE_PLACEHOLDERS = [
+  { key: "{student_name}", label: "Nama Siswa" },
+  { key: "{class}", label: "Kelas" },
+  { key: "{time}", label: "Waktu Jemput" },
+  { key: "{pickup_by}", label: "Dijemput Oleh" },
+  { key: "{parent_name}", label: "Nama Wali" },
+  { key: "{student_id}", label: "NIS" },
+];
 
 const SuperAdminWhatsApp = () => {
   const [integrations, setIntegrations] = useState<IntegrationData[]>([]);
@@ -32,6 +44,7 @@ const SuperAdminWhatsApp = () => {
     api_url: "http://proxy.onesender.net/api/v1/messages",
     api_key: "",
     is_active: false,
+    message_template: DEFAULT_TEMPLATE,
   });
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState<string | null>(null);
@@ -59,13 +72,13 @@ const SuperAdminWhatsApp = () => {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ school_id: "", api_url: "http://proxy.onesender.net/api/v1/messages", api_key: "", is_active: false });
+    setForm({ school_id: "", api_url: "http://proxy.onesender.net/api/v1/messages", api_key: "", is_active: false, message_template: DEFAULT_TEMPLATE });
     setDialogOpen(true);
   };
 
   const openEdit = (int: IntegrationData) => {
     setEditing(int);
-    setForm({ school_id: int.school_id, api_url: int.api_url, api_key: int.api_key, is_active: int.is_active });
+    setForm({ school_id: int.school_id, api_url: int.api_url, api_key: int.api_key, is_active: int.is_active, message_template: int.message_template || DEFAULT_TEMPLATE });
     setDialogOpen(true);
   };
 
@@ -80,6 +93,7 @@ const SuperAdminWhatsApp = () => {
       api_url: form.api_url,
       api_key: form.api_key,
       is_active: form.is_active,
+      message_template: form.message_template,
     };
 
     let error;
@@ -221,6 +235,28 @@ const SuperAdminWhatsApp = () => {
             <div>
               <Label>API Key / Token</Label>
               <Input type="password" value={form.api_key} onChange={(e) => setForm({ ...form, api_key: e.target.value })} placeholder="Token OneSender" />
+            </div>
+            <div>
+              <Label>Template Pesan WhatsApp</Label>
+              <Textarea
+                value={form.message_template}
+                onChange={(e) => setForm({ ...form, message_template: e.target.value })}
+                rows={6}
+                className="font-mono text-xs"
+                placeholder="Template pesan notifikasi..."
+              />
+              <div className="flex flex-wrap gap-1 mt-2">
+                {TEMPLATE_PLACEHOLDERS.map((p) => (
+                  <button
+                    key={p.key}
+                    type="button"
+                    className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                    onClick={() => setForm({ ...form, message_template: form.message_template + p.key })}
+                  >
+                    {p.key} <span className="text-muted-foreground">({p.label})</span>
+                  </button>
+                ))}
+              </div>
             </div>
             <div className="flex items-center gap-2">
               <Switch checked={form.is_active} onCheckedChange={(v) => setForm({ ...form, is_active: v })} />

@@ -166,9 +166,33 @@ const ScanQR = () => {
     toast.success(`${scannedStudent.name} berhasil ditandai pulang!`);
 
     if (scannedStudent.parent_phone) {
+      // Fetch custom message template from school integration
       const now = new Date();
       const timeStr = now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
-      const msg = `📢 *Notifikasi Penjemputan*\n\nAnanda *${scannedStudent.name}* (Kelas ${scannedStudent.class}) telah dijemput pada pukul ${timeStr}.\n\nDijemput oleh: ${profile.full_name || "Petugas"}\n\n_Pesan otomatis dari Smart School Pickup System_`;
+      const defaultTemplate = `📢 *Notifikasi Penjemputan*\n\nAnanda *{student_name}* (Kelas {class}) telah dijemput pada pukul {time}.\n\nDijemput oleh: {pickup_by}\n\n_Pesan otomatis dari Smart School Pickup System_`;
+
+      let template = defaultTemplate;
+      try {
+        const { data: integration } = await supabase
+          .from("school_integrations")
+          .select("message_template")
+          .eq("school_id", profile.school_id)
+          .eq("integration_type", "onesender")
+          .eq("is_active", true)
+          .maybeSingle();
+        if (integration?.message_template) {
+          template = integration.message_template;
+        }
+      } catch {}
+
+      const msg = template
+        .replace(/{student_name}/g, scannedStudent.name)
+        .replace(/{class}/g, scannedStudent.class)
+        .replace(/{time}/g, timeStr)
+        .replace(/{pickup_by}/g, profile.full_name || "Petugas")
+        .replace(/{parent_name}/g, scannedStudent.parent_name)
+        .replace(/{student_id}/g, scannedStudent.student_id);
+
       supabase.functions.invoke("send-whatsapp", {
         body: { phone: scannedStudent.parent_phone, message: msg, school_id: profile.school_id },
       }).then((res) => {

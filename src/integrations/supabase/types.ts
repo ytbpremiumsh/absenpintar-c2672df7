@@ -365,6 +365,7 @@ export type Database = {
           id: string
           integration_type: string
           is_active: boolean
+          message_template: string | null
           school_id: string
           updated_at: string
         }
@@ -375,6 +376,7 @@ export type Database = {
           id?: string
           integration_type?: string
           is_active?: boolean
+          message_template?: string | null
           school_id: string
           updated_at?: string
         }
@@ -385,6 +387,7 @@ export type Database = {
           id?: string
           integration_type?: string
           is_active?: boolean
+          message_template?: string | null
           school_id?: string
           updated_at?: string
         }
