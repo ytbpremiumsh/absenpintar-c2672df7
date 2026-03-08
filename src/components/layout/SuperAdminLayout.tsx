@@ -59,17 +59,17 @@ function SuperAdminSidebar() {
           if (items.length === 0) return null;
           return (
             <SidebarGroup key={group.key}>
-              <SidebarGroupLabel className="text-sidebar-foreground/40 text-[11px] uppercase tracking-widest font-semibold px-3 mb-1">
+              <SidebarGroupLabel className="text-sidebar-foreground/40 text-xs uppercase tracking-widest font-semibold px-4 mb-1.5">
                 {group.label}
               </SidebarGroupLabel>
               <SidebarGroupContent>
-                <SidebarMenu className="space-y-0.5">
+                <SidebarMenu className="space-y-1">
                   {items.map((item) => (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild isActive={isActive(item.url)} tooltip={item.title}>
-                        <NavLink to={item.url} end={item.url === "/super-admin"} className="hover:bg-sidebar-accent/60 rounded-xl px-3 py-2.5 transition-all duration-200" activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-semibold shadow-sm">
-                          <item.icon className="h-5 w-5" />
-                          {!collapsed && <span className="text-[15px]">{item.title}</span>}
+                        <NavLink to={item.url} end={item.url === "/super-admin"} className="hover:bg-sidebar-accent/60 rounded-xl px-4 py-3 transition-all duration-200" activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-semibold shadow-sm">
+                          <item.icon className="h-[22px] w-[22px]" />
+                          {!collapsed && <span className="text-base font-normal tracking-wide">{item.title}</span>}
                         </NavLink>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -86,9 +86,9 @@ function SuperAdminSidebar() {
         )}
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton tooltip="Logout" className="text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-xl px-3 py-2.5" onClick={async () => { await signOut(); navigate("/login"); }}>
-              <LogOut className="h-5 w-5" />
-              {!collapsed && <span className="text-[15px] font-medium">Logout</span>}
+            <SidebarMenuButton tooltip="Logout" className="text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-xl px-4 py-3" onClick={async () => { await signOut(); navigate("/login"); }}>
+              <LogOut className="h-[22px] w-[22px]" />
+              {!collapsed && <span className="text-base font-medium tracking-wide">Keluar</span>}
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

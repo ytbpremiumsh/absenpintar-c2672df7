@@ -78,11 +78,11 @@ export function AppSidebar() {
           <NavLink
             to={item.url}
             end
-            className="hover:bg-sidebar-accent/60 rounded-xl px-3 py-2.5 transition-all duration-200"
+            className="hover:bg-sidebar-accent/60 rounded-xl px-4 py-3 transition-all duration-200"
             activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-semibold shadow-sm"
           >
-            <item.icon className="h-5 w-5" />
-            {!collapsed && <span className="text-[15px]">{item.title}</span>}
+            <item.icon className="h-[22px] w-[22px]" />
+            {!collapsed && <span className="text-base font-normal tracking-wide">{item.title}</span>}
           </NavLink>
         </SidebarMenuButton>
       </SidebarMenuItem>
@@ -109,26 +109,26 @@ export function AppSidebar() {
 
       <SidebarContent className="px-2">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/40 text-[11px] uppercase tracking-widest font-semibold px-3 mb-1">
+          <SidebarGroupLabel className="text-sidebar-foreground/40 text-xs uppercase tracking-widest font-semibold px-4 mb-1.5">
             Menu Utama
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-0.5">{renderNavItems(mainNav)}</SidebarMenu>
+            <SidebarMenu className="space-y-1">{renderNavItems(mainNav)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/40 text-[11px] uppercase tracking-widest font-semibold px-3 mb-1">
+          <SidebarGroupLabel className="text-sidebar-foreground/40 text-xs uppercase tracking-widest font-semibold px-4 mb-1.5">
             Data Sekolah
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-0.5">{renderNavItems(dataNav)}</SidebarMenu>
+            <SidebarMenu className="space-y-1">{renderNavItems(dataNav)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
         {/* Public Link */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/40 text-[11px] uppercase tracking-widest font-semibold px-3 mb-1">
+          <SidebarGroupLabel className="text-sidebar-foreground/40 text-xs uppercase tracking-widest font-semibold px-4 mb-1.5">
             Halaman Publik
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -137,10 +137,10 @@ export function AppSidebar() {
                 <SidebarMenuButton
                   tooltip="Salin Link Publik"
                   onClick={copyPublicLink}
-                  className="text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/60 rounded-xl px-3 py-2.5 transition-all duration-200"
+                  className="text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/60 rounded-xl px-4 py-3 transition-all duration-200"
                 >
-                  <Globe className="h-5 w-5" />
-                  {!collapsed && <span className="text-[15px]">Live Monitor</span>}
+                  <Globe className="h-[22px] w-[22px]" />
+                  {!collapsed && <span className="text-base font-normal tracking-wide">Live Monitor</span>}
                   {!collapsed && <Copy className="h-3.5 w-3.5 ml-auto opacity-40" />}
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -150,11 +150,11 @@ export function AppSidebar() {
 
         {/* Laporan section */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/40 text-[11px] uppercase tracking-widest font-semibold px-3 mb-1">
+          <SidebarGroupLabel className="text-sidebar-foreground/40 text-xs uppercase tracking-widest font-semibold px-4 mb-1.5">
             Laporan
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-0.5">
+            <SidebarMenu className="space-y-1">
               {renderNavItems([{ title: "Riwayat", url: "/history", icon: History }])}
               {features.canExportReport ? (
                 renderNavItems([{ title: "Export Harian", url: "/export-history", icon: FileBarChart }])
@@ -163,12 +163,12 @@ export function AppSidebar() {
                   <SidebarMenuButton
                     tooltip="Export Harian (Upgrade)"
                     onClick={() => toast.error("Fitur Export Harian tersedia di paket Basic ke atas. Silakan upgrade langganan Anda.")}
-                    className="text-sidebar-foreground/50 hover:bg-sidebar-accent/40 rounded-xl px-3 py-2.5 transition-all duration-200 opacity-60"
+                    className="text-sidebar-foreground/50 hover:bg-sidebar-accent/40 rounded-xl px-4 py-3 transition-all duration-200 opacity-60"
                   >
-                    <FileBarChart className="h-5 w-5" />
+                    <FileBarChart className="h-[22px] w-[22px]" />
                     {!collapsed && (
                       <>
-                        <span className="text-[15px]">Export Harian</span>
+                        <span className="text-base font-normal tracking-wide">Export Harian</span>
                         <Lock className="h-3.5 w-3.5 ml-auto text-warning" />
                       </>
                     )}
@@ -180,11 +180,11 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/40 text-[11px] uppercase tracking-widest font-semibold px-3 mb-1">
+          <SidebarGroupLabel className="text-sidebar-foreground/40 text-xs uppercase tracking-widest font-semibold px-4 mb-1.5">
             Pengaturan
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-0.5">{renderNavItems(settingsNav)}</SidebarMenu>
+            <SidebarMenu className="space-y-1">{renderNavItems(settingsNav)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
@@ -197,11 +197,11 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton
               tooltip="Logout"
-              className="text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-xl px-3 py-2.5 transition-all duration-200"
+              className="text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-xl px-4 py-3 transition-all duration-200"
               onClick={handleLogout}
             >
-              <LogOut className="h-5 w-5" />
-              {!collapsed && <span className="text-[15px] font-medium">Logout</span>}
+              <LogOut className="h-[22px] w-[22px]" />
+              {!collapsed && <span className="text-base font-medium tracking-wide">Keluar</span>}
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
