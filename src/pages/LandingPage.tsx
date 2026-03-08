@@ -344,22 +344,89 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-16 sm:py-24 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/[0.03] to-transparent" />
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center relative">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-          >
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground">Siap Mencoba?</h2>
-            <p className="mt-3 text-muted-foreground">Daftarkan sekolah Anda dan mulai gunakan sistem penjemputan digital.</p>
-            <Button size="lg" className="mt-8 gradient-primary text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-shadow" onClick={() => navigate("/register")}>
-              {get("cta_text", "Mulai Sekarang")} <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </motion.div>
+      {/* Download / CTA Banner */}
+      <section className="py-16 sm:py-24">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="relative rounded-3xl gradient-primary overflow-hidden min-h-[280px] sm:min-h-[320px]">
+            {/* Background decorations */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-primary-foreground/5 rounded-full -translate-y-1/2 translate-x-1/4" />
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary-foreground/5 rounded-full translate-y-1/3 -translate-x-1/4" />
+
+            <div className="relative grid lg:grid-cols-2 items-center h-full">
+              {/* Left text */}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5 }}
+                className="p-8 sm:p-12 lg:p-14"
+              >
+                <span className="text-primary-foreground/70 text-xs sm:text-sm font-semibold tracking-widest uppercase">
+                  Mulai Sekarang
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-4 block w-fit bg-primary-foreground text-primary border-0 hover:bg-primary-foreground/90 hover:text-primary font-semibold shadow-lg"
+                  onClick={() => navigate("/register")}
+                >
+                  Daftar Sekarang
+                </Button>
+                <h2 className="mt-6 text-2xl sm:text-3xl lg:text-4xl font-extrabold text-primary-foreground leading-tight">
+                  Kelola Penjemputan Lebih Mudah Bersama {get("hero_title", "Smart Pickup")}
+                </h2>
+              </motion.div>
+
+              {/* Right phone mockup */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="hidden lg:flex justify-center items-end h-full"
+              >
+                <div className="relative -mb-1">
+                  {/* Phone frame */}
+                  <div className="w-52 rounded-[2rem] border-[4px] border-foreground/80 bg-background shadow-2xl overflow-hidden">
+                    {/* Notch */}
+                    <div className="mx-auto mt-2 w-16 h-1.5 rounded-full bg-foreground/20" />
+                    {/* Screen content */}
+                    <div className="p-3 mt-1 space-y-2.5">
+                      <div className="rounded-xl bg-primary/15 p-3 space-y-1">
+                        <div className="h-2 bg-primary/30 rounded w-1/2" />
+                        <div className="h-4 bg-primary/20 rounded w-3/4 font-bold" />
+                        <div className="h-1.5 bg-muted rounded w-1/3 mt-1" />
+                      </div>
+                      <div className="text-[8px] font-semibold text-foreground/50 px-1">Menu Utama</div>
+                      <div className="grid grid-cols-4 gap-1.5">
+                        {[1, 2, 3, 4].map((n) => (
+                          <div key={n} className="flex flex-col items-center gap-0.5">
+                            <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center">
+                              <div className="w-4 h-4 rounded-md bg-primary/20" />
+                            </div>
+                            <div className="h-1 bg-muted rounded w-6" />
+                          </div>
+                        ))}
+                      </div>
+                      <div className="text-[8px] font-semibold text-foreground/50 px-1">Aktivitas</div>
+                      <div className="space-y-1.5">
+                        {[1, 2].map((n) => (
+                          <div key={n} className="rounded-lg bg-muted/50 p-2 flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-full bg-primary/15 flex-shrink-0" />
+                            <div className="flex-1 space-y-0.5">
+                              <div className="h-1.5 bg-foreground/10 rounded w-3/4" />
+                              <div className="h-1 bg-muted rounded w-1/2" />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="h-7 rounded-lg gradient-primary opacity-80" />
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
         </div>
       </section>
 
