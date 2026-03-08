@@ -167,10 +167,10 @@ export function AppSidebar() {
                     onClick={() => toast.error("Fitur Export Harian tersedia di paket Basic ke atas. Silakan upgrade langganan Anda.")}
                     className="text-sidebar-foreground/50 hover:bg-sidebar-accent/40 rounded-xl px-4 py-3 transition-all duration-200 opacity-60"
                   >
-                    <FileBarChart className="h-[22px] w-[22px]" />
+                    <FileBarChart className="h-4 w-4" />
                     {!collapsed && (
                       <>
-                        <span className="text-base font-normal tracking-wide">Export Harian</span>
+                        <span className="text-sm">Export Harian</span>
                         <Lock className="h-3.5 w-3.5 ml-auto text-warning" />
                       </>
                     )}
