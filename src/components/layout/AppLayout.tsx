@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export function AppLayout() {
-  const { user, profile, loading, signOut } = useAuth();
+  const { user, profile, roles, loading, signOut } = useAuth();
   const navigate = useNavigate();
 
   if (loading) {
@@ -24,6 +24,11 @@ export function AppLayout() {
 
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+
+  // Super admins should use their own dashboard
+  if (roles.includes("super_admin")) {
+    return <Navigate to="/super-admin" replace />;
   }
 
   const initials = profile?.full_name

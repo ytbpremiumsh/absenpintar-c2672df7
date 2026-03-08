@@ -75,7 +75,7 @@ serve(async (req) => {
         .insert({ user_id: userId, role });
     }
 
-    // Create pickup_settings for new school
+    // Create pickup_settings and auto-assign Free subscription for new school
     if (resolvedSchoolId && npsn) {
       const { data: existingSettings } = await supabaseAdmin
         .from('pickup_settings')
@@ -87,6 +87,31 @@ serve(async (req) => {
         await supabaseAdmin
           .from('pickup_settings')
           .insert({ school_id: resolvedSchoolId, is_active: false });
+      }
+
+      // Auto-assign Free plan subscription
+      const { data: freePlan } = await supabaseAdmin
+        .from('subscription_plans')
+        .select('id')
+        .eq('price', 0)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (freePlan) {
+        const { data: existingSub } = await supabaseAdmin
+          .from('school_subscriptions')
+          .select('id')
+          .eq('school_id', resolvedSchoolId)
+          .maybeSingle();
+
+        if (!existingSub) {
+          await supabaseAdmin.from('school_subscriptions').insert({
+            school_id: resolvedSchoolId,
+            plan_id: freePlan.id,
+            status: 'active',
+            expires_at: null, // Free = no expiry
+          });
+        }
       }
     }
 
