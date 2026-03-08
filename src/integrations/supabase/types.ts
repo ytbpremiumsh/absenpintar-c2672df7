@@ -147,19 +147,25 @@ export type Database = {
           created_at: string
           id: string
           is_active: boolean
+          school_end_time: string | null
           school_id: string
+          school_start_time: string | null
         }
         Insert: {
           created_at?: string
           id?: string
           is_active?: boolean
+          school_end_time?: string | null
           school_id: string
+          school_start_time?: string | null
         }
         Update: {
           created_at?: string
           id?: string
           is_active?: boolean
+          school_end_time?: string | null
           school_id?: string
+          school_start_time?: string | null
         }
         Relationships: [
           {
