@@ -342,46 +342,11 @@ const LandingPage = () => {
             <p className="mt-3 text-muted-foreground">Bebas pilih cara bayar! Semua metode populer tersedia dan tanpa ribet.</p>
           </motion.div>
 
-          <div className="space-y-6">
+          <div className="space-y-8">
             {[
-              {
-                title: "E-Wallet",
-                desc: "Pembayaran melalui e-wallet",
-                logos: [
-                  { src: "/images/payments/shopeepay.png", alt: "ShopeePay" },
-                  { src: "/images/payments/dana.png", alt: "DANA" },
-                  { src: "/images/payments/ovo.png", alt: "OVO" },
-                  { src: "/images/payments/gopay.png", alt: "GoPay" },
-                  { src: "/images/payments/qris.png", alt: "QRIS" },
-                ],
-              },
-              {
-                title: "Kartu Kredit",
-                desc: "Pembayaran internasional menggunakan kartu kredit",
-                logos: [
-                  { src: "/images/payments/mastercard.png", alt: "Mastercard" },
-                  { src: "/images/payments/visa.png", alt: "Visa" },
-                ],
-              },
-              {
-                title: "Transfer Bank",
-                desc: "Pembayaran melalui transfer antar bank",
-                logos: [
-                  { src: "/images/payments/bca.png", alt: "BCA" },
-                  { src: "/images/payments/bri.png", alt: "BRI" },
-                  { src: "/images/payments/mandiri.png", alt: "Mandiri" },
-                  { src: "/images/payments/bni.png", alt: "BNI" },
-                  { src: "/images/payments/bsi.png", alt: "BSI" },
-                ],
-              },
-              {
-                title: "Gerai / Outlet",
-                desc: "Pembayaran melalui gerai Alfamart atau Indomaret",
-                logos: [
-                  { src: "/images/payments/alfamart.png", alt: "Alfamart" },
-                  { src: "/images/payments/indomaret.png", alt: "Indomaret" },
-                ],
-              },
+              { title: "E-Wallet", desc: "Pembayaran melalui e-wallet", img: "/images/payments/ewallet.webp" },
+              { title: "Transfer Bank", desc: "Pembayaran melalui transfer antar bank", img: "/images/payments/transfer-bank.webp" },
+              { title: "Gerai / Outlet", desc: "Pembayaran melalui gerai Alfamart atau Indomaret", img: "/images/payments/gerai.webp" },
             ].map((category, ci) => (
               <motion.div
                 key={ci}
@@ -393,20 +358,7 @@ const LandingPage = () => {
               >
                 <h4 className="font-bold text-foreground text-sm">{category.title}</h4>
                 <p className="text-xs text-muted-foreground mb-3">{category.desc}</p>
-                <div className="flex flex-wrap items-center gap-4">
-                  {category.logos.map((logo, li) => (
-                    <div
-                      key={li}
-                      className="h-10 sm:h-12 px-3 bg-background rounded-lg border border-border/50 flex items-center justify-center shadow-sm hover:shadow-md transition-shadow"
-                    >
-                      <img
-                        src={logo.src}
-                        alt={logo.alt}
-                        className="h-6 sm:h-8 w-auto object-contain"
-                      />
-                    </div>
-                  ))}
-                </div>
+                <img src={category.img} alt={category.title} className="h-8 sm:h-10 w-auto object-contain" />
               </motion.div>
             ))}
           </div>
