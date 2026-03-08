@@ -304,6 +304,15 @@ const Students = () => {
                                         variant="ghost"
                                         size="icon"
                                         className="h-8 w-8"
+                                        onClick={() => navigate(`/students/${student.id}`)}
+                                        title="Lihat Detail"
+                                      >
+                                        <Eye className="h-4 w-4 text-primary" />
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8"
                                         onClick={() => {
                                           setSelectedStudent(student);
                                           setQrDialogOpen(true);
