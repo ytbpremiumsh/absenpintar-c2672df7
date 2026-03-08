@@ -5,7 +5,6 @@ import {
   Monitor,
   History,
   CreditCard,
-  School,
   LogOut,
   GraduationCap,
   UserCheck,
@@ -52,7 +51,7 @@ const settingsNav = [
 ];
 
 export function AppSidebar() {
-  const { state } = useSidebar();
+  const { state, isMobile, setOpenMobile } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
   const navigate = useNavigate();
@@ -67,6 +66,11 @@ export function AppSidebar() {
     navigate("/login");
   };
 
+  // Close mobile sidebar on navigation
+  const handleNavClick = () => {
+    if (isMobile) setOpenMobile(false);
+  };
+
   const renderNavItems = (items: typeof mainNav) =>
     items.map((item) => (
       <SidebarMenuItem key={item.title}>
@@ -74,78 +78,76 @@ export function AppSidebar() {
           <NavLink
             to={item.url}
             end
-            className="text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground rounded-xl px-4 py-3 transition-all duration-200"
+            onClick={handleNavClick}
+            className="text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground rounded-xl px-3 py-2.5 transition-all duration-200"
             activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-semibold shadow-sm"
           >
-            <item.icon className="h-4 w-4" />
-            {!collapsed && <span className="text-sm">{item.title}</span>}
+            <item.icon className="h-4 w-4 shrink-0" />
+            {!collapsed && <span className="text-sm truncate">{item.title}</span>}
           </NavLink>
         </SidebarMenuButton>
       </SidebarMenuItem>
     ));
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-sidebar-border shadow-sm font-['Nunito',sans-serif]">
-      <SidebarHeader className="p-5 pb-4">
+    <Sidebar collapsible="icon" className="border-r border-sidebar-border font-['Nunito',sans-serif]">
+      <SidebarHeader className="p-4 pb-3">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl gradient-primary shrink-0 shadow-md">
-            <ClipboardCheck className="h-5 w-5 text-primary-foreground" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl gradient-primary shrink-0 shadow-md">
+            <ClipboardCheck className="h-4.5 w-4.5 text-primary-foreground" />
           </div>
           {!collapsed && (
-            <div className="flex flex-col">
-              <span className="text-base font-extrabold text-sidebar-foreground tracking-tight">Smart Attendance</span>
-              <span className="text-[11px] text-sidebar-foreground/50 font-medium">School System</span>
+            <div className="flex flex-col min-w-0">
+              <span className="text-sm font-extrabold text-sidebar-foreground tracking-tight truncate">Smart Attendance</span>
+              <span className="text-[10px] text-sidebar-foreground/50 font-medium">School System</span>
             </div>
           )}
         </div>
         {!collapsed && (
-          <div className="mt-4 h-px bg-gradient-to-r from-transparent via-sidebar-border to-transparent" />
+          <div className="mt-3 h-px bg-gradient-to-r from-transparent via-sidebar-border to-transparent" />
         )}
       </SidebarHeader>
 
-      <SidebarContent className="px-2">
+      <SidebarContent className="px-2 overflow-y-auto overflow-x-hidden">
         {isTeacherOnly ? (
-          <>
-            <SidebarGroup>
-              <SidebarGroupLabel className="text-sidebar-foreground/40 text-xs uppercase tracking-widest font-semibold px-4 mb-1.5">
-                Wali Kelas
-              </SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu className="space-y-1">
-                  {renderNavItems([
-                    { title: "Dashboard Kelas", url: "/wali-kelas-dashboard", icon: LayoutDashboard },
-                  ])}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          </>
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] uppercase tracking-widest font-semibold px-3 mb-1">
+              Wali Kelas
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu className="space-y-0.5">
+                {renderNavItems([
+                  { title: "Dashboard Kelas", url: "/wali-kelas-dashboard", icon: LayoutDashboard },
+                ])}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
         ) : (
           <>
             <SidebarGroup>
-              <SidebarGroupLabel className="text-sidebar-foreground/40 text-xs uppercase tracking-widest font-semibold px-4 mb-1.5">
+              <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] uppercase tracking-widest font-semibold px-3 mb-1">
                 Menu Utama
               </SidebarGroupLabel>
               <SidebarGroupContent>
-                <SidebarMenu className="space-y-1">{renderNavItems(mainNav)}</SidebarMenu>
+                <SidebarMenu className="space-y-0.5">{renderNavItems(mainNav)}</SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
 
             <SidebarGroup>
-              <SidebarGroupLabel className="text-sidebar-foreground/40 text-xs uppercase tracking-widest font-semibold px-4 mb-1.5">
+              <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] uppercase tracking-widest font-semibold px-3 mb-1">
                 Data Sekolah
               </SidebarGroupLabel>
               <SidebarGroupContent>
-                <SidebarMenu className="space-y-1">{renderNavItems(dataNav)}</SidebarMenu>
+                <SidebarMenu className="space-y-0.5">{renderNavItems(dataNav)}</SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
 
-            {/* Laporan section */}
             <SidebarGroup>
-              <SidebarGroupLabel className="text-sidebar-foreground/40 text-xs uppercase tracking-widest font-semibold px-4 mb-1.5">
+              <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] uppercase tracking-widest font-semibold px-3 mb-1">
                 Laporan
               </SidebarGroupLabel>
               <SidebarGroupContent>
-                <SidebarMenu className="space-y-1">
+                <SidebarMenu className="space-y-0.5">
                   {renderNavItems([{ title: "Riwayat Absensi", url: "/history", icon: History }])}
                   {features.canExportReport ? (
                     renderNavItems([{ title: "Rekap & Export", url: "/export-history", icon: FileBarChart }])
@@ -154,13 +156,13 @@ export function AppSidebar() {
                       <SidebarMenuButton
                         tooltip="Rekap & Export (Upgrade)"
                         onClick={() => toast.error("Fitur Rekap & Export tersedia di paket Basic ke atas. Silakan upgrade langganan Anda.")}
-                        className="text-sidebar-foreground/50 hover:bg-sidebar-accent/40 rounded-xl px-4 py-3 transition-all duration-200 opacity-60"
+                        className="text-sidebar-foreground/50 hover:bg-sidebar-accent/40 rounded-xl px-3 py-2.5 transition-all duration-200 opacity-60"
                       >
-                        <FileBarChart className="h-4 w-4" />
+                        <FileBarChart className="h-4 w-4 shrink-0" />
                         {!collapsed && (
                           <>
-                            <span className="text-sm">Rekap & Export</span>
-                            <Lock className="h-3.5 w-3.5 ml-auto text-warning" />
+                            <span className="text-sm truncate">Rekap & Export</span>
+                            <Lock className="h-3.5 w-3.5 ml-auto text-warning shrink-0" />
                           </>
                         )}
                       </SidebarMenuButton>
@@ -171,11 +173,11 @@ export function AppSidebar() {
             </SidebarGroup>
 
             <SidebarGroup>
-              <SidebarGroupLabel className="text-sidebar-foreground/40 text-xs uppercase tracking-widest font-semibold px-4 mb-1.5">
+              <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] uppercase tracking-widest font-semibold px-3 mb-1">
                 Pengaturan
               </SidebarGroupLabel>
               <SidebarGroupContent>
-                <SidebarMenu className="space-y-1">{renderNavItems(settingsNav)}</SidebarMenu>
+                <SidebarMenu className="space-y-0.5">{renderNavItems(settingsNav)}</SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
           </>
@@ -184,16 +186,16 @@ export function AppSidebar() {
 
       <SidebarFooter className="p-3">
         {!collapsed && (
-          <div className="mb-3 mx-2 h-px bg-gradient-to-r from-transparent via-sidebar-border to-transparent" />
+          <div className="mb-2 mx-2 h-px bg-gradient-to-r from-transparent via-sidebar-border to-transparent" />
         )}
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
               tooltip="Logout"
-              className="text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-xl px-4 py-3 transition-all duration-200"
+              className="text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-xl px-3 py-2.5 transition-all duration-200"
               onClick={handleLogout}
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut className="h-4 w-4 shrink-0" />
               {!collapsed && <span className="text-sm font-medium">Keluar</span>}
             </SidebarMenuButton>
           </SidebarMenuItem>
