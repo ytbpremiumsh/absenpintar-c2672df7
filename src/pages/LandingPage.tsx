@@ -358,7 +358,7 @@ const LandingPage = () => {
               >
                 <h4 className="font-bold text-foreground text-sm">{category.title}</h4>
                 <p className="text-xs text-muted-foreground mb-3">{category.desc}</p>
-                <img src={category.img} alt={category.title} className="h-8 sm:h-10 w-auto object-contain" />
+                <img src={category.img} alt={category.title} className="max-w-full sm:max-w-2xl h-auto object-contain" />
               </motion.div>
             ))}
           </div>
