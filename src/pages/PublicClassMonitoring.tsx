@@ -45,10 +45,11 @@ const PublicClassMonitoring = () => {
   const [confirmStudent, setConfirmStudent] = useState<StudentStatus | null>(null);
   const [processing, setProcessing] = useState(false);
   const prevPickedIds = useRef<Set<string>>(new Set());
+  const initialLoad = useRef(true);
 
   const decodedClass = className ? decodeURIComponent(className) : "";
 
-  const fetchData = async (showRefresh = false, announceNew = false) => {
+  const fetchData = async (showRefresh = false) => {
     if (!schoolId || !decodedClass) return;
     if (showRefresh) setIsRefreshing(true);
     try {
@@ -60,21 +61,23 @@ const PublicClassMonitoring = () => {
       if (json.error) return;
 
       setSchoolName(json.school?.name || "Smart Pickup");
-      const allStudents: StudentStatus[] = [];
-      Object.values(json.classes as Record<string, StudentStatus[]>).forEach((arr) => allStudents.push(...arr));
-      
-      // Announce newly picked up students
-      if (announceNew) {
-        const newPicked = allStudents.filter(
+
+      // Only get students for this specific class
+      const classStudents: StudentStatus[] = json.classes[decodedClass] || [];
+
+      // Announce newly picked up students (skip first load)
+      if (!initialLoad.current) {
+        const newPicked = classStudents.filter(
           (s) => s.status === "picked_up" && !prevPickedIds.current.has(s.id)
         );
         newPicked.forEach((s) => announcePickup(s.name, s.class));
       }
+      initialLoad.current = false;
 
       // Update previous picked IDs
-      prevPickedIds.current = new Set(allStudents.filter(s => s.status === "picked_up").map(s => s.id));
+      prevPickedIds.current = new Set(classStudents.filter(s => s.status === "picked_up").map(s => s.id));
 
-      setStudents(allStudents);
+      setStudents(classStudents);
       setLastUpdated(new Date());
     } catch (err) {
       console.error(err);
@@ -89,7 +92,7 @@ const PublicClassMonitoring = () => {
     const interval = setInterval(() => fetchData(), 10000);
     const channel = supabase
       .channel(`public-class-${decodedClass}`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "pickup_logs" }, () => fetchData(true, true))
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "pickup_logs" }, () => fetchData(true))
       .subscribe();
     return () => {
       clearInterval(interval);
@@ -111,14 +114,14 @@ const PublicClassMonitoring = () => {
         body: JSON.stringify({
           school_id: schoolId,
           student_id: student.id,
-          pickup_by: `Wali: ${student.parent_name}`,
+          pickup_by: `Wali Murid (Publik)`,
         }),
       });
       const json = await res.json();
       if (!res.ok) {
-        toast.error(json.error || "Gagal memproses penjemputan");
+        toast.error(json.error || "Gagal memproses kepulangan");
       } else {
-        toast.success(`${student.name} berhasil dijemput!`);
+        toast.success(`${student.name} berhasil ditandai pulang!`);
         announcePickup(student.name, student.class);
         fetchData(true);
       }
@@ -162,7 +165,7 @@ const PublicClassMonitoring = () => {
                 <h1 className="text-lg font-bold">{schoolName} — Kelas {decodedClass}</h1>
                 <div className="flex items-center gap-2 text-xs opacity-80">
                   <LiveDot />
-                  <span>Monitoring Penjemputan Realtime</span>
+                  <span>Monitoring Kepulangan Realtime</span>
                   <Volume2 className="h-3 w-3 ml-1" />
                 </div>
               </div>
@@ -188,7 +191,7 @@ const PublicClassMonitoring = () => {
         <div className="grid grid-cols-3 gap-3">
           {[
             { icon: Users, value: students.length, label: "Total", color: "text-primary", bg: "bg-primary/10" },
-            { icon: UserCheck, value: picked.length, label: "Dijemput", color: "text-success", bg: "bg-success/10" },
+            { icon: UserCheck, value: picked.length, label: "Sudah Pulang", color: "text-success", bg: "bg-success/10" },
             { icon: UserX, value: waiting.length, label: "Menunggu", color: "text-destructive", bg: "bg-destructive/10" },
           ].map((stat, i) => (
             <motion.div key={stat.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
@@ -231,7 +234,7 @@ const PublicClassMonitoring = () => {
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <div className="h-3 w-3 rounded-full bg-destructive animate-pulse" />
-                <h2 className="font-bold text-foreground">Belum Dijemput ({waiting.length})</h2>
+                <h2 className="font-bold text-foreground">Belum Pulang ({waiting.length})</h2>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <AnimatePresence>
@@ -245,7 +248,7 @@ const PublicClassMonitoring = () => {
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="font-semibold text-sm text-foreground truncate">{s.name}</p>
-                            <p className="text-xs text-muted-foreground">NIS: {s.student_id} • {s.parent_name}</p>
+                            <p className="text-xs text-muted-foreground">NIS: {s.student_id}</p>
                           </div>
                           <Button
                             size="sm"
@@ -253,7 +256,7 @@ const PublicClassMonitoring = () => {
                             className="shrink-0 text-xs h-8 px-3 bg-success hover:bg-success/90 text-success-foreground"
                           >
                             <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
-                            Jemput
+                            Pulang
                           </Button>
                         </CardContent>
                       </Card>
@@ -269,7 +272,7 @@ const PublicClassMonitoring = () => {
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <div className="h-3 w-3 rounded-full bg-success" />
-                <h2 className="font-bold text-foreground">Sudah Dijemput ({picked.length})</h2>
+                <h2 className="font-bold text-foreground">Sudah Pulang ({picked.length})</h2>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <AnimatePresence>
@@ -283,11 +286,11 @@ const PublicClassMonitoring = () => {
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="font-semibold text-sm text-foreground truncate">{s.name}</p>
-                            <p className="text-xs text-muted-foreground">NIS: {s.student_id} • {s.parent_name}</p>
+                            <p className="text-xs text-muted-foreground">NIS: {s.student_id}</p>
                           </div>
                           <div className="text-right shrink-0">
                             <Badge className="bg-success/10 text-success border-success/20 text-[10px]">
-                              <UserCheck className="h-3 w-3 mr-1" /> Dijemput
+                              <UserCheck className="h-3 w-3 mr-1" /> Pulang
                             </Badge>
                             {s.pickup_time && (
                               <div className="flex items-center gap-1 text-muted-foreground mt-1 justify-end">
@@ -328,9 +331,9 @@ const PublicClassMonitoring = () => {
       <AlertDialog open={!!confirmStudent} onOpenChange={() => setConfirmStudent(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Konfirmasi Penjemputan</AlertDialogTitle>
+            <AlertDialogTitle>Konfirmasi Kepulangan</AlertDialogTitle>
             <AlertDialogDescription>
-              Apakah Anda yakin ingin menandai <strong>{confirmStudent?.name}</strong> (Kelas {confirmStudent?.class}) sebagai sudah dijemput oleh <strong>{confirmStudent?.parent_name}</strong>?
+              Apakah Anda yakin ingin menandai <strong>{confirmStudent?.name}</strong> (Kelas {confirmStudent?.class}) sebagai sudah pulang?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -340,7 +343,7 @@ const PublicClassMonitoring = () => {
               onClick={() => confirmStudent && handlePublicPickup(confirmStudent)}
               className="bg-success hover:bg-success/90 text-success-foreground"
             >
-              {processing ? "Memproses..." : "Ya, Konfirmasi Jemput"}
+              {processing ? "Memproses..." : "Ya, Konfirmasi Pulang"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

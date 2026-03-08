@@ -8,7 +8,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import jsQR from "jsqr";
-
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
 
 interface FoundStudent {
   id: string;
@@ -28,6 +30,7 @@ const ScanQR = () => {
   const [processing, setProcessing] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState("");
+  const [successPopup, setSuccessPopup] = useState<FoundStudent | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -55,14 +58,12 @@ const ScanQR = () => {
 
       setScannedStudent(data);
       setConfirmed(false);
-      // Pause scanning but DON'T stop camera
       scanPaused.current = true;
     } finally {
       isLookingUp.current = false;
     }
   }, [profile?.school_id]);
 
-  // QR scanning loop
   const startScanning = useCallback(() => {
     if (scanIntervalRef.current) return;
     
@@ -103,7 +104,6 @@ const ScanQR = () => {
   const startCamera = async () => {
     setCameraError("");
     try {
-      // Try rear camera first, fallback to any camera for mobile compatibility
       let stream: MediaStream;
       try {
         stream = await navigator.mediaDevices.getUserMedia({
@@ -165,22 +165,24 @@ const ScanQR = () => {
     setProcessing(false);
 
     if (error) {
-      toast.error("Gagal memproses penjemputan: " + error.message);
+      toast.error("Gagal memproses kepulangan: " + error.message);
       return;
     }
 
     setConfirmed(true);
-    toast.success("Penjemputan berhasil dicatat!");
-    
-    // Voice announcement moved to public monitoring pages
+    setSuccessPopup(scannedStudent);
 
     setTimeout(() => {
       setScannedStudent(null);
       setConfirmed(false);
       setManualCode("");
-      // Resume scanning (camera stays open)
       scanPaused.current = false;
-    }, 3000);
+    }, 2000);
+
+    // Auto-close popup after 5 seconds
+    setTimeout(() => {
+      setSuccessPopup(null);
+    }, 5000);
   };
 
   const handleCancel = () => {
@@ -297,7 +299,7 @@ const ScanQR = () => {
                     className="flex-1 h-11 bg-success hover:bg-success/90 text-success-foreground font-semibold"
                   >
                     <CheckCircle2 className="h-4 w-4 mr-1" />
-                    Konfirmasi
+                    Konfirmasi Pulang
                   </Button>
                 </div>
               </CardContent>
@@ -310,7 +312,7 @@ const ScanQR = () => {
             <Card className="shadow-elevated border-0 bg-success">
               <CardContent className="p-6 sm:p-8 text-center space-y-2 sm:space-y-3">
                 <CheckCircle2 className="h-12 w-12 sm:h-16 sm:w-16 text-success-foreground mx-auto" />
-                <h2 className="text-lg sm:text-xl font-bold text-success-foreground">✅ Berhasil Dijemput</h2>
+                <h2 className="text-lg sm:text-xl font-bold text-success-foreground">✅ Berhasil Pulang</h2>
                 <div className="text-success-foreground/90 space-y-0.5 text-xs sm:text-sm">
                   <p><strong>{scannedStudent.name}</strong></p>
                   <p>Kelas: {scannedStudent.class}</p>
@@ -327,6 +329,35 @@ const ScanQR = () => {
           <p className="text-xs sm:text-sm text-muted-foreground">Arahkan kamera ke QR Code atau masukkan NIS manual</p>
         </div>
       )}
+
+      {/* Success Popup Dialog */}
+      <Dialog open={!!successPopup} onOpenChange={(open) => !open && setSuccessPopup(null)}>
+        <DialogContent className="max-w-sm text-center">
+          <DialogHeader>
+            <DialogTitle className="sr-only">Kepulangan Berhasil</DialogTitle>
+          </DialogHeader>
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="flex flex-col items-center gap-4 py-4"
+          >
+            <div className="h-20 w-20 rounded-full bg-success/15 flex items-center justify-center">
+              <CheckCircle2 className="h-12 w-12 text-success" />
+            </div>
+            <div className="space-y-1">
+              <h2 className="text-xl font-bold text-foreground">Berhasil Pulang!</h2>
+              <p className="text-lg font-semibold text-primary">{successPopup?.name}</p>
+              <p className="text-sm text-muted-foreground">Kelas {successPopup?.class} • NIS: {successPopup?.student_id}</p>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+            </p>
+            <Button onClick={() => setSuccessPopup(null)} variant="outline" className="mt-2">
+              Tutup
+            </Button>
+          </motion.div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

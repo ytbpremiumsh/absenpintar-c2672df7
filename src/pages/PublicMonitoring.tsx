@@ -1,15 +1,16 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   UserCheck, UserX, Clock, School, Users, RefreshCw,
-  GraduationCap, Activity, TrendingUp, Columns2, Columns3, Columns4,
+  GraduationCap, Activity, TrendingUp, Volume2,
   Eye, EyeOff,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
+import { announcePickup } from "@/lib/announcePickup";
 import {
   Select,
   SelectContent,
@@ -60,13 +61,13 @@ const StudentCard = ({ student, index }: { student: StudentStatus; index: number
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-sm text-foreground truncate">{student.name}</p>
-          <p className="text-xs text-muted-foreground">NIS: {student.student_id} • {student.parent_name}</p>
+          <p className="text-xs text-muted-foreground">NIS: {student.student_id}</p>
         </div>
         <div className="text-right shrink-0">
           {isPickedUp ? (
             <>
               <Badge className="bg-success/10 text-success border-success/20 text-[10px] font-semibold">
-                <UserCheck className="h-3 w-3 mr-1" /> Dijemput
+                <UserCheck className="h-3 w-3 mr-1" /> Pulang
               </Badge>
               {student.pickup_time && (
                 <div className="flex items-center gap-1 text-muted-foreground mt-1 justify-end">
@@ -157,6 +158,8 @@ const PublicMonitoring = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showProgress, setShowProgress] = useState(true);
   const [columns, setColumns] = useState("2");
+  const prevPickedIds = useRef<Set<string>>(new Set());
+  const initialLoad = useRef(true);
 
   const fetchData = async (showRefresh = false) => {
     if (!schoolId) return;
@@ -166,6 +169,24 @@ const PublicMonitoring = () => {
       const res = await fetch(url, { headers: { apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY } });
       const json = await res.json();
       if (json.error) return;
+
+      // Announce newly picked up students (skip initial load)
+      if (!initialLoad.current) {
+        const allStudents: StudentStatus[] = [];
+        Object.values(json.classes as Record<string, StudentStatus[]>).forEach((arr) => allStudents.push(...arr));
+        const newPicked = allStudents.filter(
+          (s) => s.status === "picked_up" && !prevPickedIds.current.has(s.id)
+        );
+        newPicked.forEach((s) => announcePickup(s.name, s.class));
+        prevPickedIds.current = new Set(allStudents.filter(s => s.status === "picked_up").map(s => s.id));
+      } else {
+        // Initialize prevPickedIds on first load without announcing
+        const allStudents: StudentStatus[] = [];
+        Object.values(json.classes as Record<string, StudentStatus[]>).forEach((arr) => allStudents.push(...arr));
+        prevPickedIds.current = new Set(allStudents.filter(s => s.status === "picked_up").map(s => s.id));
+        initialLoad.current = false;
+      }
+
       setData(json);
       setLastUpdated(new Date());
     } catch (err) {
@@ -238,7 +259,8 @@ const PublicMonitoring = () => {
                 <h1 className="text-lg font-bold">{data.school?.name || "Smart Pickup"}</h1>
                 <div className="flex items-center gap-2 text-xs opacity-80">
                   {isActive ? <LiveDot /> : <span className="h-2.5 w-2.5 rounded-full bg-destructive" />}
-                  <span>{isActive ? "Monitoring Penjemputan Realtime" : "Sistem Penjemputan Nonaktif"}</span>
+                  <span>{isActive ? "Monitoring Kepulangan Realtime" : "Sistem Kepulangan Nonaktif"}</span>
+                  <Volume2 className="h-3 w-3 ml-1" />
                 </div>
               </div>
             </div>
@@ -261,7 +283,7 @@ const PublicMonitoring = () => {
       {/* Inactive Banner */}
       {!isActive && (
         <div className="bg-destructive/10 border-b border-destructive/20 py-3 px-4 text-center">
-          <p className="text-sm font-medium text-destructive">⏸ Sistem penjemputan sedang nonaktif. Data tetap ditampilkan untuk referensi.</p>
+          <p className="text-sm font-medium text-destructive">⏸ Sistem kepulangan sedang nonaktif. Data tetap ditampilkan untuk referensi.</p>
         </div>
       )}
 
@@ -270,7 +292,7 @@ const PublicMonitoring = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { icon: Users, value: data.total, label: "Total Siswa", color: "text-primary", bg: "bg-primary/10" },
-            { icon: UserCheck, value: data.picked_up, label: "Sudah Dijemput", color: "text-success", bg: "bg-success/10" },
+            { icon: UserCheck, value: data.picked_up, label: "Sudah Pulang", color: "text-success", bg: "bg-success/10" },
             { icon: UserX, value: waiting, label: "Menunggu", color: "text-destructive", bg: "bg-destructive/10" },
             { icon: TrendingUp, value: `${percentage}%`, label: "Progress", color: "text-primary", bg: "gradient-primary" },
           ].map((stat, i) => (
@@ -309,7 +331,7 @@ const PublicMonitoring = () => {
                   initial={{ width: 0 }} animate={{ width: `${percentage}%` }} transition={{ duration: 1.2, ease: "easeOut" }} />
               </div>
               <div className="flex justify-between mt-2 text-xs text-muted-foreground">
-                <span>{data.picked_up} dari {data.total} siswa sudah dijemput</span>
+                <span>{data.picked_up} dari {data.total} siswa sudah pulang</span>
                 <span className="font-bold text-primary">{percentage}%</span>
               </div>
             </CardContent>
