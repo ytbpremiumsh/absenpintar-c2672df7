@@ -115,36 +115,16 @@ const StudentDetail = () => {
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <Card className="shadow-elevated border-0 overflow-hidden">
-          {/* Header with school branding */}
-          <div className="relative h-32 sm:h-36 overflow-hidden">
-            {school?.logo ? (
-              <div className="absolute inset-0 gradient-hero">
-                <img src={school.logo} alt="" className="absolute right-4 top-1/2 -translate-y-1/2 h-16 sm:h-20 opacity-20 object-contain" />
-              </div>
-            ) : (
-              <div className="gradient-hero h-full" />
-            )}
-            {/* School name overlay */}
-            <div className="absolute bottom-3 left-4 sm:left-6">
-              <div className="flex items-center gap-2">
-                {school?.logo && (
-                  <img src={school.logo} alt="" className="h-8 w-8 rounded-lg object-contain bg-white/90 p-0.5" />
-                )}
-                <div>
-                  <p className="text-white/90 text-xs font-medium">{school?.name || "Sekolah"}</p>
-                  {school?.address && <p className="text-white/60 text-[10px] truncate max-w-[200px]">{school.address}</p>}
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* Header gradient */}
+          <div className="gradient-hero h-28 sm:h-32" />
 
           <CardContent className="relative px-6 pb-6">
             <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 -mt-14">
               <div className="relative group">
                 {student.photo_url ? (
-                  <img src={student.photo_url} alt={student.name} className="h-24 w-24 rounded-2xl object-cover border-4 border-card shadow-elevated" />
+                  <img src={student.photo_url} alt={student.name} className="h-24 w-24 rounded-2xl object-cover border-4 border-card bg-card shadow-elevated" />
                 ) : (
-                  <div className="h-24 w-24 rounded-2xl gradient-primary flex items-center justify-center text-primary-foreground text-3xl font-bold border-4 border-card shadow-elevated shrink-0">
+                  <div className="h-24 w-24 rounded-2xl gradient-primary flex items-center justify-center text-primary-foreground text-3xl font-bold border-4 border-card bg-card shadow-elevated shrink-0">
                     {student.name.charAt(0)}
                   </div>
                 )}
