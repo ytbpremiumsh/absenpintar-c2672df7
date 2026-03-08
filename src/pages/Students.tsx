@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, QrCode, Trash2, Loader2, Users, GraduationCap, Phone, ChevronDown, ChevronRight, Eye } from "lucide-react";
+import { Plus, Search, QrCode, Trash2, Loader2, Users, GraduationCap, Phone, ChevronDown, ChevronRight, Eye, Upload, Download, FileSpreadsheet, Camera, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -14,9 +15,11 @@ import { toast } from "sonner";
 import QRCodeDisplay from "@/components/QRCodeDisplay";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import * as XLSX from "xlsx";
 
 const Students = () => {
   const { profile } = useAuth();
+  const features = useSubscriptionFeatures();
   const [search, setSearch] = useState("");
   const [students, setStudents] = useState<any[]>([]);
   const [classes, setClasses] = useState<any[]>([]);
@@ -28,6 +31,7 @@ const Students = () => {
   const [saving, setSaving] = useState(false);
   const [expandedClasses, setExpandedClasses] = useState<Set<string>>(new Set());
   const [activeFilter, setActiveFilter] = useState<string>("all");
+  const [photoUploading, setPhotoUploading] = useState<string | null>(null);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -50,9 +54,7 @@ const Students = () => {
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, [profile?.school_id]);
+  useEffect(() => { fetchData(); }, [profile?.school_id]);
 
   const handleAdd = async () => {
     if (!profile?.school_id || !form.name || !form.student_id || !form.class) {
@@ -62,18 +64,12 @@ const Students = () => {
     setSaving(true);
     const { error } = await supabase.from("students").insert({
       school_id: profile.school_id,
-      name: form.name,
-      class: form.class,
-      student_id: form.student_id,
-      parent_name: form.parent_name,
-      parent_phone: form.parent_phone,
+      name: form.name, class: form.class, student_id: form.student_id,
+      parent_name: form.parent_name, parent_phone: form.parent_phone,
       qr_code: form.student_id,
     });
     setSaving(false);
-    if (error) {
-      toast.error("Gagal menambah siswa: " + error.message);
-      return;
-    }
+    if (error) { toast.error("Gagal menambah siswa: " + error.message); return; }
     toast.success("Siswa berhasil ditambahkan!");
     setDialogOpen(false);
     setForm({ name: "", class: "", student_id: "", parent_name: "", parent_phone: "" });
@@ -82,26 +78,95 @@ const Students = () => {
 
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from("students").delete().eq("id", id);
-    if (error) {
-      toast.error("Gagal menghapus: " + error.message);
-      return;
-    }
+    if (error) { toast.error("Gagal menghapus: " + error.message); return; }
     toast.success("Siswa dihapus");
     fetchData();
+  };
+
+  const handlePhotoUpload = async (studentId: string, file: File) => {
+    if (!features.canUploadPhoto) {
+      toast.error("Fitur upload foto tersedia di paket Basic ke atas");
+      return;
+    }
+    setPhotoUploading(studentId);
+    const ext = file.name.split(".").pop();
+    const path = `${profile?.school_id}/${studentId}.${ext}`;
+    const { error: uploadError } = await supabase.storage.from("student-photos").upload(path, file, { upsert: true });
+    if (uploadError) { toast.error("Gagal upload foto: " + uploadError.message); setPhotoUploading(null); return; }
+    const { data: urlData } = supabase.storage.from("student-photos").getPublicUrl(path);
+    await supabase.from("students").update({ photo_url: urlData.publicUrl }).eq("id", studentId);
+    toast.success("Foto berhasil diupload!");
+    setPhotoUploading(null);
+    fetchData();
+  };
+
+  const handleExportExcel = () => {
+    if (!features.canImportExport) {
+      toast.error("Fitur export tersedia di paket Basic ke atas");
+      return;
+    }
+    const data = students.map((s) => ({
+      "Nama Siswa": s.name, "NIS": s.student_id, "Kelas": s.class,
+      "Nama Wali": s.parent_name, "No. HP Wali": s.parent_phone,
+    }));
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Siswa");
+    XLSX.writeFile(wb, `data-siswa-${new Date().toISOString().slice(0, 10)}.xlsx`);
+    toast.success("Data siswa berhasil diexport!");
+  };
+
+  const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!features.canImportExport) {
+      toast.error("Fitur import tersedia di paket Basic ke atas");
+      return;
+    }
+    const file = e.target.files?.[0];
+    if (!file || !profile?.school_id) return;
+
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      try {
+        const wb = XLSX.read(evt.target?.result, { type: "binary" });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const rows: any[] = XLSX.utils.sheet_to_json(ws);
+
+        if (rows.length === 0) { toast.error("File kosong"); return; }
+
+        const toInsert = rows.map((row) => ({
+          school_id: profile!.school_id!,
+          name: row["Nama Siswa"] || row["name"] || "",
+          student_id: String(row["NIS"] || row["student_id"] || ""),
+          class: row["Kelas"] || row["class"] || "",
+          parent_name: row["Nama Wali"] || row["parent_name"] || "",
+          parent_phone: String(row["No. HP Wali"] || row["parent_phone"] || ""),
+          qr_code: String(row["NIS"] || row["student_id"] || ""),
+        })).filter((r) => r.name && r.student_id && r.class);
+
+        if (toInsert.length === 0) { toast.error("Tidak ada data valid. Pastikan kolom: Nama Siswa, NIS, Kelas"); return; }
+
+        const { error } = await supabase.from("students").insert(toInsert);
+        if (error) { toast.error("Gagal import: " + error.message); return; }
+        toast.success(`${toInsert.length} siswa berhasil diimport!`);
+        fetchData();
+      } catch (err: any) {
+        toast.error("Gagal membaca file Excel");
+      }
+    };
+    reader.readAsBinaryString(file);
+    e.target.value = "";
   };
 
   const toggleClass = (cls: string) => {
     setExpandedClasses((prev) => {
       const next = new Set(prev);
-      if (next.has(cls)) next.delete(cls);
-      else next.add(cls);
+      if (next.has(cls)) next.delete(cls); else next.add(cls);
       return next;
     });
   };
 
   const filtered = students.filter(
-    (s) =>
-      s.name.toLowerCase().includes(search.toLowerCase()) ||
+    (s) => s.name.toLowerCase().includes(search.toLowerCase()) ||
       s.class.toLowerCase().includes(search.toLowerCase()) ||
       s.student_id.toLowerCase().includes(search.toLowerCase()) ||
       s.parent_name.toLowerCase().includes(search.toLowerCase())
@@ -117,12 +182,7 @@ const Students = () => {
     return groups;
   }, [filtered, activeFilter]);
 
-  const allClasses = useMemo(() => {
-    const set = new Set(students.map((s) => s.class));
-    return Array.from(set).sort();
-  }, [students]);
-
-  // Merge classes from table + from students for dropdown
+  const allClasses = useMemo(() => Array.from(new Set(students.map((s) => s.class))).sort(), [students]);
   const classOptions = useMemo(() => {
     const fromTable = classes.map((c: any) => c.name);
     const fromStudents = students.map((s: any) => s.class);
@@ -131,79 +191,82 @@ const Students = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">Data Siswa</h1>
           <p className="text-muted-foreground text-sm">Kelola data siswa, QR Code, dan kategori kelas</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="gradient-primary hover:opacity-90 h-10">
-              <Plus className="h-4 w-4 mr-2" /> Tambah Siswa
+        <div className="flex flex-wrap gap-2">
+          {/* Import */}
+          <div className="relative">
+            <input type="file" accept=".xlsx,.xls" onChange={handleImportExcel} className="absolute inset-0 opacity-0 cursor-pointer" disabled={!features.canImportExport} />
+            <Button variant="outline" size="sm" className={!features.canImportExport ? "opacity-50" : ""}>
+              <Upload className="h-4 w-4 mr-1" /> Import
+              {!features.canImportExport && <Lock className="h-3 w-3 ml-1 text-muted-foreground" />}
             </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Tambah Siswa Baru</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-2">
-              <div className="space-y-2">
-                <Label>Nama Siswa</Label>
-                <Input placeholder="Nama lengkap siswa" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Kelas</Label>
-                  <Select value={form.class} onValueChange={(val) => setForm({ ...form, class: val })}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Pilih Kelas" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {classOptions.map((cls) => (
-                        <SelectItem key={cls} value={cls}>{cls}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>NIS</Label>
-                  <Input placeholder="STD009" value={form.student_id} onChange={(e) => setForm({ ...form, student_id: e.target.value })} />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Nama Wali</Label>
-                <Input placeholder="Nama orang tua/wali" value={form.parent_name} onChange={(e) => setForm({ ...form, parent_name: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>No. HP Wali</Label>
-                <Input placeholder="08xxxxxxxxxx" value={form.parent_phone} onChange={(e) => setForm({ ...form, parent_phone: e.target.value })} />
-              </div>
-              <Button onClick={handleAdd} disabled={saving} className="w-full gradient-primary hover:opacity-90">
-                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Simpan"}
+          </div>
+          {/* Export */}
+          <Button variant="outline" size="sm" onClick={handleExportExcel} className={!features.canImportExport ? "opacity-50" : ""} disabled={!features.canImportExport}>
+            <Download className="h-4 w-4 mr-1" /> Export
+            {!features.canImportExport && <Lock className="h-3 w-3 ml-1 text-muted-foreground" />}
+          </Button>
+          {/* Add Student */}
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="gradient-primary hover:opacity-90 h-9">
+                <Plus className="h-4 w-4 mr-1" /> Tambah Siswa
               </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader><DialogTitle>Tambah Siswa Baru</DialogTitle></DialogHeader>
+              <div className="space-y-4 py-2">
+                <div className="space-y-2">
+                  <Label>Nama Siswa</Label>
+                  <Input placeholder="Nama lengkap siswa" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Kelas</Label>
+                    <Select value={form.class} onValueChange={(val) => setForm({ ...form, class: val })}>
+                      <SelectTrigger><SelectValue placeholder="Pilih Kelas" /></SelectTrigger>
+                      <SelectContent>
+                        {classOptions.map((cls) => (<SelectItem key={cls} value={cls}>{cls}</SelectItem>))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>NIS</Label>
+                    <Input placeholder="STD009" value={form.student_id} onChange={(e) => setForm({ ...form, student_id: e.target.value })} />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Nama Wali</Label>
+                  <Input placeholder="Nama orang tua/wali" value={form.parent_name} onChange={(e) => setForm({ ...form, parent_name: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>No. HP Wali</Label>
+                  <Input placeholder="08xxxxxxxxxx" value={form.parent_phone} onChange={(e) => setForm({ ...form, parent_phone: e.target.value })} />
+                </div>
+                <Button onClick={handleAdd} disabled={saving} className="w-full gradient-primary hover:opacity-90">
+                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Simpan"}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
-      {/* Filter by class dropdown */}
       <div className="flex flex-wrap items-center gap-3">
         <Select value={activeFilter} onValueChange={setActiveFilter}>
-          <SelectTrigger className="w-48">
-            <SelectValue placeholder="Filter Kelas" />
-          </SelectTrigger>
+          <SelectTrigger className="w-48"><SelectValue placeholder="Filter Kelas" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Semua Kelas</SelectItem>
-            {allClasses.map((cls) => (
-              <SelectItem key={cls} value={cls}>Kelas {cls}</SelectItem>
-            ))}
+            {allClasses.map((cls) => (<SelectItem key={cls} value={cls}>Kelas {cls}</SelectItem>))}
           </SelectContent>
         </Select>
         <Badge variant="secondary">{Object.values(groupedByClass).flat().length} siswa</Badge>
       </div>
 
-      {/* Search */}
       <Card className="shadow-card border-0">
         <CardHeader className="pb-3">
           <div className="relative max-w-sm">
@@ -213,9 +276,7 @@ const Students = () => {
         </CardHeader>
         <CardContent className="p-0">
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
-            </div>
+            <div className="flex items-center justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
           ) : Object.keys(groupedByClass).length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <Users className="h-10 w-10 mx-auto mb-2 opacity-30" />
@@ -225,35 +286,17 @@ const Students = () => {
             <div className="divide-y">
               {Object.entries(groupedByClass).sort(([a], [b]) => a.localeCompare(b)).map(([cls, classStudents]) => (
                 <div key={cls}>
-                  <button
-                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-secondary/50 transition-colors text-left"
-                    onClick={() => toggleClass(cls)}
-                  >
-                    {expandedClasses.has(cls) ? (
-                      <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
-                    ) : (
-                      <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
-                    )}
+                  <button className="w-full flex items-center gap-3 px-4 py-3 hover:bg-secondary/50 transition-colors text-left" onClick={() => toggleClass(cls)}>
+                    {expandedClasses.has(cls) ? <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" /> : <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />}
                     <div className="h-8 w-8 rounded-lg gradient-primary flex items-center justify-center shrink-0">
                       <GraduationCap className="h-4 w-4 text-primary-foreground" />
                     </div>
-                    <div className="flex-1">
-                      <span className="font-semibold text-sm">Kelas {cls}</span>
-                    </div>
-                    <Badge variant="secondary" className="text-xs">
-                      {classStudents.length} siswa
-                    </Badge>
+                    <div className="flex-1"><span className="font-semibold text-sm">Kelas {cls}</span></div>
+                    <Badge variant="secondary" className="text-xs">{classStudents.length} siswa</Badge>
                   </button>
-
                   <AnimatePresence>
                     {expandedClasses.has(cls) && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="overflow-hidden"
-                      >
+                      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
                         <div className="overflow-x-auto">
                           <Table>
                             <TableHeader>
@@ -272,9 +315,13 @@ const Students = () => {
                                   <TableCell className="font-medium text-muted-foreground text-xs">{i + 1}</TableCell>
                                   <TableCell>
                                     <div className="flex items-center gap-3">
-                                      <div className="h-9 w-9 rounded-full gradient-primary flex items-center justify-center text-primary-foreground text-xs font-bold shrink-0">
-                                        {student.name.charAt(0)}
-                                      </div>
+                                      {student.photo_url ? (
+                                        <img src={student.photo_url} alt={student.name} className="h-9 w-9 rounded-full object-cover shrink-0" />
+                                      ) : (
+                                        <div className="h-9 w-9 rounded-full gradient-primary flex items-center justify-center text-primary-foreground text-xs font-bold shrink-0">
+                                          {student.name.charAt(0)}
+                                        </div>
+                                      )}
                                       <div>
                                         <p className="font-medium text-sm">{student.name}</p>
                                         <p className="text-xs text-muted-foreground sm:hidden">{student.student_id}</p>
@@ -284,26 +331,23 @@ const Students = () => {
                                   <TableCell className="hidden sm:table-cell">
                                     <span className="font-mono text-xs bg-secondary px-2 py-0.5 rounded">{student.student_id}</span>
                                   </TableCell>
-                                  <TableCell className="hidden md:table-cell">
-                                    <p className="text-sm">{student.parent_name}</p>
-                                  </TableCell>
+                                  <TableCell className="hidden md:table-cell"><p className="text-sm">{student.parent_name}</p></TableCell>
                                   <TableCell className="hidden lg:table-cell">
-                                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                      <Phone className="h-3 w-3" />
-                                      {student.parent_phone}
-                                    </div>
+                                    <div className="flex items-center gap-1 text-xs text-muted-foreground"><Phone className="h-3 w-3" />{student.parent_phone}</div>
                                   </TableCell>
                                   <TableCell className="text-right">
                                     <div className="flex items-center justify-end gap-1">
-                                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(`/students/${student.id}`)} title="Lihat Detail">
-                                        <Eye className="h-4 w-4 text-primary" />
-                                      </Button>
-                                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setSelectedStudent(student); setQrDialogOpen(true); }}>
-                                        <QrCode className="h-4 w-4 text-primary" />
-                                      </Button>
-                                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(student.id)}>
-                                        <Trash2 className="h-4 w-4 text-destructive" />
-                                      </Button>
+                                      {features.canUploadPhoto && (
+                                        <div className="relative">
+                                          <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer w-8 h-8" onChange={(e) => { if (e.target.files?.[0]) handlePhotoUpload(student.id, e.target.files[0]); }} />
+                                          <Button variant="ghost" size="icon" className="h-8 w-8" disabled={photoUploading === student.id}>
+                                            {photoUploading === student.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4 text-muted-foreground" />}
+                                          </Button>
+                                        </div>
+                                      )}
+                                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(`/students/${student.id}`)}><Eye className="h-4 w-4 text-primary" /></Button>
+                                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setSelectedStudent(student); setQrDialogOpen(true); }}><QrCode className="h-4 w-4 text-primary" /></Button>
+                                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(student.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                                     </div>
                                   </TableCell>
                                 </TableRow>
@@ -321,19 +365,12 @@ const Students = () => {
         </CardContent>
       </Card>
 
-      {/* QR Code Dialog */}
       <Dialog open={qrDialogOpen} onOpenChange={setQrDialogOpen}>
         <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="text-center">QR Code Siswa</DialogTitle>
-          </DialogHeader>
+          <DialogHeader><DialogTitle className="text-center">QR Code Siswa</DialogTitle></DialogHeader>
           {selectedStudent && (
             <div className="text-center space-y-4 py-2">
-              <QRCodeDisplay
-                data={selectedStudent.qr_code || selectedStudent.student_id}
-                size={220}
-                studentName={selectedStudent.name}
-              />
+              <QRCodeDisplay data={selectedStudent.qr_code || selectedStudent.student_id} size={220} studentName={selectedStudent.name} />
               <div>
                 <p className="font-bold">{selectedStudent.name}</p>
                 <p className="text-sm text-muted-foreground">Kelas: {selectedStudent.class}</p>

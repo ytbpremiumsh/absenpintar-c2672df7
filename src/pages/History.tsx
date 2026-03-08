@@ -3,12 +3,18 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, Download, FileSpreadsheet, Loader2 } from "lucide-react";
+import { Search, Download, Loader2, Lock, FileSpreadsheet, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
+import { toast } from "sonner";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
 const History = () => {
   const { profile } = useAuth();
+  const features = useSubscriptionFeatures();
   const [search, setSearch] = useState("");
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -21,7 +27,7 @@ const History = () => {
         .select("*, students(name, class, parent_name)")
         .eq("school_id", profile.school_id)
         .order("pickup_time", { ascending: false })
-        .limit(100);
+        .limit(500);
       setLogs(data || []);
       setLoading(false);
     };
@@ -33,6 +39,9 @@ const History = () => {
     const cls = l.students?.class || "";
     return name.toLowerCase().includes(search.toLowerCase()) || cls.toLowerCase().includes(search.toLowerCase());
   });
+
+  // Today's logs for daily report
+  const todayLogs = filtered.filter((l) => new Date(l.pickup_time).toDateString() === new Date().toDateString());
 
   const exportCSV = () => {
     const header = "Nama Siswa,Kelas,Penjemput,Petugas,Waktu\n";
@@ -47,6 +56,61 @@ const History = () => {
     a.click();
   };
 
+  const exportDailyExcel = () => {
+    if (!features.canExportReport) {
+      toast.error("Fitur export laporan tersedia di paket Basic ke atas");
+      return;
+    }
+    const data = todayLogs.map((l, i) => ({
+      "No": i + 1,
+      "Nama Siswa": l.students?.name || "-",
+      "Kelas": l.students?.class || "-",
+      "Penjemput": l.students?.parent_name || "-",
+      "Petugas": l.pickup_by,
+      "Waktu": new Date(l.pickup_time).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }),
+    }));
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Laporan Harian");
+    XLSX.writeFile(wb, `laporan-harian-${new Date().toISOString().slice(0, 10)}.xlsx`);
+    toast.success("Laporan harian Excel berhasil diunduh!");
+  };
+
+  const exportDailyPDF = () => {
+    if (!features.canExportReport) {
+      toast.error("Fitur export laporan tersedia di paket Basic ke atas");
+      return;
+    }
+    const doc = new jsPDF();
+    const today = new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+    
+    doc.setFontSize(16);
+    doc.text("Laporan Penjemputan Harian", 14, 20);
+    doc.setFontSize(10);
+    doc.text(`Tanggal: ${today}`, 14, 28);
+    doc.text(`Total: ${todayLogs.length} siswa dijemput`, 14, 34);
+
+    const tableData = todayLogs.map((l, i) => [
+      i + 1,
+      l.students?.name || "-",
+      l.students?.class || "-",
+      l.students?.parent_name || "-",
+      l.pickup_by,
+      new Date(l.pickup_time).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }),
+    ]);
+
+    (doc as any).autoTable({
+      startY: 40,
+      head: [["No", "Nama Siswa", "Kelas", "Penjemput", "Petugas", "Waktu"]],
+      body: tableData,
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [59, 130, 246] },
+    });
+
+    doc.save(`laporan-harian-${new Date().toISOString().slice(0, 10)}.pdf`);
+    toast.success("Laporan harian PDF berhasil diunduh!");
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -54,9 +118,17 @@ const History = () => {
           <h1 className="text-2xl font-bold">Riwayat Penjemputan</h1>
           <p className="text-muted-foreground text-sm">Lihat semua riwayat penjemputan siswa</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" onClick={exportCSV}>
             <Download className="h-4 w-4 mr-1" /> CSV
+          </Button>
+          <Button variant="outline" size="sm" onClick={exportDailyExcel} disabled={!features.canExportReport} className={!features.canExportReport ? "opacity-50" : ""}>
+            <FileSpreadsheet className="h-4 w-4 mr-1" /> Laporan Excel
+            {!features.canExportReport && <Lock className="h-3 w-3 ml-1" />}
+          </Button>
+          <Button variant="outline" size="sm" onClick={exportDailyPDF} disabled={!features.canExportReport} className={!features.canExportReport ? "opacity-50" : ""}>
+            <FileText className="h-4 w-4 mr-1" /> Laporan PDF
+            {!features.canExportReport && <Lock className="h-3 w-3 ml-1" />}
           </Button>
         </div>
       </div>
@@ -83,17 +155,9 @@ const History = () => {
               </TableHeader>
               <TableBody>
                 {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8">
-                      <Loader2 className="h-5 w-5 animate-spin mx-auto" />
-                    </TableCell>
-                  </TableRow>
+                  <TableRow><TableCell colSpan={6} className="text-center py-8"><Loader2 className="h-5 w-5 animate-spin mx-auto" /></TableCell></TableRow>
                 ) : filtered.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                      Belum ada riwayat penjemputan
-                    </TableCell>
-                  </TableRow>
+                  <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Belum ada riwayat penjemputan</TableCell></TableRow>
                 ) : filtered.map((log) => (
                   <TableRow key={log.id}>
                     <TableCell className="font-medium">{log.students?.name || "-"}</TableCell>
@@ -104,9 +168,7 @@ const History = () => {
                       {new Date(log.pickup_time).toLocaleString("id-ID", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
                     </TableCell>
                     <TableCell>
-                      <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-success/10 text-success">
-                        Dijemput
-                      </span>
+                      <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-success/10 text-success">Dijemput</span>
                     </TableCell>
                   </TableRow>
                 ))}
