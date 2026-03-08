@@ -149,9 +149,8 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded }: PublicAtten
       if (!res.ok) return;
 
       if (data.match && data.student) {
-        scanPaused.current = true;
         toast.success(`Wajah dikenali: ${data.student.name}`);
-        // Record attendance via public edge function
+        // Record attendance - lookupAndRecord handles scanPaused
         await lookupAndRecord("", "face_recognition", data.student.id);
       }
     } catch (err: any) {
@@ -315,7 +314,8 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded }: PublicAtten
           </div>
         </div>
       </Card>
-      <Dialog open={alreadyRecorded && !!scannedStudent} onOpenChange={(open) => { if (!open) handleDismissAlready(); }}>
+      {/* Already recorded popup - auto-dismisses */}
+      <Dialog open={alreadyRecorded && !!scannedStudent} onOpenChange={(open) => { if (!open) resetState(); }}>
         <DialogContent className="max-w-[90vw] sm:max-w-sm p-0 overflow-hidden">
           <div className="bg-warning/10 p-4 text-center">
             <div className="flex items-center justify-center gap-2 text-warning">
@@ -338,14 +338,13 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded }: PublicAtten
               )}
               <h3 className="text-lg font-bold text-foreground">{scannedStudent.name}</h3>
               <p className="text-sm text-muted-foreground">Kelas: {scannedStudent.class} • NIS: {scannedStudent.student_id}</p>
-              <Button variant="outline" onClick={handleDismissAlready} className="w-full mt-2">OK</Button>
             </div>
           )}
         </DialogContent>
       </Dialog>
 
-      {/* Success popup */}
-      <Dialog open={confirmed && !!scannedStudent} onOpenChange={() => {}}>
+      {/* Success popup - auto-dismisses after 3s */}
+      <Dialog open={confirmed && !!scannedStudent} onOpenChange={(open) => { if (!open) resetState(); }}>
         <DialogContent className="max-w-[90vw] sm:max-w-sm border-0 bg-success p-0">
           <div className="p-6 text-center space-y-3">
             <CheckCircle2 className="h-14 w-14 text-success-foreground mx-auto" />
@@ -354,7 +353,7 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded }: PublicAtten
               <p><strong>{scannedStudent?.name}</strong></p>
               <p>Kelas: {scannedStudent?.class} • Status: Hadir</p>
               <p className="text-xs mt-1">
-                {scanMethod === "face" ? "via Face Recognition" : "via Barcode Scan"}
+                {scanMethod === "face_recognition" ? "via Face Recognition" : "via Barcode Scan"}
               </p>
             </DialogDescription>
           </div>
