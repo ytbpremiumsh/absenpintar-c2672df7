@@ -11,12 +11,18 @@ import {
 import { NavLink } from "@/components/NavLink";
 
 const navItems = [
-  { title: "Dashboard", url: "/super-admin", icon: LayoutDashboard },
-  { title: "Sekolah", url: "/super-admin/schools", icon: School },
-  { title: "Paket Langganan", url: "/super-admin/plans", icon: CreditCard },
-  { title: "Langganan", url: "/super-admin/subscriptions", icon: CalendarCheck },
-  { title: "Riwayat Pembayaran", url: "/super-admin/payments", icon: Receipt },
-  { title: "WhatsApp Gateway", url: "/super-admin/whatsapp", icon: MessageSquare },
+  { title: "Dashboard", url: "/super-admin", icon: LayoutDashboard, group: "overview" },
+  { title: "Sekolah", url: "/super-admin/schools", icon: School, group: "overview" },
+  { title: "Paket Langganan", url: "/super-admin/plans", icon: CreditCard, group: "billing" },
+  { title: "Langganan", url: "/super-admin/subscriptions", icon: CalendarCheck, group: "billing" },
+  { title: "Riwayat Pembayaran", url: "/super-admin/payments", icon: Receipt, group: "billing" },
+  { title: "WhatsApp Gateway", url: "/super-admin/whatsapp", icon: MessageSquare, group: "integration" },
+];
+
+const groups = [
+  { key: "overview", label: "Overview" },
+  { key: "billing", label: "Billing & Langganan" },
+  { key: "integration", label: "Integrasi" },
 ];
 
 function SuperAdminSidebar() {
@@ -42,27 +48,41 @@ function SuperAdminSidebar() {
             </div>
           )}
         </div>
+        {!collapsed && (
+          <div className="mt-4 h-px bg-gradient-to-r from-transparent via-sidebar-border to-transparent" />
+        )}
       </SidebarHeader>
       <SidebarContent className="px-2">
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/40 text-[11px] uppercase tracking-widest font-semibold px-3 mb-1">Menu</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu className="space-y-0.5">
-              {navItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={isActive(item.url)} tooltip={item.title}>
-                    <NavLink to={item.url} end={item.url === "/super-admin"} className="hover:bg-sidebar-accent/60 rounded-xl px-3 py-2.5 transition-all duration-200" activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-semibold shadow-sm">
-                      <item.icon className="h-5 w-5" />
-                      {!collapsed && <span className="text-[15px]">{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {groups.map((group) => {
+          const items = navItems.filter((n) => n.group === group.key);
+          if (items.length === 0) return null;
+          return (
+            <SidebarGroup key={group.key}>
+              <SidebarGroupLabel className="text-sidebar-foreground/40 text-[11px] uppercase tracking-widest font-semibold px-3 mb-1">
+                {group.label}
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu className="space-y-0.5">
+                  {items.map((item) => (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton asChild isActive={isActive(item.url)} tooltip={item.title}>
+                        <NavLink to={item.url} end={item.url === "/super-admin"} className="hover:bg-sidebar-accent/60 rounded-xl px-3 py-2.5 transition-all duration-200" activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-semibold shadow-sm">
+                          <item.icon className="h-5 w-5" />
+                          {!collapsed && <span className="text-[15px]">{item.title}</span>}
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          );
+        })}
       </SidebarContent>
       <SidebarFooter className="p-3">
+        {!collapsed && (
+          <div className="mb-3 mx-2 h-px bg-gradient-to-r from-transparent via-sidebar-border to-transparent" />
+        )}
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton tooltip="Logout" className="text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-xl px-3 py-2.5" onClick={async () => { await signOut(); navigate("/login"); }}>

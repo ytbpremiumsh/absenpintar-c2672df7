@@ -28,21 +28,20 @@ serve(async (req) => {
     const { plan_id } = await req.json();
     if (!plan_id) throw new Error('plan_id is required');
 
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
     // Get plan details
-    const { data: plan, error: planError } = await supabase
+    const { data: plan, error: planError } = await supabaseAdmin
       .from('subscription_plans')
       .select('*')
       .eq('id', plan_id)
       .single();
     if (planError || !plan) throw new Error('Plan not found');
 
-    // Create admin client for DB operations
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    );
-
-    // Get user profile for school_id (use admin client to bypass RLS)
+    // Get user profile for school_id
     const { data: profile } = await supabaseAdmin
       .from('profiles')
       .select('school_id')
@@ -57,10 +56,8 @@ serve(async (req) => {
       .eq('id', profile.school_id)
       .maybeSingle();
 
-
     // For free plans (price = 0), auto-approve immediately
     if (plan.price === 0) {
-      // Create payment record as paid
       await supabaseAdmin.from('payment_transactions').insert({
         school_id: profile.school_id,
         plan_id: plan.id,
@@ -70,7 +67,6 @@ serve(async (req) => {
         payment_method: 'free',
       });
 
-      // Activate subscription
       const expiresAt = new Date();
       expiresAt.setMonth(expiresAt.getMonth() + 1);
 
@@ -99,7 +95,8 @@ serve(async (req) => {
       });
     }
 
-    // For paid plans, create Mayar payment link
+    // For paid plans, create Mayar payment link — DO NOT auto-approve
+    const siteUrl = Deno.env.get('SUPABASE_URL')?.replace('.supabase.co', '.lovable.app') || '';
     const mayarRes = await fetch('https://api.mayar.id/hl/v1/payment/create', {
       method: 'POST',
       headers: {
@@ -112,7 +109,7 @@ serve(async (req) => {
         description: `Paket ${plan.name} untuk ${school?.name || 'Sekolah'}`,
         email: user.email || 'noemail@school.com',
         mobile: '08000000000',
-        redirectUrl: `${Deno.env.get('SUPABASE_URL')?.replace('.supabase.co', '.lovable.app')}/subscription?status=success`,
+        redirectUrl: `${siteUrl}/subscription?status=success`,
       }),
     });
 
@@ -121,7 +118,7 @@ serve(async (req) => {
 
     const paymentLink = mayarData.data;
 
-    // Save transaction as pending
+    // Save transaction as pending — wait for webhook to confirm payment
     await supabaseAdmin.from('payment_transactions').insert({
       school_id: profile.school_id,
       plan_id: plan.id,
@@ -131,40 +128,7 @@ serve(async (req) => {
       mayar_payment_url: paymentLink?.link || null,
     });
 
-    // Auto-approve: immediately mark as paid and activate subscription
-    // This ensures the subscription is active right away without waiting for webhook
-    const txnId = paymentLink?.id;
-    if (txnId) {
-      await supabaseAdmin.from('payment_transactions')
-        .update({ status: 'paid', paid_at: new Date().toISOString(), payment_method: 'mayar_auto' })
-        .eq('mayar_transaction_id', txnId);
-    }
-
-    // Activate subscription immediately
-    const expiresAt = new Date();
-    expiresAt.setMonth(expiresAt.getMonth() + 1);
-
-    const { data: existingSub } = await supabaseAdmin
-      .from('school_subscriptions')
-      .select('id')
-      .eq('school_id', profile.school_id)
-      .eq('status', 'active')
-      .maybeSingle();
-
-    if (existingSub) {
-      await supabaseAdmin.from('school_subscriptions')
-        .update({ plan_id: plan.id, expires_at: expiresAt.toISOString() })
-        .eq('id', existingSub.id);
-    } else {
-      await supabaseAdmin.from('school_subscriptions').insert({
-        school_id: profile.school_id,
-        plan_id: plan.id,
-        status: 'active',
-        expires_at: expiresAt.toISOString(),
-      });
-    }
-
-    return new Response(JSON.stringify({ success: true, payment_url: paymentLink?.link, auto_approved: true }), {
+    return new Response(JSON.stringify({ success: true, payment_url: paymentLink?.link }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {

@@ -5,14 +5,14 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
   Check, Star, Zap, Crown, Loader2, Shield, Calendar, Clock,
-  ChevronRight, GraduationCap, Users, AlertTriangle,
+  ChevronRight, GraduationCap, Users, AlertTriangle, ExternalLink,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
-const iconMap: Record<string, any> = { Free: Zap, Basic: Zap, School: Star, Premium: Crown };
+const iconMap: Record<string, any> = { Free: Zap, Basic: Star, School: Crown, Premium: Crown };
 
 interface UsageStats {
   classCount: number;
@@ -78,11 +78,8 @@ const Subscription = () => {
             });
           }
         } else {
-          // No subscription = Free plan
           const freePlan = parsed.find((p: any) => p.price === 0);
-          if (freePlan) {
-            setCurrentPlan(freePlan);
-          }
+          if (freePlan) setCurrentPlan(freePlan);
           setUsage({
             classCount,
             studentCount,
@@ -109,8 +106,8 @@ const Subscription = () => {
         toast.success("Paket berhasil diaktifkan!");
         window.location.reload();
       } else if (result?.payment_url) {
+        toast.success("Membuka halaman pembayaran Mayar...");
         window.open(result.payment_url, "_blank");
-        toast.success("Redirecting ke halaman pembayaran...");
       } else {
         toast.error("Gagal mendapatkan link pembayaran");
       }
@@ -130,7 +127,6 @@ const Subscription = () => {
     ? Math.max(0, Math.ceil((new Date(currentSub.expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
     : null;
 
-  // Usage percentages
   const classPercent = usage.maxClasses >= 999 ? 0 : Math.min(100, (usage.classCount / usage.maxClasses) * 100);
   const studentPercent = usage.maxStudentsTotal
     ? Math.min(100, (usage.studentCount / usage.maxStudentsTotal) * 100)
@@ -139,7 +135,6 @@ const Subscription = () => {
   const classNearLimit = classPercent >= 80;
   const studentNearLimit = studentPercent >= 80;
 
-  // Filter plans: exclude Free, only show plans above current
   const upgradePlans = plans.filter((p) => p.price > 0 && (!currentPlan || p.price > (currentPlan.price || 0)));
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>;
@@ -176,7 +171,6 @@ const Subscription = () => {
           </div>
 
           <div className="p-5">
-            {/* Status Row */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-5">
               <div className="p-3 rounded-xl bg-success/5 border border-success/20 text-center">
                 <Shield className="h-4 w-4 text-success mx-auto mb-1" />
@@ -207,7 +201,7 @@ const Subscription = () => {
 
             {/* Features */}
             {currentPlan?.features?.length > 0 && (
-              <div className="mb-5">
+              <div className="mb-2">
                 <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Fitur Tersedia</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                   {currentPlan.features.map((f: string, idx: number) => (
@@ -233,7 +227,6 @@ const Subscription = () => {
             </h3>
 
             <div className="space-y-4">
-              {/* Classes Usage */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-sm text-foreground font-medium">Kelas</span>
@@ -241,10 +234,9 @@ const Subscription = () => {
                     {usage.classCount} / {usage.maxClasses >= 999 ? "∞" : usage.maxClasses}
                   </span>
                 </div>
-                {usage.maxClasses < 999 && (
+                {usage.maxClasses < 999 ? (
                   <Progress value={classPercent} className="h-2.5" />
-                )}
-                {usage.maxClasses >= 999 && (
+                ) : (
                   <div className="h-2.5 rounded-full bg-success/20 overflow-hidden">
                     <div className="h-full bg-success rounded-full" style={{ width: "100%" }} />
                   </div>
@@ -257,7 +249,6 @@ const Subscription = () => {
                 )}
               </div>
 
-              {/* Students Usage */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-sm text-foreground font-medium">Siswa</span>
@@ -280,7 +271,6 @@ const Subscription = () => {
                 )}
               </div>
 
-              {/* Per-class limit info for Free */}
               {isFree && (
                 <div className="p-2.5 rounded-lg bg-primary/5 border border-primary/10">
                   <p className="text-[11px] text-muted-foreground">
@@ -304,7 +294,7 @@ const Subscription = () => {
 
             <div className={`grid gap-4 ${upgradePlans.length === 1 ? "max-w-sm mx-auto" : upgradePlans.length === 2 ? "md:grid-cols-2 max-w-2xl mx-auto" : "md:grid-cols-3"}`}>
               {upgradePlans.map((plan, i) => {
-                const highlighted = plan.name === "School";
+                const highlighted = plan.name === "School" || (upgradePlans.length === 1);
                 const PIcon = iconMap[plan.name] || Star;
                 return (
                   <motion.div key={plan.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + i * 0.08 }}>
@@ -336,7 +326,7 @@ const Subscription = () => {
                           {purchasing === plan.id ? (
                             <><Loader2 className="h-4 w-4 mr-1 animate-spin" />Memproses...</>
                           ) : (
-                            <>Upgrade <ChevronRight className="h-4 w-4 ml-1" /></>
+                            <>Upgrade <ExternalLink className="h-4 w-4 ml-1" /></>
                           )}
                         </Button>
                       </div>
