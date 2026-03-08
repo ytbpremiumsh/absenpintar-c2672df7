@@ -11,7 +11,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 import {
-  GraduationCap, Plus, Trash2, UserCheck, Mail, Lock, Loader2,
+  GraduationCap, Plus, Trash2, UserCheck, Mail, Lock, Loader2, Phone,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -41,6 +41,7 @@ const ManageWaliKelas = () => {
   const [formEmail, setFormEmail] = useState("");
   const [formPassword, setFormPassword] = useState("");
   const [formClass, setFormClass] = useState("");
+  const [formPhone, setFormPhone] = useState("");
 
   const schoolId = profile?.school_id;
 
@@ -106,6 +107,7 @@ const ManageWaliKelas = () => {
           full_name: formName,
           role: "teacher",
           school_id: schoolId,
+          phone: formPhone,
         },
       });
 
@@ -127,6 +129,7 @@ const ManageWaliKelas = () => {
       setFormEmail("");
       setFormPassword("");
       setFormClass("");
+      setFormPhone("");
       fetchData();
     } catch (err: any) {
       toast.error(err.message || "Gagal membuat wali kelas");
@@ -244,6 +247,13 @@ const ManageWaliKelas = () => {
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input placeholder="Minimal 6 karakter" type="password" value={formPassword} onChange={(e) => setFormPassword(e.target.value)} className="pl-9" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>No. WhatsApp</Label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input placeholder="08xxxxxxxxxx" type="tel" value={formPhone} onChange={(e) => setFormPhone(e.target.value)} className="pl-9" />
               </div>
             </div>
             <div className="space-y-2">
