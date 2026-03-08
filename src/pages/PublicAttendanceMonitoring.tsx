@@ -197,6 +197,11 @@ const PublicAttendanceMonitoring = () => {
           </CardContent>
         </Card>
 
+        {/* Scan Absensi */}
+        {schoolId && (
+          <PublicAttendanceScanner schoolId={schoolId} onAttendanceRecorded={fetchData} />
+        )}
+
         {/* Two-column: Live Feed + Class Summary */}
         <div className="grid lg:grid-cols-5 gap-5">
           {/* Live Feed */}
