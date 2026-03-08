@@ -61,66 +61,81 @@ const QRCodeDisplay = ({ data, size = 200, studentName, studentClass, schoolName
     const qrUrl = URL.createObjectURL(qrBlob);
 
     qrImg.onload = () => {
-      const padding = 40;
-      const headerHeight = schoolName || studentName ? 70 : 0;
-      const footerHeight = 40;
-      const cardWidth = size + padding * 2;
-      const cardHeight = size + padding * 2 + headerHeight + footerHeight;
+      // Full HD output (1080x1920 portrait)
+      const canvasW = 1080;
+      const canvasH = 1920;
+      const qrSize = 700;
+      const headerH = 340;
 
       const canvas = document.createElement("canvas");
-      canvas.width = cardWidth;
-      canvas.height = cardHeight;
+      canvas.width = canvasW;
+      canvas.height = canvasH;
       const ctx = canvas.getContext("2d")!;
 
-      // Background
+      // White background
       ctx.fillStyle = "#ffffff";
-      ctx.beginPath();
-      ctx.roundRect(0, 0, cardWidth, cardHeight, 16);
-      ctx.fill();
+      ctx.fillRect(0, 0, canvasW, canvasH);
 
-      // Top color band
-      const grad = ctx.createLinearGradient(0, 0, cardWidth, 0);
+      // Top gradient band
+      const grad = ctx.createLinearGradient(0, 0, canvasW, 0);
       grad.addColorStop(0, "hsl(234, 89%, 40%)");
       grad.addColorStop(1, "hsl(260, 80%, 50%)");
       ctx.fillStyle = grad;
       ctx.beginPath();
-      ctx.roundRect(0, 0, cardWidth, headerHeight || 12, [16, 16, 0, 0]);
+      ctx.roundRect(0, 0, canvasW, headerH, [0, 0, 40, 40]);
       ctx.fill();
 
       // Header text
-      if (headerHeight > 0) {
-        ctx.fillStyle = "#ffffff";
-        ctx.textAlign = "center";
-        if (schoolName) {
-          ctx.font = "bold 13px system-ui, sans-serif";
-          ctx.fillText(schoolName, cardWidth / 2, 24, cardWidth - 20);
-        }
-        if (studentName) {
-          ctx.font = "bold 16px system-ui, sans-serif";
-          ctx.fillText(studentName, cardWidth / 2, 46, cardWidth - 20);
-        }
-        if (studentClass) {
-          ctx.font = "12px system-ui, sans-serif";
-          ctx.fillStyle = "rgba(255,255,255,0.85)";
-          ctx.fillText(`Kelas ${studentClass}`, cardWidth / 2, 62, cardWidth - 20);
-        }
+      ctx.fillStyle = "#ffffff";
+      ctx.textAlign = "center";
+      if (schoolName) {
+        ctx.font = "bold 36px system-ui, sans-serif";
+        ctx.fillText(schoolName, canvasW / 2, 80, canvasW - 80);
+      }
+      if (studentName) {
+        ctx.font = "bold 56px system-ui, sans-serif";
+        ctx.fillText(studentName, canvasW / 2, 180, canvasW - 80);
+      }
+      if (studentClass) {
+        ctx.font = "36px system-ui, sans-serif";
+        ctx.fillStyle = "rgba(255,255,255,0.85)";
+        ctx.fillText(`Kelas ${studentClass}`, canvasW / 2, 250);
       }
 
-      // QR Code
-      const qrX = (cardWidth - size) / 2;
-      const qrY = headerHeight + padding / 2;
-      ctx.drawImage(qrImg, qrX, qrY, size, size);
+      // QR Code centered
+      const qrX = (canvasW - qrSize) / 2;
+      const qrY = headerH + 120;
 
-      // Border around QR
+      // QR border/shadow
+      ctx.fillStyle = "#f3f4f6";
+      ctx.beginPath();
+      ctx.roundRect(qrX - 30, qrY - 30, qrSize + 60, qrSize + 60, 24);
+      ctx.fill();
       ctx.strokeStyle = "#e5e7eb";
-      ctx.lineWidth = 1;
-      ctx.strokeRect(qrX - 4, qrY - 4, size + 8, size + 8);
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
+
+      // NIS text below QR
+      ctx.fillStyle = "#374151";
+      ctx.textAlign = "center";
+      ctx.font = "bold 32px system-ui, sans-serif";
+      const nisY = qrY + qrSize + 80;
+      ctx.fillText(`NIS: ${data}`, canvasW / 2, nisY);
 
       // Footer
-      ctx.fillStyle = "#6b7280";
-      ctx.textAlign = "center";
-      ctx.font = "11px system-ui, sans-serif";
-      ctx.fillText("Smart School Pickup System", cardWidth / 2, cardHeight - 14);
+      ctx.fillStyle = "#9ca3af";
+      ctx.font = "28px system-ui, sans-serif";
+      ctx.fillText("Smart School Pickup System", canvasW / 2, canvasH - 80);
+
+      // Divider line
+      ctx.strokeStyle = "#e5e7eb";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(canvasW * 0.2, canvasH - 120);
+      ctx.lineTo(canvasW * 0.8, canvasH - 120);
+      ctx.stroke();
 
       // Download
       const link = document.createElement("a");
@@ -146,11 +161,11 @@ const QRCodeDisplay = ({ data, size = 200, studentName, studentClass, schoolName
       <div className="flex gap-2">
         {autoFrame && (studentName || schoolName) ? (
           <Button variant="outline" size="sm" onClick={downloadWithFrame} className="text-xs">
-            <Download className="h-3.5 w-3.5 mr-1" /> Download dengan Frame
+            <Download className="h-3.5 w-3.5 mr-1" /> Download QR Code
           </Button>
         ) : (
           <button onClick={handleSimpleDownload} className="text-xs text-primary hover:underline font-medium">
-            Download QR
+            Download QR Code
           </button>
         )}
       </div>
