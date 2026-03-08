@@ -48,6 +48,7 @@ const Monitoring = () => {
   const [confirmStudent, setConfirmStudent] = useState<StudentWithStatus | null>(null);
   const [cancelStudent, setCancelStudent] = useState<StudentWithStatus | null>(null);
   const [resetConfirm, setResetConfirm] = useState(false);
+  const [successStudent, setSuccessStudent] = useState<StudentWithStatus | null>(null);
 
   const fetchData = useCallback(async () => {
     if (!profile?.school_id) return;
