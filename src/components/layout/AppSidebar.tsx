@@ -51,8 +51,7 @@ const settingsNav = [
 ];
 
 export function AppSidebar() {
-  const { state, isMobile, setOpenMobile } = useSidebar();
-  const collapsed = state === "collapsed";
+  const { isMobile, setOpenMobile } = useSidebar();
   const location = useLocation();
   const navigate = useNavigate();
   const { signOut, roles } = useAuth();
@@ -66,7 +65,6 @@ export function AppSidebar() {
     navigate("/login");
   };
 
-  // Close mobile sidebar on navigation
   const handleNavClick = () => {
     if (isMobile) setOpenMobile(false);
   };
@@ -83,29 +81,25 @@ export function AppSidebar() {
             activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-semibold shadow-sm"
           >
             <item.icon className="h-4 w-4 shrink-0" />
-            {!collapsed && <span className="text-sm truncate">{item.title}</span>}
+            <span className="text-sm truncate">{item.title}</span>
           </NavLink>
         </SidebarMenuButton>
       </SidebarMenuItem>
     ));
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-sidebar-border font-['Nunito',sans-serif]">
+    <Sidebar collapsible="offcanvas" className="border-r border-sidebar-border font-['Nunito',sans-serif]">
       <SidebarHeader className="p-4 pb-3">
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl gradient-primary shrink-0 shadow-md">
             <ClipboardCheck className="h-4.5 w-4.5 text-primary-foreground" />
           </div>
-          {!collapsed && (
-            <div className="flex flex-col min-w-0">
-              <span className="text-sm font-extrabold text-sidebar-foreground tracking-tight truncate">Smart Attendance</span>
-              <span className="text-[10px] text-sidebar-foreground/50 font-medium">School System</span>
-            </div>
-          )}
+          <div className="flex flex-col min-w-0">
+            <span className="text-sm font-extrabold text-sidebar-foreground tracking-tight truncate">Smart Attendance</span>
+            <span className="text-[10px] text-sidebar-foreground/50 font-medium">School System</span>
+          </div>
         </div>
-        {!collapsed && (
-          <div className="mt-3 h-px bg-gradient-to-r from-transparent via-sidebar-border to-transparent" />
-        )}
+        <div className="mt-3 h-px bg-gradient-to-r from-transparent via-sidebar-border to-transparent" />
       </SidebarHeader>
 
       <SidebarContent className="px-2 overflow-y-auto overflow-x-hidden">
@@ -159,12 +153,8 @@ export function AppSidebar() {
                         className="text-sidebar-foreground/50 hover:bg-sidebar-accent/40 rounded-xl px-3 py-2.5 transition-all duration-200 opacity-60"
                       >
                         <FileBarChart className="h-4 w-4 shrink-0" />
-                        {!collapsed && (
-                          <>
-                            <span className="text-sm truncate">Rekap & Export</span>
-                            <Lock className="h-3.5 w-3.5 ml-auto text-warning shrink-0" />
-                          </>
-                        )}
+                        <span className="text-sm truncate">Rekap & Export</span>
+                        <Lock className="h-3.5 w-3.5 ml-auto text-warning shrink-0" />
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   )}
@@ -185,9 +175,7 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="p-3">
-        {!collapsed && (
-          <div className="mb-2 mx-2 h-px bg-gradient-to-r from-transparent via-sidebar-border to-transparent" />
-        )}
+        <div className="mb-2 mx-2 h-px bg-gradient-to-r from-transparent via-sidebar-border to-transparent" />
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
@@ -196,7 +184,7 @@ export function AppSidebar() {
               onClick={handleLogout}
             >
               <LogOut className="h-4 w-4 shrink-0" />
-              {!collapsed && <span className="text-sm font-medium">Keluar</span>}
+              <span className="text-sm font-medium">Keluar</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
