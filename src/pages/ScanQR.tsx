@@ -42,7 +42,7 @@ const ScanQR = () => {
   const isLookingUp = useRef(false);
   const scanPaused = useRef(false);
 
-  const canFace = !features.loading;
+  const canFace = !features.loading && features.canFaceRecognition;
 
   const lookupStudent = useCallback(async (code: string) => {
     if (!code.trim() || !profile?.school_id || isLookingUp.current || scanPaused.current) return;
