@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.mayar-webhook]
 verify_jwt = false
+
+[functions.lookup-npsn]
+verify_jwt = false
