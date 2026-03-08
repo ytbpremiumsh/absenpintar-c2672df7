@@ -45,6 +45,24 @@ const EXTRA_FEATURES = [
   { icon: Settings, title: "Pengaturan Lengkap", desc: "Jam operasional, logo, QR, dan integrasi WhatsApp." },
 ];
 
+const PROBLEMS = [
+  { icon: AlertTriangle, title: "Keamanan Rentan", desc: "Tidak ada verifikasi identitas penjemput. Siapa saja bisa mengaku sebagai wali murid.", color: "text-destructive" },
+  { icon: XCircle, title: "Tidak Ada Rekam Jejak", desc: "Sekolah tidak memiliki catatan digital siapa yang menjemput dan jam berapa.", color: "text-destructive" },
+  { icon: Clock, title: "Proses Lambat & Kacau", desc: "Area penjemputan tidak teratur. Guru kesulitan memantau ratusan siswa sekaligus.", color: "text-destructive" },
+  { icon: Users, title: "Orang Tua Cemas", desc: "Wali murid tidak mendapat informasi real-time apakah anaknya sudah dijemput.", color: "text-destructive" },
+  { icon: FileText, title: "Laporan Manual", desc: "Pencatatan masih di buku tulis, rawan hilang, tidak akurat, dan sulit diaudit.", color: "text-destructive" },
+  { icon: Globe, title: "Tidak Transparan", desc: "Tidak ada sistem monitoring yang bisa diakses orang tua secara online.", color: "text-destructive" },
+];
+
+const SOLUTIONS_MAP = [
+  { icon: QrCode, problem: "Keamanan Rentan", solution: "Verifikasi QR Code & NIS", desc: "Setiap penjemput wajib memindai kartu QR unik siswa. Sistem memastikan hanya pemegang kartu yang bisa menjemput." },
+  { icon: BarChart3, problem: "Tidak Ada Rekam Jejak", solution: "Riwayat Digital Otomatis", desc: "Setiap aktivitas tercatat otomatis dan bisa di-export kapan saja." },
+  { icon: Monitor, problem: "Proses Lambat & Kacau", solution: "Monitoring Real-Time", desc: "Dashboard monitoring menampilkan status penjemputan seluruh kelas secara live." },
+  { icon: Bell, problem: "Orang Tua Cemas", solution: "Notifikasi WhatsApp Instan", desc: "Wali murid langsung menerima pesan WhatsApp otomatis saat anaknya dijemput." },
+  { icon: Globe, problem: "Tidak Transparan", solution: "Live Monitor Publik", desc: "Halaman monitoring publik bisa diakses tanpa login. Status penjemputan terlihat real-time." },
+  { icon: Smartphone, problem: "Laporan Manual", solution: "Export & Analitik Digital", desc: "Laporan harian otomatis dalam format Excel dengan grafik dan statistik." },
+];
+
 const LandingPage = () => {
   const navigate = useNavigate();
   const [content, setContent] = useState<Record<string, string>>({});
