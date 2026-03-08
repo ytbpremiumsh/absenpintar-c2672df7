@@ -314,10 +314,6 @@ const ScanQR = () => {
                 <div className="text-success-foreground/90 space-y-0.5 text-xs sm:text-sm">
                   <p><strong>{scannedStudent.name}</strong></p>
                   <p>Kelas: {scannedStudent.class}</p>
-                  <div className="flex items-center justify-center gap-1 mt-1">
-                    <Volume2 className="h-3.5 w-3.5" />
-                    <span className="text-[11px]">Pengumuman suara diputar</span>
-                  </div>
                 </div>
               </CardContent>
             </Card>
