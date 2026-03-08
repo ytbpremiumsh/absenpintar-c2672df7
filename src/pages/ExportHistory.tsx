@@ -230,11 +230,11 @@ const ExportHistory = () => {
                     <p className="text-xs text-muted-foreground">{selectedLogs.length} absensi tercatat</p>
                   </div>
                   <div className="flex gap-1.5">
-                    <Button variant="outline" size="sm" onClick={() => exportDateExcel(selectedDate)} className="text-xs h-7 px-2">
-                      <FileSpreadsheet className="h-3 w-3 mr-1" /> Excel
+                    <Button variant="outline" size="sm" disabled={isPremiumFeature} onClick={() => isPremiumFeature ? toast.error("Upgrade ke paket Basic untuk export") : exportDateExcel(selectedDate)} className="text-xs h-7 px-2">
+                      <FileSpreadsheet className="h-3 w-3 mr-1" /> Excel {isPremiumFeature && <Lock className="h-3 w-3 ml-1" />}
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => exportDatePDF(selectedDate)} className="text-xs h-7 px-2">
-                      <FileText className="h-3 w-3 mr-1" /> PDF
+                    <Button variant="outline" size="sm" disabled={isPremiumFeature} onClick={() => isPremiumFeature ? toast.error("Upgrade ke paket Basic untuk export") : exportDatePDF(selectedDate)} className="text-xs h-7 px-2">
+                      <FileText className="h-3 w-3 mr-1" /> PDF {isPremiumFeature && <Lock className="h-3 w-3 ml-1" />}
                     </Button>
                   </div>
                 </div>
