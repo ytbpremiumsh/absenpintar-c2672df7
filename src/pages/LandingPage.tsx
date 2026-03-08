@@ -7,6 +7,7 @@ import {
   ArrowRight, ArrowDown, CheckCircle2, School, Mail, Phone, MapPin,
   Shield, Zap, HeadphonesIcon, BarChart3, Smartphone, Layout,
   Lock, Star, TrendingUp, Sparkles, ChevronRight, Globe, Bell, Clock, Settings, FileText, QrCode, Users, GraduationCap,
+  AlertTriangle, XCircle, Lightbulb,
 } from "lucide-react";
 
 const iconMap: Record<string, any> = {
