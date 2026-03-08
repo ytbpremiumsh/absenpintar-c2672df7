@@ -25,7 +25,11 @@ const Login = () => {
       toast.error("Login gagal: " + error);
     } else {
       toast.success("Login berhasil!");
-      navigate("/dashboard");
+      // Check if super_admin and redirect accordingly
+      const { data: roles } = await (await import("@/integrations/supabase/client")).supabase
+        .from("user_roles").select("role").eq("user_id", (await (await import("@/integrations/supabase/client")).supabase.auth.getUser()).data.user?.id || "");
+      const isSuperAdmin = roles?.some((r: any) => r.role === "super_admin");
+      navigate(isSuperAdmin ? "/super-admin" : "/dashboard");
     }
   };
 
