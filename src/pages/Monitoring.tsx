@@ -146,8 +146,17 @@ const Monitoring = () => {
   const handleUpdateStatus = async () => {
     if (!editStudent || !editStatus || !profile?.school_id) return;
     
-    if (editStudent.log_id) {
+    if (editStatus === "belum") {
+      // Cancel attendance — delete the log
+      if (editStudent.log_id) {
+        await supabase.from("attendance_logs").delete().eq("id", editStudent.log_id);
+        toast.success(`Absensi ${editStudent.name} dibatalkan`);
+      } else {
+        toast.info(`${editStudent.name} memang belum absen`);
+      }
+    } else if (editStudent.log_id) {
       await supabase.from("attendance_logs").update({ status: editStatus }).eq("id", editStudent.log_id);
+      toast.success(`Status ${editStudent.name} diubah ke ${STATUS_LABELS[editStatus]}`);
     } else {
       const now = new Date();
       await supabase.from("attendance_logs").insert({
@@ -159,8 +168,8 @@ const Monitoring = () => {
         status: editStatus,
         recorded_by: profile.full_name || "Admin",
       });
+      toast.success(`Status ${editStudent.name} diubah ke ${STATUS_LABELS[editStatus]}`);
     }
-    toast.success(`Status ${editStudent.name} diubah ke ${STATUS_LABELS[editStatus]}`);
     setEditStudent(null);
     setEditStatus("");
     fetchData();
@@ -453,6 +462,9 @@ const Monitoring = () => {
               <Select value={editStatus} onValueChange={setEditStatus}>
                 <SelectTrigger><SelectValue placeholder="Pilih status" /></SelectTrigger>
                 <SelectContent>
+                  {editStudent?.log_id && (
+                    <SelectItem value="belum">🔄 Batalkan (Belum Absen)</SelectItem>
+                  )}
                   <SelectItem value="hadir">✅ Hadir</SelectItem>
                   <SelectItem value="izin">📝 Izin</SelectItem>
                   <SelectItem value="sakit">🤒 Sakit</SelectItem>
