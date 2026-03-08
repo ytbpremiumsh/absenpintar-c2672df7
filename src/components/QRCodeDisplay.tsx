@@ -11,9 +11,18 @@ interface QRCodeDisplayProps {
   schoolName?: string;
   schoolLogo?: string;
   autoFrame?: boolean;
+  customInstructions?: string[];
 }
 
-const QRCodeDisplay = ({ data, size = 200, studentName, studentClass, schoolName, schoolLogo, autoFrame = true }: QRCodeDisplayProps) => {
+const DEFAULT_INSTRUCTIONS = [
+  "Tunjukkan QR Code ini kepada guru/petugas piket",
+  "Petugas akan scan QR saat penjemputan",
+  "Orang tua/wali akan menerima notifikasi otomatis",
+  "Jangan berikan QR Code kepada orang lain",
+  "Segera lapor jika QR Code hilang/rusak",
+];
+
+const QRCodeDisplay = ({ data, size = 200, studentName, studentClass, schoolName, schoolLogo, autoFrame = true, customInstructions }: QRCodeDisplayProps) => {
   const ref = useRef<HTMLDivElement>(null);
   const qrCode = useRef<QRCodeStyling | null>(null);
 
@@ -23,25 +32,11 @@ const QRCodeDisplay = ({ data, size = 200, studentName, studentClass, schoolName
       height: size,
       data,
       type: "svg",
-      dotsOptions: {
-        color: "hsl(234, 89%, 40%)",
-        type: "rounded",
-      },
-      cornersSquareOptions: {
-        color: "hsl(234, 89%, 30%)",
-        type: "extra-rounded",
-      },
-      cornersDotOptions: {
-        color: "hsl(260, 80%, 50%)",
-        type: "dot",
-      },
-      backgroundOptions: {
-        color: "#ffffff",
-      },
-      imageOptions: {
-        crossOrigin: "anonymous",
-        margin: 4,
-      },
+      dotsOptions: { color: "hsl(234, 89%, 40%)", type: "rounded" },
+      cornersSquareOptions: { color: "hsl(234, 89%, 30%)", type: "extra-rounded" },
+      cornersDotOptions: { color: "hsl(260, 80%, 50%)", type: "dot" },
+      backgroundOptions: { color: "#ffffff" },
+      imageOptions: { crossOrigin: "anonymous", margin: 4 },
     });
 
     if (ref.current) {
@@ -61,11 +56,18 @@ const QRCodeDisplay = ({ data, size = 200, studentName, studentClass, schoolName
     const qrUrl = URL.createObjectURL(qrBlob);
 
     qrImg.onload = () => {
+      const instructions = customInstructions && customInstructions.length > 0 ? customInstructions : DEFAULT_INSTRUCTIONS;
+
       // Full HD output (1080x1920 portrait)
       const canvasW = 1080;
-      const canvasH = 1920;
       const qrSize = 700;
       const headerH = 340;
+      const instrLineH = 48;
+      const instrBoxH = 80 + instructions.length * instrLineH;
+      const noticeH = 80;
+      const footerH = 100;
+      const qrSectionH = qrSize + 60 + 120 + 70; // qr + border padding + top gap + nis
+      const canvasH = Math.max(1920, headerH + qrSectionH + 60 + instrBoxH + 30 + noticeH + footerH + 40);
 
       const canvas = document.createElement("canvas");
       canvas.width = canvasW;
@@ -129,41 +131,31 @@ const QRCodeDisplay = ({ data, size = 200, studentName, studentClass, schoolName
       const instrX = 100;
       const instrW = canvasW - 200;
 
-      // Instruction box background
       ctx.fillStyle = "#f0f4ff";
       ctx.beginPath();
-      ctx.roundRect(instrX, instrStartY, instrW, 340, 20);
+      ctx.roundRect(instrX, instrStartY, instrW, instrBoxH, 20);
       ctx.fill();
       ctx.strokeStyle = "#c7d2fe";
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // Instruction title
       ctx.fillStyle = "#1e3a8a";
       ctx.font = "bold 28px system-ui, sans-serif";
       ctx.textAlign = "center";
       ctx.fillText("📋 Petunjuk Penggunaan", canvasW / 2, instrStartY + 45);
 
-      // Instruction items
       ctx.fillStyle = "#374151";
       ctx.font = "24px system-ui, sans-serif";
       ctx.textAlign = "left";
-      const lines = [
-        "1. Tunjukkan QR Code ini kepada guru/petugas piket",
-        "2. Petugas akan scan QR saat penjemputan",
-        "3. Orang tua/wali akan menerima notifikasi otomatis",
-        "4. Jangan berikan QR Code kepada orang lain",
-        "5. Segera lapor jika QR Code hilang/rusak",
-      ];
-      lines.forEach((line, i) => {
-        ctx.fillText(line, instrX + 30, instrStartY + 90 + i * 48, instrW - 60);
+      instructions.forEach((line, i) => {
+        ctx.fillText(`${i + 1}. ${line}`, instrX + 30, instrStartY + 90 + i * instrLineH, instrW - 60);
       });
 
       // Security notice
-      const noticeY = instrStartY + 360;
+      const noticeY = instrStartY + instrBoxH + 30;
       ctx.fillStyle = "#fef2f2";
       ctx.beginPath();
-      ctx.roundRect(instrX, noticeY, instrW, 80, 16);
+      ctx.roundRect(instrX, noticeY, instrW, noticeH, 16);
       ctx.fill();
       ctx.strokeStyle = "#fecaca";
       ctx.lineWidth = 1.5;
@@ -189,13 +181,10 @@ const QRCodeDisplay = ({ data, size = 200, studentName, studentClass, schoolName
       URL.revokeObjectURL(qrUrl);
     };
     qrImg.src = qrUrl;
-  }, [data, size, studentName, studentClass, schoolName]);
+  }, [data, size, studentName, studentClass, schoolName, customInstructions]);
 
   const handleSimpleDownload = () => {
-    qrCode.current?.download({
-      name: `qr-${studentName || data}`,
-      extension: "png",
-    });
+    qrCode.current?.download({ name: `qr-${studentName || data}`, extension: "png" });
   };
 
   return (

@@ -215,6 +215,38 @@ export type Database = {
           },
         ]
       }
+      qr_instructions: {
+        Row: {
+          created_at: string
+          id: string
+          instruction_text: string
+          school_id: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          instruction_text: string
+          school_id: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          instruction_text?: string
+          school_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qr_instructions_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       school_groups: {
         Row: {
           created_at: string

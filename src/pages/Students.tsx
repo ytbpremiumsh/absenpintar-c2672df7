@@ -4,11 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, QrCode, Trash2, Loader2, Users, GraduationCap, Phone, ChevronDown, ChevronRight, Eye, Upload, Download, FileSpreadsheet, Camera, Lock } from "lucide-react";
+import { Plus, Search, QrCode, Trash2, Loader2, Users, GraduationCap, Phone, ChevronDown, ChevronRight, Eye, Upload, Download, Camera, Lock, ArrowRightLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -26,12 +26,18 @@ const Students = () => {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
+  const [promoteDialogOpen, setPromoteDialogOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
   const [form, setForm] = useState({ name: "", class: "", student_id: "", parent_name: "", parent_phone: "" });
   const [saving, setSaving] = useState(false);
   const [expandedClasses, setExpandedClasses] = useState<Set<string>>(new Set());
   const [activeFilter, setActiveFilter] = useState<string>("all");
   const [photoUploading, setPhotoUploading] = useState<string | null>(null);
+  const [promoteFrom, setPromoteFrom] = useState("");
+  const [promoteTo, setPromoteTo] = useState("");
+  const [promoting, setPromoting] = useState(false);
+  const [qrInstructions, setQrInstructions] = useState<string[]>([]);
+  const [schoolInfo, setSchoolInfo] = useState<{ name?: string; logo?: string }>({});
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -42,12 +48,20 @@ const Students = () => {
 
   const fetchData = async () => {
     if (!profile?.school_id) return;
-    const [studentsRes, classesRes] = await Promise.all([
+    const [studentsRes, classesRes, instrRes, schoolRes] = await Promise.all([
       supabase.from("students").select("*").eq("school_id", profile.school_id).order("class").order("name"),
       supabase.from("classes").select("*").eq("school_id", profile.school_id).order("name"),
+      supabase.from("qr_instructions").select("instruction_text").eq("school_id", profile.school_id).order("sort_order"),
+      supabase.from("schools").select("name, logo").eq("id", profile.school_id).single(),
     ]);
     setStudents(studentsRes.data || []);
     setClasses(classesRes.data || []);
+    if (instrRes.data && instrRes.data.length > 0) {
+      setQrInstructions(instrRes.data.map((r: any) => r.instruction_text));
+    }
+    if (schoolRes.data) {
+      setSchoolInfo({ name: schoolRes.data.name, logo: schoolRes.data.logo || undefined });
+    }
     setLoading(false);
     if (studentsRes.data) {
       setExpandedClasses(new Set(studentsRes.data.map((s: any) => s.class)));
@@ -157,6 +171,38 @@ const Students = () => {
     e.target.value = "";
   };
 
+  const handlePromoteClass = async () => {
+    if (!promoteFrom || !promoteTo || !profile?.school_id) {
+      toast.error("Pilih kelas asal dan kelas tujuan");
+      return;
+    }
+    if (promoteFrom === promoteTo) {
+      toast.error("Kelas asal dan tujuan tidak boleh sama");
+      return;
+    }
+    setPromoting(true);
+    const studentsToPromote = students.filter(s => s.class === promoteFrom);
+    if (studentsToPromote.length === 0) {
+      toast.error("Tidak ada siswa di kelas " + promoteFrom);
+      setPromoting(false);
+      return;
+    }
+
+    const ids = studentsToPromote.map(s => s.id);
+    const { error } = await supabase
+      .from("students")
+      .update({ class: promoteTo })
+      .in("id", ids);
+
+    setPromoting(false);
+    if (error) { toast.error("Gagal naik kelas: " + error.message); return; }
+    toast.success(`${studentsToPromote.length} siswa berhasil dipindahkan dari ${promoteFrom} ke ${promoteTo}!`);
+    setPromoteDialogOpen(false);
+    setPromoteFrom("");
+    setPromoteTo("");
+    fetchData();
+  };
+
   const toggleClass = (cls: string) => {
     setExpandedClasses((prev) => {
       const next = new Set(prev);
@@ -197,6 +243,75 @@ const Students = () => {
           <p className="text-muted-foreground text-sm">Kelola data siswa, QR Code, dan kategori kelas</p>
         </div>
         <div className="flex flex-wrap gap-2">
+          {/* Naik Kelas */}
+          <Dialog open={promoteDialogOpen} onOpenChange={setPromoteDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm">
+                <ArrowRightLeft className="h-4 w-4 mr-1" /> Naik Kelas
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Naik Kelas / Pindah Kelas</DialogTitle>
+                <DialogDescription>Pindahkan semua siswa dari satu kelas ke kelas lain secara bersamaan</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-2">
+                <div className="space-y-2">
+                  <Label>Kelas Asal</Label>
+                  <Select value={promoteFrom} onValueChange={setPromoteFrom}>
+                    <SelectTrigger><SelectValue placeholder="Pilih kelas asal" /></SelectTrigger>
+                    <SelectContent>
+                      {allClasses.map((cls) => (
+                        <SelectItem key={cls} value={cls}>
+                          {cls} ({students.filter(s => s.class === cls).length} siswa)
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex justify-center">
+                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <ArrowRightLeft className="h-4 w-4 text-primary" />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Kelas Tujuan</Label>
+                  <Select value={promoteTo} onValueChange={setPromoteTo}>
+                    <SelectTrigger><SelectValue placeholder="Pilih kelas tujuan" /></SelectTrigger>
+                    <SelectContent>
+                      {classOptions.map((cls) => (
+                        <SelectItem key={cls} value={cls}>{cls}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-[10px] text-muted-foreground">Atau ketik nama kelas baru di bawah</p>
+                  <Input
+                    placeholder="Ketik kelas baru, cth: 2-A"
+                    value={promoteTo}
+                    onChange={(e) => setPromoteTo(e.target.value)}
+                    className="h-9 text-sm"
+                  />
+                </div>
+
+                {promoteFrom && (
+                  <div className="bg-secondary/50 rounded-lg p-3">
+                    <p className="text-xs font-semibold text-foreground mb-1">Preview:</p>
+                    <p className="text-xs text-muted-foreground">
+                      <strong>{students.filter(s => s.class === promoteFrom).length}</strong> siswa dari kelas <strong>{promoteFrom}</strong> akan dipindahkan ke kelas <strong>{promoteTo || "..."}</strong>
+                    </p>
+                  </div>
+                )}
+
+                <Button onClick={handlePromoteClass} disabled={promoting || !promoteFrom || !promoteTo} className="w-full gradient-primary hover:opacity-90">
+                  {promoting ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <ArrowRightLeft className="h-4 w-4 mr-1" />}
+                  {promoting ? "Memproses..." : "Pindahkan Semua Siswa"}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+
           {/* Import */}
           <div className="relative">
             <input type="file" accept=".xlsx,.xls" onChange={handleImportExcel} className="absolute inset-0 opacity-0 cursor-pointer" disabled={!features.canImportExport} />
@@ -375,6 +490,8 @@ const Students = () => {
                 size={220}
                 studentName={selectedStudent.name}
                 studentClass={selectedStudent.class}
+                schoolName={schoolInfo.name}
+                customInstructions={qrInstructions.length > 0 ? qrInstructions : undefined}
               />
               <div>
                 <p className="font-bold">{selectedStudent.name}</p>

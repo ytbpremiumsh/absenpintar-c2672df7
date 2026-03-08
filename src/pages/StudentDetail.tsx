@@ -26,17 +26,22 @@ const StudentDetail = () => {
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState({ name: "", class: "", student_id: "", parent_name: "", parent_phone: "" });
   const [saving, setSaving] = useState(false);
+  const [qrInstructions, setQrInstructions] = useState<string[]>([]);
 
   const fetchData = async () => {
     if (!id || !profile?.school_id) return;
-    const [studentRes, logsRes, schoolRes] = await Promise.all([
+    const [studentRes, logsRes, schoolRes, instrRes] = await Promise.all([
       supabase.from("students").select("*").eq("id", id).eq("school_id", profile.school_id).single(),
       supabase.from("pickup_logs").select("*").eq("student_id", id).eq("school_id", profile.school_id).order("pickup_time", { ascending: false }).limit(20),
       supabase.from("schools").select("name, logo, address").eq("id", profile.school_id).single(),
+      supabase.from("qr_instructions").select("instruction_text").eq("school_id", profile.school_id).order("sort_order"),
     ]);
     setStudent(studentRes.data);
     setPickupHistory(logsRes.data || []);
     setSchool(schoolRes.data);
+    if (instrRes.data && instrRes.data.length > 0) {
+      setQrInstructions(instrRes.data.map((r: any) => r.instruction_text));
+    }
     if (studentRes.data) {
       setEditForm({
         name: studentRes.data.name,
@@ -233,6 +238,7 @@ const StudentDetail = () => {
                 studentClass={student.class}
                 schoolName={school?.name}
                 schoolLogo={school?.logo}
+                customInstructions={qrInstructions.length > 0 ? qrInstructions : undefined}
               />
               <p className="text-xs text-muted-foreground mt-3 text-center">Scan kode ini untuk memproses penjemputan</p>
             </CardContent>
