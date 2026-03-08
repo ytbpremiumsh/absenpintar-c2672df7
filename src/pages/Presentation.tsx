@@ -148,6 +148,26 @@ const SECTIONS = [
     glow: "shadow-pink-500/20",
     badge: "Connected",
   },
+  {
+    id: "live-monitor",
+    title: "Live Monitor Publik",
+    subtitle: "Transparansi Penuh untuk Wali Murid",
+    desc: "Halaman monitoring real-time yang bisa diakses wali murid tanpa perlu login. Cukup buka link khusus sekolah, dan status penjemputan anak langsung terlihat.",
+    details: [
+      "Akses publik tanpa login — wali murid cukup membuka link yang diberikan sekolah",
+      "Statistik real-time: total siswa, sudah pulang, menunggu, dan persentase progress",
+      "Progress bar keseluruhan dengan indikator 'Live' yang menunjukkan data selalu terbaru",
+      "Tampilan per kelas dengan jumlah siswa, status dijemput/menunggu, dan progress individual",
+      "Daftar siswa per kelas dengan badge status berwarna (Pulang/Menunggu)",
+      "Layout responsif dengan pilihan 1-4 kolom dan toggle sembunyikan progress bar",
+      "Pengumuman suara otomatis saat ada siswa baru yang berstatus 'Pulang'",
+    ],
+    image: "/images/presentation/live-monitor.png",
+    icon: Globe,
+    gradient: "from-teal-500 via-emerald-500 to-green-600",
+    glow: "shadow-teal-500/20",
+    badge: "Public Access",
+  },
 ];
 
 const EXTRA_FEATURES = [
