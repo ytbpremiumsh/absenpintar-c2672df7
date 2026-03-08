@@ -1,7 +1,8 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { Outlet, Navigate, useNavigate } from "react-router-dom";
-import { Bell, Settings, LogOut, User, School, KeyRound } from "lucide-react";
+import { Settings, LogOut, School, KeyRound } from "lucide-react";
+import { NotificationBell } from "@/components/NotificationBell";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -53,10 +54,7 @@ export function AppLayout() {
               </span>
             </div>
             <div className="flex items-center gap-3">
-              <button className="relative p-2 rounded-lg hover:bg-secondary transition-colors">
-                <Bell className="h-4 w-4 text-muted-foreground" />
-                <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-destructive" />
-              </button>
+              <NotificationBell />
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

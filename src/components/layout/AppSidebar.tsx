@@ -13,6 +13,7 @@ import {
   UserCheck,
   FileBarChart,
   Lock,
+  LifeBuoy,
 } from "lucide-react";
 import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
 import { NavLink } from "@/components/NavLink";
@@ -47,6 +48,7 @@ const dataNav = [
 
 const settingsNav = [
   { title: "Langganan", url: "/subscription", icon: CreditCard },
+  { title: "Bantuan", url: "/support", icon: LifeBuoy },
 ];
 
 export function AppSidebar() {
