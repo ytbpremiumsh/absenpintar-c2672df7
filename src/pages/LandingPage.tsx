@@ -8,6 +8,7 @@ import {
   Zap, Bell, QrCode, Users, GraduationCap,
   UserCheck, BarChart3, Shield, Smartphone, Star, TrendingUp, Lock,
   ChevronRight, Sparkles, Play, ArrowDown,
+  AlertTriangle, XCircle, Clock, FileText, Globe, Camera,
 } from "lucide-react";
 
 const fadeUp = {
@@ -47,6 +48,24 @@ const WORKFLOW = [
   { step: "02", title: "Siswa Scan", desc: "Siswa scan barcode atau gunakan face recognition untuk absensi." },
   { step: "03", title: "Monitoring Live", desc: "Pantau kehadiran real-time dan terima notifikasi otomatis." },
   { step: "04", title: "Rekap & Laporan", desc: "Download rekap lengkap dalam format Excel atau PDF." },
+];
+
+const PROBLEMS = [
+  { icon: AlertTriangle, title: "Absensi Manual", desc: "Pencatatan kehadiran masih pakai buku tulis, rawan kesalahan dan manipulasi data." },
+  { icon: Clock, title: "Proses Lambat", desc: "Guru harus memanggil siswa satu per satu untuk absensi, memakan waktu belajar." },
+  { icon: XCircle, title: "Tidak Ada Rekap Digital", desc: "Sekolah kesulitan membuat laporan kehadiran bulanan karena data tidak terdigitalisasi." },
+  { icon: Users, title: "Orang Tua Tidak Tahu", desc: "Wali murid tidak mendapat informasi real-time tentang kehadiran anaknya." },
+  { icon: FileText, title: "Laporan Tidak Akurat", desc: "Data absensi manual sulit diaudit dan sering terjadi ketidakcocokan." },
+  { icon: Globe, title: "Tidak Transparan", desc: "Tidak ada monitoring kehadiran yang bisa diakses orang tua secara online." },
+];
+
+const SOLUTIONS = [
+  { icon: QrCode, problem: "Absensi Manual", solution: "Scan Barcode Instan", desc: "Siswa cukup scan barcode untuk mencatat kehadiran. Proses kurang dari 1 detik." },
+  { icon: UserCheck, problem: "Proses Lambat", solution: "Face Recognition AI", desc: "AI mengenali wajah siswa dan mencatat absensi secara otomatis tanpa sentuhan." },
+  { icon: BarChart3, problem: "Tidak Ada Rekap", solution: "Rekap Otomatis", desc: "Rekap harian, mingguan, dan bulanan dibuat otomatis dengan statistik lengkap." },
+  { icon: Monitor, problem: "Tidak Transparan", solution: "Dashboard Real-Time", desc: "Dashboard menampilkan statistik kehadiran secara live — hadir, izin, sakit, alfa." },
+  { icon: Bell, problem: "Orang Tua Tidak Tahu", solution: "Notifikasi WhatsApp", desc: "Wali murid otomatis menerima notifikasi WhatsApp saat anak tercatat hadir." },
+  { icon: FileBarChart, problem: "Laporan Tidak Akurat", solution: "Export Excel & PDF", desc: "Laporan kehadiran lengkap bisa di-export dalam format Excel atau PDF kapan saja." },
 ];
 
 const LandingPage = () => {
@@ -200,6 +219,72 @@ const LandingPage = () => {
               </div>
             ))}
           </motion.div>
+        </div>
+      </section>
+
+      {/* ─── Problems ─── */}
+      <section className="py-20 sm:py-28 bg-muted/30 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-destructive/3 rounded-full blur-[120px] pointer-events-none" />
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-14">
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-destructive mb-3 block">Latar Belakang</span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight">
+              Masalah Absensi di Sekolah
+            </h2>
+            <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">Sistem absensi manual di sekolah Indonesia masih menyimpan banyak masalah dan ketidakefisienan.</p>
+          </motion.div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-16">
+            {PROBLEMS.map((p, i) => (
+              <motion.div key={p.title} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
+                className="group bg-card border border-destructive/10 rounded-2xl p-6 hover:border-destructive/25 hover:shadow-lg hover:shadow-destructive/5 transition-all duration-300">
+                <div className="h-10 w-10 rounded-xl bg-destructive/10 flex items-center justify-center mb-4 group-hover:bg-destructive/15 transition-colors">
+                  <p.icon className="h-5 w-5 text-destructive" />
+                </div>
+                <h3 className="font-bold text-foreground text-base mb-1.5">{p.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{p.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Arrow transition */}
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="flex flex-col items-center mb-16">
+            <div className="h-14 w-14 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-xl shadow-primary/20">
+              <ArrowDown className="h-6 w-6 text-primary-foreground" />
+            </div>
+            <p className="mt-3 font-bold text-primary text-sm">Solusi Kami</p>
+          </motion.div>
+
+          {/* Solutions */}
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-14">
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-3 block">Jawaban Tepat</span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight">
+              Smart School Attendance System
+            </h2>
+            <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">Setiap permasalahan memiliki solusi teknologi modern yang terintegrasi dalam satu platform.</p>
+          </motion.div>
+
+          <div className="grid sm:grid-cols-2 gap-5">
+            {SOLUTIONS.map((s, i) => (
+              <motion.div key={s.solution} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
+                className="group bg-card border border-primary/10 rounded-2xl p-6 hover:border-primary/25 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300">
+                <div className="flex items-start gap-4">
+                  <div className="h-11 w-11 rounded-xl gradient-primary flex items-center justify-center shrink-0 shadow-lg shadow-primary/15 group-hover:scale-105 transition-transform">
+                    <s.icon className="h-5 w-5 text-primary-foreground" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                      <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-destructive/10 text-destructive">{s.problem}</span>
+                      <ArrowRight className="h-3.5 w-3.5 text-primary shrink-0" />
+                      <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary">{s.solution}</span>
+                    </div>
+                    <h3 className="font-bold text-foreground text-sm mb-1">{s.solution}</h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{s.desc}</p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
