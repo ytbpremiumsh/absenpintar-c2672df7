@@ -11,7 +11,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 import {
-  GraduationCap, Plus, Trash2, UserCheck, Mail, Lock, Loader2,
+  GraduationCap, Plus, Trash2, UserCheck, Mail, Lock, Loader2, Phone,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
