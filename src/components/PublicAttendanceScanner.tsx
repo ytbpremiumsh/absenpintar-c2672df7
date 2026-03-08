@@ -379,17 +379,33 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
               <Button onClick={startCamera} size="sm" className="gradient-primary hover:opacity-90">
                 <Camera className="h-4 w-4 mr-2" /> Aktifkan Kamera
               </Button>
-              <p className="text-[10px] text-muted-foreground">Barcode + Face Recognition + RFID</p>
+              <p className="text-[10px] text-muted-foreground">
+                {canFaceRecognition ? "Barcode + Face Recognition + RFID" : "Barcode Scan Only"}
+              </p>
+              {!canFaceRecognition && (
+                <p className="text-[9px] text-amber-600 dark:text-amber-400 font-medium">
+                  <Crown className="h-3 w-3 inline mr-0.5" />Face Recognition & RFID tersedia di paket Premium
+                </p>
+              )}
             </div>
           )}
 
-          {/* RFID hint - always visible */}
-          <div className="px-3 py-2 bg-muted/50 border-t border-border flex items-center gap-2">
-            <CreditCard className="h-3.5 w-3.5 text-primary shrink-0" />
-            <p className="text-[10px] text-muted-foreground">
-              <strong className="text-foreground">Kartu RFID:</strong> Tap kartu siswa ke reader kapan saja (tanpa kamera)
-            </p>
-          </div>
+          {/* RFID hint */}
+          {canFaceRecognition ? (
+            <div className="px-3 py-2 bg-muted/50 border-t border-border flex items-center gap-2">
+              <CreditCard className="h-3.5 w-3.5 text-primary shrink-0" />
+              <p className="text-[10px] text-muted-foreground">
+                <strong className="text-foreground">Kartu RFID:</strong> Tap kartu siswa ke reader kapan saja (tanpa kamera)
+              </p>
+            </div>
+          ) : (
+            <div className="px-3 py-2 bg-muted/50 border-t border-border flex items-center gap-2">
+              <Lock className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
+              <p className="text-[10px] text-muted-foreground opacity-60">
+                <strong>RFID & Face Recognition</strong> — Upgrade ke Premium untuk mengaktifkan
+              </p>
+            </div>
+          )
         </CardContent>
 
         {/* Manual input */}
