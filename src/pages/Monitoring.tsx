@@ -323,7 +323,7 @@ const Monitoring = () => {
                                     <div className="flex items-center gap-1.5 shrink-0">
                                       <div className="text-right">
                                         <Badge className="bg-success/10 text-success border-success/20 text-[9px] sm:text-[10px]">
-                                          <UserCheck className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5" /> Dijemput
+                                          <UserCheck className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5" /> Pulang
                                         </Badge>
                                         {s.pickup_time && (
                                           <div className="flex items-center gap-0.5 text-muted-foreground mt-0.5 justify-end">
