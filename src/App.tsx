@@ -19,6 +19,7 @@ import History from "./pages/History";
 import Subscription from "./pages/Subscription";
 import PublicMonitoring from "./pages/PublicMonitoring";
 import PublicClassMonitoring from "./pages/PublicClassMonitoring";
+import PublicAttendanceMonitoring from "./pages/PublicAttendanceMonitoring";
 import SchoolSettings from "./pages/SchoolSettings";
 import AccountSettings from "./pages/AccountSettings";
 import SuperAdminDashboard from "./pages/super-admin/SuperAdminDashboard";
@@ -56,6 +57,7 @@ const App = () => (
             <Route path="/register" element={<Register />} />
             <Route path="/live/:schoolId" element={<PublicMonitoring />} />
             <Route path="/live/:schoolId/:className" element={<PublicClassMonitoring />} />
+            <Route path="/attendance/:schoolId" element={<PublicAttendanceMonitoring />} />
             <Route path="/presentation" element={<Presentation />} />
             <Route path="/business-model" element={<BusinessModel />} />
             {/* Super Admin */}
