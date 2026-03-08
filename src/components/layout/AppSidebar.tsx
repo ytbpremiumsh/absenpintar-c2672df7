@@ -9,6 +9,8 @@ import {
   LogOut,
   Globe,
   Copy,
+  GraduationCap,
+  UserCheck,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -32,7 +34,12 @@ const mainNav = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Monitoring", url: "/monitoring", icon: Monitor },
   { title: "Scan QR", url: "/scan", icon: ScanLine },
+];
+
+const dataNav = [
+  { title: "Kelas", url: "/classes", icon: GraduationCap },
   { title: "Siswa", url: "/students", icon: Users },
+  { title: "Wali Murid", url: "/teachers", icon: UserCheck },
   { title: "Riwayat", url: "/history", icon: History },
 ];
 
@@ -46,7 +53,7 @@ export function AppSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { signOut, profile } = useAuth();
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = (path: string) => location.pathname.startsWith(path);
 
   const handleLogout = async () => {
     await signOut();
@@ -60,6 +67,18 @@ export function AppSidebar() {
       toast.success("Link publik disalin!");
     }
   };
+
+  const renderNavItems = (items: typeof mainNav) =>
+    items.map((item) => (
+      <SidebarMenuItem key={item.title}>
+        <SidebarMenuButton asChild isActive={isActive(item.url)} tooltip={item.title}>
+          <NavLink to={item.url} end className="hover:bg-sidebar-accent/50" activeClassName="bg-sidebar-accent text-sidebar-primary font-medium">
+            <item.icon className="h-4 w-4" />
+            {!collapsed && <span>{item.title}</span>}
+          </NavLink>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    ));
 
   return (
     <Sidebar collapsible="icon" className="border-r-0">
@@ -83,18 +102,16 @@ export function AppSidebar() {
             Menu Utama
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
-              {mainNav.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={isActive(item.url)} tooltip={item.title}>
-                    <NavLink to={item.url} end className="hover:bg-sidebar-accent/50" activeClassName="bg-sidebar-accent text-sidebar-primary font-medium">
-                      <item.icon className="h-4 w-4" />
-                      {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
+            <SidebarMenu>{renderNavItems(mainNav)}</SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-sidebar-foreground/40 text-[11px] uppercase tracking-wider">
+            Data Sekolah
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>{renderNavItems(dataNav)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
@@ -121,18 +138,7 @@ export function AppSidebar() {
             Pengaturan
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
-              {settingsNav.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={isActive(item.url)} tooltip={item.title}>
-                    <NavLink to={item.url} end className="hover:bg-sidebar-accent/50" activeClassName="bg-sidebar-accent text-sidebar-primary font-medium">
-                      <item.icon className="h-4 w-4" />
-                      {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
+            <SidebarMenu>{renderNavItems(settingsNav)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>

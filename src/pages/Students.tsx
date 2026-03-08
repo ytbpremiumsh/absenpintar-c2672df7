@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Search, QrCode, Trash2, Loader2, Users, GraduationCap, Phone, ChevronDown, ChevronRight, Download } from "lucide-react";
+import { Plus, Search, QrCode, Trash2, Loader2, Users, GraduationCap, Phone, ChevronDown, ChevronRight, Download, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import QRCodeDisplay from "@/components/QRCodeDisplay";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 const Students = () => {
   const { profile } = useAuth();
@@ -25,6 +26,14 @@ const Students = () => {
   const [saving, setSaving] = useState(false);
   const [expandedClasses, setExpandedClasses] = useState<Set<string>>(new Set());
   const [activeFilter, setActiveFilter] = useState<string>("all");
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // Auto-filter by class from URL param
+  useEffect(() => {
+    const classParam = searchParams.get("class");
+    if (classParam) setActiveFilter(classParam);
+  }, [searchParams]);
 
   const fetchStudents = async () => {
     if (!profile?.school_id) return;
@@ -291,6 +300,15 @@ const Students = () => {
                                   </TableCell>
                                   <TableCell className="text-right">
                                     <div className="flex items-center justify-end gap-1">
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8"
+                                        onClick={() => navigate(`/students/${student.id}`)}
+                                        title="Lihat Detail"
+                                      >
+                                        <Eye className="h-4 w-4 text-primary" />
+                                      </Button>
                                       <Button
                                         variant="ghost"
                                         size="icon"

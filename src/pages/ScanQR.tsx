@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,37 +27,59 @@ const ScanQR = () => {
   const [processing, setProcessing] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
   const scannerRef = useRef<Html5Qrcode | null>(null);
+  const isLookingUp = useRef(false);
   const scannerDivId = "qr-reader";
 
-  const lookupStudent = async (code: string) => {
-    if (!code.trim() || !profile?.school_id) return;
+  const lookupStudent = useCallback(async (code: string) => {
+    if (!code.trim() || !profile?.school_id || isLookingUp.current) return;
+    isLookingUp.current = true;
 
-    const { data, error } = await supabase
-      .from("students")
-      .select("*")
-      .eq("school_id", profile.school_id)
-      .or(`student_id.eq.${code},qr_code.eq.${code}`)
-      .maybeSingle();
+    try {
+      const trimmed = code.trim();
 
-    if (error || !data) {
-      toast.error("Siswa tidak ditemukan");
-      return;
+      const { data, error } = await supabase
+        .from("students")
+        .select("*")
+        .eq("school_id", profile.school_id)
+        .or(`student_id.eq.${trimmed},qr_code.eq.${trimmed}`)
+        .maybeSingle();
+
+      if (error || !data) {
+        toast.error("Siswa tidak ditemukan untuk kode: " + trimmed);
+        return;
+      }
+
+      setScannedStudent(data);
+      setConfirmed(false);
+      stopCamera();
+    } finally {
+      isLookingUp.current = false;
     }
-
-    setScannedStudent(data);
-    setConfirmed(false);
-    // Stop camera after successful scan
-    stopCamera();
-  };
+  }, [profile?.school_id]);
 
   const startCamera = async () => {
     try {
+      // Clean up previous instance
+      if (scannerRef.current) {
+        try {
+          if (scannerRef.current.isScanning) {
+            await scannerRef.current.stop();
+          }
+          await scannerRef.current.clear();
+        } catch {}
+        scannerRef.current = null;
+      }
+
       const html5QrCode = new Html5Qrcode(scannerDivId);
       scannerRef.current = html5QrCode;
 
       await html5QrCode.start(
         { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 250, height: 250 } },
+        {
+          fps: 10,
+          qrbox: { width: 250, height: 250 },
+          aspectRatio: 1.0,
+        },
         (decodedText) => {
           lookupStudent(decodedText);
         },
@@ -71,16 +93,18 @@ const ScanQR = () => {
   };
 
   const stopCamera = async () => {
-    if (scannerRef.current?.isScanning) {
-      await scannerRef.current.stop();
-    }
+    try {
+      if (scannerRef.current?.isScanning) {
+        await scannerRef.current.stop();
+      }
+    } catch {}
     setCameraActive(false);
   };
 
   useEffect(() => {
     return () => {
       if (scannerRef.current?.isScanning) {
-        scannerRef.current.stop();
+        scannerRef.current.stop().catch(() => {});
       }
     };
   }, []);
@@ -125,7 +149,11 @@ const ScanQR = () => {
       {/* Camera Scanner */}
       <Card className="shadow-card border-0 overflow-hidden">
         <CardContent className="p-0">
-          <div id={scannerDivId} className={cameraActive ? "" : "hidden"} />
+          <div
+            id={scannerDivId}
+            className={cameraActive ? "w-full" : "hidden"}
+            style={{ minHeight: cameraActive ? 300 : 0 }}
+          />
           {!cameraActive && (
             <div className="aspect-video bg-foreground/5 flex flex-col items-center justify-center gap-3">
               <div className="h-16 w-16 rounded-2xl gradient-primary flex items-center justify-center">
@@ -150,7 +178,7 @@ const ScanQR = () => {
       {/* Manual input */}
       <div className="flex gap-2">
         <Input
-          placeholder="Masukkan Student ID (cth: STD001)"
+          placeholder="Masukkan NIS atau QR Code (cth: STD001)"
           value={manualCode}
           onChange={(e) => setManualCode(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSearch()}
@@ -214,7 +242,7 @@ const ScanQR = () => {
       {!scannedStudent && (
         <div className="text-center py-8">
           <ScanLine className="h-12 w-12 text-muted-foreground/30 mx-auto mb-2" />
-          <p className="text-sm text-muted-foreground">Arahkan kamera ke QR Code siswa atau masukkan Student ID</p>
+          <p className="text-sm text-muted-foreground">Arahkan kamera ke QR Code siswa atau masukkan NIS</p>
         </div>
       )}
     </div>

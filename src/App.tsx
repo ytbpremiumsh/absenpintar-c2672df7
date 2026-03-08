@@ -10,6 +10,9 @@ import Dashboard from "./pages/Dashboard";
 import Monitoring from "./pages/Monitoring";
 import ScanQR from "./pages/ScanQR";
 import Students from "./pages/Students";
+import StudentDetail from "./pages/StudentDetail";
+import Classes from "./pages/Classes";
+import Teachers from "./pages/Teachers";
 import History from "./pages/History";
 import Subscription from "./pages/Subscription";
 import PublicMonitoring from "./pages/PublicMonitoring";
@@ -32,7 +35,10 @@ const App = () => (
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/monitoring" element={<Monitoring />} />
               <Route path="/scan" element={<ScanQR />} />
+              <Route path="/classes" element={<Classes />} />
               <Route path="/students" element={<Students />} />
+              <Route path="/students/:id" element={<StudentDetail />} />
+              <Route path="/teachers" element={<Teachers />} />
               <Route path="/history" element={<History />} />
               <Route path="/subscription" element={<Subscription />} />
             </Route>
