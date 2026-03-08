@@ -13,7 +13,6 @@ Deno.serve(async (req) => {
   try {
     const url = new URL(req.url);
     const schoolId = url.searchParams.get("school_id");
-    const filterClass = url.searchParams.get("class");
 
     if (!schoolId) {
       return new Response(JSON.stringify({ error: "school_id required" }), {
@@ -30,28 +29,15 @@ Deno.serve(async (req) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    let studentsQuery = supabase
-      .from("students")
-      .select("id, name, class, parent_name, student_id")
-      .eq("school_id", schoolId)
-      .order("class")
-      .order("name");
-
-    if (filterClass) {
-      studentsQuery = studentsQuery.eq("class", filterClass);
-    }
-
-    const [studentsRes, logsRes, schoolRes, settingsRes] = await Promise.all([
-      studentsQuery,
+    const [studentsRes, logsRes, schoolRes] = await Promise.all([
+      supabase.from("students").select("id, name, class, parent_name, student_id").eq("school_id", schoolId).order("class").order("name"),
       supabase.from("pickup_logs").select("student_id, pickup_time, pickup_by").eq("school_id", schoolId).gte("pickup_time", today.toISOString()),
       supabase.from("schools").select("name, logo").eq("id", schoolId).single(),
-      supabase.from("pickup_settings").select("is_active, auto_activate_time, auto_deactivate_time").eq("school_id", schoolId).maybeSingle(),
     ]);
 
     const students = studentsRes.data || [];
     const logs = logsRes.data || [];
     const school = schoolRes.data;
-    const settings = settingsRes.data;
 
     const result = students.map((s) => {
       const log = logs.find((l) => l.student_id === s.id);
@@ -63,22 +49,15 @@ Deno.serve(async (req) => {
       };
     });
 
+    // Group by class
     const grouped: Record<string, typeof result> = {};
     for (const s of result) {
       if (!grouped[s.class]) grouped[s.class] = [];
       grouped[s.class].push(s);
     }
 
-    const pickedCount = result.filter((s) => s.status === "picked_up").length;
-
     return new Response(
-      JSON.stringify({
-        school,
-        classes: grouped,
-        total: students.length,
-        picked_up: pickedCount,
-        settings: settings || { is_active: true, auto_activate_time: "14:00:00", auto_deactivate_time: "17:00:00" },
-      }),
+      JSON.stringify({ school, classes: grouped, total: students.length, picked_up: logs.length }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {

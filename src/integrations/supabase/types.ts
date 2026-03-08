@@ -14,35 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      classes: {
-        Row: {
-          created_at: string
-          id: string
-          name: string
-          school_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          name: string
-          school_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          name?: string
-          school_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "classes_school_id_fkey"
-            columns: ["school_id"]
-            isOneToOne: false
-            referencedRelation: "schools"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       pickup_logs: {
         Row: {
           created_at: string
@@ -84,44 +55,6 @@ export type Database = {
             columns: ["student_id"]
             isOneToOne: false
             referencedRelation: "students"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      pickup_settings: {
-        Row: {
-          auto_activate_time: string | null
-          auto_deactivate_time: string | null
-          created_at: string
-          id: string
-          is_active: boolean
-          school_id: string
-          updated_at: string
-        }
-        Insert: {
-          auto_activate_time?: string | null
-          auto_deactivate_time?: string | null
-          created_at?: string
-          id?: string
-          is_active?: boolean
-          school_id: string
-          updated_at?: string
-        }
-        Update: {
-          auto_activate_time?: string | null
-          auto_deactivate_time?: string | null
-          created_at?: string
-          id?: string
-          is_active?: boolean
-          school_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "pickup_settings_school_id_fkey"
-            columns: ["school_id"]
-            isOneToOne: true
-            referencedRelation: "schools"
             referencedColumns: ["id"]
           },
         ]
