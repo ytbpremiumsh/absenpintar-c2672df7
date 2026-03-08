@@ -78,7 +78,7 @@ export function AppSidebar() {
           <NavLink
             to={item.url}
             end
-            className="hover:bg-sidebar-accent/60 rounded-xl px-4 py-3 transition-all duration-200"
+            className="text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground rounded-xl px-4 py-3 transition-all duration-200"
             activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-semibold shadow-sm"
           >
             <item.icon className="h-[22px] w-[22px]" />
