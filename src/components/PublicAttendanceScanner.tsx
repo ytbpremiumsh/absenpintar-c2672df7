@@ -345,7 +345,6 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
                   <span className="text-[10px] text-white/80 bg-black/50 px-2 py-0.5 rounded">
                     {scanPaused.current ? "✓ Terdeteksi" : canFaceRecognition ? "Arahkan ke Barcode / Wajah..." : "Arahkan ke Barcode..."}
                   </span>
-                  </span>
                 </div>
               </div>
               <div className="p-2 flex items-center justify-between gap-2">
