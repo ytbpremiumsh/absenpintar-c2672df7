@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   UserCheck, UserX, Clock, Users, GraduationCap,
-  Activity, CheckCircle2, AlertTriangle, Thermometer, FileText, Scan,
+  Activity, CheckCircle2, AlertTriangle, Thermometer, FileText, Scan, ExternalLink,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -203,6 +203,17 @@ const Monitoring = () => {
             </p>
           </div>
         </div>
+        {profile?.school_id && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={() => window.open(`/attendance/${profile.school_id}`, "_blank")}
+          >
+            <ExternalLink className="h-4 w-4" />
+            Buka Live Monitor Publik
+          </Button>
+        )}
       </div>
 
       {/* Stats */}
