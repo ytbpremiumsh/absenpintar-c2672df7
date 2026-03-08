@@ -36,7 +36,7 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded }: PublicAtten
   const [alreadyRecorded, setAlreadyRecorded] = useState(false);
   const [scanMethod, setScanMethod] = useState<"barcode" | "face" | "face_recognition">("barcode");
   const [faceScanning, setFaceScanning] = useState(false);
-  const [expanded, setExpanded] = useState(false);
+  
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -241,9 +241,6 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded }: PublicAtten
     lookupAndRecord(manualCode.trim(), "barcode");
   };
 
-  const handleDismissAlready = () => {
-    resetState();
-  };
 
   return (
     <>
