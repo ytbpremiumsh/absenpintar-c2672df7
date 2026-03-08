@@ -260,16 +260,22 @@ const LandingPage = () => {
               );
             })}
           </div>
+        </div>
+      </section>
 
-
-          {/* Why Choose Us */}
-          <div className="max-w-5xl mx-auto">
-            <motion.div custom={0} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-10">
-              <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-3 block">Kenapa Harus Kami</span>
-              <h3 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
-                {get("why_title", "Solusi Lengkap untuk Keamanan Penjemputan Siswa")}
-              </h3>
-            </motion.div>
+      {/* Why Choose Us */}
+      <section className="py-20 sm:py-28 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/3 rounded-full blur-[150px] -translate-y-1/2 translate-x-1/4 pointer-events-none" />
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 relative">
+          <motion.div custom={0} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-14">
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-3 block">Kenapa Harus Kami</span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight">
+              {get("why_title", "Solusi Lengkap untuk Keamanan Penjemputan Siswa")}
+            </h2>
+            <p className="mt-4 text-muted-foreground max-w-xl mx-auto">
+              {get("why_desc", "Kami menyediakan solusi menyeluruh untuk membantu sekolah Anda mengelola penjemputan siswa dengan aman, cepat, dan terstruktur.")}
+            </p>
+          </motion.div>
 
             <div className="grid sm:grid-cols-2 gap-5">
               {WHY_ITEMS_FALLBACK.map((item, i) => (
