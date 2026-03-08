@@ -115,9 +115,13 @@ const Monitoring = () => {
     if (error) {
       toast.error("Gagal mencatat penjemputan");
     } else {
-      toast.success(`${student.name} berhasil ditandai pulang`);
-      announcePickup(student.name, student.class, "dismissed");
+      setSuccessStudent(student);
       fetchData();
+      // Delay announcement so popup DOM settles first
+      setTimeout(() => {
+        announcePickup(student.name, student.class, "dismissed");
+      }, 600);
+      setTimeout(() => setSuccessStudent(null), 4000);
     }
     setConfirmStudent(null);
   };
