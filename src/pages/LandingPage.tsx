@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import {
   ScanLine, Monitor, MessageSquare, FileBarChart,
   ArrowRight, CheckCircle2, School, Mail, Phone, MapPin,
+  Shield, Zap, HeadphonesIcon, BarChart3, Smartphone, Layout,
 } from "lucide-react";
 
 const iconMap: Record<string, any> = {
