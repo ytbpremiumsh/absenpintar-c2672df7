@@ -217,7 +217,8 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
 
     const startPipelines = () => {
       startBarcodeScanning();
-      startFaceScanning();
+      if (canFaceRecognition) startFaceScanning();
+      else stopFaceScanning();
     };
 
     if (video.readyState >= HTMLMediaElement.HAVE_METADATA) {
