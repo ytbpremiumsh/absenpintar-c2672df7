@@ -71,7 +71,7 @@ const SuperAdminWhatsApp = () => {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ school_id: "", api_url: "http://proxy.onesender.net/api/v1/messages", api_key: "", is_active: false });
+    setForm({ school_id: "", api_url: "http://proxy.onesender.net/api/v1/messages", api_key: "", is_active: false, message_template: DEFAULT_TEMPLATE });
     setDialogOpen(true);
   };
 
