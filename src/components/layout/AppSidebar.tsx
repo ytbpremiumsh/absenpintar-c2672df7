@@ -104,63 +104,82 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent className="px-2">
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/40 text-xs uppercase tracking-widest font-semibold px-4 mb-1.5">
-            Menu Utama
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">{renderNavItems(mainNav)}</SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {isTeacherOnly ? (
+          <>
+            <SidebarGroup>
+              <SidebarGroupLabel className="text-sidebar-foreground/40 text-xs uppercase tracking-widest font-semibold px-4 mb-1.5">
+                Wali Kelas
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu className="space-y-1">
+                  {renderNavItems([
+                    { title: "Dashboard Kelas", url: "/wali-kelas-dashboard", icon: LayoutDashboard },
+                  ])}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </>
+        ) : (
+          <>
+            <SidebarGroup>
+              <SidebarGroupLabel className="text-sidebar-foreground/40 text-xs uppercase tracking-widest font-semibold px-4 mb-1.5">
+                Menu Utama
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu className="space-y-1">{renderNavItems(mainNav)}</SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/40 text-xs uppercase tracking-widest font-semibold px-4 mb-1.5">
-            Data Sekolah
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">{renderNavItems(dataNav)}</SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+            <SidebarGroup>
+              <SidebarGroupLabel className="text-sidebar-foreground/40 text-xs uppercase tracking-widest font-semibold px-4 mb-1.5">
+                Data Sekolah
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu className="space-y-1">{renderNavItems(dataNav)}</SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
 
-        {/* Laporan section */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/40 text-xs uppercase tracking-widest font-semibold px-4 mb-1.5">
-            Laporan
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
-              {renderNavItems([{ title: "Riwayat Absensi", url: "/history", icon: History }])}
-              {features.canExportReport ? (
-                renderNavItems([{ title: "Rekap & Export", url: "/export-history", icon: FileBarChart }])
-              ) : (
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    tooltip="Rekap & Export (Upgrade)"
-                    onClick={() => toast.error("Fitur Rekap & Export tersedia di paket Basic ke atas. Silakan upgrade langganan Anda.")}
-                    className="text-sidebar-foreground/50 hover:bg-sidebar-accent/40 rounded-xl px-4 py-3 transition-all duration-200 opacity-60"
-                  >
-                    <FileBarChart className="h-4 w-4" />
-                    {!collapsed && (
-                      <>
-                        <span className="text-sm">Rekap & Export</span>
-                        <Lock className="h-3.5 w-3.5 ml-auto text-warning" />
-                      </>
-                    )}
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+            {/* Laporan section */}
+            <SidebarGroup>
+              <SidebarGroupLabel className="text-sidebar-foreground/40 text-xs uppercase tracking-widest font-semibold px-4 mb-1.5">
+                Laporan
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu className="space-y-1">
+                  {renderNavItems([{ title: "Riwayat Absensi", url: "/history", icon: History }])}
+                  {features.canExportReport ? (
+                    renderNavItems([{ title: "Rekap & Export", url: "/export-history", icon: FileBarChart }])
+                  ) : (
+                    <SidebarMenuItem>
+                      <SidebarMenuButton
+                        tooltip="Rekap & Export (Upgrade)"
+                        onClick={() => toast.error("Fitur Rekap & Export tersedia di paket Basic ke atas. Silakan upgrade langganan Anda.")}
+                        className="text-sidebar-foreground/50 hover:bg-sidebar-accent/40 rounded-xl px-4 py-3 transition-all duration-200 opacity-60"
+                      >
+                        <FileBarChart className="h-4 w-4" />
+                        {!collapsed && (
+                          <>
+                            <span className="text-sm">Rekap & Export</span>
+                            <Lock className="h-3.5 w-3.5 ml-auto text-warning" />
+                          </>
+                        )}
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/40 text-xs uppercase tracking-widest font-semibold px-4 mb-1.5">
-            Pengaturan
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">{renderNavItems(settingsNav)}</SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+            <SidebarGroup>
+              <SidebarGroupLabel className="text-sidebar-foreground/40 text-xs uppercase tracking-widest font-semibold px-4 mb-1.5">
+                Pengaturan
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu className="space-y-1">{renderNavItems(settingsNav)}</SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </>
+        )}
       </SidebarContent>
 
       <SidebarFooter className="p-3">
