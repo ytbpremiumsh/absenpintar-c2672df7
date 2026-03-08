@@ -5,13 +5,24 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, User, Phone, GraduationCap, Hash, Clock, UserCheck, UserX, Calendar, QrCode, Shield, Camera, Loader2, Pencil, Save, X } from "lucide-react";
+import { ArrowLeft, User, Phone, GraduationCap, Hash, Clock, UserCheck, Calendar, QrCode, Shield, Camera, Loader2, Pencil, Save, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import QRCodeDisplay from "@/components/QRCodeDisplay";
+
+const STATUS_COLORS: Record<string, string> = {
+  hadir: "bg-success/10 text-success",
+  izin: "bg-warning/10 text-warning",
+  sakit: "bg-blue-100 text-blue-600",
+  alfa: "bg-destructive/10 text-destructive",
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  hadir: "Hadir", izin: "Izin", sakit: "Sakit", alfa: "Alfa",
+};
 
 const StudentDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -20,7 +31,7 @@ const StudentDetail = () => {
   const features = useSubscriptionFeatures();
   const [student, setStudent] = useState<any>(null);
   const [school, setSchool] = useState<any>(null);
-  const [pickupHistory, setPickupHistory] = useState<any[]>([]);
+  const [attendanceHistory, setAttendanceHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -32,23 +43,18 @@ const StudentDetail = () => {
     if (!id || !profile?.school_id) return;
     const [studentRes, logsRes, schoolRes, instrRes] = await Promise.all([
       supabase.from("students").select("*").eq("id", id).eq("school_id", profile.school_id).single(),
-      supabase.from("pickup_logs").select("*").eq("student_id", id).eq("school_id", profile.school_id).order("pickup_time", { ascending: false }).limit(20),
+      supabase.from("attendance_logs").select("*").eq("student_id", id).eq("school_id", profile.school_id).order("date", { ascending: false }).order("time", { ascending: false }).limit(30),
       supabase.from("schools").select("name, logo, address").eq("id", profile.school_id).single(),
       supabase.from("qr_instructions").select("instruction_text").eq("school_id", profile.school_id).order("sort_order"),
     ]);
     setStudent(studentRes.data);
-    setPickupHistory(logsRes.data || []);
+    setAttendanceHistory(logsRes.data || []);
     setSchool(schoolRes.data);
-    if (instrRes.data && instrRes.data.length > 0) {
-      setQrInstructions(instrRes.data.map((r: any) => r.instruction_text));
-    }
+    if (instrRes.data?.length) setQrInstructions(instrRes.data.map((r: any) => r.instruction_text));
     if (studentRes.data) {
       setEditForm({
-        name: studentRes.data.name,
-        class: studentRes.data.class,
-        student_id: studentRes.data.student_id,
-        parent_name: studentRes.data.parent_name,
-        parent_phone: studentRes.data.parent_phone,
+        name: studentRes.data.name, class: studentRes.data.class, student_id: studentRes.data.student_id,
+        parent_name: studentRes.data.parent_name, parent_phone: studentRes.data.parent_phone,
       });
     }
     setLoading(false);
@@ -74,11 +80,8 @@ const StudentDetail = () => {
     if (!student) return;
     setSaving(true);
     const { error } = await supabase.from("students").update({
-      name: editForm.name,
-      class: editForm.class,
-      student_id: editForm.student_id,
-      parent_name: editForm.parent_name,
-      parent_phone: editForm.parent_phone,
+      name: editForm.name, class: editForm.class, student_id: editForm.student_id,
+      parent_name: editForm.parent_name, parent_phone: editForm.parent_phone,
     }).eq("id", student.id);
     setSaving(false);
     if (error) { toast.error("Gagal menyimpan: " + error.message); return; }
@@ -109,8 +112,13 @@ const StudentDetail = () => {
     );
   }
 
-  const todayLogs = pickupHistory.filter((l) => new Date(l.pickup_time).toDateString() === new Date().toDateString());
-  const isPickedUpToday = todayLogs.length > 0;
+  // Attendance stats
+  const totalHadir = attendanceHistory.filter(l => l.status === "hadir").length;
+  const totalIzin = attendanceHistory.filter(l => l.status === "izin").length;
+  const totalSakit = attendanceHistory.filter(l => l.status === "sakit").length;
+  const totalAlfa = attendanceHistory.filter(l => l.status === "alfa").length;
+
+  const todayLog = attendanceHistory.find(l => l.date === new Date().toISOString().slice(0, 10));
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -120,9 +128,7 @@ const StudentDetail = () => {
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <Card className="shadow-elevated border-0 overflow-hidden">
-          {/* Header gradient */}
           <div className="gradient-hero h-28 sm:h-32" />
-
           <CardContent className="relative px-6 pb-6">
             <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 -mt-14">
               <div className="relative group">
@@ -150,10 +156,12 @@ const StudentDetail = () => {
                 <div className="flex flex-wrap justify-center sm:justify-start gap-2 mt-1">
                   <Badge variant="secondary" className="text-xs"><GraduationCap className="h-3 w-3 mr-1" />Kelas {student.class}</Badge>
                   <Badge variant="secondary" className="text-xs"><Hash className="h-3 w-3 mr-1" />NIS: {student.student_id}</Badge>
-                  {isPickedUpToday ? (
-                    <Badge className="bg-success/10 text-success border-0 text-xs"><UserCheck className="h-3 w-3 mr-1" />Sudah Dijemput</Badge>
+                  {todayLog ? (
+                    <Badge className={`text-xs border-0 ${STATUS_COLORS[todayLog.status]}`}>
+                      {STATUS_LABELS[todayLog.status] || todayLog.status}
+                    </Badge>
                   ) : (
-                    <Badge variant="destructive" className="text-xs"><UserX className="h-3 w-3 mr-1" />Belum Dijemput</Badge>
+                    <Badge variant="secondary" className="text-xs">Belum Absen Hari Ini</Badge>
                   )}
                 </div>
               </div>
@@ -161,6 +169,23 @@ const StudentDetail = () => {
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* Attendance Stats */}
+      <div className="grid grid-cols-4 gap-3">
+        {[
+          { label: "Hadir", value: totalHadir, color: "text-success", bg: "bg-success/10" },
+          { label: "Izin", value: totalIzin, color: "text-warning", bg: "bg-warning/10" },
+          { label: "Sakit", value: totalSakit, color: "text-blue-500", bg: "bg-blue-50" },
+          { label: "Alfa", value: totalAlfa, color: "text-destructive", bg: "bg-destructive/10" },
+        ].map((s) => (
+          <Card key={s.label} className="shadow-card border-0">
+            <CardContent className="p-3 text-center">
+              <p className={`text-xl font-bold ${s.color}`}>{s.value}</p>
+              <p className="text-[10px] text-muted-foreground">{s.label}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
       {/* Edit Form */}
       {editing && (
@@ -171,26 +196,11 @@ const StudentDetail = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Nama Lengkap</Label>
-                  <Input value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Kelas</Label>
-                  <Input value={editForm.class} onChange={(e) => setEditForm({ ...editForm, class: e.target.value })} />
-                </div>
-                <div className="space-y-2">
-                  <Label>NIS</Label>
-                  <Input value={editForm.student_id} onChange={(e) => setEditForm({ ...editForm, student_id: e.target.value })} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Nama Wali</Label>
-                  <Input value={editForm.parent_name} onChange={(e) => setEditForm({ ...editForm, parent_name: e.target.value })} />
-                </div>
-                <div className="space-y-2">
-                  <Label>No. HP Wali</Label>
-                  <Input value={editForm.parent_phone} onChange={(e) => setEditForm({ ...editForm, parent_phone: e.target.value })} />
-                </div>
+                <div className="space-y-2"><Label>Nama Lengkap</Label><Input value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} /></div>
+                <div className="space-y-2"><Label>Kelas</Label><Input value={editForm.class} onChange={(e) => setEditForm({ ...editForm, class: e.target.value })} /></div>
+                <div className="space-y-2"><Label>NIS</Label><Input value={editForm.student_id} onChange={(e) => setEditForm({ ...editForm, student_id: e.target.value })} /></div>
+                <div className="space-y-2"><Label>Nama Wali</Label><Input value={editForm.parent_name} onChange={(e) => setEditForm({ ...editForm, parent_name: e.target.value })} /></div>
+                <div className="space-y-2"><Label>No. HP Wali</Label><Input value={editForm.parent_phone} onChange={(e) => setEditForm({ ...editForm, parent_phone: e.target.value })} /></div>
               </div>
               <div className="flex gap-2">
                 <Button onClick={handleSaveEdit} disabled={saving} className="gradient-primary hover:opacity-90">
@@ -228,19 +238,14 @@ const StudentDetail = () => {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
           <Card className="shadow-card border-0 h-full">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2"><QrCode className="h-4 w-4 text-primary" />QR Code Siswa</CardTitle>
+              <CardTitle className="text-sm font-semibold flex items-center gap-2"><QrCode className="h-4 w-4 text-primary" />Barcode Siswa</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col items-center justify-center py-4">
-              <QRCodeDisplay
-                data={student.qr_code || student.student_id}
-                size={200}
-                studentName={student.name}
-                studentClass={student.class}
-                schoolName={school?.name}
-                schoolLogo={school?.logo}
-                customInstructions={qrInstructions.length > 0 ? qrInstructions : undefined}
-              />
-              <p className="text-xs text-muted-foreground mt-3 text-center">Scan kode ini untuk memproses penjemputan</p>
+              <QRCodeDisplay data={student.qr_code || student.student_id} size={200}
+                studentName={student.name} studentClass={student.class}
+                schoolName={school?.name} schoolLogo={school?.logo}
+                customInstructions={qrInstructions.length > 0 ? qrInstructions : undefined} />
+              <p className="text-xs text-muted-foreground mt-3 text-center">Scan kode ini untuk mencatat kehadiran</p>
             </CardContent>
           </Card>
         </motion.div>
@@ -249,25 +254,30 @@ const StudentDetail = () => {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
         <Card className="shadow-card border-0">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold flex items-center gap-2"><Clock className="h-4 w-4 text-primary" />Riwayat Penjemputan</CardTitle>
+            <CardTitle className="text-sm font-semibold flex items-center gap-2"><Clock className="h-4 w-4 text-primary" />Riwayat Kehadiran</CardTitle>
           </CardHeader>
           <CardContent>
-            {pickupHistory.length === 0 ? (
-              <p className="text-center text-sm text-muted-foreground py-8">Belum ada riwayat penjemputan</p>
+            {attendanceHistory.length === 0 ? (
+              <p className="text-center text-sm text-muted-foreground py-8">Belum ada riwayat kehadiran</p>
             ) : (
               <div className="space-y-3">
-                {pickupHistory.map((log) => (
+                {attendanceHistory.map((log) => (
                   <div key={log.id} className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors">
-                    <div className="h-10 w-10 rounded-full bg-success/10 flex items-center justify-center text-success shrink-0">
+                    <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${STATUS_COLORS[log.status]?.split(" ")[0] || "bg-muted"}`}>
                       <UserCheck className="h-5 w-5" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium">Dijemput oleh {log.pickup_by}</p>
+                      <p className="text-sm font-medium">
+                        {new Date(log.date).toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                      </p>
                       <p className="text-xs text-muted-foreground">
-                        {new Date(log.pickup_time).toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })} • {new Date(log.pickup_time).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
+                        {log.time?.slice(0, 5)} • {log.method === "face" ? "Face Recognition" : log.method === "manual" ? "Manual" : "Barcode"}
+                        {log.recorded_by && ` • oleh ${log.recorded_by}`}
                       </p>
                     </div>
-                    <Badge className="bg-success/10 text-success border-0 text-[10px] shrink-0">Selesai</Badge>
+                    <Badge className={`text-[10px] border-0 shrink-0 ${STATUS_COLORS[log.status] || ""}`}>
+                      {STATUS_LABELS[log.status] || log.status}
+                    </Badge>
                   </div>
                 ))}
               </div>

@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      attendance_logs: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          method: string
+          notes: string | null
+          recorded_by: string | null
+          school_id: string
+          status: string
+          student_id: string
+          time: string
+        }
+        Insert: {
+          created_at?: string
+          date?: string
+          id?: string
+          method?: string
+          notes?: string | null
+          recorded_by?: string | null
+          school_id: string
+          status?: string
+          student_id: string
+          time?: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          method?: string
+          notes?: string | null
+          recorded_by?: string | null
+          school_id?: string
+          status?: string
+          student_id?: string
+          time?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_logs_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attendance_logs_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       classes: {
         Row: {
           created_at: string

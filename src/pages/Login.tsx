@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { School, Eye, EyeOff, Loader2 } from "lucide-react";
+import { ClipboardCheck, Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 const Login = () => {
@@ -27,7 +27,6 @@ const Login = () => {
       return;
     }
     toast.success("Login berhasil!");
-    // Check role to redirect
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
@@ -45,10 +44,10 @@ const Login = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl gradient-primary shadow-elevated mb-4">
-            <School className="h-8 w-8 text-primary-foreground" />
+            <ClipboardCheck className="h-8 w-8 text-primary-foreground" />
           </div>
-          <h1 className="text-2xl font-bold text-primary-foreground">Smart School Pickup</h1>
-          <p className="text-primary-foreground/60 text-sm mt-1">Sistem Monitoring Penjemputan Siswa</p>
+          <h1 className="text-2xl font-bold text-primary-foreground">Smart School Attendance</h1>
+          <p className="text-primary-foreground/60 text-sm mt-1">Sistem Absensi Siswa Digital</p>
         </div>
 
         <Card className="shadow-elevated border-0">
@@ -60,33 +59,16 @@ const Login = () => {
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="admin@admin.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="h-11"
-                  required
-                />
+                <Input id="email" type="email" placeholder="admin@sekolah.com" value={email}
+                  onChange={(e) => setEmail(e.target.value)} className="h-11" required />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="h-11 pr-10"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  >
+                  <Input id="password" type={showPassword ? "text" : "password"} placeholder="••••••••"
+                    value={password} onChange={(e) => setPassword(e.target.value)} className="h-11 pr-10" required />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
@@ -101,16 +83,11 @@ const Login = () => {
                 <Link to="/register" className="text-primary font-semibold hover:underline">Daftar Sekolah</Link>
               </p>
             </div>
-            <div className="mt-3 p-3 rounded-lg bg-secondary text-xs text-muted-foreground">
-              <p className="font-medium mb-1">Demo Login:</p>
-              <p>Email: admin@admin.com</p>
-              <p>Password: admin123</p>
-            </div>
           </CardContent>
         </Card>
 
         <p className="text-center text-primary-foreground/40 text-xs mt-6">
-          © 2026 Smart School Pickup System
+          © 2026 Smart School Attendance System
         </p>
       </div>
     </div>

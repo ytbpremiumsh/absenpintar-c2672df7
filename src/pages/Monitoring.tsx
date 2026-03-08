@@ -2,16 +2,15 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   UserCheck, UserX, Clock, Users, GraduationCap,
-  Activity, Globe, CheckCircle2, Power, Undo2, RotateCcw, Volume2,
+  Activity, CheckCircle2, AlertTriangle, Thermometer, FileText,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { motion, AnimatePresence } from "framer-motion";
-import { announcePickup } from "@/lib/announcePickup";
-import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
+import { toast } from "sonner";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -19,7 +18,27 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
-import { toast } from "sonner";
+
+const STATUS_COLORS: Record<string, string> = {
+  hadir: "text-success",
+  izin: "text-warning",
+  sakit: "text-blue-500",
+  alfa: "text-destructive",
+};
+
+const STATUS_BG: Record<string, string> = {
+  hadir: "bg-success/10 border-success/20",
+  izin: "bg-warning/10 border-warning/20",
+  sakit: "bg-blue-50 border-blue-200",
+  alfa: "bg-destructive/10 border-destructive/20",
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  hadir: "Hadir",
+  izin: "Izin",
+  sakit: "Sakit",
+  alfa: "Alfa",
+};
 
 interface StudentWithStatus {
   id: string;
@@ -28,9 +47,8 @@ interface StudentWithStatus {
   parent_name: string;
   student_id: string;
   photo_url: string | null;
-  status: "waiting" | "picked_up";
-  pickup_time?: string;
-  pickup_by?: string;
+  status: "belum" | "hadir" | "izin" | "sakit" | "alfa";
+  attendance_time?: string;
   log_id?: string;
 }
 
@@ -43,29 +61,21 @@ const LiveDot = () => (
 
 const Monitoring = () => {
   const { profile } = useAuth();
-  const features = useSubscriptionFeatures();
   const [students, setStudents] = useState<StudentWithStatus[]>([]);
   const [expandedClasses, setExpandedClasses] = useState<Set<string>>(new Set());
-  const [isPickupActive, setIsPickupActive] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(new Date());
-  const [confirmStudent, setConfirmStudent] = useState<StudentWithStatus | null>(null);
-  const [cancelStudent, setCancelStudent] = useState<StudentWithStatus | null>(null);
-  const [resetConfirm, setResetConfirm] = useState(false);
-  const [successStudent, setSuccessStudent] = useState<StudentWithStatus | null>(null);
+  const [editStudent, setEditStudent] = useState<StudentWithStatus | null>(null);
+  const [editStatus, setEditStatus] = useState("");
 
   const fetchData = useCallback(async () => {
     if (!profile?.school_id) return;
     const schoolId = profile.school_id;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = new Date().toISOString().slice(0, 10);
 
-    const [studentsRes, logsRes, settingsRes] = await Promise.all([
+    const [studentsRes, logsRes] = await Promise.all([
       supabase.from("students").select("id, name, class, parent_name, student_id, photo_url").eq("school_id", schoolId),
-      supabase.from("pickup_logs").select("id, student_id, pickup_time, pickup_by").eq("school_id", schoolId).gte("pickup_time", today.toISOString()),
-      supabase.from("pickup_settings").select("is_active").eq("school_id", schoolId).maybeSingle(),
+      supabase.from("attendance_logs").select("id, student_id, time, status").eq("school_id", schoolId).eq("date", today),
     ]);
-
-    if (settingsRes.data) setIsPickupActive(settingsRes.data.is_active);
 
     const allStudents = studentsRes.data || [];
     const logs = logsRes.data || [];
@@ -75,8 +85,8 @@ const Monitoring = () => {
       return {
         id: s.id, name: s.name, class: s.class,
         parent_name: s.parent_name, student_id: s.student_id, photo_url: s.photo_url,
-        status: log ? "picked_up" : "waiting",
-        pickup_time: log?.pickup_time, pickup_by: log?.pickup_by,
+        status: log ? (log.status as any) : "belum",
+        attendance_time: log?.time,
         log_id: log?.id,
       };
     });
@@ -89,78 +99,34 @@ const Monitoring = () => {
     fetchData();
     const channel = supabase
       .channel("monitoring-realtime")
-      .on("postgres_changes", { event: "*", schema: "public", table: "pickup_logs" }, () => fetchData())
+      .on("postgres_changes", { event: "*", schema: "public", table: "attendance_logs" }, () => fetchData())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [fetchData]);
 
-  const togglePickupSystem = async () => {
-    if (!profile?.school_id) return;
-    const newState = !isPickupActive;
-    const { data: existing } = await supabase
-      .from("pickup_settings").select("id").eq("school_id", profile.school_id).maybeSingle();
-
-    if (existing) {
-      await supabase.from("pickup_settings").update({ is_active: newState }).eq("school_id", profile.school_id);
+  const handleUpdateStatus = async () => {
+    if (!editStudent || !editStatus || !profile?.school_id) return;
+    
+    if (editStudent.log_id) {
+      // Update existing
+      await supabase.from("attendance_logs").update({ status: editStatus }).eq("id", editStudent.log_id);
     } else {
-      await supabase.from("pickup_settings").insert({ school_id: profile.school_id, is_active: newState } as any);
+      // Insert new
+      const now = new Date();
+      await supabase.from("attendance_logs").insert({
+        school_id: profile.school_id,
+        student_id: editStudent.id,
+        date: now.toISOString().slice(0, 10),
+        time: now.toTimeString().slice(0, 8),
+        method: "manual",
+        status: editStatus,
+        recorded_by: profile.full_name || "Admin",
+      });
     }
-    setIsPickupActive(newState);
-    toast.success(newState ? "Sistem penjemputan diaktifkan" : "Sistem penjemputan dinonaktifkan");
-  };
-
-  const handleManualPickup = async (student: StudentWithStatus) => {
-    if (!profile?.school_id) return;
-    const { error } = await supabase.from("pickup_logs").insert({
-      student_id: student.id, school_id: profile.school_id,
-      pickup_by: "Admin (Manual)", status: "picked_up",
-    });
-    if (error) {
-      toast.error("Gagal mencatat penjemputan");
-    } else {
-      setSuccessStudent(student);
-      fetchData();
-      // Delay announcement so popup DOM settles first
-      setTimeout(() => {
-        announcePickup(student.name, student.class, "dismissed");
-      }, 600);
-      setTimeout(() => setSuccessStudent(null), 4000);
-    }
-    setConfirmStudent(null);
-  };
-
-  const handleCancelPickup = async (student: StudentWithStatus) => {
-    if (!student.log_id) return;
-    const { error } = await supabase.from("pickup_logs").delete().eq("id", student.log_id);
-    if (error) {
-      toast.error("Gagal membatalkan: " + error.message);
-    } else {
-      fetchData();
-    }
-    setCancelStudent(null);
-  };
-
-  const handleDailyReset = async () => {
-    if (!profile?.school_id) return;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const { error } = await supabase.from("pickup_logs")
-      .delete()
-      .eq("school_id", profile.school_id)
-      .gte("pickup_time", today.toISOString());
-    if (error) {
-      toast.error("Gagal reset: " + error.message);
-    } else {
-      fetchData();
-    }
-    setResetConfirm(false);
-  };
-
-  const copyClassLink = (cls: string) => {
-    if (!profile?.school_id) return;
-    const link = `${window.location.origin}/live/${profile.school_id}/${encodeURIComponent(cls)}`;
-    navigator.clipboard.writeText(link);
-    toast.success(`Link kelas ${cls} disalin!`);
+    toast.success(`Status ${editStudent.name} diubah ke ${STATUS_LABELS[editStatus]}`);
+    setEditStudent(null);
+    setEditStatus("");
+    fetchData();
   };
 
   const grouped = useMemo(() => {
@@ -173,9 +139,12 @@ const Monitoring = () => {
   }, [students]);
 
   const classNames = Object.keys(grouped).sort();
-  const totalPicked = students.filter((s) => s.status === "picked_up").length;
-  const totalWaiting = students.length - totalPicked;
-  const percentage = students.length ? Math.round((totalPicked / students.length) * 100) : 0;
+  const totalHadir = students.filter((s) => s.status === "hadir").length;
+  const totalIzin = students.filter((s) => s.status === "izin").length;
+  const totalSakit = students.filter((s) => s.status === "sakit").length;
+  const totalAlfa = students.filter((s) => s.status === "alfa").length;
+  const totalBelum = students.filter((s) => s.status === "belum").length;
+  const percentage = students.length ? Math.round(((students.length - totalBelum) / students.length) * 100) : 0;
 
   const toggleClass = (cls: string) => {
     setExpandedClasses((prev) => {
@@ -187,10 +156,9 @@ const Monitoring = () => {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Monitoring Penjemputan</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Monitoring Absensi</h1>
           <div className="flex items-center gap-2 mt-1">
             <LiveDot />
             <p className="text-muted-foreground text-xs sm:text-sm">
@@ -198,38 +166,26 @@ const Monitoring = () => {
             </p>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setResetConfirm(true)} className="text-xs">
-            <RotateCcw className="h-3.5 w-3.5 mr-1" /> Reset Hari Ini
-          </Button>
-          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all ${
-            isPickupActive ? "border-success/30 bg-success/5" : "border-destructive/30 bg-destructive/5"
-          }`}>
-            <Power className={`h-3.5 w-3.5 ${isPickupActive ? "text-success" : "text-destructive"}`} />
-            <span className="text-xs font-medium text-foreground">{isPickupActive ? "Aktif" : "Nonaktif"}</span>
-            <Switch checked={isPickupActive} onCheckedChange={togglePickupSystem} />
-          </div>
-        </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-3">
         {[
-          { icon: Users, value: students.length, label: "Total Siswa", color: "text-primary", bg: "bg-primary/10" },
-          { icon: UserCheck, value: totalPicked, label: "Sudah Pulang", color: "text-success", bg: "bg-success/10" },
-          { icon: UserX, value: totalWaiting, label: "Menunggu", color: "text-destructive", bg: "bg-destructive/10" },
-          { icon: Activity, value: `${percentage}%`, label: "Progress", color: "text-primary", bg: "gradient-primary" },
+          { icon: Users, value: students.length, label: "Total", color: "text-primary", bg: "bg-primary/10" },
+          { icon: UserCheck, value: totalHadir, label: "Hadir", color: "text-success", bg: "bg-success/10" },
+          { icon: FileText, value: totalIzin, label: "Izin", color: "text-warning", bg: "bg-warning/10" },
+          { icon: Thermometer, value: totalSakit, label: "Sakit", color: "text-blue-500", bg: "bg-blue-50" },
+          { icon: AlertTriangle, value: totalAlfa, label: "Alfa", color: "text-destructive", bg: "bg-destructive/10" },
+          { icon: Clock, value: totalBelum, label: "Belum", color: "text-muted-foreground", bg: "bg-muted" },
         ].map((stat, i) => (
-          <motion.div key={stat.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+          <motion.div key={stat.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
             <Card className="border-0 shadow-card">
-              <CardContent className="p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
-                <div className={`h-9 w-9 sm:h-10 sm:w-10 rounded-xl ${stat.bg} flex items-center justify-center shrink-0`}>
-                  <stat.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${stat.bg.includes("gradient") ? "text-primary-foreground" : stat.color}`} />
+              <CardContent className="p-2 sm:p-3 text-center">
+                <div className={`h-7 w-7 sm:h-8 sm:w-8 rounded-lg ${stat.bg} flex items-center justify-center mx-auto mb-1`}>
+                  <stat.icon className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${stat.color}`} />
                 </div>
-                <div>
-                  <p className={`text-xl sm:text-2xl font-extrabold ${stat.color}`}>{stat.value}</p>
-                  <p className="text-[10px] sm:text-[11px] text-muted-foreground font-medium">{stat.label}</p>
-                </div>
+                <p className={`text-lg sm:text-xl font-extrabold ${stat.color}`}>{stat.value}</p>
+                <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium">{stat.label}</p>
               </CardContent>
             </Card>
           </motion.div>
@@ -240,14 +196,14 @@ const Monitoring = () => {
       <Card className="border-0 shadow-card">
         <CardContent className="p-3 sm:p-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs sm:text-sm font-semibold text-foreground">Progress Keseluruhan</span>
+            <span className="text-xs sm:text-sm font-semibold text-foreground">Progress Absensi</span>
             <span className="text-base sm:text-lg font-extrabold text-primary">{percentage}%</span>
           </div>
           <div className="h-2.5 sm:h-3 rounded-full bg-secondary overflow-hidden">
             <motion.div className="h-full rounded-full bg-gradient-to-r from-primary via-primary/80 to-success"
               initial={{ width: 0 }} animate={{ width: `${percentage}%` }} transition={{ duration: 1, ease: "easeOut" }} />
           </div>
-          <p className="text-[10px] sm:text-xs text-muted-foreground mt-1.5">{totalPicked} dari {students.length} siswa</p>
+          <p className="text-[10px] sm:text-xs text-muted-foreground mt-1.5">{students.length - totalBelum} dari {students.length} siswa sudah diabsen</p>
         </CardContent>
       </Card>
 
@@ -262,10 +218,11 @@ const Monitoring = () => {
         <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
           {classNames.map((cls) => {
             const classStudents = grouped[cls];
-            const classPicked = classStudents.filter((s) => s.status === "picked_up").length;
-            const classWaiting = classStudents.length - classPicked;
-            const classPct = classStudents.length ? Math.round((classPicked / classStudents.length) * 100) : 0;
-            const allDone = classWaiting === 0;
+            const classHadir = classStudents.filter((s) => s.status === "hadir").length;
+            const classBelum = classStudents.filter((s) => s.status === "belum").length;
+            const classRecorded = classStudents.length - classBelum;
+            const classPct = classStudents.length ? Math.round((classRecorded / classStudents.length) * 100) : 0;
+            const allDone = classBelum === 0;
             const isExpanded = expandedClasses.has(cls);
 
             return (
@@ -283,22 +240,15 @@ const Monitoring = () => {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <h3 className="font-bold text-sm sm:text-base text-foreground">{cls}</h3>
-                          {allDone && <Badge className="bg-success/10 text-success border-success/20 text-[9px] sm:text-[10px]">✓</Badge>}
+                          {allDone && <Badge className="bg-success/10 text-success border-success/20 text-[9px] sm:text-[10px]">✓ Lengkap</Badge>}
                         </div>
                         <div className="flex items-center gap-2 sm:gap-3 text-[10px] sm:text-xs text-muted-foreground mt-0.5">
                           <span className="flex items-center gap-0.5"><Users className="h-3 w-3" /> {classStudents.length}</span>
-                          <span className="flex items-center gap-0.5 text-success"><UserCheck className="h-3 w-3" /> {classPicked}</span>
-                          <span className="flex items-center gap-0.5 text-destructive"><UserX className="h-3 w-3" /> {classWaiting}</span>
+                          <span className="flex items-center gap-0.5 text-success"><UserCheck className="h-3 w-3" /> {classHadir}</span>
+                          <span className="flex items-center gap-0.5 text-muted-foreground"><Clock className="h-3 w-3" /> {classBelum}</span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-                        <button onClick={(e) => { e.stopPropagation(); copyClassLink(cls); }}
-                          className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg bg-muted hover:bg-muted/80 flex items-center justify-center transition-all"
-                          title="Salin link publik">
-                          <Globe className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-muted-foreground" />
-                        </button>
-                        <p className={`text-lg sm:text-xl font-extrabold ${allDone ? "text-success" : "text-primary"}`}>{classPct}%</p>
-                      </div>
+                      <p className={`text-lg sm:text-xl font-extrabold ${allDone ? "text-success" : "text-primary"}`}>{classPct}%</p>
                     </div>
                     <div className="mt-2 sm:mt-3 h-1.5 sm:h-2 rounded-full bg-secondary overflow-hidden">
                       <motion.div className={`h-full rounded-full ${allDone ? "bg-success" : "bg-gradient-to-r from-primary to-primary/70"}`}
@@ -312,57 +262,44 @@ const Monitoring = () => {
                         exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden">
                         <div className="px-3 sm:px-4 pb-3 sm:pb-4 space-y-1.5 sm:space-y-2 border-t border-border pt-2 sm:pt-3">
                           {classStudents
-                            .sort((a, b) => (a.status === "waiting" ? -1 : 1))
-                            .map((s, i) => (
-                              <motion.div key={s.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: i * 0.02 }}>
-                                <div className={`flex items-center gap-2 sm:gap-3 rounded-xl p-2 sm:p-3 transition-all ${
-                                  s.status === "picked_up" ? "bg-success/5 border border-success/20" : "bg-destructive/5 border border-destructive/20"
-                                }`}>
-                                  {features.canUploadPhoto && s.photo_url ? (
-                                    <img src={s.photo_url} alt={s.name} className={`h-8 w-8 sm:h-9 sm:w-9 rounded-full object-cover shrink-0 border-2 ${
-                                      s.status === "picked_up" ? "border-success/30" : "border-destructive/30"
-                                    }`} />
-                                  ) : (
+                            .sort((a, b) => (a.status === "belum" ? 1 : -1))
+                            .map((s, i) => {
+                              const statusKey = s.status === "belum" ? "belum" : s.status;
+                              return (
+                                <motion.div key={s.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
+                                  transition={{ delay: i * 0.02 }}>
+                                  <div className={`flex items-center gap-2 sm:gap-3 rounded-xl p-2 sm:p-3 transition-all border ${
+                                    s.status === "belum" ? "bg-muted/50 border-border" : STATUS_BG[s.status] || "bg-muted/50 border-border"
+                                  }`}>
                                     <div className={`h-8 w-8 sm:h-9 sm:w-9 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm shrink-0 ${
-                                      s.status === "picked_up" ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive"
+                                      s.status === "hadir" ? "bg-success/15 text-success" :
+                                      s.status === "belum" ? "bg-muted text-muted-foreground" :
+                                      "bg-destructive/15 text-destructive"
                                     }`}>
                                       {s.name.charAt(0)}
                                     </div>
-                                  )}
-                                  <div className="flex-1 min-w-0">
-                                    <p className="font-semibold text-xs sm:text-sm text-foreground truncate">{s.name}</p>
-                                    <p className="text-[10px] sm:text-xs text-muted-foreground truncate">NIS: {s.student_id}</p>
-                                  </div>
-                                  {s.status === "picked_up" ? (
-                                    <div className="flex items-center gap-1.5 shrink-0">
-                                      <div className="text-right">
-                                        <Badge className="bg-success/10 text-success border-success/20 text-[9px] sm:text-[10px]">
-                                          <UserCheck className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5" /> Pulang
-                                        </Badge>
-                                        {s.pickup_time && (
-                                          <div className="flex items-center gap-0.5 text-muted-foreground mt-0.5 justify-end">
-                                            <Clock className="h-2.5 w-2.5" />
-                                            <span className="text-[9px] sm:text-[10px]">{new Date(s.pickup_time).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}</span>
-                                          </div>
-                                        )}
-                                      </div>
-                                      <button onClick={() => setCancelStudent(s)}
-                                        className="h-7 w-7 rounded-lg bg-destructive/10 hover:bg-destructive/20 flex items-center justify-center transition-all"
-                                        title="Batalkan penjemputan">
-                                        <Undo2 className="h-3 w-3 text-destructive" />
-                                      </button>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="font-semibold text-xs sm:text-sm text-foreground truncate">{s.name}</p>
+                                      <p className="text-[10px] sm:text-xs text-muted-foreground truncate">NIS: {s.student_id}</p>
                                     </div>
-                                  ) : (
-                                    <Button size="sm" variant="outline"
-                                      className="shrink-0 text-[10px] sm:text-xs h-7 sm:h-8 px-2 sm:px-3 border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground"
-                                      onClick={() => setConfirmStudent(s)}>
-                                      <CheckCircle2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-0.5 sm:mr-1" /> Pulangkan
-                                    </Button>
-                                  )}
-                                </div>
-                              </motion.div>
-                            ))}
+                                    <div className="flex items-center gap-1.5 shrink-0">
+                                      <Badge
+                                        variant="secondary"
+                                        className={`text-[9px] sm:text-[10px] cursor-pointer hover:opacity-80 ${
+                                          s.status === "belum" ? "" : STATUS_BG[s.status]?.replace("border-", "").split(" ")[0] || ""
+                                        }`}
+                                        onClick={(e) => { e.stopPropagation(); setEditStudent(s); setEditStatus(s.status === "belum" ? "" : s.status); }}
+                                      >
+                                        {s.status === "belum" ? "Belum Absen" : STATUS_LABELS[s.status]}
+                                      </Badge>
+                                      {s.attendance_time && (
+                                        <span className="text-[9px] text-muted-foreground">{s.attendance_time.slice(0, 5)}</span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </motion.div>
+                              );
+                            })}
                         </div>
                       </motion.div>
                     )}
@@ -374,81 +311,33 @@ const Monitoring = () => {
         </div>
       </div>
 
-      {/* Manual Pickup Dialog */}
-      <AlertDialog open={!!confirmStudent} onOpenChange={(o) => !o && setConfirmStudent(null)}>
-        <AlertDialogContent className="max-w-[90vw] sm:max-w-lg">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-base sm:text-lg">Konfirmasi Kepulangan</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs sm:text-sm">
-              Tandai <strong>{confirmStudent?.name}</strong> (Kelas {confirmStudent?.class}) sebagai sudah pulang?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="text-xs sm:text-sm">Batal</AlertDialogCancel>
-            <AlertDialogAction onClick={() => confirmStudent && handleManualPickup(confirmStudent)} className="text-xs sm:text-sm">
-              <Volume2 className="h-3.5 w-3.5 mr-1" /> Ya, Pulangkan
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Cancel Pickup Dialog */}
-      <AlertDialog open={!!cancelStudent} onOpenChange={(o) => !o && setCancelStudent(null)}>
-        <AlertDialogContent className="max-w-[90vw] sm:max-w-lg">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-base sm:text-lg">Batalkan Penjemputan?</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs sm:text-sm">
-              Apakah Anda yakin ingin membatalkan penjemputan <strong>{cancelStudent?.name}</strong>?
-              Status akan kembali ke "menunggu".
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="text-xs sm:text-sm">Tidak</AlertDialogCancel>
-            <AlertDialogAction onClick={() => cancelStudent && handleCancelPickup(cancelStudent)}
-              className="bg-destructive hover:bg-destructive/90 text-xs sm:text-sm">
-              Ya, Batalkan
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Daily Reset Dialog */}
-      <AlertDialog open={resetConfirm} onOpenChange={setResetConfirm}>
-        <AlertDialogContent className="max-w-[90vw] sm:max-w-lg">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-base sm:text-lg">Reset Data Hari Ini?</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs sm:text-sm">
-              Semua data penjemputan hari ini akan dihapus. Tindakan ini tidak dapat dibatalkan.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="text-xs sm:text-sm">Batal</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDailyReset} className="bg-destructive hover:bg-destructive/90 text-xs sm:text-sm">
-              <RotateCcw className="h-3.5 w-3.5 mr-1" /> Ya, Reset
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Success Popup */}
-      <Dialog open={!!successStudent} onOpenChange={(open) => !open && setSuccessStudent(null)}>
-        <DialogContent className="max-w-[90vw] sm:max-w-sm border-0 bg-success p-0">
-          <DialogHeader className="sr-only">
-            <DialogTitle>Siswa Berhasil Pulang</DialogTitle>
+      {/* Edit Status Dialog */}
+      <Dialog open={!!editStudent} onOpenChange={(open) => { if (!open) { setEditStudent(null); setEditStatus(""); } }}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-base">Ubah Status Absensi</DialogTitle>
           </DialogHeader>
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="p-6 sm:p-8 text-center space-y-3"
-          >
-            <CheckCircle2 className="h-14 w-14 sm:h-16 sm:w-16 text-success-foreground mx-auto" />
-            <h2 className="text-lg sm:text-xl font-bold text-success-foreground">✅ Berhasil Pulang</h2>
-            <div className="text-success-foreground/90 space-y-0.5 text-sm">
-              <p><strong>{successStudent?.name}</strong></p>
-              <p>Kelas: {successStudent?.class}</p>
-              <p className="text-xs opacity-80">NIS: {successStudent?.student_id}</p>
+          {editStudent && (
+            <div className="space-y-4 py-2">
+              <div className="text-center">
+                <p className="font-bold text-foreground">{editStudent.name}</p>
+                <p className="text-sm text-muted-foreground">Kelas {editStudent.class} • NIS: {editStudent.student_id}</p>
+              </div>
+              <Select value={editStatus} onValueChange={setEditStatus}>
+                <SelectTrigger><SelectValue placeholder="Pilih status" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="hadir">✅ Hadir</SelectItem>
+                  <SelectItem value="izin">📝 Izin</SelectItem>
+                  <SelectItem value="sakit">🤒 Sakit</SelectItem>
+                  <SelectItem value="alfa">❌ Alfa</SelectItem>
+                </SelectContent>
+              </Select>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => { setEditStudent(null); setEditStatus(""); }} className="flex-1">Batal</Button>
+                <Button onClick={handleUpdateStatus} disabled={!editStatus} className="flex-1 gradient-primary hover:opacity-90">Simpan</Button>
+              </div>
             </div>
-          </motion.div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
