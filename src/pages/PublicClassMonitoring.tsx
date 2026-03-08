@@ -252,8 +252,8 @@ const PublicClassMonitoring = () => {
                       exit={{ opacity: 0, scale: 0.95 }} transition={{ delay: i * 0.02 }}>
                       <Card className="border border-destructive/20 bg-destructive/5 shadow-sm">
                         <CardContent className="p-3 flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-full bg-destructive/15 text-destructive flex items-center justify-center font-bold text-sm shrink-0">
-                            {s.name.charAt(0)}
+                          <div className="h-10 w-10 rounded-full bg-destructive/15 text-destructive flex items-center justify-center font-bold text-sm shrink-0 overflow-hidden">
+                            {s.photo_url ? <img src={s.photo_url} alt={s.name} className="h-full w-full object-cover" /> : s.name.charAt(0)}
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="font-semibold text-sm text-foreground truncate">{s.name}</p>
