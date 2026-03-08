@@ -36,26 +36,27 @@ serve(async (req) => {
       .single();
     if (planError || !plan) throw new Error('Plan not found');
 
-    // Get user profile for school_id
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('school_id')
-      .eq('user_id', user.id)
-      .single();
-    if (!profile?.school_id) throw new Error('No school associated');
-
-    // Get school name
-    const { data: school } = await supabase
-      .from('schools')
-      .select('name')
-      .eq('id', profile.school_id)
-      .single();
-
     // Create admin client for DB operations
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
+
+    // Get user profile for school_id (use admin client to bypass RLS)
+    const { data: profile } = await supabaseAdmin
+      .from('profiles')
+      .select('school_id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+    if (!profile?.school_id) throw new Error('No school associated with your account');
+
+    // Get school name
+    const { data: school } = await supabaseAdmin
+      .from('schools')
+      .select('name')
+      .eq('id', profile.school_id)
+      .maybeSingle();
+
 
     // For free plans (price = 0), auto-approve immediately
     if (plan.price === 0) {
