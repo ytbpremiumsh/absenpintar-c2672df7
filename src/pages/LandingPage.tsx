@@ -223,14 +223,6 @@ const LandingPage = () => {
                     </motion.div>
                   );
                 })}
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.1, duration: 0.4 }}
-                    className="flex gap-4"
-                  >
               </div>
             </motion.div>
 
