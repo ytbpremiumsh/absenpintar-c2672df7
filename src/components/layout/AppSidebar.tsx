@@ -11,7 +11,9 @@ import {
   Copy,
   GraduationCap,
   UserCheck,
+  FileBarChart,
 } from "lucide-react";
+import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
