@@ -32,6 +32,8 @@ import ExportHistory from "./pages/ExportHistory";
 import SupportTickets from "./pages/SupportTickets";
 import SuperAdminAnnouncements from "./pages/super-admin/SuperAdminAnnouncements";
 import SuperAdminTickets from "./pages/super-admin/SuperAdminTickets";
+import SuperAdminLanding from "./pages/super-admin/SuperAdminLanding";
+import LandingPage from "./pages/LandingPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
