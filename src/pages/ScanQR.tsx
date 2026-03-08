@@ -9,7 +9,7 @@ import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
 import { toast } from "sonner";
 import jsQR from "jsqr";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+  Dialog, DialogContent, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 
 interface FoundStudent {
@@ -42,7 +42,7 @@ const ScanQR = () => {
   const isLookingUp = useRef(false);
   const scanPaused = useRef(false);
 
-  const canFace = features.canFaceRecognition && !features.loading;
+  const canFace = !features.loading;
 
   const lookupStudent = useCallback(async (code: string) => {
     if (!code.trim() || !profile?.school_id || isLookingUp.current || scanPaused.current) return;
@@ -148,22 +148,29 @@ const ScanQR = () => {
 
   // When camera becomes active, start scanning
   useEffect(() => {
-    if (cameraActive && videoRef.current && streamRef.current) {
-      const video = videoRef.current;
-      video.srcObject = streamRef.current;
+    if (!cameraActive || !videoRef.current || !streamRef.current) return;
+
+    const video = videoRef.current;
+    const startPipelines = () => {
+      startBarcodeScanning();
+      if (canFace) startFaceScanning();
+      else stopFaceScanning();
+    };
+
+    video.srcObject = streamRef.current;
+
+    if (video.readyState >= HTMLMediaElement.HAVE_METADATA) {
+      video.play().then(startPipelines).catch(err => console.error("Video play error:", err));
+    } else {
       video.onloadedmetadata = () => {
-        video.play().then(() => {
-          startBarcodeScanning();
-          if (canFace) {
-            console.log("Starting face recognition scanning...");
-            startFaceScanning();
-          }
-        }).catch(err => console.error("Video play error:", err));
-      };
-      return () => {
-        stopFaceScanning();
+        video.play().then(startPipelines).catch(err => console.error("Video play error:", err));
       };
     }
+
+    return () => {
+      video.onloadedmetadata = null;
+      stopFaceScanning();
+    };
   }, [cameraActive, startBarcodeScanning, startFaceScanning, stopFaceScanning, canFace]);
 
   const startCamera = async () => {
@@ -171,9 +178,10 @@ const ScanQR = () => {
     try {
       let stream: MediaStream;
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: "environment" }, width: { ideal: 640 }, height: { ideal: 480 } } });
-      } catch {
+        // Prioritaskan kamera depan agar face recognition lebih stabil
         stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } } });
+      } catch {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: "environment" }, width: { ideal: 640 }, height: { ideal: 480 } } });
       }
       streamRef.current = stream;
       setCameraActive(true);
