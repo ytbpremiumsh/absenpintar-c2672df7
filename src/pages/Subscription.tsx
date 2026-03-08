@@ -32,11 +32,14 @@ const planLimits: Record<string, { maxClasses: number; maxStudentsPerClass: numb
 
 const Subscription = () => {
   const { profile } = useAuth();
+  const [searchParams] = useSearchParams();
   const [plans, setPlans] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState<string | null>(null);
   const [currentSub, setCurrentSub] = useState<any>(null);
   const [currentPlan, setCurrentPlan] = useState<any>(null);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const pollingRef = useRef<NodeJS.Timeout | null>(null);
   const [usage, setUsage] = useState<UsageStats>({ classCount: 0, studentCount: 0, maxClasses: 2, maxStudentsPerClass: 10, maxStudentsTotal: 20 });
 
   useEffect(() => {
