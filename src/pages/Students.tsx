@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import QRCodeDisplay from "@/components/QRCodeDisplay";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 const Students = () => {
   const { profile } = useAuth();
