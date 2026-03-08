@@ -248,95 +248,71 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded }: PublicAtten
     <>
       <canvas ref={canvasRef} className="hidden" />
 
-      {/* Collapsed: Scan Button */}
-      {!expanded ? (
-        <Card className="border-0 shadow-card cursor-pointer hover:shadow-elevated transition-shadow"
-          onClick={() => setExpanded(true)}>
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="h-12 w-12 rounded-xl gradient-primary flex items-center justify-center shrink-0">
-              <ScanLine className="h-6 w-6 text-primary-foreground" />
+      <Card className="border-0 shadow-card overflow-hidden sticky top-24">
+        <div className="p-3 border-b border-border flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <ScanLine className="h-4 w-4 text-primary" />
+            <h3 className="font-bold text-sm text-foreground">Scan Absensi</h3>
+          </div>
+        </div>
+
+        <CardContent className="p-0">
+          {cameraActive ? (
+            <>
+              <div className="relative bg-black" style={{ maxHeight: 200 }}>
+                <video ref={videoRef} className="w-full h-full object-cover" autoPlay playsInline muted
+                  style={{ maxHeight: 200, WebkitTransform: "scaleX(1)" }} />
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className={`w-24 h-24 border-2 rounded-lg transition-colors ${scanPaused.current ? "border-success" : "border-primary opacity-70"}`} />
+                </div>
+                <div className="absolute bottom-1 left-0 right-0 text-center">
+                  <span className="text-[10px] text-white/80 bg-black/50 px-2 py-0.5 rounded">
+                    {scanPaused.current ? "✓ Terdeteksi" : "Arahkan ke Barcode / Wajah..."}
+                  </span>
+                </div>
+              </div>
+              <div className="p-2 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground pl-2">
+                  {faceScanning ? (
+                    <><Loader2 className="h-3 w-3 animate-spin text-primary" /><span className="text-primary font-medium text-[10px]">Mengenali wajah...</span></>
+                  ) : (
+                    <>
+                      <div className="h-2 w-2 rounded-full bg-success animate-pulse" />
+                      <span className="text-[10px]"><ScanLine className="h-2.5 w-2.5 inline mr-0.5" />Barcode + <UserCheck className="h-2.5 w-2.5 inline mx-0.5" />Face</span>
+                    </>
+                  )}
+                </div>
+                <Button variant="outline" size="sm" onClick={stopCamera} className="h-7 text-xs px-2">
+                  <X className="h-3 w-3 mr-1" /> Tutup
+                </Button>
+              </div>
+            </>
+          ) : (
+            <div className="p-4 flex flex-col items-center gap-2">
+              <div className="h-12 w-12 rounded-xl gradient-primary flex items-center justify-center">
+                <Camera className="h-6 w-6 text-primary-foreground" />
+              </div>
+              {cameraError && <p className="text-destructive text-xs text-center">{cameraError}</p>}
+              <Button onClick={startCamera} size="sm" className="gradient-primary hover:opacity-90">
+                <Camera className="h-4 w-4 mr-2" /> Aktifkan Kamera
+              </Button>
+              <p className="text-[10px] text-muted-foreground">Barcode + Face Recognition</p>
             </div>
-            <div className="flex-1">
-              <h3 className="font-bold text-sm text-foreground">Scan Absensi Langsung</h3>
-              <p className="text-xs text-muted-foreground">Klik untuk scan barcode atau wajah siswa</p>
-            </div>
-            <Badge variant="secondary" className="text-xs shrink-0">
-              <Camera className="h-3 w-3 mr-1" /> Scan
-            </Badge>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card className="border-0 shadow-card overflow-hidden">
-          <div className="p-3 border-b border-border flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <ScanLine className="h-4 w-4 text-primary" />
-              <h3 className="font-bold text-sm text-foreground">Scan Absensi</h3>
-            </div>
-            <Button variant="ghost" size="sm" onClick={() => { stopCamera(); setExpanded(false); }}>
-              <X className="h-4 w-4" />
+          )}
+        </CardContent>
+
+        {/* Manual input */}
+        <div className="p-3 border-t border-border">
+          <div className="flex gap-2">
+            <Input placeholder="NIS manual" value={manualCode}
+              onChange={(e) => setManualCode(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()} className="h-8 text-xs" />
+            <Button onClick={handleSearch} className="h-8 gradient-primary hover:opacity-90 px-3">
+              <Search className="h-3.5 w-3.5" />
             </Button>
           </div>
-
-          <CardContent className="p-0">
-            {cameraActive ? (
-              <>
-                <div className="relative bg-black" style={{ minHeight: 240 }}>
-                  <video ref={videoRef} className="w-full h-full object-cover" autoPlay playsInline muted
-                    style={{ minHeight: 240, WebkitTransform: "scaleX(1)" }} />
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className={`w-36 h-36 border-2 rounded-lg transition-colors ${scanPaused.current ? "border-success" : "border-primary opacity-70"}`} />
-                  </div>
-                  <div className="absolute bottom-2 left-0 right-0 text-center">
-                    <span className="text-xs text-white/80 bg-black/50 px-2 py-1 rounded">
-                      {scanPaused.current ? "✓ Terdeteksi" : "Arahkan ke Barcode / Wajah..."}
-                    </span>
-                  </div>
-                </div>
-                <div className="p-2 flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground pl-2">
-                    {faceScanning ? (
-                      <><Loader2 className="h-3.5 w-3.5 animate-spin text-primary" /><span className="text-primary font-medium">Mengenali wajah...</span></>
-                    ) : (
-                      <>
-                        <div className="h-2 w-2 rounded-full bg-success animate-pulse" />
-                        <span><ScanLine className="h-3 w-3 inline mr-0.5" />Barcode + <UserCheck className="h-3 w-3 inline mx-0.5" />Face</span>
-                      </>
-                    )}
-                  </div>
-                  <Button variant="outline" size="sm" onClick={stopCamera}>
-                    <X className="h-4 w-4 mr-1" /> Tutup
-                  </Button>
-                </div>
-              </>
-            ) : (
-              <div className="p-6 flex flex-col items-center gap-3">
-                <div className="h-14 w-14 rounded-2xl gradient-primary flex items-center justify-center">
-                  <Camera className="h-7 w-7 text-primary-foreground" />
-                </div>
-                {cameraError && <p className="text-destructive text-xs text-center">{cameraError}</p>}
-                <Button onClick={startCamera} className="gradient-primary hover:opacity-90">
-                  <Camera className="h-4 w-4 mr-2" /> Aktifkan Kamera
-                </Button>
-                <p className="text-[11px] text-muted-foreground">Scan barcode + face recognition otomatis</p>
-              </div>
-            )}
-          </CardContent>
-
-          {/* Manual input */}
-          <div className="p-3 border-t border-border">
-            <div className="flex gap-2">
-              <Input placeholder="NIS manual (cth: NIS-001)" value={manualCode}
-                onChange={(e) => setManualCode(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSearch()} className="h-9 text-sm" />
-              <Button onClick={handleSearch} className="h-9 gradient-primary hover:opacity-90 px-3">
-                <Search className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </Card>
-      )}
-
-      {/* Already recorded popup */}
+        </div>
+      </Card>
       <Dialog open={alreadyRecorded && !!scannedStudent} onOpenChange={(open) => { if (!open) handleDismissAlready(); }}>
         <DialogContent className="max-w-[90vw] sm:max-w-sm p-0 overflow-hidden">
           <div className="bg-warning/10 p-4 text-center">
