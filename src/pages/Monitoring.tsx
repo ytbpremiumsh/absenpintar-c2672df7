@@ -429,6 +429,28 @@ const Monitoring = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Success Popup */}
+      <Dialog open={!!successStudent} onOpenChange={(open) => !open && setSuccessStudent(null)}>
+        <DialogContent className="max-w-[90vw] sm:max-w-sm border-0 bg-success p-0">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Siswa Berhasil Pulang</DialogTitle>
+          </DialogHeader>
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="p-6 sm:p-8 text-center space-y-3"
+          >
+            <CheckCircle2 className="h-14 w-14 sm:h-16 sm:w-16 text-success-foreground mx-auto" />
+            <h2 className="text-lg sm:text-xl font-bold text-success-foreground">✅ Berhasil Pulang</h2>
+            <div className="text-success-foreground/90 space-y-0.5 text-sm">
+              <p><strong>{successStudent?.name}</strong></p>
+              <p>Kelas: {successStudent?.class}</p>
+              <p className="text-xs opacity-80">NIS: {successStudent?.student_id}</p>
+            </div>
+          </motion.div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
