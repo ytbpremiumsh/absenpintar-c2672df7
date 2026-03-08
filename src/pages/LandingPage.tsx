@@ -243,16 +243,17 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Features Grid */}
+      {/* Fitur & Keunggulan (merged) */}
       <section id="features" className="py-20 sm:py-28">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <motion.div custom={0} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-14">
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-3 block">Fitur Unggulan</span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight">Semua yang Anda Butuhkan</h2>
-            <p className="mt-3 text-muted-foreground max-w-lg mx-auto">Solusi lengkap untuk mengelola sistem penjemputan siswa yang aman dan efisien</p>
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-3 block">Fitur & Keunggulan</span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight">Semua yang Sekolah Anda Butuhkan</h2>
+            <p className="mt-3 text-muted-foreground max-w-xl mx-auto">Solusi lengkap dan menyeluruh untuk mengelola sistem penjemputan siswa yang aman, efisien, dan transparan.</p>
           </motion.div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {/* Main features from DB */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-10">
             {features.map((f, i) => {
               const Icon = f.icon;
               return (
@@ -267,52 +268,9 @@ const LandingPage = () => {
               );
             })}
           </div>
-        </div>
-      </section>
 
-      {/* Why Choose Us */}
-      <section className="py-20 sm:py-28 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/3 rounded-full blur-[150px] -translate-y-1/2 translate-x-1/4 pointer-events-none" />
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 relative">
-          <motion.div custom={0} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-14">
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-3 block">Kenapa Harus Kami</span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight">
-              {get("why_title", "Solusi Lengkap untuk Keamanan Penjemputan Siswa")}
-            </h2>
-            <p className="mt-4 text-muted-foreground max-w-xl mx-auto">
-              {get("why_desc", "Kami menyediakan solusi menyeluruh untuk membantu sekolah Anda mengelola penjemputan siswa dengan aman, cepat, dan terstruktur.")}
-            </p>
-          </motion.div>
-
-          <div className="grid sm:grid-cols-2 gap-5">
-            {WHY_ITEMS_FALLBACK.map((item, i) => (
-              <motion.div key={item.title} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
-                className="flex gap-4 sm:gap-5 items-start bg-card border border-border/50 rounded-2xl p-6 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300">
-                <div className="h-11 w-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                  <item.icon className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-foreground mb-1">
-                    {get(`why_item_${i + 1}_title`, item.title)}
-                  </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {get(`why_item_${i + 1}_desc`, item.desc)}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Extra Features */}
-      <section className="py-20 sm:py-28 bg-muted/30">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <motion.div custom={0} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-14">
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-3 block">Dan masih banyak lagi</span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight">Fitur Pendukung</h2>
-          </motion.div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {/* Extra features */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-14">
             {EXTRA_FEATURES.map((f, i) => (
               <motion.div key={f.title} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
                 className="bg-card border border-border/50 rounded-2xl p-6 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300">
@@ -321,6 +279,31 @@ const LandingPage = () => {
                 <p className="text-xs text-muted-foreground leading-relaxed">{f.desc}</p>
               </motion.div>
             ))}
+          </div>
+
+          {/* Why Choose Us */}
+          <div className="max-w-5xl mx-auto">
+            <motion.div custom={0} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-10">
+              <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-3 block">Kenapa Harus Kami</span>
+              <h3 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
+                {get("why_title", "Solusi Lengkap untuk Keamanan Penjemputan Siswa")}
+              </h3>
+            </motion.div>
+
+            <div className="grid sm:grid-cols-2 gap-5">
+              {WHY_ITEMS_FALLBACK.map((item, i) => (
+                <motion.div key={item.title} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
+                  className="flex gap-4 sm:gap-5 items-start bg-card border border-border/50 rounded-2xl p-6 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300">
+                  <div className="h-11 w-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                    <item.icon className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-foreground mb-1">{get(`why_item_${i + 1}_title`, item.title)}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{get(`why_item_${i + 1}_desc`, item.desc)}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
