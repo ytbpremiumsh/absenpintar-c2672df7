@@ -121,18 +121,23 @@ const SchoolSettings = () => {
 
     const { error: schoolErr } = await supabase.from("schools").update({ name, address, logo: logo || null }).eq("id", profile.school_id);
 
+    const settingsPayload = {
+      school_start_time: startTime + ":00",
+      school_end_time: endTime + ":00",
+      attendance_start_time: attStartTime + ":00",
+      attendance_end_time: attEndTime + ":00",
+      departure_start_time: depStartTime + ":00",
+      departure_end_time: depEndTime + ":00",
+    };
+
     const { data: existing } = await supabase.from("pickup_settings").select("id").eq("school_id", profile.school_id).maybeSingle();
     if (existing) {
-      await supabase.from("pickup_settings").update({
-        school_start_time: startTime + ":00",
-        school_end_time: endTime + ":00",
-      }).eq("school_id", profile.school_id);
+      await supabase.from("pickup_settings").update(settingsPayload as any).eq("school_id", profile.school_id);
     } else {
       await supabase.from("pickup_settings").insert({
         school_id: profile.school_id,
-        school_start_time: startTime + ":00",
-        school_end_time: endTime + ":00",
         is_active: false,
+        ...settingsPayload,
       } as any);
     }
 
