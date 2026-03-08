@@ -43,6 +43,33 @@ export type Database = {
           },
         ]
       }
+      landing_content: {
+        Row: {
+          created_at: string
+          id: string
+          key: string
+          type: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key: string
+          type?: string
+          updated_at?: string
+          value?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key?: string
+          type?: string
+          updated_at?: string
+          value?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
