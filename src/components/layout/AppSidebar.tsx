@@ -13,6 +13,8 @@ import {
   UserCheck,
   FileBarChart,
   Lock,
+  MessageCircle,
+  Building2,
 } from "lucide-react";
 import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
 import { NavLink } from "@/components/NavLink";
