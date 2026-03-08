@@ -34,7 +34,9 @@ import SuperAdminAnnouncements from "./pages/super-admin/SuperAdminAnnouncements
 import SuperAdminTickets from "./pages/super-admin/SuperAdminTickets";
 import SuperAdminLanding from "./pages/super-admin/SuperAdminLanding";
 import SuperAdminRegistrationWA from "./pages/super-admin/SuperAdminRegistrationWA";
+import SuperAdminPresentation from "./pages/super-admin/SuperAdminPresentation";
 import LandingPage from "./pages/LandingPage";
+import Presentation from "./pages/Presentation";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
