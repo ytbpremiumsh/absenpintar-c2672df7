@@ -2,12 +2,10 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScanLine, CheckCircle2, Camera, Search, ShieldCheck, X, Clock, UserCheck, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
-import { motion } from "framer-motion";
 import { toast } from "sonner";
 import jsQR from "jsqr";
 import {
@@ -35,21 +33,16 @@ const ScanQR = () => {
   const [cameraError, setCameraError] = useState("");
   const [alreadyRecorded, setAlreadyRecorded] = useState(false);
   const [scanMethod, setScanMethod] = useState<"barcode" | "face">("barcode");
+  const [faceScanning, setFaceScanning] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const scanIntervalRef = useRef<number | null>(null);
+  const faceIntervalRef = useRef<number | null>(null);
   const isLookingUp = useRef(false);
   const scanPaused = useRef(false);
 
-  // Face recognition state
-  const faceVideoRef = useRef<HTMLVideoElement>(null);
-  const faceStreamRef = useRef<MediaStream | null>(null);
-  const [faceCamera, setFaceCamera] = useState(false);
-  const [faceScanning, setFaceScanning] = useState(false);
-  const [faceCameraError, setFaceCameraError] = useState("");
-  const faceIntervalRef = useRef<number | null>(null);
-  const facePaused = useRef(false);
+  const canFace = features.canFaceRecognition && !features.loading;
 
   const lookupStudent = useCallback(async (code: string) => {
     if (!code.trim() || !profile?.school_id || isLookingUp.current || scanPaused.current) return;
@@ -60,19 +53,21 @@ const ScanQR = () => {
         .from("students").select("*").eq("school_id", profile.school_id)
         .or(`student_id.eq.${trimmed},qr_code.eq.${trimmed}`).maybeSingle();
       if (error || !data) { toast.error("Siswa tidak ditemukan untuk kode: " + trimmed); return; }
-      
+
       const today = new Date().toISOString().slice(0, 10);
       const { data: existing } = await supabase.from("attendance_logs")
         .select("id").eq("student_id", data.id).eq("date", today).maybeSingle();
-      
+
       setAlreadyRecorded(!!existing);
       setScannedStudent(data);
       setConfirmed(false);
+      setScanMethod("barcode");
       scanPaused.current = true;
     } finally { isLookingUp.current = false; }
   }, [profile?.school_id]);
 
-  const startScanning = useCallback(() => {
+  // Barcode scanning interval
+  const startBarcodeScanning = useCallback(() => {
     if (scanIntervalRef.current) return;
     scanIntervalRef.current = window.setInterval(() => {
       if (scanPaused.current) return;
@@ -90,15 +85,76 @@ const ScanQR = () => {
     }, 300);
   }, [lookupStudent]);
 
+  // Face recognition capture
+  const captureAndRecognize = useCallback(async () => {
+    if (!videoRef.current || !profile?.school_id || scanPaused.current) return;
+    setFaceScanning(true);
+    try {
+      const video = videoRef.current;
+      if (video.readyState !== video.HAVE_ENOUGH_DATA) return;
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext("2d")!;
+      ctx.drawImage(video, 0, 0);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
+
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/face-recognition`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        },
+        body: JSON.stringify({ captured_image: dataUrl, school_id: profile.school_id }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) { console.log("Face scan:", data.error); return; }
+
+      if (data.match && data.student) {
+        scanPaused.current = true;
+        const today = new Date().toISOString().slice(0, 10);
+        const { data: existing } = await supabase.from("attendance_logs")
+          .select("id").eq("student_id", data.student.id).eq("date", today).maybeSingle();
+
+        setAlreadyRecorded(!!existing);
+        setScannedStudent(data.student);
+        setConfirmed(false);
+        setScanMethod("face");
+        toast.success(`Wajah dikenali: ${data.student.name}`);
+      }
+    } catch (err: any) {
+      console.log("Face recognition error:", err.message);
+    } finally {
+      setFaceScanning(false);
+    }
+  }, [profile?.school_id]);
+
+  // Start face recognition interval
+  const startFaceScanning = useCallback(() => {
+    if (faceIntervalRef.current) return;
+    // Initial scan after 2s
+    const timeout = setTimeout(() => captureAndRecognize(), 2000);
+    faceIntervalRef.current = window.setInterval(() => {
+      if (!scanPaused.current) captureAndRecognize();
+    }, 4000);
+    // Store timeout for cleanup
+    return () => clearTimeout(timeout);
+  }, [captureAndRecognize]);
+
+  // When camera becomes active, start scanning
   useEffect(() => {
     if (cameraActive && videoRef.current && streamRef.current) {
       const video = videoRef.current;
       video.srcObject = streamRef.current;
       video.onloadedmetadata = () => {
-        video.play().then(() => startScanning()).catch(err => console.error("Video play error:", err));
+        video.play().then(() => {
+          startBarcodeScanning();
+          if (canFace) startFaceScanning();
+        }).catch(err => console.error("Video play error:", err));
       };
     }
-  }, [cameraActive, startScanning]);
+  }, [cameraActive, startBarcodeScanning, startFaceScanning, canFace]);
 
   const startCamera = async () => {
     setCameraError("");
@@ -119,106 +175,14 @@ const ScanQR = () => {
 
   const stopCamera = () => {
     if (scanIntervalRef.current) { clearInterval(scanIntervalRef.current); scanIntervalRef.current = null; }
+    if (faceIntervalRef.current) { clearInterval(faceIntervalRef.current); faceIntervalRef.current = null; }
     if (streamRef.current) { streamRef.current.getTracks().forEach(t => t.stop()); streamRef.current = null; }
     if (videoRef.current) videoRef.current.srcObject = null;
     setCameraActive(false);
     scanPaused.current = false;
   };
 
-  // Face camera
-  const startFaceCamera = async () => {
-    setFaceCameraError("");
-    facePaused.current = false;
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } } });
-      faceStreamRef.current = stream;
-      setFaceCamera(true);
-      setTimeout(() => {
-        if (faceVideoRef.current) {
-          faceVideoRef.current.srcObject = stream;
-          faceVideoRef.current.play().catch(console.error);
-        }
-      }, 100);
-    } catch (err: any) {
-      setFaceCameraError("Gagal mengakses kamera: " + (err.message || "Unknown"));
-    }
-  };
-
-  const stopFaceCamera = () => {
-    if (faceIntervalRef.current) { clearInterval(faceIntervalRef.current); faceIntervalRef.current = null; }
-    if (faceStreamRef.current) { faceStreamRef.current.getTracks().forEach(t => t.stop()); faceStreamRef.current = null; }
-    if (faceVideoRef.current) faceVideoRef.current.srcObject = null;
-    setFaceCamera(false);
-    facePaused.current = false;
-  };
-
-  const captureAndRecognize = async () => {
-    if (!faceVideoRef.current || !profile?.school_id || facePaused.current) return;
-    setFaceScanning(true);
-
-    try {
-      const video = faceVideoRef.current;
-      const canvas = document.createElement("canvas");
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const ctx = canvas.getContext("2d")!;
-      ctx.drawImage(video, 0, 0);
-      const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
-
-      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/face-recognition`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-        },
-        body: JSON.stringify({ captured_image: dataUrl, school_id: profile.school_id }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        // Don't show toast for every auto-scan failure, just log
-        console.log("Face scan:", data.error);
-        setFaceScanning(false);
-        return;
-      }
-
-      if (data.match && data.student) {
-        facePaused.current = true; // Pause auto-scan when found
-        const today = new Date().toISOString().slice(0, 10);
-        const { data: existing } = await supabase.from("attendance_logs")
-          .select("id").eq("student_id", data.student.id).eq("date", today).maybeSingle();
-        
-        setAlreadyRecorded(!!existing);
-        setScannedStudent(data.student);
-        setConfirmed(false);
-        setScanMethod("face");
-        toast.success(`Wajah dikenali: ${data.student.name}`);
-      }
-      // No toast for unrecognized - auto mode will keep trying
-    } catch (err: any) {
-      console.log("Face recognition error:", err.message);
-    }
-    setFaceScanning(false);
-  };
-
-  // Auto face recognition interval
-  useEffect(() => {
-    if (faceCamera && !scannedStudent) {
-      // Initial scan after 1.5s
-      const initialTimeout = setTimeout(() => captureAndRecognize(), 1500);
-      // Then every 4 seconds
-      faceIntervalRef.current = window.setInterval(() => {
-        if (!facePaused.current) captureAndRecognize();
-      }, 4000);
-      return () => {
-        clearTimeout(initialTimeout);
-        if (faceIntervalRef.current) { clearInterval(faceIntervalRef.current); faceIntervalRef.current = null; }
-      };
-    }
-  }, [faceCamera, scannedStudent]);
-
-  useEffect(() => { return () => { stopCamera(); stopFaceCamera(); }; }, []);
+  useEffect(() => { return () => { stopCamera(); }; }, []);
 
   const handleSearch = () => { scanPaused.current = false; lookupStudent(manualCode); };
 
@@ -243,7 +207,6 @@ const ScanQR = () => {
     setConfirmed(true);
     toast.success(`Absensi ${scannedStudent.name} berhasil dicatat!`);
 
-    // Send WhatsApp notification
     if (scannedStudent.parent_phone) {
       try {
         await supabase.functions.invoke("send-whatsapp", {
@@ -253,9 +216,7 @@ const ScanQR = () => {
             message: `📋 *Notifikasi Absensi*\n\nAnanda *${scannedStudent.name}* (Kelas ${scannedStudent.class}) telah tercatat hadir pada pukul ${now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}.\n\nMetode: ${method === "face_recognition" ? "Face Recognition" : "Barcode Scan"}\n\n_Pesan otomatis dari Smart School Attendance System_`,
           },
         });
-      } catch {
-        // Don't fail attendance if WA fails
-      }
+      } catch { /* Don't fail attendance if WA fails */ }
     }
 
     setTimeout(() => {
@@ -264,7 +225,6 @@ const ScanQR = () => {
       setManualCode("");
       setAlreadyRecorded(false);
       scanPaused.current = false;
-      facePaused.current = false;
       setScanMethod("barcode");
     }, 2000);
   };
@@ -275,7 +235,6 @@ const ScanQR = () => {
     setManualCode("");
     setAlreadyRecorded(false);
     scanPaused.current = false;
-    facePaused.current = false;
   };
 
   return (
@@ -298,131 +257,81 @@ const ScanQR = () => {
 
       <canvas ref={canvasRef} className="hidden" />
 
-      {/* Tabs: Barcode / Face */}
-      <Tabs defaultValue="barcode" onValueChange={(v) => setScanMethod(v as "barcode" | "face")}>
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="barcode" className="gap-1.5">
-            <ScanLine className="h-4 w-4" /> Barcode
-          </TabsTrigger>
-          <TabsTrigger value="face" className="gap-1.5">
-            <UserCheck className="h-4 w-4" /> Face Recognition
-          </TabsTrigger>
-        </TabsList>
-
-        {/* BARCODE TAB */}
-        <TabsContent value="barcode" className="space-y-4">
-          <Card className="shadow-card border-0 overflow-hidden">
-            <CardContent className="p-0">
-              {cameraActive ? (
-                <>
-                  <div className="relative bg-black" style={{ minHeight: 260 }}>
-                    <video ref={videoRef} className="w-full h-full object-cover" autoPlay playsInline muted
-                      style={{ minHeight: 260, WebkitTransform: "scaleX(1)" }} />
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <div className={`w-44 h-44 border-2 rounded-lg transition-colors ${scanPaused.current ? "border-success opacity-100" : "border-primary opacity-70"}`} />
-                    </div>
-                    <div className="absolute bottom-2 left-0 right-0 text-center">
-                      <span className="text-xs text-white/80 bg-black/50 px-2 py-1 rounded">
-                        {scanPaused.current ? "✓ Barcode Terdeteksi" : "Arahkan ke Barcode..."}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="p-2 flex justify-center">
-                    <Button variant="outline" size="sm" onClick={stopCamera}>
-                      <X className="h-4 w-4 mr-1" /> Tutup Kamera
-                    </Button>
-                  </div>
-                </>
-              ) : (
-                <div className="aspect-video bg-foreground/5 flex flex-col items-center justify-center gap-3 p-4">
-                  <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-2xl gradient-primary flex items-center justify-center">
-                    <Camera className="h-7 w-7 sm:h-8 sm:w-8 text-primary-foreground" />
-                  </div>
-                  {cameraError && <p className="text-destructive text-xs sm:text-sm text-center px-4">{cameraError}</p>}
-                  <Button onClick={startCamera} className="gradient-primary hover:opacity-90">
-                    <Camera className="h-4 w-4 mr-2" /> Aktifkan Kamera
-                  </Button>
-                  <p className="text-[11px] sm:text-xs text-muted-foreground">Atau gunakan input NIS manual di bawah</p>
+      {/* Unified Camera */}
+      <Card className="shadow-card border-0 overflow-hidden">
+        <CardContent className="p-0">
+          {cameraActive ? (
+            <>
+              <div className="relative bg-black" style={{ minHeight: 280 }}>
+                <video ref={videoRef} className="w-full h-full object-cover" autoPlay playsInline muted
+                  style={{ minHeight: 280, WebkitTransform: "scaleX(1)" }} />
+                {/* Scan overlay */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className={`w-44 h-44 border-2 rounded-lg transition-colors ${scanPaused.current ? "border-success opacity-100" : "border-primary opacity-70"}`} />
                 </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-card border-0">
-            <CardContent className="p-3 sm:p-4">
-              <p className="text-sm font-semibold mb-2">Input NIS Manual</p>
-              <div className="flex gap-2">
-                <Input placeholder="Masukkan NIS (cth: NIS-001)" value={manualCode}
-                  onChange={(e) => setManualCode(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSearch()} className="h-10 sm:h-11 text-sm" />
-                <Button onClick={handleSearch} className="h-10 sm:h-11 gradient-primary hover:opacity-90 px-4">
-                  <Search className="h-4 w-4" />
+                <div className="absolute bottom-2 left-0 right-0 text-center">
+                  <span className="text-xs text-white/80 bg-black/50 px-2 py-1 rounded">
+                    {scanPaused.current ? "✓ Terdeteksi" : "Arahkan ke Barcode / Wajah..."}
+                  </span>
+                </div>
+              </div>
+              <div className="p-2 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground pl-2">
+                  {faceScanning ? (
+                    <><Loader2 className="h-3.5 w-3.5 animate-spin text-primary" /><span className="text-primary font-medium">Mengenali wajah...</span></>
+                  ) : (
+                    <>
+                      <div className="h-2 w-2 rounded-full bg-success animate-pulse" />
+                      <span>
+                        <ScanLine className="h-3 w-3 inline mr-0.5" />Barcode
+                        {canFace && <> + <UserCheck className="h-3 w-3 inline mx-0.5" />Face</>}
+                      </span>
+                    </>
+                  )}
+                </div>
+                <Button variant="outline" size="sm" onClick={stopCamera}>
+                  <X className="h-4 w-4 mr-1" /> Tutup
                 </Button>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+            </>
+          ) : (
+            <div className="aspect-video bg-foreground/5 flex flex-col items-center justify-center gap-3 p-4">
+              <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-2xl gradient-primary flex items-center justify-center">
+                <Camera className="h-7 w-7 sm:h-8 sm:w-8 text-primary-foreground" />
+              </div>
+              {cameraError && <p className="text-destructive text-xs sm:text-sm text-center px-4">{cameraError}</p>}
+              <Button onClick={startCamera} className="gradient-primary hover:opacity-90">
+                <Camera className="h-4 w-4 mr-2" /> Aktifkan Kamera
+              </Button>
+              <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-muted-foreground">
+                <ScanLine className="h-3.5 w-3.5" /> Barcode
+                {canFace && <><span className="text-muted-foreground/50">+</span><UserCheck className="h-3.5 w-3.5" /> Face Recognition</>}
+              </div>
+              <p className="text-[11px] sm:text-xs text-muted-foreground">Atau gunakan input NIS manual di bawah</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
-        {/* FACE RECOGNITION TAB */}
-        <TabsContent value="face" className="space-y-4">
-          <Card className="shadow-card border-0 overflow-hidden">
-            <CardContent className="p-0">
-              {faceCamera ? (
-                <>
-                  <div className="relative bg-black" style={{ minHeight: 300 }}>
-                    <video ref={faceVideoRef} className="w-full h-full object-cover" autoPlay playsInline muted
-                      style={{ minHeight: 300, transform: "scaleX(-1)" }} />
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <div className="w-48 h-56 border-2 border-primary/70 rounded-3xl" />
-                    </div>
-                    <div className="absolute bottom-2 left-0 right-0 text-center">
-                      <span className="text-xs text-white/80 bg-black/50 px-2 py-1 rounded">
-                        Posisikan wajah di dalam bingkai
-                      </span>
-                    </div>
-                  </div>
-                  <div className="p-3 flex gap-2 justify-center items-center">
-                    <Button variant="outline" size="sm" onClick={stopFaceCamera}>
-                      <X className="h-4 w-4 mr-1" /> Tutup
-                    </Button>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      {faceScanning ? (
-                        <><Loader2 className="h-4 w-4 animate-spin text-primary" /> <span className="text-primary font-medium">Mengenali wajah...</span></>
-                      ) : (
-                        <><div className="h-2 w-2 rounded-full bg-success animate-pulse" /> <span>Pemindaian otomatis aktif</span></>
-                      )}
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <div className="aspect-video bg-foreground/5 flex flex-col items-center justify-center gap-3 p-4">
-                  <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-2xl bg-gradient-to-br from-success to-success/80 flex items-center justify-center">
-                    <UserCheck className="h-7 w-7 sm:h-8 sm:w-8 text-success-foreground" />
-                  </div>
-                  {faceCameraError && <p className="text-destructive text-xs text-center px-4">{faceCameraError}</p>}
-                  <Button onClick={startFaceCamera} className="bg-gradient-to-r from-success to-success/80 hover:opacity-90 text-success-foreground">
-                    <Camera className="h-4 w-4 mr-2" /> Aktifkan Kamera Wajah
-                  </Button>
-                  <p className="text-[11px] sm:text-xs text-muted-foreground text-center px-4">
-                    Pastikan siswa sudah memiliki foto di database
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <div className="p-3 rounded-xl bg-primary/5 border border-primary/10">
-            <p className="text-xs text-muted-foreground">
-              <strong>Cara kerja:</strong> Siswa berdiri di depan kamera → Tekan "Kenali Wajah" → Sistem mencocokkan wajah dengan database → Absensi tercatat otomatis.
-            </p>
+      {/* Manual NIS input */}
+      <Card className="shadow-card border-0">
+        <CardContent className="p-3 sm:p-4">
+          <p className="text-sm font-semibold mb-2">Input NIS Manual</p>
+          <div className="flex gap-2">
+            <Input placeholder="Masukkan NIS (cth: NIS-001)" value={manualCode}
+              onChange={(e) => setManualCode(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()} className="h-10 sm:h-11 text-sm" />
+            <Button onClick={handleSearch} className="h-10 sm:h-11 gradient-primary hover:opacity-90 px-4">
+              <Search className="h-4 w-4" />
+            </Button>
           </div>
-        </TabsContent>
-      </Tabs>
+        </CardContent>
+      </Card>
 
-      {!scannedStudent && scanMethod === "barcode" && (
+      {!scannedStudent && !cameraActive && (
         <div className="text-center py-6 sm:py-8">
           <ScanLine className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground/30 mx-auto mb-2" />
-          <p className="text-xs sm:text-sm text-muted-foreground">Arahkan kamera ke barcode atau masukkan NIS manual</p>
+          <p className="text-xs sm:text-sm text-muted-foreground">Arahkan kamera ke barcode / wajah atau masukkan NIS manual</p>
         </div>
       )}
 
