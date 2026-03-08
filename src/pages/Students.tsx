@@ -370,7 +370,12 @@ const Students = () => {
           <DialogHeader><DialogTitle className="text-center">QR Code Siswa</DialogTitle></DialogHeader>
           {selectedStudent && (
             <div className="text-center space-y-4 py-2">
-              <QRCodeDisplay data={selectedStudent.qr_code || selectedStudent.student_id} size={220} studentName={selectedStudent.name} />
+              <QRCodeDisplay
+                data={selectedStudent.qr_code || selectedStudent.student_id}
+                size={220}
+                studentName={selectedStudent.name}
+                studentClass={selectedStudent.class}
+              />
               <div>
                 <p className="font-bold">{selectedStudent.name}</p>
                 <p className="text-sm text-muted-foreground">Kelas: {selectedStudent.class}</p>

@@ -3,7 +3,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, User, Phone, GraduationCap, Hash, Clock, UserCheck, UserX, Calendar, QrCode, Shield, Camera, Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ArrowLeft, User, Phone, GraduationCap, Hash, Clock, UserCheck, UserX, Calendar, QrCode, Shield, Camera, Loader2, Pencil, Save, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
@@ -17,18 +19,33 @@ const StudentDetail = () => {
   const { profile } = useAuth();
   const features = useSubscriptionFeatures();
   const [student, setStudent] = useState<any>(null);
+  const [school, setSchool] = useState<any>(null);
   const [pickupHistory, setPickupHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editForm, setEditForm] = useState({ name: "", class: "", student_id: "", parent_name: "", parent_phone: "" });
+  const [saving, setSaving] = useState(false);
 
   const fetchData = async () => {
     if (!id || !profile?.school_id) return;
-    const [studentRes, logsRes] = await Promise.all([
+    const [studentRes, logsRes, schoolRes] = await Promise.all([
       supabase.from("students").select("*").eq("id", id).eq("school_id", profile.school_id).single(),
       supabase.from("pickup_logs").select("*").eq("student_id", id).eq("school_id", profile.school_id).order("pickup_time", { ascending: false }).limit(20),
+      supabase.from("schools").select("name, logo, address").eq("id", profile.school_id).single(),
     ]);
     setStudent(studentRes.data);
     setPickupHistory(logsRes.data || []);
+    setSchool(schoolRes.data);
+    if (studentRes.data) {
+      setEditForm({
+        name: studentRes.data.name,
+        class: studentRes.data.class,
+        student_id: studentRes.data.student_id,
+        parent_name: studentRes.data.parent_name,
+        parent_phone: studentRes.data.parent_phone,
+      });
+    }
     setLoading(false);
   };
 
@@ -45,6 +62,23 @@ const StudentDetail = () => {
     await supabase.from("students").update({ photo_url: urlData.publicUrl }).eq("id", student.id);
     toast.success("Foto berhasil diupload!");
     setUploading(false);
+    fetchData();
+  };
+
+  const handleSaveEdit = async () => {
+    if (!student) return;
+    setSaving(true);
+    const { error } = await supabase.from("students").update({
+      name: editForm.name,
+      class: editForm.class,
+      student_id: editForm.student_id,
+      parent_name: editForm.parent_name,
+      parent_phone: editForm.parent_phone,
+    }).eq("id", student.id);
+    setSaving(false);
+    if (error) { toast.error("Gagal menyimpan: " + error.message); return; }
+    toast.success("Data siswa berhasil diperbarui!");
+    setEditing(false);
     fetchData();
   };
 
@@ -81,7 +115,29 @@ const StudentDetail = () => {
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <Card className="shadow-elevated border-0 overflow-hidden">
-          <div className="gradient-hero h-28" />
+          {/* Header with school branding */}
+          <div className="relative h-32 sm:h-36 overflow-hidden">
+            {school?.logo ? (
+              <div className="absolute inset-0 gradient-hero">
+                <img src={school.logo} alt="" className="absolute right-4 top-1/2 -translate-y-1/2 h-16 sm:h-20 opacity-20 object-contain" />
+              </div>
+            ) : (
+              <div className="gradient-hero h-full" />
+            )}
+            {/* School name overlay */}
+            <div className="absolute bottom-3 left-4 sm:left-6">
+              <div className="flex items-center gap-2">
+                {school?.logo && (
+                  <img src={school.logo} alt="" className="h-8 w-8 rounded-lg object-contain bg-white/90 p-0.5" />
+                )}
+                <div>
+                  <p className="text-white/90 text-xs font-medium">{school?.name || "Sekolah"}</p>
+                  {school?.address && <p className="text-white/60 text-[10px] truncate max-w-[200px]">{school.address}</p>}
+                </div>
+              </div>
+            </div>
+          </div>
+
           <CardContent className="relative px-6 pb-6">
             <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 -mt-14">
               <div className="relative group">
@@ -100,7 +156,12 @@ const StudentDetail = () => {
                 )}
               </div>
               <div className="text-center sm:text-left flex-1 pb-1">
-                <h1 className="text-2xl font-bold">{student.name}</h1>
+                <div className="flex items-center gap-2 justify-center sm:justify-start">
+                  <h1 className="text-2xl font-bold">{student.name}</h1>
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditing(!editing)}>
+                    {editing ? <X className="h-4 w-4" /> : <Pencil className="h-4 w-4 text-muted-foreground" />}
+                  </Button>
+                </div>
                 <div className="flex flex-wrap justify-center sm:justify-start gap-2 mt-1">
                   <Badge variant="secondary" className="text-xs"><GraduationCap className="h-3 w-3 mr-1" />Kelas {student.class}</Badge>
                   <Badge variant="secondary" className="text-xs"><Hash className="h-3 w-3 mr-1" />NIS: {student.student_id}</Badge>
@@ -115,6 +176,47 @@ const StudentDetail = () => {
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* Edit Form */}
+      {editing && (
+        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}>
+          <Card className="shadow-card border-0">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2"><Pencil className="h-4 w-4 text-primary" /> Edit Data Siswa</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Nama Lengkap</Label>
+                  <Input value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Kelas</Label>
+                  <Input value={editForm.class} onChange={(e) => setEditForm({ ...editForm, class: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>NIS</Label>
+                  <Input value={editForm.student_id} onChange={(e) => setEditForm({ ...editForm, student_id: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Nama Wali</Label>
+                  <Input value={editForm.parent_name} onChange={(e) => setEditForm({ ...editForm, parent_name: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>No. HP Wali</Label>
+                  <Input value={editForm.parent_phone} onChange={(e) => setEditForm({ ...editForm, parent_phone: e.target.value })} />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={handleSaveEdit} disabled={saving} className="gradient-primary hover:opacity-90">
+                  <Save className="h-4 w-4 mr-1" /> {saving ? "Menyimpan..." : "Simpan Perubahan"}
+                </Button>
+                <Button variant="outline" onClick={() => setEditing(false)}>Batal</Button>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
 
       <div className="grid md:grid-cols-2 gap-6">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
@@ -144,7 +246,14 @@ const StudentDetail = () => {
               <CardTitle className="text-sm font-semibold flex items-center gap-2"><QrCode className="h-4 w-4 text-primary" />QR Code Siswa</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col items-center justify-center py-4">
-              <QRCodeDisplay data={student.qr_code || student.student_id} size={200} studentName={student.name} />
+              <QRCodeDisplay
+                data={student.qr_code || student.student_id}
+                size={200}
+                studentName={student.name}
+                studentClass={student.class}
+                schoolName={school?.name}
+                schoolLogo={school?.logo}
+              />
               <p className="text-xs text-muted-foreground mt-3 text-center">Scan kode ini untuk memproses penjemputan</p>
             </CardContent>
           </Card>

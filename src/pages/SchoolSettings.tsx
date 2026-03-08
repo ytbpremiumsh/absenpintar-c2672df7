@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { School, Save, Upload, Lock, Loader2, Image } from "lucide-react";
+import { School, Save, Upload, Lock, Loader2, Image, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
@@ -17,17 +17,29 @@ const SchoolSettings = () => {
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
   const [logo, setLogo] = useState("");
+  const [startTime, setStartTime] = useState("07:00");
+  const [endTime, setEndTime] = useState("14:00");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (!profile?.school_id) return;
-    supabase.from("schools").select("name, address, logo").eq("id", profile.school_id).single()
-      .then(({ data }) => {
-        if (data) { setName(data.name || ""); setAddress(data.address || ""); setLogo(data.logo || ""); }
-        setLoading(false);
-      });
+    Promise.all([
+      supabase.from("schools").select("name, address, logo").eq("id", profile.school_id).single(),
+      supabase.from("pickup_settings").select("school_start_time, school_end_time").eq("school_id", profile.school_id).maybeSingle(),
+    ]).then(([schoolRes, settingsRes]) => {
+      if (schoolRes.data) {
+        setName(schoolRes.data.name || "");
+        setAddress(schoolRes.data.address || "");
+        setLogo(schoolRes.data.logo || "");
+      }
+      if (settingsRes.data) {
+        setStartTime(settingsRes.data.school_start_time?.slice(0, 5) || "07:00");
+        setEndTime(settingsRes.data.school_end_time?.slice(0, 5) || "14:00");
+      }
+      setLoading(false);
+    });
   }, [profile?.school_id]);
 
   const handleLogoUpload = async (file: File) => {
@@ -49,9 +61,28 @@ const SchoolSettings = () => {
   const handleSave = async () => {
     if (!profile?.school_id) return;
     setSaving(true);
-    const { error } = await supabase.from("schools").update({ name, address, logo: logo || null }).eq("id", profile.school_id);
+
+    // Save school info
+    const { error: schoolErr } = await supabase.from("schools").update({ name, address, logo: logo || null }).eq("id", profile.school_id);
+
+    // Save pickup settings (jam masuk/pulang)
+    const { data: existing } = await supabase.from("pickup_settings").select("id").eq("school_id", profile.school_id).maybeSingle();
+    if (existing) {
+      await supabase.from("pickup_settings").update({
+        school_start_time: startTime + ":00",
+        school_end_time: endTime + ":00",
+      }).eq("school_id", profile.school_id);
+    } else {
+      await supabase.from("pickup_settings").insert({
+        school_id: profile.school_id,
+        school_start_time: startTime + ":00",
+        school_end_time: endTime + ":00",
+        is_active: false,
+      } as any);
+    }
+
     setSaving(false);
-    if (error) { toast.error("Gagal menyimpan: " + error.message); } else { toast.success("Identitas sekolah berhasil diperbarui!"); }
+    if (schoolErr) { toast.error("Gagal menyimpan: " + schoolErr.message); } else { toast.success("Pengaturan sekolah berhasil diperbarui!"); }
   };
 
   if (loading) return <div className="flex items-center justify-center py-12 text-muted-foreground">Memuat...</div>;
@@ -63,7 +94,7 @@ const SchoolSettings = () => {
           <School className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
           Identitas Sekolah
         </h1>
-        <p className="text-muted-foreground text-xs sm:text-sm mt-1">Kelola informasi sekolah Anda</p>
+        <p className="text-muted-foreground text-xs sm:text-sm mt-1">Kelola informasi dan pengaturan sekolah Anda</p>
       </div>
 
       <Card className="border-0 shadow-card">
@@ -110,13 +141,41 @@ const SchoolSettings = () => {
               )}
             </div>
           </div>
-
-          <Button onClick={handleSave} disabled={saving} className="gradient-primary hover:opacity-90">
-            <Save className="h-4 w-4 mr-2" />
-            {saving ? "Menyimpan..." : "Simpan Perubahan"}
-          </Button>
         </CardContent>
       </Card>
+
+      {/* Jam Masuk / Pulang */}
+      <Card className="border-0 shadow-card">
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Clock className="h-4 w-4 text-primary" />
+            Jam Masuk & Pulang
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-xs text-muted-foreground">Atur jam masuk dan jam pulang sekolah. Sistem akan otomatis menampilkan status waktu di halaman scan.</p>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="start-time">Jam Masuk</Label>
+              <Input id="start-time" type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="end-time">Jam Pulang</Label>
+              <Input id="end-time" type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+            </div>
+          </div>
+          <div className="bg-secondary/50 rounded-lg p-3 text-xs text-muted-foreground space-y-1">
+            <p>• <strong>Sebelum jam masuk:</strong> Status "Belum Masuk"</p>
+            <p>• <strong>Jam masuk – jam pulang:</strong> Status "Jam Sekolah"</p>
+            <p>• <strong>Setelah jam pulang:</strong> Status "Waktu Pulang" (penjemputan aktif)</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Button onClick={handleSave} disabled={saving} className="gradient-primary hover:opacity-90 w-full sm:w-auto">
+        <Save className="h-4 w-4 mr-2" />
+        {saving ? "Menyimpan..." : "Simpan Semua Perubahan"}
+      </Button>
     </div>
   );
 };
