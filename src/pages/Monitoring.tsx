@@ -203,6 +203,17 @@ const Monitoring = () => {
             </p>
           </div>
         </div>
+        {profile?.school_id && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={() => window.open(`/attendance/${profile.school_id}`, "_blank")}
+          >
+            <ExternalLink className="h-4 w-4" />
+            Buka Live Monitor Publik
+          </Button>
+        )}
       </div>
 
       {/* Stats */}
