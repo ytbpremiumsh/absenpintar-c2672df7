@@ -405,7 +405,7 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
                 <strong>RFID & Face Recognition</strong> — Upgrade ke Premium untuk mengaktifkan
               </p>
             </div>
-          )
+          )}
         </CardContent>
 
         {/* Manual input */}
