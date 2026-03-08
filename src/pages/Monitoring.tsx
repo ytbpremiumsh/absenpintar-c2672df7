@@ -148,7 +148,6 @@ const Monitoring = () => {
     if (error) {
       toast.error("Gagal reset: " + error.message);
     } else {
-      toast.success("Data penjemputan hari ini berhasil direset");
       fetchData();
     }
     setResetConfirm(false);
