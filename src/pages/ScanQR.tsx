@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScanLine, CheckCircle2, Camera, Search, ShieldCheck, X, Clock, UserCheck, Loader2 } from "lucide-react";
+import { ScanLine, CheckCircle2, Camera, Search, ShieldCheck, X, Clock, UserCheck, Loader2, Crown, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
@@ -42,7 +42,7 @@ const ScanQR = () => {
   const isLookingUp = useRef(false);
   const scanPaused = useRef(false);
 
-  const canFace = !features.loading;
+  const canFace = !features.loading && features.canFaceRecognition;
 
   const lookupStudent = useCallback(async (code: string) => {
     if (!code.trim() || !profile?.school_id || isLookingUp.current || scanPaused.current) return;
@@ -302,7 +302,11 @@ const ScanQR = () => {
                       <div className="h-2 w-2 rounded-full bg-success animate-pulse" />
                       <span>
                         <ScanLine className="h-3 w-3 inline mr-0.5" />Barcode
-                        {canFace && <> + <UserCheck className="h-3 w-3 inline mx-0.5" />Face</>}
+                        {canFace ? (
+                          <> + <UserCheck className="h-3 w-3 inline mx-0.5" />Face</>
+                        ) : (
+                          <> + <Lock className="h-3 w-3 inline mx-0.5 opacity-50" /><span className="opacity-50">Face</span> <span className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold">(Premium)</span></>
+                        )}
                       </span>
                     </>
                   )}
@@ -323,7 +327,11 @@ const ScanQR = () => {
               </Button>
               <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-muted-foreground">
                 <ScanLine className="h-3.5 w-3.5" /> Barcode
-                {canFace && <><span className="text-muted-foreground/50">+</span><UserCheck className="h-3.5 w-3.5" /> Face Recognition</>}
+                {canFace ? (
+                  <><span className="text-muted-foreground/50">+</span><UserCheck className="h-3.5 w-3.5" /> Face Recognition</>
+                ) : (
+                  <><span className="text-muted-foreground/50">+</span><Lock className="h-3 w-3" /> <span className="opacity-60">Face Recognition</span> <span className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold">(Premium)</span></>
+                )}
               </div>
               <p className="text-[11px] sm:text-xs text-muted-foreground">Atau gunakan input NIS manual di bawah</p>
             </div>
