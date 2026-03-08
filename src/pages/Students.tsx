@@ -26,6 +26,14 @@ const Students = () => {
   const [saving, setSaving] = useState(false);
   const [expandedClasses, setExpandedClasses] = useState<Set<string>>(new Set());
   const [activeFilter, setActiveFilter] = useState<string>("all");
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // Auto-filter by class from URL param
+  useEffect(() => {
+    const classParam = searchParams.get("class");
+    if (classParam) setActiveFilter(classParam);
+  }, [searchParams]);
 
   const fetchStudents = async () => {
     if (!profile?.school_id) return;
