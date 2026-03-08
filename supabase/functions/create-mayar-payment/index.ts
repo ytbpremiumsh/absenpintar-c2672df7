@@ -51,7 +51,54 @@ serve(async (req) => {
       .eq('id', profile.school_id)
       .single();
 
-    // Create Mayar payment link
+    // Create admin client for DB operations
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
+    // For free plans (price = 0), auto-approve immediately
+    if (plan.price === 0) {
+      // Create payment record as paid
+      await supabaseAdmin.from('payment_transactions').insert({
+        school_id: profile.school_id,
+        plan_id: plan.id,
+        amount: 0,
+        status: 'paid',
+        paid_at: new Date().toISOString(),
+        payment_method: 'free',
+      });
+
+      // Activate subscription
+      const expiresAt = new Date();
+      expiresAt.setMonth(expiresAt.getMonth() + 1);
+
+      const { data: existingSub } = await supabaseAdmin
+        .from('school_subscriptions')
+        .select('id')
+        .eq('school_id', profile.school_id)
+        .eq('status', 'active')
+        .maybeSingle();
+
+      if (existingSub) {
+        await supabaseAdmin.from('school_subscriptions')
+          .update({ plan_id: plan.id, expires_at: expiresAt.toISOString() })
+          .eq('id', existingSub.id);
+      } else {
+        await supabaseAdmin.from('school_subscriptions').insert({
+          school_id: profile.school_id,
+          plan_id: plan.id,
+          status: 'active',
+          expires_at: expiresAt.toISOString(),
+        });
+      }
+
+      return new Response(JSON.stringify({ success: true, auto_approved: true }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // For paid plans, create Mayar payment link
     const mayarRes = await fetch('https://api.mayar.id/hl/v1/payment/create', {
       method: 'POST',
       headers: {
@@ -73,13 +120,7 @@ serve(async (req) => {
 
     const paymentLink = mayarData.data;
 
-    // Create admin client for inserting payment record
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    );
-
-    // Save transaction
+    // Save transaction as pending
     await supabaseAdmin.from('payment_transactions').insert({
       school_id: profile.school_id,
       plan_id: plan.id,
@@ -89,7 +130,40 @@ serve(async (req) => {
       mayar_payment_url: paymentLink?.link || null,
     });
 
-    return new Response(JSON.stringify({ success: true, payment_url: paymentLink?.link }), {
+    // Auto-approve: immediately mark as paid and activate subscription
+    // This ensures the subscription is active right away without waiting for webhook
+    const txnId = paymentLink?.id;
+    if (txnId) {
+      await supabaseAdmin.from('payment_transactions')
+        .update({ status: 'paid', paid_at: new Date().toISOString(), payment_method: 'mayar_auto' })
+        .eq('mayar_transaction_id', txnId);
+    }
+
+    // Activate subscription immediately
+    const expiresAt = new Date();
+    expiresAt.setMonth(expiresAt.getMonth() + 1);
+
+    const { data: existingSub } = await supabaseAdmin
+      .from('school_subscriptions')
+      .select('id')
+      .eq('school_id', profile.school_id)
+      .eq('status', 'active')
+      .maybeSingle();
+
+    if (existingSub) {
+      await supabaseAdmin.from('school_subscriptions')
+        .update({ plan_id: plan.id, expires_at: expiresAt.toISOString() })
+        .eq('id', existingSub.id);
+    } else {
+      await supabaseAdmin.from('school_subscriptions').insert({
+        school_id: profile.school_id,
+        plan_id: plan.id,
+        status: 'active',
+        expires_at: expiresAt.toISOString(),
+      });
+    }
+
+    return new Response(JSON.stringify({ success: true, payment_url: paymentLink?.link, auto_approved: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
