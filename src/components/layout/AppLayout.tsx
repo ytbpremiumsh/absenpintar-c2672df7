@@ -32,6 +32,12 @@ export function AppLayout() {
     return <Navigate to="/super-admin" replace />;
   }
 
+  // Teachers (wali kelas) redirect to their dashboard
+  const isTeacherOnly = roles.includes("teacher") && !roles.includes("school_admin") && !roles.includes("staff");
+  if (isTeacherOnly && location.pathname === "/dashboard") {
+    return <Navigate to="/wali-kelas-dashboard" replace />;
+  }
+
   const initials = profile?.full_name
     ? profile.full_name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()
     : "U";
