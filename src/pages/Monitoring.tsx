@@ -342,7 +342,7 @@ const Monitoring = () => {
                                     <Button size="sm" variant="outline"
                                       className="shrink-0 text-[10px] sm:text-xs h-7 sm:h-8 px-2 sm:px-3 border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground"
                                       onClick={() => setConfirmStudent(s)}>
-                                      <CheckCircle2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-0.5 sm:mr-1" /> Approve
+                                      <CheckCircle2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-0.5 sm:mr-1" /> Pulangkan
                                     </Button>
                                   )}
                                 </div>
