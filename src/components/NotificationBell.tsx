@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 
 interface Notification {
   id: string;
+  school_id: string | null;
   title: string;
   message: string;
   type: string;
