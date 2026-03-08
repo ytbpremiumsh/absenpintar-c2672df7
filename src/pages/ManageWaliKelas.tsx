@@ -248,6 +248,13 @@ const ManageWaliKelas = () => {
               </div>
             </div>
             <div className="space-y-2">
+              <Label>No. WhatsApp</Label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input placeholder="08xxxxxxxxxx" type="tel" value={formPhone} onChange={(e) => setFormPhone(e.target.value)} className="pl-9" />
+              </div>
+            </div>
+            <div className="space-y-2">
               <Label>Kelas yang Ditugaskan</Label>
               <Select value={formClass} onValueChange={setFormClass}>
                 <SelectTrigger>
