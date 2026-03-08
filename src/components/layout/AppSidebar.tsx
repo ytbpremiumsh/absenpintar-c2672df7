@@ -181,6 +181,57 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
+        {/* Premium features - WhatsApp & Multi-cabang */}
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-sidebar-foreground/40 text-[11px] uppercase tracking-widest font-semibold px-3 mb-1">
+            Premium
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu className="space-y-0.5">
+              {/* WhatsApp */}
+              {features.canWhatsApp ? (
+                renderNavItems([{ title: "WhatsApp", url: "/settings", icon: MessageCircle }])
+              ) : (
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    tooltip="WhatsApp (Premium)"
+                    onClick={() => toast.error("Fitur Notifikasi WhatsApp hanya tersedia di paket Premium. Silakan upgrade langganan Anda.")}
+                    className="text-sidebar-foreground/50 hover:bg-sidebar-accent/40 rounded-xl px-3 py-2.5 transition-all duration-200 opacity-60"
+                  >
+                    <MessageCircle className="h-5 w-5" />
+                    {!collapsed && (
+                      <>
+                        <span className="text-[15px]">WhatsApp</span>
+                        <Lock className="h-3.5 w-3.5 ml-auto text-warning" />
+                      </>
+                    )}
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
+              {/* Multi-cabang */}
+              {features.canMultiBranch ? (
+                renderNavItems([{ title: "Multi Cabang", url: "/branches", icon: Building2 }])
+              ) : (
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    tooltip="Multi Cabang (Premium)"
+                    onClick={() => toast.error("Fitur Multi Cabang hanya tersedia di paket Premium. Silakan upgrade langganan Anda.")}
+                    className="text-sidebar-foreground/50 hover:bg-sidebar-accent/40 rounded-xl px-3 py-2.5 transition-all duration-200 opacity-60"
+                  >
+                    <Building2 className="h-5 w-5" />
+                    {!collapsed && (
+                      <>
+                        <span className="text-[15px]">Multi Cabang</span>
+                        <Lock className="h-3.5 w-3.5 ml-auto text-warning" />
+                      </>
+                    )}
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
         <SidebarGroup>
           <SidebarGroupLabel className="text-sidebar-foreground/40 text-[11px] uppercase tracking-widest font-semibold px-3 mb-1">
             Pengaturan
