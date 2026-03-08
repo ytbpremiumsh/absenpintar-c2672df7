@@ -35,8 +35,10 @@ import SuperAdminTickets from "./pages/super-admin/SuperAdminTickets";
 import SuperAdminLanding from "./pages/super-admin/SuperAdminLanding";
 import SuperAdminRegistrationWA from "./pages/super-admin/SuperAdminRegistrationWA";
 import SuperAdminPresentation from "./pages/super-admin/SuperAdminPresentation";
+import SuperAdminBusinessModel from "./pages/super-admin/SuperAdminBusinessModel";
 import LandingPage from "./pages/LandingPage";
 import Presentation from "./pages/Presentation";
+import BusinessModel from "./pages/BusinessModel";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -55,6 +57,7 @@ const App = () => (
             <Route path="/live/:schoolId" element={<PublicMonitoring />} />
             <Route path="/live/:schoolId/:className" element={<PublicClassMonitoring />} />
             <Route path="/presentation" element={<Presentation />} />
+            <Route path="/business-model" element={<BusinessModel />} />
             {/* Super Admin */}
             <Route element={<SuperAdminLayout />}>
               <Route path="/super-admin" element={<SuperAdminDashboard />} />
@@ -69,6 +72,7 @@ const App = () => (
               <Route path="/super-admin/landing" element={<SuperAdminLanding />} />
               <Route path="/super-admin/registration-wa" element={<SuperAdminRegistrationWA />} />
               <Route path="/super-admin/presentation" element={<SuperAdminPresentation />} />
+              <Route path="/super-admin/business-model" element={<SuperAdminBusinessModel />} />
             </Route>
             {/* School Admin / Staff */}
             <Route element={<AppLayout />}>
