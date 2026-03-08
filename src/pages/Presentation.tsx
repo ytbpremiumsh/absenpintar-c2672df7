@@ -286,9 +286,9 @@ const Presentation = () => {
                   <div className="space-y-3">
                     {section.details.map((detail, i) => (
                       <motion.div key={i} custom={i + 2} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="flex gap-3 items-start">
-                        <CheckCircle2 className={`h-5 w-5 shrink-0 mt-0.5 bg-gradient-to-r ${section.gradient} bg-clip-text`} style={{ color: 'transparent', background: `linear-gradient(to right, var(--tw-gradient-stops))`, WebkitBackgroundClip: 'text' }} />
-                        <CheckCircle2 className={`h-5 w-5 shrink-0 mt-0.5 text-emerald-400 hidden`} />
+                        <CheckCircle2 className="h-5 w-5 shrink-0 mt-0.5 text-emerald-400" />
                         <span className="text-slate-400 text-sm leading-relaxed">{detail}</span>
+                      </motion.div>
                       </motion.div>
                     ))}
                   </div>
