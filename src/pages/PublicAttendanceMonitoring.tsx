@@ -195,7 +195,7 @@ const PublicAttendanceMonitoring = () => {
 
       <div className="max-w-[1920px] mx-auto px-6 py-5 space-y-5">
         {/* Stats Row - Compact */}
-        <div className="grid grid-cols-6 gap-2">
+        <div className="grid grid-cols-6 gap-3">
           {[
             { icon: Users, value: stats.total, label: "Total", color: "text-primary", bg: "bg-primary/10" },
             { icon: UserCheck, value: stats.hadir, label: "Hadir", color: "text-success", bg: "bg-success/10" },
@@ -206,13 +206,13 @@ const PublicAttendanceMonitoring = () => {
           ].map((stat, i) => (
             <motion.div key={stat.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
               <Card className="border-0 shadow-card">
-                <CardContent className="p-2 flex items-center gap-2">
-                  <div className={`h-8 w-8 rounded-lg ${stat.bg} flex items-center justify-center shrink-0`}>
-                    <stat.icon className={`h-4 w-4 ${stat.color}`} />
+                <CardContent className="p-3 flex items-center gap-3">
+                  <div className={`h-9 w-9 rounded-lg ${stat.bg} flex items-center justify-center shrink-0`}>
+                    <stat.icon className={`h-4.5 w-4.5 ${stat.color}`} />
                   </div>
                   <div>
-                    <p className={`text-lg font-extrabold leading-tight ${stat.color}`}>{stat.value}</p>
-                    <p className="text-[9px] text-muted-foreground font-medium">{stat.label}</p>
+                    <p className={`text-xl font-extrabold leading-tight ${stat.color}`}>{stat.value}</p>
+                    <p className="text-[10px] text-muted-foreground font-medium">{stat.label}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -275,9 +275,9 @@ const PublicAttendanceMonitoring = () => {
                             initial={{ opacity: 0, x: -20, backgroundColor: "hsl(var(--success) / 0.2)" }}
                             animate={{ opacity: 1, x: 0, backgroundColor: "hsl(0 0% 100% / 0)" }}
                             transition={{ duration: 0.4, backgroundColor: { duration: 3 } }}
-                            className={`flex items-center gap-2 px-3 py-1.5 ${isNew ? "ring-2 ring-success/40 bg-success/10" : ""}`}
+                            className={`flex items-center gap-3 px-3 py-2.5 ${isNew ? "ring-2 ring-success/40 bg-success/10" : ""}`}
                           >
-                            <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden ${
+                            <div className={`h-9 w-9 rounded-full flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden ${
                               entry.status === "hadir" ? "bg-success/15 text-success" :
                               entry.status === "izin" ? "bg-warning/15 text-warning" :
                               entry.status === "sakit" ? "bg-blue-50 text-blue-500" :
