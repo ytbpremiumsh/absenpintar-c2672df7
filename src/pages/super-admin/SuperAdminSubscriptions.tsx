@@ -195,6 +195,33 @@ const SuperAdminSubscriptions = () => {
         </CardContent>
       </Card>
 
+      {/* Mayar API Key */}
+      <Card className="border-0 shadow-card bg-gradient-to-r from-accent/30 to-accent/10">
+        <CardContent className="p-4">
+          <div className="flex items-start gap-3">
+            <div className="h-10 w-10 rounded-xl bg-accent flex items-center justify-center shrink-0">
+              <Key className="h-5 w-5 text-accent-foreground" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-sm text-foreground">API Key Mayar</h3>
+              <p className="text-[11px] text-muted-foreground mt-0.5">Kelola API Key untuk integrasi pembayaran Mayar</p>
+              <div className="flex items-center gap-2 mt-2">
+                {loadingKey ? (
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                ) : hasKey ? (
+                  <code className="text-[11px] bg-background/80 px-3 py-1.5 rounded-lg border text-foreground">{maskedKey}</code>
+                ) : (
+                  <span className="text-[11px] text-destructive font-medium">⚠ Belum dikonfigurasi</span>
+                )}
+                <Button variant="outline" size="sm" className="h-8 shrink-0" onClick={() => { setNewApiKey(""); setShowKey(false); setApiKeyDialog(true); }}>
+                  <Pencil className="h-3.5 w-3.5 mr-1" /> Ubah
+                </Button>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {subscriptions.length === 0 ? (
         <Card className="border-0 shadow-card">
           <CardContent className="py-12 text-center">
