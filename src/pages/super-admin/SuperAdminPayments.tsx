@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Webhook, Copy, Check } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Webhook, Copy, Check, CheckCircle2, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -45,6 +46,8 @@ const WebhookCard = () => {
 const SuperAdminPayments = () => {
   const [payments, setPayments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [approveTarget, setApproveTarget] = useState<any>(null);
+  const [approving, setApproving] = useState(false);
 
   const fetchPayments = async () => {
     const { data } = await supabase
@@ -65,6 +68,25 @@ const SuperAdminPayments = () => {
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, []);
+
+  const handleApprove = async () => {
+    if (!approveTarget) return;
+    setApproving(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-approve-payment', {
+        body: { payment_id: approveTarget.id, extend_months: 1 },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success(`Pembayaran disetujui! Langganan aktif hingga ${new Date(data.expires_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}`);
+      setApproveTarget(null);
+      fetchPayments();
+    } catch (err: any) {
+      toast.error("Gagal approve: " + (err.message || "Unknown error"));
+    } finally {
+      setApproving(false);
+    }
+  };
 
   const formatRupiah = (n: number) => `Rp ${n.toLocaleString("id-ID")}`;
   const statusMap: Record<string, { label: string; cls: string }> = {
@@ -127,10 +149,23 @@ const SuperAdminPayments = () => {
                       </p>
                       {p.mayar_transaction_id && <p className="text-[10px] text-muted-foreground font-mono mt-0.5">#{p.mayar_transaction_id}</p>}
                     </div>
-                    <div className="text-right shrink-0 ml-3">
-                      <p className="text-sm font-bold text-foreground">{formatRupiah(p.amount)}</p>
-                      <Badge className={`text-[10px] ${st.cls}`}>{st.label}</Badge>
-                      {p.paid_at && <p className="text-[10px] text-muted-foreground mt-0.5">{new Date(p.paid_at).toLocaleDateString("id-ID")}</p>}
+                    <div className="flex items-center gap-2 shrink-0 ml-3">
+                      <div className="text-right">
+                        <p className="text-sm font-bold text-foreground">{formatRupiah(p.amount)}</p>
+                        <Badge className={`text-[10px] ${st.cls}`}>{st.label}</Badge>
+                        {p.paid_at && <p className="text-[10px] text-muted-foreground mt-0.5">{new Date(p.paid_at).toLocaleDateString("id-ID")}</p>}
+                      </div>
+                      {p.status === "pending" && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 text-xs border-success/30 text-success hover:bg-success/10"
+                          onClick={() => setApproveTarget(p)}
+                        >
+                          <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
+                          Approve
+                        </Button>
+                      )}
                     </div>
                   </div>
                 );
@@ -139,6 +174,31 @@ const SuperAdminPayments = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Approve Dialog */}
+      <Dialog open={!!approveTarget} onOpenChange={() => setApproveTarget(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Approve Pembayaran</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 text-sm">
+            <p><span className="text-muted-foreground">Sekolah:</span> <strong>{approveTarget?.schools?.name}</strong></p>
+            <p><span className="text-muted-foreground">Paket:</span> <strong>{approveTarget?.subscription_plans?.name}</strong></p>
+            <p><span className="text-muted-foreground">Jumlah:</span> <strong>{approveTarget ? formatRupiah(approveTarget.amount) : ''}</strong></p>
+            <div className="bg-success/10 border border-success/20 rounded-lg p-3 text-xs text-success">
+              <CheckCircle2 className="h-4 w-4 inline mr-1" />
+              Pembayaran akan ditandai <strong>Lunas</strong> dan langganan sekolah akan otomatis diperpanjang <strong>1 bulan</strong> dari tanggal berakhir saat ini.
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setApproveTarget(null)}>Batal</Button>
+            <Button onClick={handleApprove} disabled={approving} className="bg-success text-success-foreground hover:bg-success/90">
+              {approving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <CheckCircle2 className="h-4 w-4 mr-1" />}
+              {approving ? "Memproses..." : "Approve Lunas"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
