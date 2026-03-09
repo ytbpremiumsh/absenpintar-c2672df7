@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   Users,
@@ -19,6 +20,8 @@ import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { Badge } from "@/components/ui/badge";
 import {
   Sidebar,
   SidebarContent,
@@ -56,9 +59,27 @@ export function AppSidebar() {
   const { isMobile, setOpenMobile } = useSidebar();
   const location = useLocation();
   const navigate = useNavigate();
-  const { signOut, roles } = useAuth();
+  const { signOut, roles, profile } = useAuth();
   const features = useSubscriptionFeatures();
   const isActive = (path: string) => location.pathname.startsWith(path);
+
+  const [schoolData, setSchoolData] = useState<{ name: string; logo: string | null } | null>(null);
+
+  const isPremiumBrand = ["School", "Premium"].includes(features.planName);
+
+  useEffect(() => {
+    if (!profile?.school_id) return;
+    supabase.from("schools").select("name, logo").eq("id", profile.school_id).single().then(({ data }) => {
+      if (data) setSchoolData(data);
+    });
+  }, [profile?.school_id]);
+
+  const planColors: Record<string, string> = {
+    Free: "bg-muted text-muted-foreground",
+    Basic: "bg-blue-500/15 text-blue-600 dark:text-blue-400",
+    School: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+    Premium: "bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-600 dark:text-purple-400",
+  };
 
   const isTeacherOnly = roles.includes("teacher") && !roles.includes("school_admin") && !roles.includes("staff");
 
@@ -93,12 +114,20 @@ export function AppSidebar() {
     <Sidebar collapsible="offcanvas" className="border-r border-sidebar-border font-['Nunito',sans-serif]">
       <SidebarHeader className="p-4 pb-3">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl gradient-primary shrink-0 shadow-md">
-            <ClipboardCheck className="h-4.5 w-4.5 text-primary-foreground" />
-          </div>
+          {isPremiumBrand && schoolData?.logo ? (
+            <img src={schoolData.logo} alt={schoolData.name} className="h-9 w-9 rounded-xl object-cover shrink-0 shadow-md" />
+          ) : (
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl gradient-primary shrink-0 shadow-md">
+              <ClipboardCheck className="h-4.5 w-4.5 text-primary-foreground" />
+            </div>
+          )}
           <div className="flex flex-col min-w-0">
-            <span className="text-sm font-extrabold text-sidebar-foreground tracking-tight truncate">Smart Attendance</span>
-            <span className="text-[10px] text-sidebar-foreground/50 font-medium">School System</span>
+            <span className="text-sm font-extrabold text-sidebar-foreground tracking-tight truncate">
+              {isPremiumBrand && schoolData ? schoolData.name : "Smart Attendance"}
+            </span>
+            <Badge className={`w-fit text-[9px] font-bold border-0 px-1.5 py-0 h-4 ${planColors[features.planName] || planColors.Free}`}>
+              {features.planName === "Free" ? "Free" : `Paket ${features.planName}`}
+            </Badge>
           </div>
         </div>
         <div className="mt-3 h-px bg-gradient-to-r from-transparent via-sidebar-border to-transparent" />
