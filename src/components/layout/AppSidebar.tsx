@@ -75,10 +75,10 @@ export function AppSidebar() {
   }, [profile?.school_id]);
 
   const planColors: Record<string, string> = {
-    Free: "bg-muted text-muted-foreground",
-    Basic: "bg-blue-500/15 text-blue-600 dark:text-blue-400",
-    School: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
-    Premium: "bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-600 dark:text-purple-400",
+    Free: "bg-muted text-white",
+    Basic: "bg-blue-500 text-white",
+    School: "bg-amber-500 text-white",
+    Premium: "bg-gradient-to-r from-purple-500 to-pink-500 text-white",
   };
 
   const isTeacherOnly = roles.includes("teacher") && !roles.includes("school_admin") && !roles.includes("staff");
