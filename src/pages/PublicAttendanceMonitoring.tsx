@@ -194,25 +194,25 @@ const PublicAttendanceMonitoring = () => {
       </header>
 
       <div className="max-w-[1920px] mx-auto px-6 py-5 space-y-5">
-        {/* Stats Row */}
-        <div className="grid grid-cols-3 lg:grid-cols-6 gap-3 lg:gap-4">
+        {/* Stats Row - Compact */}
+        <div className="grid grid-cols-6 gap-2">
           {[
-            { icon: Users, value: stats.total, label: "Total Siswa", color: "text-primary", bg: "bg-primary/10" },
+            { icon: Users, value: stats.total, label: "Total", color: "text-primary", bg: "bg-primary/10" },
             { icon: UserCheck, value: stats.hadir, label: "Hadir", color: "text-success", bg: "bg-success/10" },
             { icon: FileText, value: stats.izin, label: "Izin", color: "text-warning", bg: "bg-warning/10" },
             { icon: Thermometer, value: stats.sakit, label: "Sakit", color: "text-blue-500", bg: "bg-blue-50" },
             { icon: AlertTriangle, value: stats.alfa, label: "Alfa", color: "text-destructive", bg: "bg-destructive/10" },
-            { icon: Clock, value: stats.belum, label: "Belum Absen", color: "text-muted-foreground", bg: "bg-muted" },
+            { icon: Clock, value: stats.belum, label: "Belum", color: "text-muted-foreground", bg: "bg-muted" },
           ].map((stat, i) => (
-            <motion.div key={stat.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+            <motion.div key={stat.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
               <Card className="border-0 shadow-card">
-                <CardContent className="p-3 lg:p-4 flex items-center gap-3">
-                  <div className={`h-11 w-11 lg:h-12 lg:w-12 rounded-xl ${stat.bg} flex items-center justify-center shrink-0`}>
-                    <stat.icon className={`h-5 w-5 lg:h-6 lg:w-6 ${stat.color}`} />
+                <CardContent className="p-2 flex items-center gap-2">
+                  <div className={`h-8 w-8 rounded-lg ${stat.bg} flex items-center justify-center shrink-0`}>
+                    <stat.icon className={`h-4 w-4 ${stat.color}`} />
                   </div>
                   <div>
-                    <p className={`text-2xl lg:text-3xl font-extrabold ${stat.color}`}>{stat.value}</p>
-                    <p className="text-[10px] lg:text-xs text-muted-foreground font-medium">{stat.label}</p>
+                    <p className={`text-lg font-extrabold leading-tight ${stat.color}`}>{stat.value}</p>
+                    <p className="text-[9px] text-muted-foreground font-medium">{stat.label}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -220,39 +220,41 @@ const PublicAttendanceMonitoring = () => {
           ))}
         </div>
 
-        {/* Progress Bar */}
+        {/* Progress Bar - Compact */}
         <Card className="border-0 shadow-card">
-          <CardContent className="p-4 lg:p-5">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Activity className="h-5 w-5 text-primary" />
-                <span className="text-sm lg:text-base font-semibold text-foreground">Progress Absensi Hari Ini</span>
+          <CardContent className="px-4 py-2">
+            <div className="flex items-center gap-3">
+              <Activity className="h-4 w-4 text-primary shrink-0" />
+              <span className="text-xs font-semibold text-foreground whitespace-nowrap">Progress Absensi</span>
+              <div className="flex-1 h-3 rounded-full bg-secondary overflow-hidden">
+                <motion.div className="h-full rounded-full bg-gradient-to-r from-primary via-primary/80 to-success"
+                  initial={{ width: 0 }} animate={{ width: `${percentage}%` }} transition={{ duration: 1.2 }} />
               </div>
-              <div className="flex items-center gap-3">
-                <LiveDot />
-                <span className="text-2xl lg:text-3xl font-extrabold text-primary">{percentage}%</span>
-              </div>
+              <span className="text-sm font-extrabold text-primary whitespace-nowrap">{percentage}%</span>
+              <span className="text-[10px] text-muted-foreground whitespace-nowrap">{stats.total - stats.belum}/{stats.total}</span>
             </div>
-            <div className="h-4 lg:h-5 rounded-full bg-secondary overflow-hidden">
-              <motion.div className="h-full rounded-full bg-gradient-to-r from-primary via-primary/80 to-success"
-                initial={{ width: 0 }} animate={{ width: `${percentage}%` }} transition={{ duration: 1.2 }} />
-            </div>
-            <p className="text-xs lg:text-sm text-muted-foreground mt-2">{stats.total - stats.belum} dari {stats.total} siswa sudah diabsen</p>
           </CardContent>
         </Card>
 
-        {/* Two-column: Live Feed + Scanner | Class Summary */}
-        <div className="grid lg:grid-cols-5 gap-5">
-          {/* Left: Live Feed */}
+        {/* Two-column: Scanner (left) | Live Feed (right) */}
+        <div className="grid lg:grid-cols-7 gap-4">
+          {/* Left: Scanner - wider */}
           <div className="lg:col-span-3">
+            {schoolId && (
+              <PublicAttendanceScanner schoolId={schoolId} onAttendanceRecorded={fetchData} currentMode={data?.currentMode || "datang"} canFaceRecognition={data?.canFaceRecognition ?? false} />
+            )}
+          </div>
+
+          {/* Right: Live Feed */}
+          <div className="lg:col-span-4">
             <Card className="border-0 shadow-card overflow-hidden h-full">
-              <div className="p-4 border-b border-border flex items-center gap-2">
-                <div className="h-9 w-9 rounded-lg bg-success/10 flex items-center justify-center">
+              <div className="p-3 border-b border-border flex items-center gap-2">
+                <div className="h-8 w-8 rounded-lg bg-success/10 flex items-center justify-center">
                   <Activity className="h-4 w-4 text-success" />
                 </div>
                 <div className="flex-1">
-                  <h2 className="text-sm lg:text-base font-bold text-foreground">Live Feed</h2>
-                  <p className="text-[10px] text-muted-foreground">Kedatangan terbaru</p>
+                  <h2 className="text-sm font-bold text-foreground">Live Feed</h2>
+                  <p className="text-[9px] text-muted-foreground">Kedatangan terbaru</p>
                 </div>
                 <LiveDot />
               </div>
@@ -273,9 +275,9 @@ const PublicAttendanceMonitoring = () => {
                             initial={{ opacity: 0, x: -20, backgroundColor: "hsl(var(--success) / 0.2)" }}
                             animate={{ opacity: 1, x: 0, backgroundColor: "hsl(0 0% 100% / 0)" }}
                             transition={{ duration: 0.4, backgroundColor: { duration: 3 } }}
-                            className={`flex items-center gap-3 p-3 lg:p-4 ${isNew ? "ring-2 ring-success/40 bg-success/10" : ""}`}
+                            className={`flex items-center gap-3 p-3 ${isNew ? "ring-2 ring-success/40 bg-success/10" : ""}`}
                           >
-                            <div className={`h-10 w-10 lg:h-11 lg:w-11 rounded-full flex items-center justify-center font-bold text-sm shrink-0 overflow-hidden ${
+                            <div className={`h-10 w-10 rounded-full flex items-center justify-center font-bold text-sm shrink-0 overflow-hidden ${
                               entry.status === "hadir" ? "bg-success/15 text-success" :
                               entry.status === "izin" ? "bg-warning/15 text-warning" :
                               entry.status === "sakit" ? "bg-blue-50 text-blue-500" :
@@ -316,13 +318,6 @@ const PublicAttendanceMonitoring = () => {
                 )}
               </div>
             </Card>
-          </div>
-
-          {/* Right: Scanner */}
-          <div className="lg:col-span-2">
-            {schoolId && (
-              <PublicAttendanceScanner schoolId={schoolId} onAttendanceRecorded={fetchData} currentMode={data?.currentMode || "datang"} canFaceRecognition={data?.canFaceRecognition ?? false} />
-            )}
           </div>
         </div>
 
