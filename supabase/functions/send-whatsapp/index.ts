@@ -10,10 +10,10 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
   try {
-    const { phone, message, api_url, api_key, school_id } = await req.json();
+    const { phone, message, api_url, api_key, school_id, group_id } = await req.json();
 
-    if (!phone || !message) {
-      return new Response(JSON.stringify({ error: 'phone and message are required' }), {
+    if ((!phone && !group_id) || !message) {
+      return new Response(JSON.stringify({ error: 'phone or group_id, and message are required' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -54,37 +54,47 @@ serve(async (req) => {
       });
     }
 
-    // Format phone number
-    let formattedPhone = phone.replace(/\D/g, '');
-    if (formattedPhone.startsWith('0')) {
-      formattedPhone = '62' + formattedPhone.substring(1);
+    // Build request body based on individual or group
+    const sendRequests = [];
+
+    // Send to individual phone if provided
+    if (phone) {
+      let formattedPhone = phone.replace(/\D/g, '');
+      if (formattedPhone.startsWith('0')) {
+        formattedPhone = '62' + formattedPhone.substring(1);
+      }
+      sendRequests.push(
+        fetch(finalApiUrl, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${finalApiKey}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ recipient_type: 'individual', to: formattedPhone, type: 'text', text: { body: message } }),
+        })
+      );
     }
 
-    // Send via OneSender API
-    const response = await fetch(finalApiUrl, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${finalApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        recipient_type: 'individual',
-        to: formattedPhone,
-        type: 'text',
-        text: { body: message },
-      }),
-    });
+    // Send to group if group_id provided
+    if (group_id) {
+      sendRequests.push(
+        fetch(finalApiUrl, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${finalApiKey}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ recipient_type: 'group', to: group_id, type: 'text', text: { body: message } }),
+        })
+      );
+    }
 
-    const data = await response.json();
+    const responses = await Promise.all(sendRequests);
+    const results = await Promise.all(responses.map(r => r.json()));
 
-    if (!response.ok) {
-      console.error('OneSender error:', JSON.stringify(data));
-      return new Response(JSON.stringify({ success: false, error: `OneSender error: ${JSON.stringify(data)}` }), {
+    const hasError = responses.some(r => !r.ok);
+    if (hasError) {
+      console.error('OneSender error:', JSON.stringify(results));
+      return new Response(JSON.stringify({ success: false, error: `OneSender error`, details: results }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    return new Response(JSON.stringify({ success: true, data }), {
+    return new Response(JSON.stringify({ success: true, data: results }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {

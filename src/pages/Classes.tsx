@@ -5,16 +5,19 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { GraduationCap, Users, UserCheck, UserX, ChevronRight, Plus, Trash2, Loader2, Clock, AlertTriangle, Pencil } from "lucide-react";
+import { GraduationCap, Users, UserCheck, UserX, ChevronRight, Plus, Trash2, Loader2, Clock, AlertTriangle, Pencil, MessageCircle, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
+import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const Classes = () => {
   const { profile } = useAuth();
   const navigate = useNavigate();
+  const { canWhatsApp } = useSubscriptionFeatures();
   const [students, setStudents] = useState<any[]>([]);
   const [todayLogs, setTodayLogs] = useState<any[]>([]);
   const [classes, setClasses] = useState<any[]>([]);
@@ -26,6 +29,10 @@ const Classes = () => {
   const [renameTarget, setRenameTarget] = useState<{ id: string; oldName: string } | null>(null);
   const [renameValue, setRenameValue] = useState("");
   const [renaming, setRenaming] = useState(false);
+  const [groupIdDialogOpen, setGroupIdDialogOpen] = useState(false);
+  const [groupIdTarget, setGroupIdTarget] = useState<{ id: string; name: string; waGroupId: string } | null>(null);
+  const [groupIdValue, setGroupIdValue] = useState("");
+  const [savingGroupId, setSavingGroupId] = useState(false);
 
   const fetchData = async () => {
     if (!profile?.school_id) return;
@@ -106,9 +113,22 @@ const Classes = () => {
     fetchData();
   };
 
+  const handleSaveGroupId = async () => {
+    if (!groupIdTarget) return;
+    setSavingGroupId(true);
+    const { error } = await supabase.from("classes").update({ wa_group_id: groupIdValue.trim() || null }).eq("id", groupIdTarget.id);
+    setSavingGroupId(false);
+    if (error) { toast.error("Gagal menyimpan: " + error.message); return; }
+    toast.success(`ID Group WA kelas "${groupIdTarget.name}" berhasil disimpan`);
+    setGroupIdDialogOpen(false);
+    setGroupIdTarget(null);
+    setGroupIdValue("");
+    fetchData();
+  };
+
   const classData = useMemo(() => {
-    const groups: Record<string, { id?: string; students: any[]; hadir: number; izin: number; sakit: number; alfa: number }> = {};
-    for (const c of classes) groups[c.name] = { id: c.id, students: [], hadir: 0, izin: 0, sakit: 0, alfa: 0 };
+    const groups: Record<string, { id?: string; waGroupId?: string; students: any[]; hadir: number; izin: number; sakit: number; alfa: number }> = {};
+    for (const c of classes) groups[c.name] = { id: c.id, waGroupId: c.wa_group_id || "", students: [], hadir: 0, izin: 0, sakit: 0, alfa: 0 };
     for (const s of students) {
       if (!groups[s.class]) groups[s.class] = { students: [], hadir: 0, izin: 0, sakit: 0, alfa: 0 };
       groups[s.class].students.push(s);
@@ -168,6 +188,24 @@ const Classes = () => {
             </div>
             <Button onClick={handleRenameClass} disabled={renaming || !renameValue.trim()} className="w-full gradient-primary hover:opacity-90">
               {renaming ? <Loader2 className="h-4 w-4 animate-spin" /> : "Simpan Perubahan"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* WA Group ID Dialog */}
+      <Dialog open={groupIdDialogOpen} onOpenChange={setGroupIdDialogOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader><DialogTitle>ID Group WhatsApp — {groupIdTarget?.name}</DialogTitle></DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>ID Group WhatsApp</Label>
+              <Input placeholder="Contoh: 120363XXXXXXXXX@g.us" value={groupIdValue}
+                onChange={(e) => setGroupIdValue(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleSaveGroupId()} />
+              <p className="text-xs text-muted-foreground">Masukkan ID Group WA agar notifikasi absensi dikirim ke group kelas ini.</p>
+            </div>
+            <Button onClick={handleSaveGroupId} disabled={savingGroupId} className="w-full gradient-primary hover:opacity-90">
+              {savingGroupId ? <Loader2 className="h-4 w-4 animate-spin" /> : "Simpan"}
             </Button>
           </div>
         </DialogContent>
@@ -233,6 +271,30 @@ const Classes = () => {
                         </div>
                       </div>
                       <div className="flex items-center gap-1">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              {canWhatsApp && info.id ? (
+                                <Button variant="ghost" size="icon" className="h-8 w-8"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setGroupIdTarget({ id: info.id!, name: cls, waGroupId: info.waGroupId || "" });
+                                    setGroupIdValue(info.waGroupId || "");
+                                    setGroupIdDialogOpen(true);
+                                  }}>
+                                  <MessageCircle className={`h-4 w-4 ${info.waGroupId ? "text-success" : "text-muted-foreground"}`} />
+                                </Button>
+                              ) : (
+                                <Button variant="ghost" size="icon" className="h-8 w-8 opacity-40 cursor-not-allowed" disabled>
+                                  <Lock className="h-4 w-4 text-muted-foreground" />
+                                </Button>
+                              )}
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {canWhatsApp ? (info.waGroupId ? "WA Group: Terhubung" : "Atur ID Group WA") : "Upgrade paket untuk fitur WA Group"}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                         <Button variant="ghost" size="icon" className="h-8 w-8"
                           onClick={(e) => {
                             e.stopPropagation();

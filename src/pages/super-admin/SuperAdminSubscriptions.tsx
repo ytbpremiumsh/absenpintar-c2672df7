@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { School, Calendar, CheckCircle2, XCircle, Clock, Pencil, Plus, Minus } from "lucide-react";
+import { School, Calendar, CheckCircle2, XCircle, Clock, Pencil, Plus, Minus, Webhook, Copy, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -108,6 +108,16 @@ const SuperAdminSubscriptions = () => {
     return new Date(expiresAt) < new Date();
   };
 
+  const [webhookCopied, setWebhookCopied] = useState(false);
+  const webhookUrl = `https://bohuglednqirnaearrkj.supabase.co/functions/v1/mayar-webhook`;
+
+  const copyWebhook = () => {
+    navigator.clipboard.writeText(webhookUrl);
+    setWebhookCopied(true);
+    toast.success("URL Webhook disalin!");
+    setTimeout(() => setWebhookCopied(false), 2000);
+  };
+
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>;
 
   return (
@@ -116,6 +126,29 @@ const SuperAdminSubscriptions = () => {
         <h1 className="text-2xl font-bold text-foreground">Manajemen Langganan</h1>
         <p className="text-muted-foreground text-sm">Kelola status dan masa aktif langganan sekolah</p>
       </div>
+
+      {/* Webhook Info */}
+      <Card className="border-0 shadow-card bg-gradient-to-r from-primary/5 to-primary/10">
+        <CardContent className="p-4">
+          <div className="flex items-start gap-3">
+            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+              <Webhook className="h-5 w-5 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-sm text-foreground">Mayar Webhook URL</h3>
+              <p className="text-[11px] text-muted-foreground mt-0.5">Pasang URL ini di pengaturan webhook Mayar untuk auto-accept pembayaran</p>
+              <div className="flex items-center gap-2 mt-2">
+                <code className="text-[11px] bg-background/80 px-3 py-1.5 rounded-lg border text-foreground truncate flex-1">
+                  {webhookUrl}
+                </code>
+                <Button variant="outline" size="sm" className="h-8 shrink-0" onClick={copyWebhook}>
+                  {webhookCopied ? <Check className="h-3.5 w-3.5 text-success" /> : <Copy className="h-3.5 w-3.5" />}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {subscriptions.length === 0 ? (
         <Card className="border-0 shadow-card">
