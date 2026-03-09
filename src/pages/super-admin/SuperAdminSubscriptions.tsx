@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { School, Calendar, CheckCircle2, XCircle, Clock, Pencil, Plus, Minus, Webhook, Copy, Check } from "lucide-react";
+import { School, Calendar, CheckCircle2, XCircle, Clock, Pencil, Plus, Minus, Webhook, Copy, Check, Key, Eye, EyeOff, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -109,13 +109,58 @@ const SuperAdminSubscriptions = () => {
   };
 
   const [webhookCopied, setWebhookCopied] = useState(false);
-  const webhookUrl = `https://bohuglednqirnaearrkj.supabase.co/functions/v1/mayar-webhook`;
+  const webhookUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/mayar-webhook`;
 
   const copyWebhook = () => {
     navigator.clipboard.writeText(webhookUrl);
     setWebhookCopied(true);
     toast.success("URL Webhook disalin!");
     setTimeout(() => setWebhookCopied(false), 2000);
+  };
+
+  // Mayar API Key management
+  const [apiKeyDialog, setApiKeyDialog] = useState(false);
+  const [maskedKey, setMaskedKey] = useState("");
+  const [hasKey, setHasKey] = useState(false);
+  const [newApiKey, setNewApiKey] = useState("");
+  const [showKey, setShowKey] = useState(false);
+  const [savingKey, setSavingKey] = useState(false);
+  const [loadingKey, setLoadingKey] = useState(false);
+
+  const fetchApiKeyStatus = async () => {
+    setLoadingKey(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('manage-mayar-key', {
+        body: { action: 'get' },
+      });
+      if (!error && data) {
+        setHasKey(data.has_key);
+        setMaskedKey(data.masked_key || '');
+      }
+    } catch {}
+    setLoadingKey(false);
+  };
+
+  useEffect(() => { fetchApiKeyStatus(); }, []);
+
+  const handleSaveApiKey = async () => {
+    if (!newApiKey.trim()) { toast.error("API Key tidak boleh kosong"); return; }
+    setSavingKey(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('manage-mayar-key', {
+        body: { action: 'set', api_key: newApiKey.trim() },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success("API Key Mayar berhasil diperbarui!");
+      setNewApiKey("");
+      setApiKeyDialog(false);
+      fetchApiKeyStatus();
+    } catch (err: any) {
+      toast.error("Gagal menyimpan: " + (err.message || "Unknown error"));
+    } finally {
+      setSavingKey(false);
+    }
   };
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>;
