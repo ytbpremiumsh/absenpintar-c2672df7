@@ -236,33 +236,33 @@ const PublicAttendanceMonitoring = () => {
           </CardContent>
         </Card>
 
-        {/* Two-column: Scanner (left) | Live Feed (right) */}
-        <div className="grid lg:grid-cols-7 gap-4">
-          {/* Left: Scanner - wider */}
-          <div className="lg:col-span-3">
+        {/* Two-column: Scanner (left) | Live Feed (right) - equal width */}
+        <div className="grid lg:grid-cols-2 gap-4">
+          {/* Left: Scanner */}
+          <div>
             {schoolId && (
               <PublicAttendanceScanner schoolId={schoolId} onAttendanceRecorded={fetchData} currentMode={data?.currentMode || "datang"} canFaceRecognition={data?.canFaceRecognition ?? false} />
             )}
           </div>
 
           {/* Right: Live Feed */}
-          <div className="lg:col-span-4">
+          <div>
             <Card className="border-0 shadow-card overflow-hidden h-full">
-              <div className="p-3 border-b border-border flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-success/10 flex items-center justify-center">
-                  <Activity className="h-4 w-4 text-success" />
+              <div className="px-3 py-2 border-b border-border flex items-center gap-2">
+                <div className="h-7 w-7 rounded-md bg-success/10 flex items-center justify-center">
+                  <Activity className="h-3.5 w-3.5 text-success" />
                 </div>
                 <div className="flex-1">
-                  <h2 className="text-sm font-bold text-foreground">Live Feed</h2>
+                  <h2 className="text-sm font-bold text-foreground leading-tight">Live Feed</h2>
                   <p className="text-[9px] text-muted-foreground">Kedatangan terbaru</p>
                 </div>
                 <LiveDot />
               </div>
               <div className="max-h-[600px] overflow-y-auto">
                 {data.liveFeed.length === 0 ? (
-                  <div className="p-10 text-center">
-                    <Clock className="h-12 w-12 text-muted-foreground/20 mx-auto mb-3" />
-                    <p className="text-sm text-muted-foreground">Belum ada absensi hari ini</p>
+                  <div className="p-8 text-center">
+                    <Clock className="h-10 w-10 text-muted-foreground/20 mx-auto mb-2" />
+                    <p className="text-xs text-muted-foreground">Belum ada absensi hari ini</p>
                   </div>
                 ) : (
                   <div className="divide-y divide-border">
@@ -275,9 +275,9 @@ const PublicAttendanceMonitoring = () => {
                             initial={{ opacity: 0, x: -20, backgroundColor: "hsl(var(--success) / 0.2)" }}
                             animate={{ opacity: 1, x: 0, backgroundColor: "hsl(0 0% 100% / 0)" }}
                             transition={{ duration: 0.4, backgroundColor: { duration: 3 } }}
-                            className={`flex items-center gap-3 p-3 ${isNew ? "ring-2 ring-success/40 bg-success/10" : ""}`}
+                            className={`flex items-center gap-2 px-3 py-1.5 ${isNew ? "ring-2 ring-success/40 bg-success/10" : ""}`}
                           >
-                            <div className={`h-10 w-10 rounded-full flex items-center justify-center font-bold text-sm shrink-0 overflow-hidden ${
+                            <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden ${
                               entry.status === "hadir" ? "bg-success/15 text-success" :
                               entry.status === "izin" ? "bg-warning/15 text-warning" :
                               entry.status === "sakit" ? "bg-blue-50 text-blue-500" :
@@ -288,27 +288,24 @@ const PublicAttendanceMonitoring = () => {
                               ) : entry.student_name.charAt(0)}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-1.5">
-                                <p className="font-semibold text-sm text-foreground truncate">{entry.student_name}</p>
+                              <div className="flex items-center gap-1">
+                                <p className="font-semibold text-xs text-foreground truncate">{entry.student_name}</p>
                                 {isNew && <Badge className="bg-success text-success-foreground text-[7px] px-1 py-0 animate-pulse">BARU</Badge>}
                               </div>
-                              <p className="text-[10px] text-muted-foreground">{entry.student_class} • {entry.student_id}</p>
+                              <p className="text-[9px] text-muted-foreground">{entry.student_class} • {entry.student_id}</p>
                             </div>
-                            <div className="flex flex-col items-end gap-0.5 shrink-0">
-                              <Badge variant="secondary" className={`text-[9px] ${STATUS_BG[entry.status] || ""}`}>
+                            <div className="flex flex-col items-end gap-0 shrink-0">
+                              <Badge variant="secondary" className={`text-[8px] px-1 py-0 ${STATUS_BG[entry.status] || ""}`}>
                                 {STATUS_LABELS[entry.status] || entry.status}
                               </Badge>
                               {entry.status === "hadir" && (
-                                <Badge variant="outline" className={`text-[8px] px-1 py-0 ${
+                                <Badge variant="outline" className={`text-[7px] px-1 py-0 ${
                                   (entry as any).attendance_type === "pulang" ? "border-warning/30 text-warning" : "border-success/30 text-success"
                                 }`}>
                                   {(entry as any).attendance_type === "pulang" ? "Pulang" : "Datang"}
                                 </Badge>
                               )}
-                              <span className="text-[9px] text-muted-foreground flex items-center gap-0.5">
-                                {entry.method === "rfid" ? <CreditCard className="h-2.5 w-2.5" /> : <Scan className="h-2.5 w-2.5" />} {METHOD_LABELS[entry.method] || entry.method}
-                              </span>
-                              <span className="text-[10px] font-mono text-muted-foreground">{entry.time?.slice(0, 5)}</span>
+                              <span className="text-[8px] font-mono text-muted-foreground">{entry.time?.slice(0, 5)}</span>
                             </div>
                           </motion.div>
                         );
