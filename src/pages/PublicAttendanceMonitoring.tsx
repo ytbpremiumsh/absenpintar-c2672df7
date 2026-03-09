@@ -147,7 +147,7 @@ const PublicAttendanceMonitoring = () => {
   const currentDate = new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 
   return (
-    <div className="min-h-screen bg-background">
+    <div ref={containerRef} className="min-h-screen bg-background">
       {/* Header - Smartboard optimized */}
       <header className="gradient-hero text-primary-foreground sticky top-0 z-50 shadow-elevated">
         <div className="max-w-[1920px] mx-auto px-6 py-4">
@@ -175,7 +175,15 @@ const PublicAttendanceMonitoring = () => {
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleFullscreen}
+                className="h-10 w-10 rounded-xl bg-white/10 hover:bg-white/20 text-primary-foreground"
+              >
+                {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
+              </Button>
               <div className="text-right">
                 <p className="text-3xl lg:text-4xl font-mono font-bold">{currentTime}</p>
                 <p className="text-xs opacity-70">Auto-refresh aktif</p>
