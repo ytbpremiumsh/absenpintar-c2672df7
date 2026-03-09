@@ -193,6 +193,24 @@ const Classes = () => {
         </DialogContent>
       </Dialog>
 
+      {/* WA Group ID Dialog */}
+      <Dialog open={groupIdDialogOpen} onOpenChange={setGroupIdDialogOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader><DialogTitle>ID Group WhatsApp — {groupIdTarget?.name}</DialogTitle></DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>ID Group WhatsApp</Label>
+              <Input placeholder="Contoh: 120363XXXXXXXXX@g.us" value={groupIdValue}
+                onChange={(e) => setGroupIdValue(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleSaveGroupId()} />
+              <p className="text-xs text-muted-foreground">Masukkan ID Group WA agar notifikasi absensi dikirim ke group kelas ini.</p>
+            </div>
+            <Button onClick={handleSaveGroupId} disabled={savingGroupId} className="w-full gradient-primary hover:opacity-90">
+              {savingGroupId ? <Loader2 className="h-4 w-4 animate-spin" /> : "Simpan"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Summary */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <Card className="shadow-card border-0">
@@ -253,6 +271,30 @@ const Classes = () => {
                         </div>
                       </div>
                       <div className="flex items-center gap-1">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              {canWhatsApp && info.id ? (
+                                <Button variant="ghost" size="icon" className="h-8 w-8"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setGroupIdTarget({ id: info.id!, name: cls, waGroupId: info.waGroupId || "" });
+                                    setGroupIdValue(info.waGroupId || "");
+                                    setGroupIdDialogOpen(true);
+                                  }}>
+                                  <MessageCircle className={`h-4 w-4 ${info.waGroupId ? "text-success" : "text-muted-foreground"}`} />
+                                </Button>
+                              ) : (
+                                <Button variant="ghost" size="icon" className="h-8 w-8 opacity-40 cursor-not-allowed" disabled>
+                                  <Lock className="h-4 w-4 text-muted-foreground" />
+                                </Button>
+                              )}
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {canWhatsApp ? (info.waGroupId ? "WA Group: Terhubung" : "Atur ID Group WA") : "Upgrade paket untuk fitur WA Group"}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                         <Button variant="ghost" size="icon" className="h-8 w-8"
                           onClick={(e) => {
                             e.stopPropagation();
