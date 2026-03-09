@@ -136,6 +136,24 @@ const SuperAdminDashboard = () => {
             <p className="text-sm text-muted-foreground text-center py-8">Belum ada sekolah terdaftar</p>
           ) : (
             <div className="space-y-4">
+              {/* Summary totals */}
+              <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 space-y-2">
+                <p className="text-sm font-bold text-foreground">Total Keseluruhan</p>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="text-center">
+                    <p className="text-lg font-extrabold text-primary">{stats.schoolUsage.length}</p>
+                    <p className="text-[11px] text-muted-foreground">Sekolah</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-lg font-extrabold text-primary">{stats.schoolUsage.reduce((sum, s) => sum + s.classes, 0)}</p>
+                    <p className="text-[11px] text-muted-foreground">Kelas</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-lg font-extrabold text-primary">{stats.schoolUsage.reduce((sum, s) => sum + s.students, 0).toLocaleString("id-ID")}</p>
+                    <p className="text-[11px] text-muted-foreground">Siswa</p>
+                  </div>
+                </div>
+              </div>
               {stats.schoolUsage.map((s) => (
                 <div key={s.name} className="p-4 rounded-xl bg-secondary/50 space-y-3">
                   <div className="flex items-center justify-between">
