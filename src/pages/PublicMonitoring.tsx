@@ -271,9 +271,13 @@ const PublicMonitoring = () => {
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="h-11 w-11 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center">
-                <School className="h-6 w-6" />
-              </div>
+              {data.school?.logo ? (
+                <img src={data.school.logo} alt={data.school.name} className="h-11 w-11 rounded-xl object-cover shadow-md" />
+              ) : (
+                <div className="h-11 w-11 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center">
+                  <School className="h-6 w-6" />
+                </div>
+              )}
               <div>
                 <h1 className="text-lg font-bold">{data.school?.name || "Smart Pickup"}</h1>
                 <div className="flex items-center gap-2 text-xs opacity-80">
