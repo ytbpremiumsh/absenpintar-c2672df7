@@ -335,11 +335,10 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
         <CardContent className="p-0">
           {cameraActive ? (
             <>
-              <div className="relative bg-black" style={{ maxHeight: 200 }}>
-                <video ref={videoRef} className="w-full h-full object-cover" autoPlay playsInline muted
-                  style={{ maxHeight: 200, WebkitTransform: "scaleX(1)" }} />
+              <div className="relative bg-black aspect-[4/3]">
+                <video ref={videoRef} className="w-full h-full object-contain" autoPlay playsInline muted />
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className={`w-24 h-24 border-2 rounded-lg transition-colors ${scanPaused.current ? "border-success" : "border-primary opacity-70"}`} />
+                  <div className={`w-28 h-28 border-2 rounded-lg transition-colors ${scanPaused.current ? "border-success" : "border-primary opacity-70"}`} />
                 </div>
                 <div className="absolute bottom-1 left-0 right-0 text-center">
                   <span className="text-[10px] text-white/80 bg-black/50 px-2 py-0.5 rounded">
