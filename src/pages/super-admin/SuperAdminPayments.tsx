@@ -51,10 +51,17 @@ const SuperAdminPayments = () => {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Riwayat Pembayaran</h1>
-        <p className="text-muted-foreground text-sm">Seluruh transaksi pembayaran dari semua sekolah (realtime)</p>
-      </div>
+      {/* Webhook Info */}
+      <WebhookCard />
 
       {/* Summary Cards */}
+      <div className="grid grid-cols-3 gap-3">
+        <Card className="border-0 shadow-card">
+          <CardContent className="p-4 text-center">
+            <p className="text-xs text-muted-foreground">Total Lunas</p>
+            <p className="text-lg font-extrabold text-success">{paidCount}</p>
+          </CardContent>
+        </Card>
       <div className="grid grid-cols-3 gap-3">
         <Card className="border-0 shadow-card">
           <CardContent className="p-4 text-center">
