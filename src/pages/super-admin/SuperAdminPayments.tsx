@@ -1,10 +1,46 @@
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Webhook, Copy, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
+const WebhookCard = () => {
+  const [copied, setCopied] = useState(false);
+  const webhookUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/mayar-webhook`;
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(webhookUrl);
+    setCopied(true);
+    toast.success("URL Webhook disalin!");
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <Card className="border-0 shadow-card bg-gradient-to-r from-primary/5 to-primary/10">
+      <CardContent className="p-4">
+        <div className="flex items-start gap-3">
+          <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <Webhook className="h-5 w-5 text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-sm text-foreground">Mayar Webhook URL</h3>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Pasang URL ini di pengaturan webhook Mayar untuk auto-verifikasi pembayaran</p>
+            <div className="flex items-center gap-2 mt-2">
+              <code className="text-[11px] bg-background/80 px-3 py-1.5 rounded-lg border text-foreground truncate flex-1">
+                {webhookUrl}
+              </code>
+              <Button variant="outline" size="sm" className="h-8 shrink-0" onClick={handleCopy}>
+                {copied ? <Check className="h-3.5 w-3.5 text-success" /> : <Copy className="h-3.5 w-3.5" />}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
 const SuperAdminPayments = () => {
   const [payments, setPayments] = useState<any[]>([]);
@@ -21,15 +57,12 @@ const SuperAdminPayments = () => {
 
   useEffect(() => {
     fetchPayments();
-
-    // Realtime: auto-refresh when payments change
     const channel = supabase
       .channel("admin-payments")
       .on("postgres_changes", { event: "*", schema: "public", table: "payment_transactions" }, () => {
         fetchPayments();
       })
       .subscribe();
-
     return () => { supabase.removeChannel(channel); };
   }, []);
 
@@ -51,17 +84,11 @@ const SuperAdminPayments = () => {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Riwayat Pembayaran</h1>
-      {/* Webhook Info */}
+        <p className="text-muted-foreground text-sm">Seluruh transaksi pembayaran dari semua sekolah (realtime)</p>
+      </div>
+
       <WebhookCard />
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-3 gap-3">
-        <Card className="border-0 shadow-card">
-          <CardContent className="p-4 text-center">
-            <p className="text-xs text-muted-foreground">Total Lunas</p>
-            <p className="text-lg font-extrabold text-success">{paidCount}</p>
-          </CardContent>
-        </Card>
       <div className="grid grid-cols-3 gap-3">
         <Card className="border-0 shadow-card">
           <CardContent className="p-4 text-center">
