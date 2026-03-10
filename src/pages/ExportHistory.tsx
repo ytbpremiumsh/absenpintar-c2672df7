@@ -1,9 +1,9 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { FileSpreadsheet, FileText, Calendar, ChevronLeft, ChevronRight, Crown, Lock } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { FileSpreadsheet, FileText, ChevronLeft, ChevronRight, Crown, Lock, Printer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
@@ -12,262 +12,424 @@ import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import { motion } from "framer-motion";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { PremiumGate } from "@/components/PremiumGate";
 
-const STATUS_LABELS: Record<string, string> = { hadir: "Hadir", izin: "Izin", sakit: "Sakit", alfa: "Alfa" };
+const STATUS_CODES: Record<string, string> = { hadir: "H", sakit: "S", izin: "I", alfa: "A" };
+const MONTH_NAMES = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+
+interface StudentRow {
+  id: string;
+  name: string;
+  student_id: string;
+  days: Record<number, string>;
+  totals: { H: number; S: number; I: number; A: number };
+}
 
 const ExportHistory = () => {
-  const { profile } = useAuth();
+  const { user, profile, roles } = useAuth();
   const features = useSubscriptionFeatures();
   const navigate = useNavigate();
+
+  const [classes, setClasses] = useState<string[]>([]);
+  const [selectedClass, setSelectedClass] = useState<string>("");
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [students, setStudents] = useState<{ id: string; name: string; student_id: string }[]>([]);
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [schoolName, setSchoolName] = useState("");
+  const [schoolAddress, setSchoolAddress] = useState("");
+  const [waliKelasName, setWaliKelasName] = useState("");
+  const tableRef = useRef<HTMLDivElement>(null);
 
+  const isTeacher = roles.includes("teacher");
+  const isPremiumFeature = !features.canExportReport;
+
+  // Fetch classes - for teachers only their assigned classes
   useEffect(() => {
     if (!profile?.school_id) return;
-    const fetchLogs = async () => {
-      const startOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1).toISOString().slice(0, 10);
-      const endOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).toISOString().slice(0, 10);
-      const { data } = await supabase.from("attendance_logs")
-        .select("*, students(name, class, parent_name)")
+    const fetchClasses = async () => {
+      if (isTeacher && user) {
+        const { data } = await supabase
+          .from("class_teachers")
+          .select("class_name")
+          .eq("user_id", user.id)
+          .eq("school_id", profile.school_id);
+        const names = (data || []).map(d => d.class_name);
+        setClasses(names);
+        if (names.length > 0) setSelectedClass(names[0]);
+      } else {
+        const { data } = await supabase
+          .from("classes")
+          .select("name")
+          .eq("school_id", profile.school_id)
+          .order("name");
+        const names = (data || []).map(d => d.name);
+        setClasses(names);
+        if (names.length > 0) setSelectedClass(names[0]);
+      }
+    };
+    fetchClasses();
+  }, [profile?.school_id, user, isTeacher]);
+
+  // Fetch school info & wali kelas name
+  useEffect(() => {
+    if (!profile?.school_id) return;
+    const fetchSchool = async () => {
+      const { data } = await supabase.from("schools").select("name, address").eq("id", profile.school_id).maybeSingle();
+      if (data) {
+        setSchoolName(data.name);
+        setSchoolAddress(data.address || "");
+      }
+    };
+    fetchSchool();
+  }, [profile?.school_id]);
+
+  useEffect(() => {
+    if (!profile?.school_id || !selectedClass) return;
+    const fetchWali = async () => {
+      const { data } = await supabase
+        .from("class_teachers")
+        .select("user_id")
         .eq("school_id", profile.school_id)
-        .gte("date", startOfMonth)
-        .lte("date", endOfMonth)
-        .order("date", { ascending: false });
-      setLogs(data || []);
+        .eq("class_name", selectedClass)
+        .maybeSingle();
+      if (data?.user_id) {
+        const { data: prof } = await supabase.from("profiles").select("full_name").eq("user_id", data.user_id).maybeSingle();
+        setWaliKelasName(prof?.full_name || "");
+      } else {
+        setWaliKelasName("");
+      }
+    };
+    fetchWali();
+  }, [profile?.school_id, selectedClass]);
+
+  // Fetch students & attendance for selected class + month
+  useEffect(() => {
+    if (!profile?.school_id || !selectedClass) { setLoading(false); return; }
+    const fetchData = async () => {
+      setLoading(true);
+      const year = currentMonth.getFullYear();
+      const month = currentMonth.getMonth();
+      const startDate = `${year}-${String(month + 1).padStart(2, "0")}-01`;
+      const endDate = `${year}-${String(month + 1).padStart(2, "0")}-${String(new Date(year, month + 1, 0).getDate()).padStart(2, "0")}`;
+
+      const [studentsRes, logsRes] = await Promise.all([
+        supabase.from("students").select("id, name, student_id").eq("school_id", profile.school_id).eq("class", selectedClass).order("name"),
+        supabase.from("attendance_logs").select("student_id, date, status").eq("school_id", profile.school_id).gte("date", startDate).lte("date", endDate),
+      ]);
+      setStudents(studentsRes.data || []);
+      setLogs(logsRes.data || []);
       setLoading(false);
     };
-    fetchLogs();
-  }, [profile?.school_id, currentMonth]);
+    fetchData();
+  }, [profile?.school_id, selectedClass, currentMonth]);
 
-  const dailyStats = useMemo(() => {
-    const map: Record<string, number> = {};
-    logs.forEach(l => { map[l.date] = (map[l.date] || 0) + 1; });
-    return map;
-  }, [logs]);
+  const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
 
-  const chartData = useMemo(() => {
-    const year = currentMonth.getFullYear();
-    const month = currentMonth.getMonth();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    return Array.from({ length: daysInMonth }, (_, d) => {
-      const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(d + 1).padStart(2, "0")}`;
-      return { day: d + 1, jumlah: dailyStats[dateStr] || 0 };
+  const studentRows: StudentRow[] = useMemo(() => {
+    const studentIds = new Set(students.map(s => s.id));
+    const filteredLogs = logs.filter(l => studentIds.has(l.student_id));
+
+    return students.map(s => {
+      const days: Record<number, string> = {};
+      const totals = { H: 0, S: 0, I: 0, A: 0 };
+
+      filteredLogs.filter(l => l.student_id === s.id).forEach(l => {
+        const day = parseInt(l.date.split("-")[2]);
+        const code = STATUS_CODES[l.status] || "";
+        days[day] = code;
+        if (code === "H") totals.H++;
+        else if (code === "S") totals.S++;
+        else if (code === "I") totals.I++;
+        else if (code === "A") totals.A++;
+      });
+
+      return { id: s.id, name: s.name, student_id: s.student_id, days, totals };
     });
-  }, [currentMonth, dailyStats]);
-
-  const calendarDays = useMemo(() => {
-    const year = currentMonth.getFullYear();
-    const month = currentMonth.getMonth();
-    const firstDay = new Date(year, month, 1).getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const days: { date: number; dateStr: string; count: number }[] = [];
-    for (let i = 0; i < firstDay; i++) days.push({ date: 0, dateStr: "", count: 0 });
-    for (let d = 1; d <= daysInMonth; d++) {
-      const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-      days.push({ date: d, dateStr, count: dailyStats[dateStr] || 0 });
-    }
-    return days;
-  }, [currentMonth, dailyStats]);
-
-  const getLogsForDate = (dateStr: string) => logs.filter(l => l.date === dateStr);
-
-  const exportDateExcel = (dateStr: string) => {
-    const dayLogs = getLogsForDate(dateStr);
-    if (!dayLogs.length) { toast.error("Tidak ada data"); return; }
-    const data = dayLogs.map((l, i) => ({
-      "No": i + 1, "Nama Siswa": l.students?.name || "-", "Kelas": l.students?.class || "-",
-      "Jam": l.time?.slice(0, 5), "Metode": l.method, "Status": STATUS_LABELS[l.status] || l.status,
-    }));
-    const ws = XLSX.utils.json_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Absensi");
-    XLSX.writeFile(wb, `absensi-${dateStr}.xlsx`);
-    toast.success("Excel berhasil diunduh!");
-  };
-
-  const exportDatePDF = (dateStr: string) => {
-    const dayLogs = getLogsForDate(dateStr);
-    if (!dayLogs.length) { toast.error("Tidak ada data"); return; }
-    const doc = new jsPDF();
-    doc.setFontSize(16);
-    doc.text("Laporan Absensi Harian", 14, 20);
-    doc.setFontSize(10);
-    doc.text(`Tanggal: ${new Date(dateStr).toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}`, 14, 28);
-    const tableData = dayLogs.map((l, i) => [i + 1, l.students?.name || "-", l.students?.class || "-", l.time?.slice(0, 5), l.method, STATUS_LABELS[l.status] || l.status]);
-    (doc as any).autoTable({ startY: 36, head: [["No", "Nama", "Kelas", "Jam", "Metode", "Status"]], body: tableData,
-      styles: { fontSize: 9 }, headStyles: { fillColor: [79, 70, 229] } });
-    doc.save(`absensi-${dateStr}.pdf`);
-    toast.success("PDF berhasil diunduh!");
-  };
-
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const selectedLogs = selectedDate ? getLogsForDate(selectedDate) : [];
-
-  const getDotColor = (count: number) => {
-    if (count === 0) return "";
-    if (count <= 5) return "bg-primary/30";
-    if (count <= 15) return "bg-primary/60";
-    return "bg-primary";
-  };
+  }, [students, logs]);
 
   const prevMonth = () => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
   const nextMonth = () => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
 
-  const totalThisMonth = logs.length;
-  const daysWithActivity = Object.keys(dailyStats).length;
-  const avgPerDay = daysWithActivity ? Math.round(totalThisMonth / daysWithActivity) : 0;
+  const monthLabel = `${MONTH_NAMES[currentMonth.getMonth()]} ${currentMonth.getFullYear()}`;
 
-  const isPremiumFeature = !features.canExportReport;
+  const exportExcel = () => {
+    if (isPremiumFeature) { toast.error("Upgrade ke paket Basic untuk export"); return; }
+    if (!studentRows.length) { toast.error("Tidak ada data"); return; }
+
+    const wb = XLSX.utils.book_new();
+    const headerRows = [
+      ["ABSENSI SISWA"],
+      [`BULAN : ${monthLabel.toUpperCase()}`],
+      [`Kelas : ${selectedClass}`],
+      [],
+    ];
+
+    const tableHeader = ["NO", "NIS", "NAMA SISWA"];
+    for (let d = 1; d <= daysInMonth; d++) tableHeader.push(String(d));
+    tableHeader.push("H", "S", "I", "A");
+
+    const dataRows = studentRows.map((s, i) => {
+      const row: (string | number)[] = [i + 1, s.student_id, s.name];
+      for (let d = 1; d <= daysInMonth; d++) row.push(s.days[d] || "");
+      row.push(s.totals.H, s.totals.S, s.totals.I, s.totals.A);
+      return row;
+    });
+
+    const footer = [
+      [],
+      [],
+      [`${schoolAddress || schoolName}, ........................ ${currentMonth.getFullYear()}`],
+      [`WALI KELAS ${selectedClass}`],
+      [],
+      [],
+      [],
+      [waliKelasName ? `( ${waliKelasName} )` : "(..................................)"],
+    ];
+
+    const ws = XLSX.utils.aoa_to_sheet([...headerRows, tableHeader, ...dataRows, ...footer]);
+
+    // Merge title cells
+    ws["!merges"] = [
+      { s: { r: 0, c: 0 }, e: { r: 0, c: tableHeader.length - 1 } },
+      { s: { r: 1, c: 0 }, e: { r: 1, c: tableHeader.length - 1 } },
+      { s: { r: 2, c: 0 }, e: { r: 2, c: tableHeader.length - 1 } },
+    ];
+
+    // Column widths
+    ws["!cols"] = [
+      { wch: 4 }, { wch: 10 }, { wch: 25 },
+      ...Array(daysInMonth).fill({ wch: 3 }),
+      { wch: 4 }, { wch: 4 }, { wch: 4 }, { wch: 4 },
+    ];
+
+    XLSX.utils.book_append_sheet(wb, ws, selectedClass);
+    XLSX.writeFile(wb, `Absensi-${selectedClass}-${monthLabel}.xlsx`);
+    toast.success("Excel berhasil diunduh!");
+  };
+
+  const exportPDF = () => {
+    if (isPremiumFeature) { toast.error("Upgrade ke paket Basic untuk export"); return; }
+    if (!studentRows.length) { toast.error("Tidak ada data"); return; }
+
+    const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+    doc.setFontSize(14);
+    doc.text("ABSENSI SISWA", doc.internal.pageSize.getWidth() / 2, 15, { align: "center" });
+    doc.setFontSize(11);
+    doc.text(`BULAN : ${monthLabel.toUpperCase()}`, doc.internal.pageSize.getWidth() / 2, 22, { align: "center" });
+    doc.setFontSize(10);
+    doc.text(`Kelas : ${selectedClass}`, 14, 30);
+
+    const head = [["NO", "NIS", "NAMA SISWA", ...Array.from({ length: daysInMonth }, (_, i) => String(i + 1)), "H", "S", "I", "A"]];
+    const body = studentRows.map((s, i) => {
+      const row: (string | number)[] = [i + 1, s.student_id, s.name];
+      for (let d = 1; d <= daysInMonth; d++) row.push(s.days[d] || "");
+      row.push(s.totals.H, s.totals.S, s.totals.I, s.totals.A);
+      return row;
+    });
+
+    (doc as any).autoTable({
+      startY: 35,
+      head,
+      body,
+      styles: { fontSize: 6, cellPadding: 1, halign: "center" },
+      headStyles: { fillColor: [79, 70, 229], fontSize: 6 },
+      columnStyles: {
+        0: { cellWidth: 7 },
+        1: { cellWidth: 14 },
+        2: { cellWidth: 30, halign: "left" },
+      },
+      didDrawPage: () => {
+        const pageH = doc.internal.pageSize.getHeight();
+        const pageW = doc.internal.pageSize.getWidth();
+        doc.setFontSize(9);
+        doc.text(`${schoolAddress || schoolName}, ........................ ${currentMonth.getFullYear()}`, pageW - 14, pageH - 35, { align: "right" });
+        doc.text(`WALI KELAS ${selectedClass}`, pageW - 14, pageH - 30, { align: "right" });
+        doc.text(waliKelasName ? `( ${waliKelasName} )` : "(..................................)", pageW - 14, pageH - 12, { align: "right" });
+      },
+    });
+
+    doc.save(`Absensi-${selectedClass}-${monthLabel}.pdf`);
+    toast.success("PDF berhasil diunduh!");
+  };
+
+  const getCellColor = (code: string) => {
+    switch (code) {
+      case "H": return "bg-success/15 text-success";
+      case "S": return "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400";
+      case "I": return "bg-warning/15 text-warning";
+      case "A": return "bg-destructive/15 text-destructive";
+      default: return "";
+    }
+  };
 
   return (
     <PremiumGate featureLabel="Rekap & Export" featureKey="canExportReport" requiredPlan="Basic">
-    <div className="space-y-5">
-      <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-foreground">Rekap & Export Absensi</h1>
-        <p className="text-muted-foreground text-xs sm:text-sm">Lihat statistik kehadiran dan export laporan per hari</p>
-      </div>
+      <div className="space-y-5">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Rekap & Export Absensi</h1>
+          <p className="text-muted-foreground text-xs sm:text-sm">Format absensi bulanan nasional per kelas</p>
+        </div>
 
-      {isPremiumFeature && (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-          <Card className="border-0 shadow-card bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30">
-            <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
-              <div className="flex items-center gap-3 flex-1">
-                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shrink-0">
-                  <Crown className="h-5 w-5 text-white" />
+        {isPremiumFeature && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-0 shadow-card bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30">
+              <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                <div className="flex items-center gap-3 flex-1">
+                  <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shrink-0">
+                    <Crown className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-foreground flex items-center gap-2"><Lock className="h-3.5 w-3.5" /> Fitur Premium</h3>
+                    <p className="text-xs text-muted-foreground">Export laporan ke Excel & PDF tersedia di paket <span className="font-semibold">Basic</span> ke atas.</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                    <Lock className="h-3.5 w-3.5" /> Fitur Premium
-                  </h3>
-                  <p className="text-xs text-muted-foreground">
-                    Export laporan ke Excel & PDF tersedia di paket <span className="font-semibold">Basic</span> ke atas. Upgrade sekarang untuk akses penuh!
-                  </p>
-                </div>
-              </div>
-              <Button size="sm" onClick={() => navigate("/subscription")} className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shrink-0">
-                <Crown className="h-3.5 w-3.5 mr-1.5" /> Upgrade Sekarang
-              </Button>
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
-
-      <div className="grid grid-cols-3 gap-3">
-        {[
-          { label: "Total Absensi", value: totalThisMonth, color: "text-primary" },
-          { label: "Hari Aktif", value: daysWithActivity, color: "text-success" },
-          { label: "Rata-rata/Hari", value: avgPerDay, color: "text-foreground" },
-        ].map((s, i) => (
-          <motion.div key={s.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-            <Card className="border-0 shadow-card">
-              <CardContent className="p-3 text-center">
-                <p className={`text-xl sm:text-2xl font-extrabold ${s.color}`}>{s.value}</p>
-                <p className="text-[10px] text-muted-foreground">{s.label}</p>
+                <Button size="sm" onClick={() => navigate("/subscription")} className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shrink-0">
+                  <Crown className="h-3.5 w-3.5 mr-1.5" /> Upgrade
+                </Button>
               </CardContent>
             </Card>
           </motion.div>
-        ))}
-      </div>
+        )}
 
-      <Card className="border-0 shadow-card">
-        <CardContent className="p-4">
-          <h3 className="text-sm font-bold text-foreground mb-3">Statistik Absensi Harian</h3>
-          <div className="h-48">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis dataKey="day" tick={{ fontSize: 10 }} tickLine={false} />
-                <YAxis tick={{ fontSize: 10 }} tickLine={false} allowDecimals={false} />
-                <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: "none", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
-                  labelFormatter={(v) => `Tanggal ${v}`} formatter={(v: number) => [`${v} siswa`, "Absensi"]} />
-                <Line type="monotone" dataKey="jumlah" className="stroke-primary" strokeWidth={2} dot={false} activeDot={{ r: 4, className: "fill-primary" }} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Controls */}
         <Card className="border-0 shadow-card">
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between mb-2">
-              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={prevMonth}><ChevronLeft className="h-3.5 w-3.5" /></Button>
-              <h3 className="text-xs font-bold text-foreground">{currentMonth.toLocaleDateString("id-ID", { month: "long", year: "numeric" })}</h3>
-              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={nextMonth}><ChevronRight className="h-3.5 w-3.5" /></Button>
-            </div>
-            <div className="grid grid-cols-7 gap-0.5 mb-0.5">
-              {["Mi", "Se", "Sl", "Ra", "Ka", "Ju", "Sa"].map(d => (
-                <div key={d} className="text-center text-[9px] font-semibold text-muted-foreground py-0.5">{d}</div>
-              ))}
-            </div>
-            <div className="grid grid-cols-7 gap-0.5">
-              {calendarDays.map((day, idx) => (
-                <button key={idx} disabled={day.date === 0} onClick={() => day.date > 0 && setSelectedDate(day.dateStr)}
-                  className={`relative rounded-md flex flex-col items-center justify-center text-[11px] py-1.5 transition-all
-                    ${day.date === 0 ? "invisible" : "hover:bg-muted cursor-pointer"}
-                    ${selectedDate === day.dateStr ? "ring-1.5 ring-primary bg-primary/10" : ""}
-                    ${new Date().toISOString().slice(0, 10) === day.dateStr ? "bg-primary/5 font-bold" : ""}
-                  `}>
-                  <span className="text-foreground leading-none">{day.date || ""}</span>
-                  {day.count > 0 && <span className={`h-1 w-1 rounded-full mt-0.5 ${getDotColor(day.count)}`} />}
-                </button>
-              ))}
+          <CardContent className="p-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+              {/* Class selector */}
+              <div className="flex-1 w-full sm:w-auto">
+                <label className="text-xs font-semibold text-muted-foreground mb-1 block">Kelas</label>
+                <Select value={selectedClass} onValueChange={setSelectedClass}>
+                  <SelectTrigger className="w-full sm:w-48"><SelectValue placeholder="Pilih Kelas" /></SelectTrigger>
+                  <SelectContent>
+                    {classes.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Month selector */}
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground mb-1 block">Bulan</label>
+                <div className="flex items-center gap-1">
+                  <Button variant="outline" size="icon" className="h-9 w-9" onClick={prevMonth}><ChevronLeft className="h-4 w-4" /></Button>
+                  <span className="text-sm font-semibold text-foreground min-w-[140px] text-center">{monthLabel}</span>
+                  <Button variant="outline" size="icon" className="h-9 w-9" onClick={nextMonth}><ChevronRight className="h-4 w-4" /></Button>
+                </div>
+              </div>
+
+              {/* Export buttons */}
+              <div className="sm:ml-auto flex gap-2">
+                <Button variant="outline" size="sm" disabled={isPremiumFeature} onClick={exportExcel} className="text-xs">
+                  <FileSpreadsheet className="h-3.5 w-3.5 mr-1.5" /> Excel {isPremiumFeature && <Lock className="h-3 w-3 ml-1" />}
+                </Button>
+                <Button variant="outline" size="sm" disabled={isPremiumFeature} onClick={exportPDF} className="text-xs">
+                  <FileText className="h-3.5 w-3.5 mr-1.5" /> PDF {isPremiumFeature && <Lock className="h-3 w-3 ml-1" />}
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        {selectedDate ? (
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-            <Card className="border-0 shadow-card h-full">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-primary" />
-                      {new Date(selectedDate).toLocaleDateString("id-ID", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}
-                    </h3>
-                    <p className="text-xs text-muted-foreground">{selectedLogs.length} absensi tercatat</p>
-                  </div>
-                  <div className="flex gap-1.5">
-                    <Button variant="outline" size="sm" disabled={isPremiumFeature} onClick={() => isPremiumFeature ? toast.error("Upgrade ke paket Basic untuk export") : exportDateExcel(selectedDate)} className="text-xs h-7 px-2">
-                      <FileSpreadsheet className="h-3 w-3 mr-1" /> Excel {isPremiumFeature && <Lock className="h-3 w-3 ml-1" />}
-                    </Button>
-                    <Button variant="outline" size="sm" disabled={isPremiumFeature} onClick={() => isPremiumFeature ? toast.error("Upgrade ke paket Basic untuk export") : exportDatePDF(selectedDate)} className="text-xs h-7 px-2">
-                      <FileText className="h-3 w-3 mr-1" /> PDF {isPremiumFeature && <Lock className="h-3 w-3 ml-1" />}
-                    </Button>
+        {/* Summary cards */}
+        {studentRows.length > 0 && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              { label: "Total Siswa", value: studentRows.length, color: "text-primary" },
+              { label: "Total Hadir", value: studentRows.reduce((a, s) => a + s.totals.H, 0), color: "text-success" },
+              { label: "Total Sakit", value: studentRows.reduce((a, s) => a + s.totals.S, 0), color: "text-blue-500" },
+              { label: "Total Alfa", value: studentRows.reduce((a, s) => a + s.totals.A, 0), color: "text-destructive" },
+            ].map((s, i) => (
+              <motion.div key={s.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+                <Card className="border-0 shadow-card">
+                  <CardContent className="p-3 text-center">
+                    <p className={`text-xl sm:text-2xl font-extrabold ${s.color}`}>{s.value}</p>
+                    <p className="text-[10px] text-muted-foreground">{s.label}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        )}
+
+        {/* National format attendance table */}
+        <Card className="border-0 shadow-card overflow-hidden">
+          <CardContent className="p-0">
+            <div className="p-4 border-b border-border text-center">
+              <h2 className="text-base font-bold text-foreground tracking-wide">ABSENSI SISWA</h2>
+              <p className="text-sm text-muted-foreground font-semibold">BULAN : {monthLabel.toUpperCase()}</p>
+              <p className="text-xs text-muted-foreground">Kelas : {selectedClass || "-"}</p>
+            </div>
+
+            {loading ? (
+              <div className="p-10 text-center text-muted-foreground text-sm">Memuat data...</div>
+            ) : studentRows.length === 0 ? (
+              <div className="p-10 text-center text-muted-foreground text-sm">
+                {selectedClass ? "Tidak ada siswa di kelas ini" : "Pilih kelas untuk melihat rekap"}
+              </div>
+            ) : (
+              <div className="overflow-x-auto" ref={tableRef}>
+                <table className="w-full text-xs border-collapse min-w-[900px]">
+                  <thead>
+                    <tr className="bg-muted/60">
+                      <th rowSpan={2} className="border border-border px-2 py-2 text-center font-bold w-10 sticky left-0 bg-muted/60 z-10">NO</th>
+                      <th rowSpan={2} className="border border-border px-2 py-2 text-center font-bold w-20">NIS</th>
+                      <th rowSpan={2} className="border border-border px-2 py-2 text-left font-bold min-w-[140px]">NAMA SISWA</th>
+                      <th colSpan={daysInMonth} className="border border-border px-1 py-1.5 text-center font-bold">TANGGAL</th>
+                      <th colSpan={4} className="border border-border px-1 py-1.5 text-center font-bold">KET</th>
+                    </tr>
+                    <tr className="bg-muted/40">
+                      {Array.from({ length: daysInMonth }, (_, i) => (
+                        <th key={i} className="border border-border px-0.5 py-1 text-center font-semibold w-7 text-[10px]">{i + 1}</th>
+                      ))}
+                      <th className="border border-border px-1 py-1 text-center font-bold text-success w-7">H</th>
+                      <th className="border border-border px-1 py-1 text-center font-bold text-blue-500 w-7">S</th>
+                      <th className="border border-border px-1 py-1 text-center font-bold text-warning w-7">I</th>
+                      <th className="border border-border px-1 py-1 text-center font-bold text-destructive w-7">A</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {studentRows.map((s, i) => (
+                      <tr key={s.id} className="hover:bg-muted/20 transition-colors">
+                        <td className="border border-border px-1 py-1.5 text-center font-medium sticky left-0 bg-card z-10">{i + 1}</td>
+                        <td className="border border-border px-2 py-1.5 text-center font-mono text-[10px]">{s.student_id}</td>
+                        <td className="border border-border px-2 py-1.5 text-left font-medium truncate max-w-[160px]">{s.name}</td>
+                        {Array.from({ length: daysInMonth }, (_, d) => {
+                          const code = s.days[d + 1] || "";
+                          return (
+                            <td key={d} className={`border border-border px-0 py-1 text-center text-[10px] font-bold ${getCellColor(code)}`}>
+                              {code}
+                            </td>
+                          );
+                        })}
+                        <td className="border border-border px-1 py-1 text-center font-bold text-success">{s.totals.H || ""}</td>
+                        <td className="border border-border px-1 py-1 text-center font-bold text-blue-500">{s.totals.S || ""}</td>
+                        <td className="border border-border px-1 py-1 text-center font-bold text-warning">{s.totals.I || ""}</td>
+                        <td className="border border-border px-1 py-1 text-center font-bold text-destructive">{s.totals.A || ""}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Signature footer */}
+            {studentRows.length > 0 && (
+              <div className="p-6 border-t border-border">
+                <div className="flex justify-end">
+                  <div className="text-center text-xs text-muted-foreground space-y-1">
+                    <p>{schoolAddress || schoolName}, ........................ {currentMonth.getFullYear()}</p>
+                    <p className="font-semibold text-foreground">WALI KELAS {selectedClass}</p>
+                    <div className="h-16" />
+                    <p className="font-semibold text-foreground border-b border-foreground inline-block min-w-[180px]">
+                      {waliKelasName ? `( ${waliKelasName} )` : "(.................................)"}
+                    </p>
                   </div>
                 </div>
-                {selectedLogs.length > 0 ? (
-                  <div className="space-y-1.5 max-h-52 overflow-y-auto">
-                    {selectedLogs.map((l, i) => (
-                      <div key={l.id} className="flex items-center gap-2 p-2 rounded-lg bg-muted/50 text-sm">
-                        <span className="text-muted-foreground text-xs w-5">{i + 1}.</span>
-                        <span className="font-medium text-foreground flex-1 truncate">{l.students?.name || "-"}</span>
-                        <Badge variant="secondary" className="text-[10px]">{l.students?.class}</Badge>
-                        <Badge variant="secondary" className="text-[10px]">{STATUS_LABELS[l.status] || l.status}</Badge>
-                        <span className="text-xs text-muted-foreground">{l.time?.slice(0, 5)}</span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground text-center py-4">Tidak ada data absensi</p>
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
-        ) : (
-          <Card className="border-0 shadow-card flex items-center justify-center">
-            <CardContent className="p-4 text-center">
-              <Calendar className="h-8 w-8 text-muted-foreground/20 mx-auto mb-2" />
-              <p className="text-xs text-muted-foreground">Pilih tanggal di kalender untuk melihat detail</p>
-            </CardContent>
-          </Card>
-        )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
-    </div>
     </PremiumGate>
   );
 };
