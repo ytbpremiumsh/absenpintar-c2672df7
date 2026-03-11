@@ -106,14 +106,7 @@ const LandingPage = () => {
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-background/90 backdrop-blur-xl shadow-sm border-b border-border" : "bg-transparent"}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-18 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            {get("footer_logo") ? (
-              <img src={get("footer_logo")} alt="Logo" className="h-9 w-9 rounded-xl object-cover" />
-            ) : (
-              <div className="h-9 w-9 rounded-xl gradient-primary flex items-center justify-center shadow-lg shadow-primary/25">
-                <GraduationCap className="h-4.5 w-4.5 text-primary-foreground" />
-              </div>
-            )}
-            <span className="font-extrabold text-foreground text-sm tracking-tight hidden sm:inline">Smart School Attendance</span>
+            <img src="/images/logo-absensi-pintar.png" alt="Absensi Pintar" className="h-9 sm:h-10 object-contain" />
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
             <button onClick={() => navigate("/login")} className="text-sm font-semibold text-muted-foreground hover:text-foreground px-3 sm:px-4 py-2 transition-colors rounded-xl hover:bg-muted">

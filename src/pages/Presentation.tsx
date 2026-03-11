@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Shield, QrCode, Monitor, Users, GraduationCap, BarChart3, Clock, Bell, Globe, FileText, Settings, ChevronRight, CheckCircle2, Zap, Smartphone, Sparkles, Sun, Moon, ArrowDown, Star, TrendingUp, Eye, Download, UserCheck, ScanLine, BookOpen } from "lucide-react";
+import { Loader2, Shield, QrCode, Monitor, Users, GraduationCap, BarChart3, Clock, Bell, Globe, FileText, Settings, ChevronRight, CheckCircle2, Zap, Smartphone, Sparkles, Sun, Moon, ArrowDown, Star, TrendingUp, Eye, Download, UserCheck, ScanLine, BookOpen, AlertTriangle, XCircle, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { Navigate } from "react-router-dom";
 
@@ -8,6 +8,24 @@ const fadeUp = {
   hidden: { opacity: 0, y: 40 },
   visible: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.1, duration: 0.6 } }),
 };
+
+const PROBLEMS = [
+  { icon: AlertTriangle, title: "Absensi Manual", desc: "Pencatatan kehadiran masih pakai buku tulis, rawan kesalahan dan manipulasi data." },
+  { icon: Clock, title: "Proses Lambat", desc: "Guru harus memanggil siswa satu per satu untuk absensi, memakan waktu belajar." },
+  { icon: XCircle, title: "Tidak Ada Rekap Digital", desc: "Sekolah kesulitan membuat laporan kehadiran bulanan karena data tidak terdigitalisasi." },
+  { icon: Users, title: "Orang Tua Tidak Tahu", desc: "Wali murid tidak mendapat informasi real-time tentang kehadiran anaknya di sekolah." },
+  { icon: FileText, title: "Laporan Tidak Akurat", desc: "Data absensi manual sulit diaudit dan sering terjadi ketidakcocokan." },
+  { icon: Globe, title: "Tidak Transparan", desc: "Tidak ada monitoring kehadiran yang bisa diakses orang tua secara online." },
+];
+
+const SOLUTIONS = [
+  { icon: QrCode, problem: "Absensi Manual", solution: "Scan Barcode Instan", desc: "Siswa cukup scan barcode untuk mencatat kehadiran. Proses kurang dari 1 detik." },
+  { icon: UserCheck, problem: "Proses Lambat", solution: "Face Recognition AI", desc: "AI mengenali wajah siswa dan mencatat absensi secara otomatis tanpa sentuhan." },
+  { icon: BarChart3, problem: "Tidak Ada Rekap", solution: "Rekap Otomatis", desc: "Rekap harian, mingguan, dan bulanan dibuat otomatis dengan statistik lengkap." },
+  { icon: Monitor, problem: "Tidak Transparan", solution: "Dashboard Real-Time", desc: "Dashboard menampilkan statistik kehadiran secara live — hadir, izin, sakit, alfa." },
+  { icon: Bell, problem: "Orang Tua Tidak Tahu", solution: "Notifikasi WhatsApp", desc: "Wali murid otomatis menerima notifikasi WhatsApp saat anak tercatat hadir." },
+  { icon: FileText, problem: "Laporan Tidak Akurat", solution: "Export Excel & PDF", desc: "Laporan kehadiran lengkap bisa di-export dalam format Excel atau PDF kapan saja." },
+];
 
 const FEATURES = [
   {
@@ -57,7 +75,7 @@ const FEATURES = [
   },
   {
     title: "Manajemen Kelas",
-    subtitle: "7 Kelas Terorganisir dengan Statistik Lengkap",
+    subtitle: "Kelas Terorganisir dengan Statistik Lengkap",
     desc: "Kelola seluruh kelas dengan tampilan card visual yang menampilkan jumlah siswa, progress absensi harian, dan statistik kehadiran per kelas. Tambah, edit, atau hapus kelas dengan mudah.",
     points: [
       "Card visual per kelas: nama, jumlah siswa, progress absensi harian",
@@ -72,7 +90,7 @@ const FEATURES = [
   },
   {
     title: "Database Siswa Lengkap",
-    subtitle: "Data 29 Siswa dalam Genggaman",
+    subtitle: "Data Siswa dalam Genggaman",
     desc: "Sistem manajemen data siswa komprehensif dengan tampilan accordion per kelas. Mendukung import/export Excel, pencetakan QR Code massal, dan fitur naik kelas otomatis.",
     points: [
       "Tampilan accordion per kelas — data terorganisir dan mudah dinavigasi",
@@ -181,7 +199,7 @@ const STATS = [
 const Presentation = () => {
   const [loading, setLoading] = useState(true);
   const [isPublic, setIsPublic] = useState(false);
-  const [title, setTitle] = useState("Smart Pickup School System");
+  const [title, setTitle] = useState("Absensi Pintar");
   const [subtitle, setSubtitle] = useState("");
   const [dark, setDark] = useState(true);
 
@@ -225,10 +243,7 @@ const Presentation = () => {
       <nav className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-2xl border-b ${navBg} transition-colors duration-300`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/25">
-              <Shield className="h-4 w-4 text-white" />
-            </div>
-            <span className="font-bold text-sm tracking-tight hidden sm:block">AbsenPintar</span>
+            <img src="/images/logo-absensi-pintar.png" alt="Absensi Pintar" className="h-9 object-contain" />
           </div>
           <div className="flex items-center gap-2">
             <button onClick={() => setDark(!d)} className={`h-9 w-9 rounded-xl flex items-center justify-center transition-all ${d ? "bg-white/10 hover:bg-white/15 text-yellow-300" : "bg-slate-100 hover:bg-slate-200 text-slate-600"}`}>
@@ -256,15 +271,15 @@ const Presentation = () => {
         </motion.h1>
 
         <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.6 }} className={`mt-6 text-base sm:text-lg md:text-xl ${muted} max-w-2xl leading-relaxed`}>
-          {subtitle || "Sistem absensi & penjemputan siswa modern yang mengutamakan keamanan, efisiensi, dan transparansi. Dirancang khusus untuk sekolah Indonesia."}
+          {subtitle || "Sistem absensi siswa modern yang mengutamakan keamanan, efisiensi, dan transparansi. Dirancang khusus untuk sekolah Indonesia."}
         </motion.p>
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="mt-10 flex flex-col sm:flex-row gap-3">
           <a href="/register" className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-500 to-violet-600 text-white px-8 py-3.5 rounded-2xl font-semibold shadow-2xl shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all text-sm">
             <Zap className="h-4 w-4" /> Daftar Gratis Sekarang
           </a>
-          <a href="#features" className={`inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-2xl font-semibold transition-all text-sm border ${d ? "bg-white/5 hover:bg-white/10 border-white/10" : "bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700"}`}>
-            Lihat Fitur <ArrowDown className="h-4 w-4" />
+          <a href="#problems" className={`inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-2xl font-semibold transition-all text-sm border ${d ? "bg-white/5 hover:bg-white/10 border-white/10" : "bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700"}`}>
+            Lihat Selengkapnya <ArrowDown className="h-4 w-4" />
           </a>
         </motion.div>
 
@@ -286,6 +301,77 @@ const Presentation = () => {
         </motion.div>
       </section>
 
+      {/* ===== PERMASALAHAN & SOLUSI ===== */}
+      <section id="problems" className={`py-20 sm:py-32 ${d ? "bg-white/[0.01]" : "bg-slate-50/80"}`}>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          {/* Problems */}
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-14">
+            <span className={`text-xs font-bold uppercase tracking-[0.2em] ${d ? "text-red-400" : "text-red-500"} mb-3 block`}>Latar Belakang</span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
+              Masalah Absensi di Sekolah
+            </h2>
+            <p className={`mt-3 ${muted} max-w-2xl mx-auto text-sm sm:text-base`}>Sistem absensi manual di sekolah Indonesia masih menyimpan banyak masalah dan ketidakefisienan.</p>
+          </motion.div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-16">
+            {PROBLEMS.map((p, i) => {
+              const Icon = p.icon;
+              return (
+                <motion.div key={p.title} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
+                  className={`group rounded-2xl border p-6 transition-all duration-300 ${d ? "bg-red-500/[0.03] border-red-500/10 hover:border-red-500/20" : "bg-white border-red-100 hover:border-red-200 hover:shadow-lg"}`}>
+                  <div className={`h-10 w-10 rounded-xl ${d ? "bg-red-500/10" : "bg-red-50"} flex items-center justify-center mb-4`}>
+                    <Icon className={`h-5 w-5 ${d ? "text-red-400" : "text-red-500"}`} />
+                  </div>
+                  <h3 className="font-bold text-sm mb-1.5">{p.title}</h3>
+                  <p className={`text-xs leading-relaxed ${muted}`}>{p.desc}</p>
+                </motion.div>
+              );
+            })}
+          </div>
+
+          {/* Arrow */}
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="flex flex-col items-center mb-16">
+            <div className="h-14 w-14 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-xl shadow-indigo-500/20">
+              <ArrowDown className="h-6 w-6 text-white" />
+            </div>
+            <p className={`mt-3 font-bold text-sm ${d ? "text-indigo-400" : "text-indigo-600"}`}>Solusi Kami</p>
+          </motion.div>
+
+          {/* Solutions */}
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-14">
+            <span className={`text-xs font-bold uppercase tracking-[0.2em] ${d ? "text-indigo-400" : "text-indigo-500"} mb-3 block`}>Jawaban Tepat</span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
+              Smart School Attendance System
+            </h2>
+            <p className={`mt-3 ${muted} max-w-2xl mx-auto text-sm sm:text-base`}>Setiap permasalahan memiliki solusi teknologi modern yang terintegrasi dalam satu platform.</p>
+          </motion.div>
+
+          <div className="grid sm:grid-cols-2 gap-4">
+            {SOLUTIONS.map((s, i) => {
+              const Icon = s.icon;
+              return (
+                <motion.div key={s.solution} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
+                  className={`group rounded-2xl border p-6 transition-all duration-300 ${d ? "bg-indigo-500/[0.03] border-indigo-500/10 hover:border-indigo-500/20" : "bg-white border-indigo-100 hover:border-indigo-200 hover:shadow-lg"}`}>
+                  <div className="flex items-start gap-4">
+                    <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shrink-0 shadow-lg shadow-indigo-500/15">
+                      <Icon className="h-5 w-5 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-2 flex-wrap">
+                        <span className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full ${d ? "bg-red-500/10 text-red-400" : "bg-red-50 text-red-500"}`}>{s.problem}</span>
+                        <ArrowRight className={`h-3.5 w-3.5 shrink-0 ${d ? "text-indigo-400" : "text-indigo-500"}`} />
+                        <span className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full ${d ? "bg-indigo-500/10 text-indigo-400" : "bg-indigo-50 text-indigo-600"}`}>{s.solution}</span>
+                      </div>
+                      <p className={`text-sm leading-relaxed ${muted}`}>{s.desc}</p>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
       {/* ===== FEATURES ===== */}
       <section id="features" className="relative py-20 sm:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -296,7 +382,7 @@ const Presentation = () => {
               <span className={`bg-gradient-to-r ${d ? "from-indigo-300 to-violet-300" : "from-indigo-600 to-violet-500"} bg-clip-text text-transparent`}>Butuhkan</span>
             </h2>
             <p className={`mt-4 ${muted} max-w-xl mx-auto text-sm sm:text-base`}>
-              10 fitur utama yang dirancang untuk mempermudah proses absensi dan penjemputan siswa secara digital, aman, dan efisien.
+              10 fitur utama yang dirancang untuk mempermudah proses absensi siswa secara digital, aman, dan efisien.
             </p>
           </motion.div>
 
@@ -429,13 +515,10 @@ const Presentation = () => {
       <footer className={`border-t py-10 ${d ? "border-white/5" : "border-slate-200"}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center">
-              <Shield className="h-3.5 w-3.5 text-white" />
-            </div>
-            <span className="font-bold text-xs">AbsenPintar</span>
+            <img src="/images/logo-absensi-pintar.png" alt="Absensi Pintar" className="h-7 object-contain" />
           </div>
           <p className={`text-xs ${d ? "text-slate-600" : "text-slate-400"}`}>
-            © {new Date().getFullYear()} AbsenPintar. Sistem Absensi & Penjemputan Siswa Modern.
+            © {new Date().getFullYear()} Absensi Pintar. Smart School Attendance Platform.
           </p>
         </div>
       </footer>
