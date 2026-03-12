@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  Loader2, ArrowDown, Shield, ChevronRight, Zap, Sun, Moon, Sparkles,
+  Loader2, ArrowDown, Shield, ChevronRight, Zap, Sun, Moon,
   TrendingUp, DollarSign, Users, Building2, BarChart3, Target, Layers,
   CheckCircle2, Rocket, Globe, PieChart, ArrowUpRight, Repeat, CreditCard,
-  School, Star, Award, Heart, Lightbulb, ShieldCheck,
+  School, Star, Heart, ShieldCheck, AlertTriangle, BookX, Clock, Eye, EyeOff,
+  FileX, QrCode, Bell, Smartphone, BarChart, FileCheck, UserCheck, Wifi,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Navigate } from "react-router-dom";
@@ -19,6 +20,93 @@ const scaleIn = {
   visible: { opacity: 1, scale: 1, transition: { duration: 0.8 } },
 };
 
+/* ═══════════════════════════════════════════
+   LATAR BELAKANG MASALAH
+   ═══════════════════════════════════════════ */
+const PROBLEMS = [
+  {
+    icon: BookX,
+    title: "Absensi Manual Rawan Kesalahan",
+    desc: "Pencatatan absensi masih menggunakan buku tulis atau kertas yang mudah rusak, hilang, dan rentan manipulasi data.",
+  },
+  {
+    icon: Clock,
+    title: "Proses Rekap Lambat & Memakan Waktu",
+    desc: "Guru harus merekap data absensi secara manual setiap hari, minggu, dan bulan — membuang waktu yang bisa digunakan untuk mengajar.",
+  },
+  {
+    icon: EyeOff,
+    title: "Orang Tua Tidak Tahu Status Anak",
+    desc: "Wali murid tidak memiliki akses real-time untuk mengetahui apakah anaknya sudah hadir di sekolah atau belum.",
+  },
+  {
+    icon: FileX,
+    title: "Laporan Tidak Akurat & Sulit Diakses",
+    desc: "Data absensi tersebar di banyak buku/kertas sehingga sulit dikompilasi menjadi laporan yang akurat dan komprehensif.",
+  },
+  {
+    icon: AlertTriangle,
+    title: "Tidak Ada Sistem Notifikasi Otomatis",
+    desc: "Sekolah tidak memiliki cara otomatis untuk menginformasikan status kehadiran siswa kepada wali murid secara instan.",
+  },
+  {
+    icon: Eye,
+    title: "Kurangnya Transparansi & Akuntabilitas",
+    desc: "Kepala sekolah dan dinas pendidikan kesulitan memantau tingkat kehadiran karena data tidak terpusat dan tidak real-time.",
+  },
+];
+
+/* ═══════════════════════════════════════════
+   SOLUSI ABSENSI PINTAR
+   ═══════════════════════════════════════════ */
+const SOLUTIONS = [
+  {
+    icon: QrCode,
+    problem: "Absensi Manual",
+    solution: "Scan Barcode Instan",
+    desc: "Siswa cukup scan barcode untuk mencatat kehadiran secara otomatis — akurat, cepat, dan tanpa manipulasi.",
+    gradient: "from-blue-500 to-indigo-600",
+  },
+  {
+    icon: BarChart,
+    problem: "Rekap Lambat",
+    solution: "Rekap & Export Otomatis",
+    desc: "Rekap harian, mingguan, dan bulanan dihasilkan otomatis. Export ke Excel/PDF dalam satu klik.",
+    gradient: "from-emerald-500 to-teal-600",
+  },
+  {
+    icon: Smartphone,
+    problem: "Orang Tua Tidak Tahu",
+    solution: "Live Monitor & Notifikasi WA",
+    desc: "Wali murid bisa memantau kehadiran anak secara real-time melalui link publik dan mendapat notifikasi WhatsApp otomatis.",
+    gradient: "from-violet-500 to-purple-600",
+  },
+  {
+    icon: FileCheck,
+    problem: "Laporan Tidak Akurat",
+    solution: "Dashboard Analitik Lengkap",
+    desc: "Dashboard menampilkan statistik kehadiran per kelas, per siswa, dan per periode dengan visualisasi data yang jelas.",
+    gradient: "from-amber-500 to-orange-600",
+  },
+  {
+    icon: Bell,
+    problem: "Tidak Ada Notifikasi",
+    solution: "WhatsApp Otomatis",
+    desc: "Setiap kali siswa scan absensi, notifikasi otomatis terkirim ke nomor WhatsApp wali murid — tanpa intervensi manual.",
+    gradient: "from-green-500 to-emerald-600",
+  },
+  {
+    icon: UserCheck,
+    problem: "Kurang Transparan",
+    solution: "Monitoring Publik Real-time",
+    desc: "Link monitoring publik memungkinkan siapa saja memantau status kehadiran kelas secara transparan dan terbuka.",
+    gradient: "from-pink-500 to-rose-600",
+  },
+];
+
+/* ═══════════════════════════════════════════
+   REVENUE STREAMS
+   ═══════════════════════════════════════════ */
 const REVENUE_STREAMS = [
   {
     icon: Repeat,
@@ -29,7 +117,7 @@ const REVENUE_STREAMS = [
       "Paket bertingkat (Starter, Professional, Enterprise) menyesuaikan skala sekolah",
       "Upgrade otomatis saat jumlah siswa melebihi kuota paket",
       "Retensi tinggi karena sistem menjadi bagian dari operasional harian sekolah",
-      "Revenue churn sangat rendah — sekolah tidak mudah berpindah setelah data terintegrasi",
+      "Revenue churn sangat rendah — data terintegrasi membuat switching cost tinggi",
     ],
     gradient: "from-emerald-500 via-teal-500 to-cyan-600",
     glow: "shadow-emerald-500/20",
@@ -41,7 +129,7 @@ const REVENUE_STREAMS = [
     desc: "Paket khusus untuk yayasan atau grup sekolah yang mengelola beberapa cabang sekaligus dalam satu dashboard terpusat.",
     details: [
       "Harga premium untuk manajemen multi-cabang terpusat",
-      "Dashboard grup dengan analitik lintas cabang",
+      "Dashboard grup dengan analitik kehadiran lintas cabang",
       "Custom branding per cabang sekolah",
       "Dedicated account manager untuk enterprise client",
       "SLA (Service Level Agreement) khusus dengan uptime 99.9%",
@@ -53,11 +141,11 @@ const REVENUE_STREAMS = [
   {
     icon: Globe,
     title: "WhatsApp Notification Service",
-    desc: "Layanan notifikasi WhatsApp otomatis sebagai add-on premium yang menghasilkan pendapatan tambahan per pesan.",
+    desc: "Layanan notifikasi WhatsApp otomatis ke wali murid sebagai add-on premium yang menghasilkan pendapatan tambahan.",
     details: [
       "Biaya per pesan atau paket pesan bulanan sebagai add-on",
       "Margin tinggi karena volume penggunaan besar per sekolah",
-      "Notifikasi otomatis ke wali murid setiap anak dijemput",
+      "Notifikasi otomatis ke wali murid saat siswa hadir/pulang",
       "Meningkatkan kepuasan dan loyalitas pelanggan",
       "Potensi ekspansi ke notifikasi akademik, jadwal, dan pengumuman",
     ],
@@ -68,7 +156,7 @@ const REVENUE_STREAMS = [
   {
     icon: Layers,
     title: "Kustomisasi & White Label",
-    desc: "Layanan kustomisasi untuk sekolah yang menginginkan branding sendiri dan fitur khusus sesuai kebutuhan unik mereka.",
+    desc: "Layanan kustomisasi untuk sekolah yang menginginkan branding sendiri dan fitur khusus sesuai kebutuhan.",
     details: [
       "White-label solution dengan branding sekolah sepenuhnya",
       "Custom development untuk fitur tambahan",
@@ -88,7 +176,7 @@ const PRICING_TIERS = [
     price: "Rp 99.000",
     period: "/bulan",
     students: "≤ 100 siswa",
-    features: ["Dashboard & Monitoring", "Scan QR Code", "Kartu QR Siswa", "Riwayat 30 Hari", "1 Admin"],
+    features: ["Dashboard & Monitoring", "Scan Barcode", "Kartu Barcode Siswa", "Riwayat 30 Hari", "1 Admin"],
     highlight: false,
     gradient: "from-slate-500 to-slate-600",
   },
@@ -123,15 +211,15 @@ const GROWTH_MILESTONES = [
   { quarter: "Q1-Q2", title: "Foundation", schools: "50 sekolah", revenue: "Rp 12.5 jt/bln", focus: "Akuisisi awal, product-market fit, testimonial dari early adopters", color: "from-blue-500 to-indigo-500" },
   { quarter: "Q3-Q4", title: "Growth", schools: "200 sekolah", revenue: "Rp 50 jt/bln", focus: "Referral program, partnership dinas pendidikan, ekspansi regional", color: "from-indigo-500 to-violet-500" },
   { quarter: "Tahun 2", title: "Scale", schools: "1.000 sekolah", revenue: "Rp 250 jt/bln", focus: "Tim sales dedicated, enterprise deals, ekspansi nasional", color: "from-violet-500 to-purple-500" },
-  { quarter: "Tahun 3", title: "Dominance", schools: "5.000+ sekolah", revenue: "Rp 1.25 M/bln", focus: "Market leader, ekspansi produk (akademik, absensi), ARR Rp 15M+", color: "from-purple-500 to-pink-500" },
+  { quarter: "Tahun 3", title: "Dominance", schools: "5.000+ sekolah", revenue: "Rp 1.25 M/bln", focus: "Market leader, ekspansi fitur akademik, ARR Rp 15M+", color: "from-purple-500 to-pink-500" },
 ];
 
 const COMPETITIVE_ADVANTAGES = [
-  { icon: Zap, title: "Time to Value < 5 Menit", desc: "Setup instan — import data siswa dari Excel, cetak QR, langsung operasional. Kompetitor butuh berminggu-minggu untuk implementasi." },
+  { icon: Zap, title: "Time to Value < 5 Menit", desc: "Setup instan — import data siswa dari Excel, cetak barcode, langsung operasional. Kompetitor butuh berminggu-minggu." },
   { icon: CreditCard, title: "Harga Terjangkau", desc: "Mulai dari Rp 99.000/bulan — jauh lebih murah dari solusi enterprise yang bisa mencapai jutaan rupiah per bulan." },
-  { icon: ShieldCheck, title: "Keamanan Terverifikasi", desc: "Setiap penjemputan melalui verifikasi QR Code. Tidak ada siswa yang bisa dijemput tanpa proses verifikasi digital." },
+  { icon: ShieldCheck, title: "Keamanan Terverifikasi", desc: "Setiap absensi melalui verifikasi barcode digital. Data tersimpan aman di cloud dengan enkripsi end-to-end." },
   { icon: Heart, title: "Pengalaman Pengguna Terbaik", desc: "UI/UX modern yang intuitif. Staf sekolah dan wali murid bisa menggunakan tanpa pelatihan khusus." },
-  { icon: Globe, title: "Transparansi untuk Wali Murid", desc: "Live Monitor Publik + notifikasi WhatsApp otomatis — wali murid selalu tahu status penjemputan anak mereka." },
+  { icon: Globe, title: "Transparansi untuk Wali Murid", desc: "Live Monitor Publik + notifikasi WhatsApp otomatis — wali murid selalu tahu status kehadiran anak mereka." },
   { icon: Rocket, title: "Skalabilitas Tanpa Batas", desc: "Arsitektur cloud-native yang bisa melayani dari 30 siswa hingga ribuan siswa tanpa degradasi performa." },
 ];
 
@@ -154,7 +242,7 @@ const STATS = [
 const BusinessModel = () => {
   const [loading, setLoading] = useState(true);
   const [isPublic, setIsPublic] = useState(false);
-  const [title, setTitle] = useState("Smart Pickup School System");
+  const [title, setTitle] = useState("Absensi Pintar");
   const [subtitle, setSubtitle] = useState("");
   const [dark, setDark] = useState(false);
 
@@ -186,7 +274,6 @@ const BusinessModel = () => {
   const sectionAlt = dark ? "bg-white/[0.01]" : "bg-slate-50/80";
   const cardBg = dark ? "bg-white/[0.03] border-white/[0.06] hover:border-white/[0.12] hover:bg-white/[0.06]" : "bg-white border-slate-200/80 hover:border-indigo-200 hover:shadow-lg hover:shadow-indigo-500/5";
   const checkColor = dark ? "text-emerald-400" : "text-emerald-500";
-  const sectionDesc = dark ? "text-slate-300" : "text-slate-600";
   const detailText = dark ? "text-slate-400" : "text-slate-500";
   const dividerColor = dark ? "bg-slate-700" : "bg-slate-300";
   const badgeLabel = dark ? "text-slate-500" : "text-slate-400";
@@ -204,6 +291,9 @@ const BusinessModel = () => {
   const whyCardBg = dark ? "bg-white/[0.02] border-white/[0.06] hover:border-white/[0.12]" : "bg-white border-slate-200/80 hover:border-indigo-200 hover:shadow-lg";
   const whyIconBg = dark ? "bg-gradient-to-br from-violet-600 to-indigo-600 shadow-violet-500/20" : "bg-gradient-to-br from-indigo-500 to-violet-600 shadow-indigo-500/20";
   const highlightCardBg = dark ? "bg-gradient-to-br from-indigo-950/60 to-violet-950/60 border-indigo-500/30" : "bg-gradient-to-br from-indigo-50 to-violet-50 border-indigo-300";
+  const problemCardBg = dark ? "bg-red-950/20 border-red-500/20" : "bg-red-50/80 border-red-200/80";
+  const problemIconBg = dark ? "bg-red-500/20 text-red-400" : "bg-red-100 text-red-500";
+  const solutionCardBg = dark ? "bg-emerald-950/20 border-emerald-500/20" : "bg-emerald-50/50 border-emerald-200/80";
 
   return (
     <div className={`min-h-screen ${bg} overflow-x-hidden transition-colors duration-300`} style={{ fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
@@ -217,16 +307,13 @@ const BusinessModel = () => {
       <nav className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-xl border-b ${navBg} transition-colors duration-300`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-              <TrendingUp className="h-4 w-4 text-white" />
-            </div>
-            <span className={`font-bold text-sm tracking-tight hidden sm:block ${navText}`}>Smart Pickup — Business Model</span>
+            <img src="/images/logo-absensi-pintar.png" alt="Absensi Pintar" className="h-9 object-contain" />
+            <span className={`font-bold text-sm tracking-tight hidden sm:block ${navText}`}>Absensi Pintar — Model Bisnis</span>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setDark(!dark)}
               className={`h-9 w-9 rounded-xl flex items-center justify-center transition-all duration-300 ${dark ? "bg-white/10 hover:bg-white/15 text-yellow-300" : "bg-slate-100 hover:bg-slate-200 text-slate-600"}`}
-              title={dark ? "Mode Terang" : "Mode Gelap"}
             >
               {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
@@ -240,7 +327,7 @@ const BusinessModel = () => {
         </div>
       </nav>
 
-      {/* Hero */}
+      {/* ═══════════ HERO ═══════════ */}
       <section className="min-h-screen flex flex-col items-center justify-center relative px-4 text-center pt-16">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="mb-6">
           <span className={`inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-medium border ${heroBadgeBg}`}>
@@ -252,13 +339,17 @@ const BusinessModel = () => {
           <span className={`bg-gradient-to-b ${heroTitle} bg-clip-text text-transparent`}>{title}</span>
         </motion.h1>
 
-        <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.7 }} className={`mt-6 text-base sm:text-lg md:text-xl ${mutedText} max-w-2xl leading-relaxed`}>
+        <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.7 }} className={`mt-4 text-lg sm:text-xl font-semibold ${dark ? "text-indigo-300" : "text-indigo-600"}`}>
+          Smart School Attendance System
+        </motion.p>
+
+        <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.7 }} className={`mt-4 text-base sm:text-lg md:text-xl ${mutedText} max-w-2xl leading-relaxed`}>
           {subtitle || "Peluang bisnis EdTech dengan model SaaS recurring revenue, gross margin 85%+, dan potensi pasar ratusan miliar rupiah di Indonesia."}
         </motion.p>
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="mt-10 flex flex-col sm:flex-row gap-3">
-          <a href="#market" className={`inline-flex items-center justify-center gap-2 ${ctaBg} text-white px-8 py-3.5 rounded-2xl font-semibold transition-all shadow-2xl text-sm`}>
-            <PieChart className="h-4 w-4" /> Lihat Peluang Pasar
+          <a href="#problems" className={`inline-flex items-center justify-center gap-2 ${ctaBg} text-white px-8 py-3.5 rounded-2xl font-semibold transition-all shadow-2xl text-sm`}>
+            <AlertTriangle className="h-4 w-4" /> Lihat Permasalahan
           </a>
           <a href="#revenue" className={`inline-flex items-center justify-center gap-2 ${secondaryBtn} px-8 py-3.5 rounded-2xl font-semibold transition-all text-sm border`}>
             Model Pendapatan <ArrowDown className="h-4 w-4" />
@@ -280,13 +371,68 @@ const BusinessModel = () => {
         </div>
       </section>
 
-      {/* Market Opportunity */}
+      {/* ═══════════ LATAR BELAKANG MASALAH ═══════════ */}
+      <section id="problems" className={`py-20 sm:py-32 px-4 ${sectionAlt}`}>
+        <div className="max-w-7xl mx-auto">
+          <motion.div custom={0} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
+            <span className={`text-[11px] font-bold uppercase tracking-[0.2em] ${dark ? "text-red-400" : "text-red-600"} mb-4 block`}>Latar Belakang Masalah</span>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">Permasalahan Absensi di Sekolah</h2>
+            <p className={`mt-4 ${mutedText} max-w-2xl mx-auto`}>
+              Mayoritas sekolah di Indonesia masih menggunakan sistem absensi manual yang menimbulkan berbagai kendala serius bagi guru, sekolah, dan orang tua.
+            </p>
+          </motion.div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {PROBLEMS.map((p, i) => (
+              <motion.div key={p.title} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
+                className={`rounded-2xl p-6 sm:p-8 transition-all duration-300 border ${problemCardBg}`}>
+                <div className={`h-12 w-12 rounded-xl ${problemIconBg} flex items-center justify-center mb-5`}>
+                  <p.icon className="h-6 w-6" />
+                </div>
+                <h3 className="font-bold text-lg mb-2">{p.title}</h3>
+                <p className={`${detailText} text-sm leading-relaxed`}>{p.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════ SOLUSI ═══════════ */}
+      <section id="solutions" className="py-20 sm:py-32 px-4">
+        <div className="max-w-7xl mx-auto">
+          <motion.div custom={0} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
+            <span className={`text-[11px] font-bold uppercase tracking-[0.2em] ${dark ? "text-emerald-400" : "text-emerald-600"} mb-4 block`}>Solusi Absensi Pintar</span>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">Solusi untuk Setiap Masalah</h2>
+            <p className={`mt-4 ${mutedText} max-w-2xl mx-auto`}>
+              Absensi Pintar hadir sebagai solusi digital yang menjawab setiap permasalahan absensi di sekolah — dari pencatatan hingga pelaporan.
+            </p>
+          </motion.div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {SOLUTIONS.map((s, i) => (
+              <motion.div key={s.solution} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
+                className={`rounded-2xl p-6 sm:p-8 transition-all duration-300 border ${solutionCardBg}`}>
+                <div className={`h-12 w-12 rounded-xl bg-gradient-to-br ${s.gradient} flex items-center justify-center mb-5 shadow-lg`}>
+                  <s.icon className="h-6 w-6 text-white" />
+                </div>
+                <div className={`text-xs font-bold uppercase tracking-wider mb-2 ${dark ? "text-red-400/60" : "text-red-400"}`}>
+                  ✕ {s.problem}
+                </div>
+                <h3 className={`font-bold text-lg mb-2 ${dark ? "text-emerald-300" : "text-emerald-700"}`}>✓ {s.solution}</h3>
+                <p className={`${detailText} text-sm leading-relaxed`}>{s.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════ MARKET OPPORTUNITY ═══════════ */}
       <section id="market" className={`py-20 sm:py-32 px-4 ${sectionAlt}`}>
         <div className="max-w-7xl mx-auto">
           <motion.div custom={0} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
             <span className={`text-[11px] font-bold uppercase tracking-[0.2em] ${dark ? "text-emerald-400" : "text-emerald-600"} mb-4 block`}>Peluang Pasar</span>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">Pasar yang Sangat Besar & Belum Tergarap</h2>
-            <p className={`mt-4 ${mutedText} max-w-2xl mx-auto`}>Indonesia memiliki ratusan ribu sekolah TK dan SD yang belum memiliki sistem penjemputan digital. Ini adalah peluang blue ocean yang masif.</p>
+            <p className={`mt-4 ${mutedText} max-w-2xl mx-auto`}>Indonesia memiliki ratusan ribu sekolah TK dan SD yang belum memiliki sistem absensi digital. Ini adalah peluang blue ocean yang masif.</p>
           </motion.div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -302,9 +448,15 @@ const BusinessModel = () => {
         </div>
       </section>
 
-      {/* Revenue Streams */}
+      {/* ═══════════ REVENUE STREAMS ═══════════ */}
       <section id="revenue" className="py-20 sm:py-32 px-4">
         <div className="max-w-7xl mx-auto">
+          <motion.div custom={0} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
+            <span className={`text-[11px] font-bold uppercase tracking-[0.2em] ${dark ? "text-indigo-400" : "text-indigo-600"} mb-4 block`}>Sumber Pendapatan</span>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">4 Pilar Pendapatan</h2>
+            <p className={`mt-4 ${mutedText} max-w-2xl mx-auto`}>Model bisnis Absensi Pintar dirancang dengan multiple revenue streams untuk memaksimalkan profitabilitas.</p>
+          </motion.div>
+
           {REVENUE_STREAMS.map((stream, idx) => (
             <div key={stream.title} className={`${idx > 0 ? "mt-20 sm:mt-28" : ""}`}>
               <motion.div custom={0} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} variants={fadeUp} className="mb-12 sm:mb-16">
@@ -318,7 +470,6 @@ const BusinessModel = () => {
               </motion.div>
 
               <div className={`grid lg:grid-cols-2 gap-10 lg:gap-16 items-center ${idx % 2 === 1 ? "lg:[direction:rtl]" : ""}`}>
-                {/* Visual */}
                 <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={scaleIn} className={`${idx % 2 === 1 ? "lg:[direction:ltr]" : ""}`}>
                   <div className={`relative rounded-2xl overflow-hidden border p-8 sm:p-12 ${cardBg} ${stream.glow}`}>
                     <div className={`absolute inset-0 bg-gradient-to-br ${stream.gradient} opacity-5`} />
@@ -326,7 +477,7 @@ const BusinessModel = () => {
                       <div className={`h-20 w-20 rounded-2xl bg-gradient-to-br ${stream.gradient} flex items-center justify-center shadow-2xl`}>
                         <stream.icon className="h-10 w-10 text-white" />
                       </div>
-                      <div className={`text-center`}>
+                      <div className="text-center">
                         <h3 className="font-extrabold text-xl mb-2">{stream.title}</h3>
                         <p className={`${detailText} text-sm`}>{stream.desc}</p>
                       </div>
@@ -334,7 +485,6 @@ const BusinessModel = () => {
                   </div>
                 </motion.div>
 
-                {/* Details */}
                 <motion.div custom={1} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className={`space-y-3 ${idx % 2 === 1 ? "lg:[direction:ltr]" : ""}`}>
                   {stream.details.map((detail, i) => (
                     <motion.div key={i} custom={i + 2} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="flex gap-3 items-start">
@@ -349,7 +499,7 @@ const BusinessModel = () => {
         </div>
       </section>
 
-      {/* Pricing Tiers */}
+      {/* ═══════════ PRICING ═══════════ */}
       <section className={`py-20 sm:py-32 px-4 ${sectionAlt}`}>
         <div className="max-w-7xl mx-auto">
           <motion.div custom={0} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
@@ -389,13 +539,13 @@ const BusinessModel = () => {
         </div>
       </section>
 
-      {/* Unit Economics */}
+      {/* ═══════════ UNIT ECONOMICS ═══════════ */}
       <section className="py-20 sm:py-32 px-4">
         <div className="max-w-7xl mx-auto">
           <motion.div custom={0} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
             <span className={`text-[11px] font-bold uppercase tracking-[0.2em] ${dark ? "text-cyan-400" : "text-cyan-600"} mb-4 block`}>Unit Economics</span>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">Fundamental Bisnis yang Kuat</h2>
-            <p className={`mt-4 ${mutedText} max-w-xl mx-auto`}>Metrik kunci yang menunjukkan keberlanjutan dan profitabilitas model bisnis Smart Pickup.</p>
+            <p className={`mt-4 ${mutedText} max-w-xl mx-auto`}>Metrik kunci yang menunjukkan keberlanjutan dan profitabilitas model bisnis Absensi Pintar.</p>
           </motion.div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
@@ -411,7 +561,7 @@ const BusinessModel = () => {
         </div>
       </section>
 
-      {/* Growth Roadmap */}
+      {/* ═══════════ GROWTH ROADMAP ═══════════ */}
       <section className={`py-20 sm:py-32 px-4 ${sectionAlt}`}>
         <div className="max-w-5xl mx-auto">
           <motion.div custom={0} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
@@ -441,13 +591,13 @@ const BusinessModel = () => {
         </div>
       </section>
 
-      {/* Competitive Advantages */}
+      {/* ═══════════ COMPETITIVE ADVANTAGES ═══════════ */}
       <section className="py-20 sm:py-32 px-4 relative">
         <div className={`absolute inset-0 bg-gradient-to-b from-transparent ${ambientSection} to-transparent pointer-events-none`} />
         <div className="max-w-7xl mx-auto relative z-10">
           <motion.div custom={0} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
             <span className={`text-[11px] font-bold uppercase tracking-[0.2em] ${dark ? "text-violet-400" : "text-indigo-500"} mb-4 block`}>Competitive Moat</span>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">Keunggulan Kompetitif yang Sulit Ditiru</h2>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">Keunggulan Kompetitif</h2>
             <p className={`mt-4 ${mutedText} max-w-xl mx-auto`}>Kombinasi teknologi, harga, dan pengalaman pengguna yang menciptakan barrier to entry bagi kompetitor.</p>
           </motion.div>
 
@@ -466,7 +616,7 @@ const BusinessModel = () => {
         </div>
       </section>
 
-      {/* Final CTA */}
+      {/* ═══════════ FINAL CTA ═══════════ */}
       <section className="py-20 sm:py-32 px-4 relative">
         <div className={`absolute inset-0 bg-gradient-to-t ${ctaSectionBg} to-transparent pointer-events-none`} />
         <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }} className="max-w-3xl mx-auto text-center relative z-10">
@@ -477,7 +627,7 @@ const BusinessModel = () => {
             Siap Menjadi Bagian dari <br className="hidden sm:block" />Revolusi EdTech Indonesia?
           </h2>
           <p className={`${mutedText} text-base sm:text-lg mb-10 max-w-xl mx-auto`}>
-            Dengan pasar yang masif, unit economics yang kuat, dan produk yang sudah siap — Smart Pickup adalah peluang yang tidak boleh dilewatkan.
+            Dengan pasar yang masif, unit economics yang kuat, dan produk yang sudah siap — Absensi Pintar adalah peluang bisnis yang layak dan profitable.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a href="/register" className={`inline-flex items-center justify-center gap-2 ${ctaBg} text-white px-10 py-4 rounded-2xl font-bold transition-all shadow-2xl text-base`}>
@@ -493,7 +643,7 @@ const BusinessModel = () => {
 
       {/* Footer */}
       <footer className={`border-t ${footerBg} py-8 px-4 text-center transition-colors duration-300`}>
-        <p className={`${footerText} text-xs`}>© {new Date().getFullYear()} Smart Pickup School System. All rights reserved.</p>
+        <p className={`${footerText} text-xs`}>© {new Date().getFullYear()} Absensi Pintar — Smart School Attendance System. All rights reserved.</p>
       </footer>
     </div>
   );
