@@ -109,16 +109,39 @@ serve(async (req) => {
     // Send WhatsApp notification using stored template
     if (student.parent_phone) {
       try {
-        // Fetch integration with templates
-        const { data: integration } = await supabase
-          .from('school_integrations')
-          .select('attendance_arrive_template, attendance_depart_template, is_active')
-          .eq('school_id', school_id)
-          .eq('integration_type', 'onesender')
-          .eq('is_active', true)
-          .maybeSingle();
+        // Fetch integration with templates + school name
+        const [integrationRes, schoolRes] = await Promise.all([
+          supabase
+            .from('school_integrations')
+            .select('attendance_arrive_template, attendance_depart_template, is_active')
+            .eq('school_id', school_id)
+            .eq('integration_type', 'onesender')
+            .eq('is_active', true)
+            .maybeSingle(),
+          supabase
+            .from('schools')
+            .select('name')
+            .eq('id', school_id)
+            .single(),
+        ]);
+
+        const integration = integrationRes.data;
+        const schoolName = schoolRes.data?.name || '';
 
         const timeStr = jakartaTime.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Jakarta" });
+        const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+        const dayName = dayNames[jakartaTime.getDay()];
+
+        const applyReplacements = (tpl: string) =>
+          tpl
+            .replace(/\{student_name\}/g, student.name)
+            .replace(/\{class\}/g, student.class)
+            .replace(/\{time\}/g, timeStr)
+            .replace(/\{day\}/g, dayName)
+            .replace(/\{student_id\}/g, student.student_id)
+            .replace(/\{method\}/g, methodLabel)
+            .replace(/\{parent_name\}/g, student.parent_name || '')
+            .replace(/\{school_name\}/g, schoolName);
 
         let message: string;
         if (integration) {
@@ -127,20 +150,14 @@ serve(async (req) => {
             : (integration.attendance_depart_template || '');
 
           if (template) {
-            message = template
-              .replace(/\{student_name\}/g, student.name)
-              .replace(/\{class\}/g, student.class)
-              .replace(/\{time\}/g, timeStr)
-              .replace(/\{student_id\}/g, student.student_id)
-              .replace(/\{method\}/g, methodLabel)
-              .replace(/\{parent_name\}/g, student.parent_name || '');
+            message = applyReplacements(template);
           } else {
             const typeLabel = attendance_type === 'datang' ? 'Datang (Hadir)' : 'Pulang';
-            message = `📋 *Notifikasi Absensi ${typeLabel}*\n\nAnanda *${student.name}* (Kelas ${student.class}) telah tercatat ${typeLabel.toLowerCase()} pada pukul ${timeStr}.\n\nMetode: ${methodLabel}\n\n_Pesan otomatis dari Smart School Attendance System_`;
+            message = `📋 *Notifikasi Absensi ${typeLabel}*\n\n${schoolName}\n\nAnanda *${student.name}* (Kelas ${student.class}) telah tercatat ${typeLabel.toLowerCase()} pada ${dayName}, pukul ${timeStr}.\n\nMetode: ${methodLabel}\n\n_Pesan otomatis dari Smart School Attendance System_`;
           }
         } else {
           const typeLabel = attendance_type === 'datang' ? 'Datang (Hadir)' : 'Pulang';
-          message = `📋 *Notifikasi Absensi ${typeLabel}*\n\nAnanda *${student.name}* (Kelas ${student.class}) telah tercatat ${typeLabel.toLowerCase()} pada pukul ${timeStr}.\n\nMetode: ${methodLabel}\n\n_Pesan otomatis dari Smart School Attendance System_`;
+          message = `📋 *Notifikasi Absensi ${typeLabel}*\n\n${schoolName}\n\nAnanda *${student.name}* (Kelas ${student.class}) telah tercatat ${typeLabel.toLowerCase()} pada ${dayName}, pukul ${timeStr}.\n\nMetode: ${methodLabel}\n\n_Pesan otomatis dari Smart School Attendance System_`;
         }
 
         const waUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/send-whatsapp`;

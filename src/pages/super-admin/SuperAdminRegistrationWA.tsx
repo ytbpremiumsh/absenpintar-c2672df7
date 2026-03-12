@@ -41,13 +41,19 @@ const SuperAdminRegistrationWA = () => {
   const handleSave = async () => {
     setSaving(true);
     const keys = Object.keys(settings) as (keyof typeof settings)[];
-    for (const key of keys) {
-      await supabase
-        .from("platform_settings" as any)
-        .update({ value: settings[key], updated_at: new Date().toISOString() } as any)
-        .eq("key", key);
+    const rows = keys.map((key) => ({
+      key,
+      value: settings[key],
+      updated_at: new Date().toISOString(),
+    }));
+    const { error } = await supabase
+      .from("platform_settings")
+      .upsert(rows, { onConflict: "key" });
+    if (error) {
+      toast.error("Gagal menyimpan: " + error.message);
+    } else {
+      toast.success("Pengaturan notifikasi registrasi berhasil disimpan!");
     }
-    toast.success("Pengaturan notifikasi registrasi berhasil disimpan!");
     setSaving(false);
   };
 
