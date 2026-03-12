@@ -69,12 +69,13 @@ serve(async (req) => {
       if (!classes[s.class]) classes[s.class] = [];
       const logDatang = logs.find((l: any) => l.student_id === s.id && l.attendance_type === 'datang');
       const logPulang = logs.find((l: any) => l.student_id === s.id && l.attendance_type === 'pulang');
+      const autoAlfa = currentTime > attEnd;
       classes[s.class].push({
         id: s.id,
         name: s.name,
         student_id: s.student_id,
         photo_url: s.photo_url,
-        status: logDatang?.status || "belum",
+        status: logDatang?.status || (autoAlfa ? "alfa" : "belum"),
         time: logDatang?.time || null,
         method: logDatang?.method || null,
         datang: logDatang ? { status: logDatang.status, time: logDatang.time, method: logDatang.method } : null,
