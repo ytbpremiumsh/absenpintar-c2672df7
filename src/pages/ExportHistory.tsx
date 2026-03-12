@@ -229,18 +229,19 @@ const ExportHistory = () => {
   // Export PDF
   const exportPDF = () => {
     if (isPremiumFeature) { toast.error("Upgrade ke paket Basic untuk export"); return; }
-    if (!studentRows.length) { toast.error("Tidak ada data"); return; }
+    if (!activeRows.length) { toast.error("Tidak ada data"); return; }
+    const titleLabel = rekapTab === "datang" ? "ABSENSI SISWA" : "REKAP KEPULANGAN SISWA";
 
     const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
     doc.setFontSize(14);
-    doc.text("ABSENSI SISWA", doc.internal.pageSize.getWidth() / 2, 15, { align: "center" });
+    doc.text(titleLabel, doc.internal.pageSize.getWidth() / 2, 15, { align: "center" });
     doc.setFontSize(11);
     doc.text(`BULAN : ${monthLabel.toUpperCase()}`, doc.internal.pageSize.getWidth() / 2, 22, { align: "center" });
     doc.setFontSize(10);
     doc.text(`Kelas : ${selectedClass}`, 14, 30);
 
     const head = [["NO", "NIS", "NAMA", ...Array.from({ length: daysInMonth }, (_, i) => String(i + 1)), "H", "S", "I", "A"]];
-    const body = studentRows.map((s, i) => {
+    const body = activeRows.map((s, i) => {
       const row: (string | number)[] = [i + 1, s.student_id, s.name];
       for (let d = 1; d <= daysInMonth; d++) row.push(s.days[d] || "");
       row.push(s.totals.H, s.totals.S, s.totals.I, s.totals.A);
