@@ -66,11 +66,6 @@ interface LiveEntry {
   created_at: string;
   attendance_type: string;
 }
-  status: string;
-  method: string;
-  time: string;
-  created_at: string;
-}
 
 const LiveDot = () => (
   <span className="relative flex h-2.5 w-2.5">
