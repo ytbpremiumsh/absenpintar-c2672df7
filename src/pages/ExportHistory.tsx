@@ -298,7 +298,8 @@ const ExportHistory = () => {
       },
     });
 
-    doc.save(`Absensi-${selectedClass}-${monthLabel}.pdf`);
+    const filePrefix = rekapTab === "datang" ? "Absensi" : "Kepulangan";
+    doc.save(`${filePrefix}-${selectedClass}-${monthLabel}.pdf`);
     toast.success("PDF berhasil diunduh!");
   };
 
