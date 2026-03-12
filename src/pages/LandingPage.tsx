@@ -170,13 +170,16 @@ const LandingPage = () => {
               </motion.p>
             </div>
 
-            {/* Right: Stats Cards */}
+            {/* Right: Hero Image or Stats */}
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4, duration: 0.7 }}
               className="relative hidden lg:block">
               <div className="relative">
                 {/* Decorative card */}
                 <div className="absolute -top-4 -right-4 w-full h-full rounded-3xl bg-primary/5 border border-primary/10" />
-                <div className="relative bg-card border border-border rounded-3xl p-8 shadow-elevated">
+                <div className="relative bg-card border border-border rounded-3xl p-8 shadow-elevated overflow-hidden">
+                  {get("hero_image") ? (
+                    <img src={get("hero_image")} alt="Absensi Pintar" className="w-full h-auto rounded-2xl object-cover" />
+                  ) : (
                   <div className="grid grid-cols-2 gap-4">
                     {STATS.map((s, i) => (
                       <motion.div key={s.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 + i * 0.1 }}
@@ -187,6 +190,8 @@ const LandingPage = () => {
                       </motion.div>
                     ))}
                   </div>
+                  )}
+                  {!get("hero_image") && (
                   <div className="mt-5 p-4 rounded-xl bg-primary/5 border border-primary/10 flex items-center gap-3">
                     <div className="h-10 w-10 rounded-xl gradient-primary flex items-center justify-center shrink-0">
                       <CheckCircle2 className="h-5 w-5 text-primary-foreground" />
@@ -196,6 +201,7 @@ const LandingPage = () => {
                       <p className="text-xs text-muted-foreground">Platform absensi modern & terpercaya</p>
                     </div>
                   </div>
+                  )}
                 </div>
               </div>
             </motion.div>
