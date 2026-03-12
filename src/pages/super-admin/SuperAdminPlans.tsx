@@ -52,7 +52,7 @@ const SuperAdminPlans = () => {
     setLoading(false);
   };
 
-  useEffect(() => { fetchPlans(); }, []);
+  useEffect(() => { fetchPlans(); fetchShowPricing(); }, []);
 
   const openCreate = () => { setEditing(null); setForm(emptyPlan); setDialogOpen(true); };
   const openEdit = (plan: Plan) => {
