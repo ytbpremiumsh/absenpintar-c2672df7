@@ -30,6 +30,21 @@ const SuperAdminPlans = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Plan | null>(null);
   const [form, setForm] = useState(emptyPlan);
+  const [showPricing, setShowPricing] = useState(true);
+  const [savingToggle, setSavingToggle] = useState(false);
+
+  const fetchShowPricing = async () => {
+    const { data } = await supabase.from("platform_settings").select("value").eq("key", "show_pricing").maybeSingle();
+    setShowPricing(data?.value !== "false");
+  };
+
+  const handleTogglePricing = async (val: boolean) => {
+    setShowPricing(val);
+    setSavingToggle(true);
+    await supabase.from("platform_settings").upsert({ key: "show_pricing", value: val ? "true" : "false", updated_at: new Date().toISOString() }, { onConflict: "key" });
+    setSavingToggle(false);
+    toast.success(val ? "Section harga ditampilkan di Landing Page" : "Section harga disembunyikan dari Landing Page");
+  };
 
   const fetchPlans = async () => {
     const { data } = await supabase.from("subscription_plans").select("*").order("sort_order");
@@ -37,7 +52,7 @@ const SuperAdminPlans = () => {
     setLoading(false);
   };
 
-  useEffect(() => { fetchPlans(); }, []);
+  useEffect(() => { fetchPlans(); fetchShowPricing(); }, []);
 
   const openCreate = () => { setEditing(null); setForm(emptyPlan); setDialogOpen(true); };
   const openEdit = (plan: Plan) => {
@@ -91,6 +106,16 @@ const SuperAdminPlans = () => {
         </div>
         <Button onClick={openCreate} className="gradient-primary text-primary-foreground"><Plus className="h-4 w-4 mr-1" /> Tambah Paket</Button>
       </div>
+
+      <Card className="border-0 shadow-card">
+        <CardContent className="p-4 flex items-center justify-between">
+          <div>
+            <p className="font-medium text-foreground text-sm">Tampilkan Harga di Landing Page</p>
+            <p className="text-xs text-muted-foreground">Toggle untuk menampilkan/menyembunyikan section harga di halaman utama</p>
+          </div>
+          <Switch checked={showPricing} onCheckedChange={handleTogglePricing} disabled={savingToggle} />
+        </CardContent>
+      </Card>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
         {plans.map((plan) => (
