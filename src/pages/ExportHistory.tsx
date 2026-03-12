@@ -474,10 +474,16 @@ const ExportHistory = () => {
                             </td>
                           );
                         })}
-                        <td className="border border-border px-1 py-1 text-center font-bold text-success">{s.totals.H || ""}</td>
-                        <td className="border border-border px-1 py-1 text-center font-bold text-blue-500">{s.totals.S || ""}</td>
-                        <td className="border border-border px-1 py-1 text-center font-bold text-warning">{s.totals.I || ""}</td>
-                        <td className="border border-border px-1 py-1 text-center font-bold text-destructive">{s.totals.A || ""}</td>
+                        {isPulangMode ? (
+                          <td className="border border-border px-1 py-1 text-center font-bold text-success">{s.totals.H || ""}</td>
+                        ) : (
+                          <>
+                            <td className="border border-border px-1 py-1 text-center font-bold text-success">{s.totals.H || ""}</td>
+                            <td className="border border-border px-1 py-1 text-center font-bold text-blue-500">{s.totals.S || ""}</td>
+                            <td className="border border-border px-1 py-1 text-center font-bold text-warning">{s.totals.I || ""}</td>
+                            <td className="border border-border px-1 py-1 text-center font-bold text-destructive">{s.totals.A || ""}</td>
+                          </>
+                        )}
                       </tr>
                     ))}
                   </tbody>
