@@ -164,7 +164,8 @@ const ExportHistory = () => {
   // Export Excel with colored cells via HTML table blob
   const exportExcel = () => {
     if (isPremiumFeature) { toast.error("Upgrade ke paket Basic untuk export"); return; }
-    if (!studentRows.length) { toast.error("Tidak ada data"); return; }
+    if (!activeRows.length) { toast.error("Tidak ada data"); return; }
+    const titleLabel = rekapTab === "datang" ? "ABSENSI SISWA" : "REKAP KEPULANGAN SISWA";
 
     let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
     <head><meta charset="utf-8"><style>
