@@ -219,7 +219,8 @@ const ExportHistory = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `Absensi-${selectedClass}-${monthLabel}.xls`;
+    const filePrefix = rekapTab === "datang" ? "Absensi" : "Kepulangan";
+    a.download = `${filePrefix}-${selectedClass}-${monthLabel}.xls`;
     a.click();
     URL.revokeObjectURL(url);
     toast.success("Excel berhasil diunduh!");
