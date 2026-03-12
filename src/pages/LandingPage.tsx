@@ -84,6 +84,7 @@ const LandingPage = () => {
   const [plans, setPlans] = useState<PlanRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [scrolled, setScrolled] = useState(false);
+  const [showPricing, setShowPricing] = useState(true);
 
   useEffect(() => {
     Promise.all([
@@ -93,6 +94,7 @@ const LandingPage = () => {
       const map: Record<string, string> = {};
       (contentRes.data || []).forEach((item: any) => { map[item.key] = item.value; });
       setContent(map);
+      setShowPricing(map["show_pricing"] !== "false");
       setPlans((plansRes.data as PlanRow[]) || []);
       setLoading(false);
     });

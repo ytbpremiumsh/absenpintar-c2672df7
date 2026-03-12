@@ -26,28 +26,32 @@ interface IntegrationData {
   attendance_depart_template: string;
 }
 
-const DEFAULT_PICKUP_TEMPLATE = `📢 *Notifikasi Penjemputan*\n\nAnanda *{student_name}* (Kelas {class}) telah dijemput pada pukul {time}.\n\nDijemput oleh: {pickup_by}\n\n_Pesan otomatis dari Smart School Pickup System_`;
+const DEFAULT_PICKUP_TEMPLATE = `📢 *Notifikasi Penjemputan*\n\n{school_name}\n\nAnanda *{student_name}* (Kelas {class}) telah dijemput pada {day}, pukul {time}.\n\nDijemput oleh: {pickup_by}\n\n_Pesan otomatis dari Smart School Pickup System_`;
 
-const DEFAULT_ARRIVE_TEMPLATE = `📋 *Notifikasi Absensi Datang*\n\nAnanda *{student_name}* (Kelas {class}) telah tercatat HADIR pada pukul {time}.\n\nNIS: {student_id}\nMetode: {method}\n\n_Pesan otomatis dari Smart School Attendance System_`;
+const DEFAULT_ARRIVE_TEMPLATE = `📋 *Notifikasi Absensi Datang*\n\n{school_name}\n\nAnanda *{student_name}* (Kelas {class}) telah tercatat HADIR pada {day}, pukul {time}.\n\nNIS: {student_id}\nMetode: {method}\n\n_Pesan otomatis dari Smart School Attendance System_`;
 
-const DEFAULT_DEPART_TEMPLATE = `📋 *Notifikasi Absensi Pulang*\n\nAnanda *{student_name}* (Kelas {class}) telah tercatat PULANG pada pukul {time}.\n\nNIS: {student_id}\nMetode: {method}\n\n_Pesan otomatis dari Smart School Attendance System_`;
+const DEFAULT_DEPART_TEMPLATE = `📋 *Notifikasi Absensi Pulang*\n\n{school_name}\n\nAnanda *{student_name}* (Kelas {class}) telah tercatat PULANG pada {day}, pukul {time}.\n\nNIS: {student_id}\nMetode: {method}\n\n_Pesan otomatis dari Smart School Attendance System_`;
 
 const PICKUP_PLACEHOLDERS = [
   { key: "{student_name}", label: "Nama Siswa" },
   { key: "{class}", label: "Kelas" },
   { key: "{time}", label: "Waktu Jemput" },
+  { key: "{day}", label: "Nama Hari" },
   { key: "{pickup_by}", label: "Dijemput Oleh" },
   { key: "{parent_name}", label: "Nama Wali" },
   { key: "{student_id}", label: "NIS" },
+  { key: "{school_name}", label: "Nama Sekolah" },
 ];
 
 const ATTENDANCE_PLACEHOLDERS = [
   { key: "{student_name}", label: "Nama Siswa" },
   { key: "{class}", label: "Kelas" },
   { key: "{time}", label: "Waktu" },
+  { key: "{day}", label: "Nama Hari" },
   { key: "{student_id}", label: "NIS" },
   { key: "{method}", label: "Metode Absen" },
   { key: "{parent_name}", label: "Nama Wali" },
+  { key: "{school_name}", label: "Nama Sekolah" },
 ];
 
 const PlaceholderButtons = ({ placeholders, onInsert }: { placeholders: typeof PICKUP_PLACEHOLDERS; onInsert: (key: string) => void }) => (

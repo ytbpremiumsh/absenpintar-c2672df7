@@ -49,11 +49,13 @@ const LABELS: Record<string, string> = {
   why_item_4_title: "Kenapa 4 - Judul",
   why_item_4_desc: "Kenapa 4 - Deskripsi",
   cta_banner_text: "Teks Banner CTA",
+  cta_banner_desc: "Deskripsi Banner CTA",
   footer_logo: "Logo Footer",
   footer_address: "Alamat",
   footer_email: "Email",
   footer_phone: "Telepon",
   cta_text: "Teks Tombol CTA",
+  show_pricing: "Tampilkan Section Harga di Landing Page (true/false)",
 };
 
 const SECTIONS = [
@@ -65,8 +67,9 @@ const SECTIONS = [
   { title: "Fitur 5", keys: ["feature_5_title", "feature_5_desc", "feature_5_icon"] },
   { title: "Fitur 6", keys: ["feature_6_title", "feature_6_desc", "feature_6_icon"] },
   { title: "Kenapa Harus Kami", keys: ["why_title", "why_desc", "why_item_1_title", "why_item_1_desc", "why_item_2_title", "why_item_2_desc", "why_item_3_title", "why_item_3_desc", "why_item_4_title", "why_item_4_desc"] },
-  { title: "Banner CTA", keys: ["cta_banner_text"] },
+  { title: "Banner CTA", keys: ["cta_banner_text", "cta_banner_desc"] },
   { title: "Footer", keys: ["footer_logo", "footer_address", "footer_email", "footer_phone"] },
+  { title: "Pengaturan Tampilan", keys: ["show_pricing"] },
 ];
 
 
