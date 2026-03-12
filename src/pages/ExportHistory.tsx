@@ -329,7 +329,7 @@ const ExportHistory = () => {
           <p className="text-muted-foreground text-xs sm:text-sm">Format absensi bulanan nasional per kelas</p>
         </div>
 
-        {isPremiumFeature && (
+        {isPremiumFeature && !features.loading && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
             <Card className="border-0 shadow-card bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30">
               <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
