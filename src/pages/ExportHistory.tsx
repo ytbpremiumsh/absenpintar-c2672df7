@@ -417,7 +417,7 @@ const ExportHistory = () => {
 
             {loading ? (
               <div className="p-10 text-center text-muted-foreground text-sm">Memuat data...</div>
-            ) : studentRows.length === 0 ? (
+            ) : activeRows.length === 0 ? (
               <div className="p-10 text-center text-muted-foreground text-sm">
                 {selectedClass ? "Tidak ada siswa di kelas ini" : "Pilih kelas untuk melihat rekap"}
               </div>
