@@ -11,7 +11,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 import {
-  GraduationCap, Plus, Trash2, UserCheck, Mail, Lock, Loader2, Phone,
+  GraduationCap, Plus, Trash2, UserCheck, Mail, Lock, Loader2, Phone, Pencil, Eye,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -37,12 +37,20 @@ const ManageWaliKelas = () => {
   const [showDialog, setShowDialog] = useState(false);
   const [creating, setCreating] = useState(false);
 
-  // Form state
+  // Create form
   const [formName, setFormName] = useState("");
   const [formEmail, setFormEmail] = useState("");
   const [formPassword, setFormPassword] = useState("");
   const [formClass, setFormClass] = useState("");
   const [formPhone, setFormPhone] = useState("");
+
+  // Edit/Detail
+  const [detailDialog, setDetailDialog] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [selectedTeacher, setSelectedTeacher] = useState<{ user_id: string; name: string; assignments: ClassTeacher[] } | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editClass, setEditClass] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
 
   const schoolId = profile?.school_id;
 
@@ -58,7 +66,6 @@ const ManageWaliKelas = () => {
     const rawData = assignmentsRes.data || [];
     const enriched: ClassTeacher[] = rawData.map((a) => ({ ...a, user_name: "" }));
 
-    // Fetch profiles for each teacher
     if (enriched.length > 0) {
       const userIds = [...new Set(enriched.map((a) => a.user_id))];
       const { data: profiles } = await supabase
@@ -68,13 +75,9 @@ const ManageWaliKelas = () => {
 
       const profileMap = new Map<string, string>();
       (profiles || []).forEach((p) => profileMap.set(p.user_id, p.full_name));
-
-      enriched.forEach((a) => {
-        a.user_name = profileMap.get(a.user_id) || "Unknown";
-      });
+      enriched.forEach((a) => { a.user_name = profileMap.get(a.user_id) || "Unknown"; });
     }
 
-    // Merge class names from classes table and unique student classes
     const classTableNames = (classesRes.data || []).map((c) => c.name);
     const studentClassNames = [...new Set((studentsRes.data || []).map((s) => s.class))];
     const allClasses = [...new Set([...classTableNames, ...studentClassNames])].sort();
@@ -84,74 +87,75 @@ const ManageWaliKelas = () => {
     setLoading(false);
   };
 
-  useEffect(() => {
-    fetchData();
-  }, [schoolId]);
+  useEffect(() => { fetchData(); }, [schoolId]);
 
   const handleCreate = async () => {
     if (!formName || !formEmail || !formPassword || !formClass || !schoolId) {
-      toast.error("Semua field harus diisi");
-      return;
+      toast.error("Semua field harus diisi"); return;
     }
-    if (formPassword.length < 6) {
-      toast.error("Password minimal 6 karakter");
-      return;
-    }
+    if (formPassword.length < 6) { toast.error("Password minimal 6 karakter"); return; }
 
     setCreating(true);
     try {
-      // Create user via edge function
       const res = await supabase.functions.invoke("create-user", {
-        body: {
-          email: formEmail,
-          password: formPassword,
-          full_name: formName,
-          role: "teacher",
-          school_id: schoolId,
-          phone: formPhone,
-        },
+        body: { email: formEmail, password: formPassword, full_name: formName, role: "teacher", school_id: schoolId, phone: formPhone },
       });
-
       if (res.error) throw new Error(res.error.message);
       if (res.data?.error) throw new Error(res.data.error);
 
       const userId = res.data.user_id;
-
-      // Create class_teacher assignment
-      const { error: assignError } = await supabase
-        .from("class_teachers")
-        .insert({ user_id: userId, class_name: formClass, school_id: schoolId });
-
+      const { error: assignError } = await supabase.from("class_teachers").insert({ user_id: userId, class_name: formClass, school_id: schoolId });
       if (assignError) throw assignError;
 
       toast.success(`Wali kelas ${formName} berhasil ditambahkan untuk kelas ${formClass}`);
       setShowDialog(false);
-      setFormName("");
-      setFormEmail("");
-      setFormPassword("");
-      setFormClass("");
-      setFormPhone("");
+      setFormName(""); setFormEmail(""); setFormPassword(""); setFormClass(""); setFormPhone("");
       fetchData();
     } catch (err: any) {
       toast.error(err.message || "Gagal membuat wali kelas");
-    } finally {
-      setCreating(false);
-    }
+    } finally { setCreating(false); }
   };
 
   const handleDelete = async (assignment: ClassTeacher) => {
     if (!confirm(`Hapus penugasan wali kelas ${assignment.user_name} dari kelas ${assignment.class_name}?`)) return;
-
     const { error } = await supabase.from("class_teachers").delete().eq("id", assignment.id);
-    if (error) {
-      toast.error("Gagal menghapus penugasan");
-    } else {
-      toast.success("Penugasan dihapus");
-      fetchData();
-    }
+    if (error) { toast.error("Gagal menghapus penugasan"); } else { toast.success("Penugasan dihapus"); fetchData(); }
   };
 
-  // Group assignments by teacher
+  const openDetail = (userId: string, name: string, teacherAssignments: ClassTeacher[]) => {
+    setSelectedTeacher({ user_id: userId, name, assignments: teacherAssignments });
+    setEditName(name);
+    setEditClass("");
+    setEditMode(false);
+    setDetailDialog(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!selectedTeacher || !editName.trim()) return;
+    setSavingEdit(true);
+    const { error } = await supabase.from("profiles").update({ full_name: editName.trim() }).eq("user_id", selectedTeacher.user_id);
+    if (error) { toast.error("Gagal update: " + error.message); }
+    else { toast.success("Nama berhasil diperbarui"); }
+    setSavingEdit(false);
+    setDetailDialog(false);
+    fetchData();
+  };
+
+  const handleAddClass = async () => {
+    if (!selectedTeacher || !editClass || !schoolId) return;
+    setSavingEdit(true);
+    const { error } = await supabase.from("class_teachers").insert({
+      user_id: selectedTeacher.user_id, class_name: editClass, school_id: schoolId,
+    });
+    if (error) { toast.error("Gagal: " + error.message); }
+    else { toast.success(`Kelas ${editClass} ditambahkan`); setEditClass(""); }
+    setSavingEdit(false);
+    fetchData();
+    // Refresh selectedTeacher
+    const { data: newAssignments } = await supabase.from("class_teachers").select("*").eq("user_id", selectedTeacher.user_id).eq("school_id", schoolId);
+    if (newAssignments) setSelectedTeacher({ ...selectedTeacher, assignments: newAssignments });
+  };
+
   const grouped = assignments.reduce<Record<string, ClassTeacher[]>>((acc, a) => {
     const key = a.user_id;
     if (!acc[key]) acc[key] = [];
@@ -199,6 +203,11 @@ const ManageWaliKelas = () => {
                       <div className="min-w-0 flex-1">
                         <h3 className="font-bold text-sm truncate">{teacher.user_name}</h3>
                         <p className="text-[11px] text-muted-foreground">Wali Kelas</p>
+                      </div>
+                      <div className="flex gap-1 shrink-0">
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openDetail(userId, teacher.user_name || "", teacherAssignments)}>
+                          <Eye className="h-3.5 w-3.5 text-primary" />
+                        </Button>
                       </div>
                     </div>
                     <div className="space-y-2">
@@ -261,13 +270,9 @@ const ManageWaliKelas = () => {
             <div className="space-y-2">
               <Label>Kelas yang Ditugaskan</Label>
               <Select value={formClass} onValueChange={setFormClass}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Pilih kelas" />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="Pilih kelas" /></SelectTrigger>
                 <SelectContent>
-                  {classes.map((c) => (
-                    <SelectItem key={c} value={c}>{c}</SelectItem>
-                  ))}
+                  {classes.map((c) => (<SelectItem key={c} value={c}>{c}</SelectItem>))}
                 </SelectContent>
               </Select>
             </div>
@@ -275,6 +280,86 @@ const ManageWaliKelas = () => {
               {creating ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Membuat...</> : <><Plus className="h-4 w-4 mr-2" /> Buat & Tugaskan</>}
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Detail/Edit Dialog */}
+      <Dialog open={detailDialog} onOpenChange={setDetailDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <UserCheck className="h-5 w-5 text-primary" />
+              {editMode ? "Edit Wali Kelas" : "Detail Wali Kelas"}
+            </DialogTitle>
+          </DialogHeader>
+          {selectedTeacher && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="h-14 w-14 rounded-xl gradient-primary flex items-center justify-center text-primary-foreground text-xl font-bold shrink-0">
+                  {selectedTeacher.name.charAt(0)}
+                </div>
+                <div className="flex-1">
+                  {editMode ? (
+                    <Input value={editName} onChange={(e) => setEditName(e.target.value)} className="font-semibold" />
+                  ) : (
+                    <h3 className="font-bold text-lg">{selectedTeacher.name}</h3>
+                  )}
+                  <Badge variant="secondary" className="text-[10px] mt-1">Wali Kelas</Badge>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground uppercase">Kelas yang Ditugaskan</p>
+                {selectedTeacher.assignments.map((a) => (
+                  <div key={a.id} className="flex items-center justify-between p-2 rounded-lg bg-secondary/30">
+                    <div className="flex items-center gap-2">
+                      <GraduationCap className="h-4 w-4 text-primary" />
+                      <span className="text-sm font-medium">{a.class_name}</span>
+                    </div>
+                    {editMode && (
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-destructive/60 hover:text-destructive" onClick={() => handleDelete(a)}>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {editMode && (
+                <div className="space-y-2">
+                  <Label className="text-xs">Tambah Kelas Baru</Label>
+                  <div className="flex gap-2">
+                    <Select value={editClass} onValueChange={setEditClass}>
+                      <SelectTrigger className="flex-1"><SelectValue placeholder="Pilih kelas" /></SelectTrigger>
+                      <SelectContent>
+                        {classes.filter(c => !selectedTeacher.assignments.some(a => a.class_name === c)).map((c) => (
+                          <SelectItem key={c} value={c}>{c}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button size="sm" onClick={handleAddClass} disabled={!editClass || savingEdit}>
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex gap-2 pt-2">
+                {editMode ? (
+                  <>
+                    <Button variant="outline" onClick={() => setEditMode(false)} className="flex-1">Batal</Button>
+                    <Button onClick={handleSaveEdit} disabled={savingEdit} className="flex-1 gradient-primary hover:opacity-90">
+                      {savingEdit ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <><Pencil className="h-4 w-4 mr-1" /> Simpan</>}
+                    </Button>
+                  </>
+                ) : (
+                  <Button onClick={() => setEditMode(true)} className="w-full" variant="outline">
+                    <Pencil className="h-4 w-4 mr-1" /> Edit Data
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
