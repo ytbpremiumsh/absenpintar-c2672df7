@@ -140,18 +140,18 @@ const REVENUE_STREAMS = [
 },
 {
   icon: Globe,
-  title: "WhatsApp Notification Service",
-  desc: "Layanan notifikasi WhatsApp otomatis ke wali murid sebagai add-on premium yang menghasilkan pendapatan tambahan.",
+  title: "Layanan Notifikasi WhatsApp Terintegrasi",
+  desc: "Notifikasi WhatsApp otomatis ke wali murid sudah termasuk dalam paket bulanan — tanpa biaya tambahan per pesan.",
   details: [
-  "Biaya per pesan atau paket pesan bulanan sebagai add-on",
-  "Margin tinggi karena volume penggunaan besar per sekolah",
+  "Kuota pesan bulanan sudah termasuk dalam setiap paket langganan",
+  "Paket PREMIUM: hingga 1.000 pesan/bulan sudah include",
+  "Paket SCHOOL: unlimited pesan tanpa batasan",
   "Notifikasi otomatis ke wali murid saat siswa hadir/pulang",
-  "Meningkatkan kepuasan dan loyalitas pelanggan",
-  "Potensi ekspansi ke notifikasi akademik, jadwal, dan pengumuman"],
+  "Tanpa biaya tersembunyi — semua sudah dalam satu paket yang simpel"],
 
   gradient: "from-green-500 via-emerald-500 to-teal-600",
   glow: "shadow-green-500/20",
-  badge: "Add-on Revenue"
+  badge: "Included in Plan"
 },
 {
   icon: Layers,
