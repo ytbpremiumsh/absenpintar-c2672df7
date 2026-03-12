@@ -122,12 +122,14 @@ const ExportHistory = () => {
       const startDate = `${year}-${String(month + 1).padStart(2, "0")}-01`;
       const endDate = `${year}-${String(month + 1).padStart(2, "0")}-${String(new Date(year, month + 1, 0).getDate()).padStart(2, "0")}`;
 
-      const [studentsRes, logsRes] = await Promise.all([
+      const [studentsRes, datangRes, pulangRes] = await Promise.all([
         supabase.from("students").select("id, name, student_id").eq("school_id", profile.school_id).eq("class", selectedClass).order("name"),
-        supabase.from("attendance_logs").select("student_id, date, status").eq("school_id", profile.school_id).gte("date", startDate).lte("date", endDate),
+        supabase.from("attendance_logs").select("student_id, date, status, attendance_type").eq("school_id", profile.school_id).eq("attendance_type", "datang").gte("date", startDate).lte("date", endDate),
+        supabase.from("attendance_logs").select("student_id, date, status, attendance_type").eq("school_id", profile.school_id).eq("attendance_type", "pulang").gte("date", startDate).lte("date", endDate),
       ]);
       setStudents(studentsRes.data || []);
-      setLogs(logsRes.data || []);
+      setDatangLogs(datangRes.data || []);
+      setPulangLogs(pulangRes.data || []);
       setLoading(false);
     };
     fetchData();
