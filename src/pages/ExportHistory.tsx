@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileSpreadsheet, FileText, ChevronLeft, ChevronRight, Crown, Lock, Printer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -40,11 +41,13 @@ const ExportHistory = () => {
   const [selectedClass, setSelectedClass] = useState<string>("");
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [students, setStudents] = useState<{ id: string; name: string; student_id: string }[]>([]);
-  const [logs, setLogs] = useState<any[]>([]);
+  const [datangLogs, setDatangLogs] = useState<any[]>([]);
+  const [pulangLogs, setPulangLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [schoolName, setSchoolName] = useState("");
   const [schoolAddress, setSchoolAddress] = useState("");
   const [waliKelasName, setWaliKelasName] = useState("");
+  const [rekapTab, setRekapTab] = useState<"datang" | "pulang">("datang");
   const tableRef = useRef<HTMLDivElement>(null);
 
   const isTeacher = roles.includes("teacher");
@@ -119,12 +122,14 @@ const ExportHistory = () => {
       const startDate = `${year}-${String(month + 1).padStart(2, "0")}-01`;
       const endDate = `${year}-${String(month + 1).padStart(2, "0")}-${String(new Date(year, month + 1, 0).getDate()).padStart(2, "0")}`;
 
-      const [studentsRes, logsRes] = await Promise.all([
+      const [studentsRes, datangRes, pulangRes] = await Promise.all([
         supabase.from("students").select("id, name, student_id").eq("school_id", profile.school_id).eq("class", selectedClass).order("name"),
-        supabase.from("attendance_logs").select("student_id, date, status").eq("school_id", profile.school_id).gte("date", startDate).lte("date", endDate),
+        supabase.from("attendance_logs").select("student_id, date, status, attendance_type").eq("school_id", profile.school_id).eq("attendance_type", "datang").gte("date", startDate).lte("date", endDate),
+        supabase.from("attendance_logs").select("student_id, date, status, attendance_type").eq("school_id", profile.school_id).eq("attendance_type", "pulang").gte("date", startDate).lte("date", endDate),
       ]);
       setStudents(studentsRes.data || []);
-      setLogs(logsRes.data || []);
+      setDatangLogs(datangRes.data || []);
+      setPulangLogs(pulangRes.data || []);
       setLoading(false);
     };
     fetchData();
@@ -132,7 +137,7 @@ const ExportHistory = () => {
 
   const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
 
-  const studentRows: StudentRow[] = useMemo(() => {
+  const buildStudentRows = (logs: any[]): StudentRow[] => {
     const studentIds = new Set(students.map(s => s.id));
     const filteredLogs = logs.filter(l => studentIds.has(l.student_id));
     return students.map(s => {
@@ -146,7 +151,11 @@ const ExportHistory = () => {
       });
       return { id: s.id, name: s.name, student_id: s.student_id, days, totals };
     });
-  }, [students, logs]);
+  };
+
+  const studentRows: StudentRow[] = useMemo(() => buildStudentRows(datangLogs), [students, datangLogs]);
+  const pulangRows: StudentRow[] = useMemo(() => buildStudentRows(pulangLogs), [students, pulangLogs]);
+  const activeRows = rekapTab === "datang" ? studentRows : pulangRows;
 
   const prevMonth = () => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
   const nextMonth = () => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
@@ -155,7 +164,8 @@ const ExportHistory = () => {
   // Export Excel with colored cells via HTML table blob
   const exportExcel = () => {
     if (isPremiumFeature) { toast.error("Upgrade ke paket Basic untuk export"); return; }
-    if (!studentRows.length) { toast.error("Tidak ada data"); return; }
+    if (!activeRows.length) { toast.error("Tidak ada data"); return; }
+    const titleLabel = rekapTab === "datang" ? "ABSENSI SISWA" : "REKAP KEPULANGAN SISWA";
 
     let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
     <head><meta charset="utf-8"><style>
@@ -171,7 +181,7 @@ const ExportHistory = () => {
     </style></head><body><table>`;
 
     const totalCols = 3 + daysInMonth + 4;
-    html += `<tr><td colspan="${totalCols}" class="title">ABSENSI SISWA</td></tr>`;
+    html += `<tr><td colspan="${totalCols}" class="title">${titleLabel}</td></tr>`;
     html += `<tr><td colspan="${totalCols}" class="subtitle">BULAN : ${monthLabel.toUpperCase()}</td></tr>`;
     html += `<tr><td colspan="${totalCols}" class="subtitle">Kelas : ${selectedClass}</td></tr>`;
     html += `<tr><td colspan="${totalCols}"></td></tr>`;
@@ -184,7 +194,7 @@ const ExportHistory = () => {
     html += `<th class="H">H</th><th class="S">S</th><th class="I">I</th><th class="A">A</th></tr>`;
 
     // Data
-    studentRows.forEach((s, i) => {
+    activeRows.forEach((s, i) => {
       html += `<tr><td>${i + 1}</td><td>${s.student_id}</td><td class="name">${s.name}</td>`;
       for (let d = 1; d <= daysInMonth; d++) {
         const code = s.days[d] || "";
@@ -209,7 +219,8 @@ const ExportHistory = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `Absensi-${selectedClass}-${monthLabel}.xls`;
+    const filePrefix = rekapTab === "datang" ? "Absensi" : "Kepulangan";
+    a.download = `${filePrefix}-${selectedClass}-${monthLabel}.xls`;
     a.click();
     URL.revokeObjectURL(url);
     toast.success("Excel berhasil diunduh!");
@@ -218,18 +229,19 @@ const ExportHistory = () => {
   // Export PDF
   const exportPDF = () => {
     if (isPremiumFeature) { toast.error("Upgrade ke paket Basic untuk export"); return; }
-    if (!studentRows.length) { toast.error("Tidak ada data"); return; }
+    if (!activeRows.length) { toast.error("Tidak ada data"); return; }
+    const titleLabel = rekapTab === "datang" ? "ABSENSI SISWA" : "REKAP KEPULANGAN SISWA";
 
     const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
     doc.setFontSize(14);
-    doc.text("ABSENSI SISWA", doc.internal.pageSize.getWidth() / 2, 15, { align: "center" });
+    doc.text(titleLabel, doc.internal.pageSize.getWidth() / 2, 15, { align: "center" });
     doc.setFontSize(11);
     doc.text(`BULAN : ${monthLabel.toUpperCase()}`, doc.internal.pageSize.getWidth() / 2, 22, { align: "center" });
     doc.setFontSize(10);
     doc.text(`Kelas : ${selectedClass}`, 14, 30);
 
     const head = [["NO", "NIS", "NAMA", ...Array.from({ length: daysInMonth }, (_, i) => String(i + 1)), "H", "S", "I", "A"]];
-    const body = studentRows.map((s, i) => {
+    const body = activeRows.map((s, i) => {
       const row: (string | number)[] = [i + 1, s.student_id, s.name];
       for (let d = 1; d <= daysInMonth; d++) row.push(s.days[d] || "");
       row.push(s.totals.H, s.totals.S, s.totals.I, s.totals.A);
@@ -286,7 +298,8 @@ const ExportHistory = () => {
       },
     });
 
-    doc.save(`Absensi-${selectedClass}-${monthLabel}.pdf`);
+    const filePrefix = rekapTab === "datang" ? "Absensi" : "Kepulangan";
+    doc.save(`${filePrefix}-${selectedClass}-${monthLabel}.pdf`);
     toast.success("PDF berhasil diunduh!");
   };
 
@@ -362,14 +375,22 @@ const ExportHistory = () => {
           </CardContent>
         </Card>
 
+        {/* Tabs: Datang / Pulang */}
+        <Tabs value={rekapTab} onValueChange={(v) => setRekapTab(v as "datang" | "pulang")}>
+          <TabsList className="w-full sm:w-auto">
+            <TabsTrigger value="datang" className="flex-1 sm:flex-none text-xs sm:text-sm">📋 Rekap Kehadiran</TabsTrigger>
+            <TabsTrigger value="pulang" className="flex-1 sm:flex-none text-xs sm:text-sm">🏠 Rekap Kepulangan</TabsTrigger>
+          </TabsList>
+        </Tabs>
+
         {/* Summary cards */}
-        {studentRows.length > 0 && (
+        {activeRows.length > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { label: "Total Siswa", value: studentRows.length, color: "text-primary" },
-              { label: "Total Hadir", value: studentRows.reduce((a, s) => a + s.totals.H, 0), color: "text-success" },
-              { label: "Total Sakit", value: studentRows.reduce((a, s) => a + s.totals.S, 0), color: "text-blue-500" },
-              { label: "Total Alfa", value: studentRows.reduce((a, s) => a + s.totals.A, 0), color: "text-destructive" },
+              { label: "Total Siswa", value: activeRows.length, color: "text-primary" },
+              { label: rekapTab === "datang" ? "Total Hadir" : "Total Pulang", value: activeRows.reduce((a, s) => a + s.totals.H, 0), color: "text-success" },
+              { label: "Total Sakit", value: activeRows.reduce((a, s) => a + s.totals.S, 0), color: "text-blue-500" },
+              { label: "Total Alfa", value: activeRows.reduce((a, s) => a + s.totals.A, 0), color: "text-destructive" },
             ].map((s, i) => (
               <motion.div key={s.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
                 <Card className="border-0 shadow-card">
@@ -387,14 +408,16 @@ const ExportHistory = () => {
         <Card className="border-0 shadow-card overflow-hidden">
           <CardContent className="p-0">
             <div className="p-4 border-b border-border text-center">
-              <h2 className="text-base font-bold text-foreground tracking-wide">ABSENSI SISWA</h2>
+              <h2 className="text-base font-bold text-foreground tracking-wide">
+                {rekapTab === "datang" ? "ABSENSI SISWA" : "REKAP KEPULANGAN SISWA"}
+              </h2>
               <p className="text-sm text-muted-foreground font-semibold">BULAN : {monthLabel.toUpperCase()}</p>
               <p className="text-xs text-muted-foreground">Kelas : {selectedClass || "-"}</p>
             </div>
 
             {loading ? (
               <div className="p-10 text-center text-muted-foreground text-sm">Memuat data...</div>
-            ) : studentRows.length === 0 ? (
+            ) : activeRows.length === 0 ? (
               <div className="p-10 text-center text-muted-foreground text-sm">
                 {selectedClass ? "Tidak ada siswa di kelas ini" : "Pilih kelas untuk melihat rekap"}
               </div>
@@ -420,7 +443,7 @@ const ExportHistory = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {studentRows.map((s, i) => (
+                    {activeRows.map((s, i) => (
                       <tr key={s.id} className="hover:bg-muted/20 transition-colors">
                         <td className="border border-border px-1 py-1.5 text-center font-medium sticky left-0 bg-card z-10">{i + 1}</td>
                         <td className="border border-border px-2 py-1.5 text-center font-mono text-[10px]">{s.student_id}</td>
@@ -445,7 +468,7 @@ const ExportHistory = () => {
             )}
 
             {/* Signature footer */}
-            {studentRows.length > 0 && (
+            {activeRows.length > 0 && (
               <div className="p-6 border-t border-border">
                 <div className="flex justify-end">
                   <div className="text-center text-xs text-muted-foreground space-y-1">

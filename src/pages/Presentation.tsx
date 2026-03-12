@@ -184,7 +184,7 @@ const EXTRA_FEATURES = [
   { icon: Globe, title: "Live Monitor Publik", desc: "Wali murid bisa memantau status kehadiran anak tanpa login via link khusus sekolah.", color: "from-teal-500 to-emerald-500" },
   { icon: Clock, title: "Riwayat Kehadiran", desc: "Rekam jejak lengkap seluruh aktivitas kehadiran yang bisa difilter tanggal, kelas, dan status.", color: "from-blue-500 to-indigo-500" },
   { icon: Bell, title: "Notifikasi WhatsApp", desc: "Notifikasi otomatis ke wali murid setiap kali anak di-scan masuk atau pulang sekolah.", color: "from-green-500 to-emerald-500" },
-  { icon: Shield, title: "Multi-Role & Keamanan", desc: "3 level akses: School Admin, Staff/Operator, dan Wali Kelas dengan RLS.", color: "from-violet-500 to-purple-500" },
+  { icon: Shield, title: "Multi-Role & Keamanan", desc: "4 level akses: Super Admin, School Admin, Staff/Operator, dan Wali Kelas dengan RLS.", color: "from-violet-500 to-purple-500" },
   { icon: Settings, title: "Pengaturan Lengkap", desc: "Konfigurasi jam operasional, logo sekolah, template pesan WhatsApp, dan integrasi gateway.", color: "from-rose-500 to-pink-500" },
   { icon: Smartphone, title: "Responsif & PWA-Ready", desc: "Tampilan optimal di smartphone, tablet, dan desktop tanpa perlu install aplikasi.", color: "from-cyan-500 to-blue-500" },
 ];

@@ -64,6 +64,7 @@ interface LiveEntry {
   method: string;
   time: string;
   created_at: string;
+  attendance_type: string;
 }
 
 const LiveDot = () => (
@@ -90,14 +91,15 @@ const Monitoring = () => {
 
     const [studentsRes, logsRes] = await Promise.all([
       supabase.from("students").select("id, name, class, parent_name, student_id, photo_url").eq("school_id", schoolId),
-      supabase.from("attendance_logs").select("id, student_id, time, status, method, created_at").eq("school_id", schoolId).eq("date", today).order("created_at", { ascending: false }),
+      supabase.from("attendance_logs").select("id, student_id, time, status, method, created_at, attendance_type").eq("school_id", schoolId).eq("date", today).order("created_at", { ascending: false }),
     ]);
 
     const allStudents = studentsRes.data || [];
     const logs = logsRes.data || [];
 
+    const datangLogs = logs.filter((l: any) => (l.attendance_type || 'datang') === 'datang');
     const mapped: StudentWithStatus[] = allStudents.map((s: any) => {
-      const log = logs.find((l: any) => l.student_id === s.id);
+      const log = datangLogs.find((l: any) => l.student_id === s.id);
       return {
         id: s.id, name: s.name, class: s.class,
         parent_name: s.parent_name, student_id: s.student_id, photo_url: s.photo_url,
@@ -120,6 +122,7 @@ const Monitoring = () => {
         method: log.method || "manual",
         time: log.time,
         created_at: log.created_at,
+        attendance_type: log.attendance_type || "datang",
       };
     });
 

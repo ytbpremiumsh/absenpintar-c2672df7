@@ -53,7 +53,7 @@ const Dashboard = () => {
 
     const [studentsRes, logsRes] = await Promise.all([
       supabase.from("students").select("id, name, class, parent_name, photo_url").eq("school_id", schoolId),
-      supabase.from("attendance_logs").select("*").eq("school_id", schoolId).eq("date", today).order("created_at", { ascending: false }),
+      supabase.from("attendance_logs").select("*").eq("school_id", schoolId).eq("date", today).eq("attendance_type", "datang").order("created_at", { ascending: false }),
     ]);
 
     const allStudents = studentsRes.data || [];
@@ -83,6 +83,7 @@ const Dashboard = () => {
       .from("attendance_logs")
       .select("date, status")
       .eq("school_id", profile.school_id)
+      .eq("attendance_type", "datang")
       .gte("date", fromDate)
       .order("date");
 
