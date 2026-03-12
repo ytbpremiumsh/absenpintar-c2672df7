@@ -172,29 +172,29 @@ const REVENUE_STREAMS = [
 
 const PRICING_TIERS = [
 {
-  name: "Starter",
+  name: "BASIC",
   price: "Rp 99.000",
   period: "/bulan",
   students: "≤ 100 siswa",
-  features: ["Dashboard & Monitoring", "Scan Barcode", "Kartu Barcode Siswa", "Riwayat 30 Hari", "1 Admin"],
+  features: ["Scan Barcode", "Dashboard Realtime", "Rekap Harian", "2 Kelas", "10 Siswa/Kelas"],
   highlight: false,
-  gradient: "from-slate-500 to-slate-600"
+  gradient: "from-blue-500 to-cyan-600"
 },
 {
-  name: "Professional",
+  name: "PREMIUM",
   price: "Rp 249.000",
   period: "/bulan",
   students: "≤ 500 siswa",
-  features: ["Semua fitur Starter", "Notifikasi WhatsApp", "Export Laporan", "Live Monitor Publik", "Multi Admin & Staff", "Riwayat Unlimited"],
+  features: ["Semua fitur BASIC", "Notifikasi WhatsApp", "Export Laporan", "Live Monitor Publik", "Multi Admin & Staff", "Riwayat Unlimited"],
   highlight: true,
   gradient: "from-indigo-500 to-violet-600"
 },
 {
-  name: "Enterprise",
+  name: "SCHOOL",
   price: "Custom",
   period: "",
   students: "Unlimited",
-  features: ["Semua fitur Professional", "Multi Cabang", "White Label", "Dedicated Support", "Custom Integration", "SLA 99.9%"],
+  features: ["Semua fitur PREMIUM", "Multi Cabang", "White Label", "Dedicated Support", "Custom Integration", "SLA 99.9%"],
   highlight: false,
   gradient: "from-amber-500 to-orange-600"
 }];
