@@ -99,7 +99,7 @@ const SuperAdminWhatsApp = () => {
     setEditing(null);
     setForm({
       school_id: "", api_url: "http://proxy.onesender.net/api/v1/messages", api_key: "", is_active: false,
-      message_template: DEFAULT_PICKUP_TEMPLATE,
+      message_template: "",
       attendance_arrive_template: DEFAULT_ARRIVE_TEMPLATE,
       attendance_depart_template: DEFAULT_DEPART_TEMPLATE,
     });
