@@ -69,12 +69,13 @@ serve(async (req) => {
       if (!classes[s.class]) classes[s.class] = [];
       const logDatang = logs.find((l: any) => l.student_id === s.id && l.attendance_type === 'datang');
       const logPulang = logs.find((l: any) => l.student_id === s.id && l.attendance_type === 'pulang');
+      const autoAlfa = currentTime > attEnd;
       classes[s.class].push({
         id: s.id,
         name: s.name,
         student_id: s.student_id,
         photo_url: s.photo_url,
-        status: logDatang?.status || "belum",
+        status: logDatang?.status || (autoAlfa ? "alfa" : "belum"),
         time: logDatang?.time || null,
         method: logDatang?.method || null,
         datang: logDatang ? { status: logDatang.status, time: logDatang.time, method: logDatang.method } : null,
@@ -106,8 +107,11 @@ serve(async (req) => {
     const totalHadir = datangLogs.filter((l: any) => l.status === "hadir").length;
     const totalIzin = datangLogs.filter((l: any) => l.status === "izin").length;
     const totalSakit = datangLogs.filter((l: any) => l.status === "sakit").length;
-    const totalAlfa = datangLogs.filter((l: any) => l.status === "alfa").length;
-    const totalBelum = totalStudents - (totalHadir + totalIzin + totalSakit + totalAlfa);
+    const dbAlfa = datangLogs.filter((l: any) => l.status === "alfa").length;
+    const remaining = totalStudents - (totalHadir + totalIzin + totalSakit + dbAlfa);
+    const autoAlfa = currentTime > attEnd;
+    const totalAlfa = autoAlfa ? dbAlfa + remaining : dbAlfa;
+    const totalBelum = autoAlfa ? 0 : remaining;
 
     // Determine plan features
     const sub = subRes.data as any;

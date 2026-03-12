@@ -786,6 +786,50 @@ export type Database = {
         }
         Relationships: []
       }
+      wa_message_logs: {
+        Row: {
+          created_at: string
+          group_id: string | null
+          id: string
+          message: string
+          message_type: string
+          phone: string | null
+          school_id: string
+          status: string
+          student_name: string | null
+        }
+        Insert: {
+          created_at?: string
+          group_id?: string | null
+          id?: string
+          message: string
+          message_type?: string
+          phone?: string | null
+          school_id: string
+          status?: string
+          student_name?: string | null
+        }
+        Update: {
+          created_at?: string
+          group_id?: string | null
+          id?: string
+          message?: string
+          message_type?: string
+          phone?: string | null
+          school_id?: string
+          status?: string
+          student_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wa_message_logs_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

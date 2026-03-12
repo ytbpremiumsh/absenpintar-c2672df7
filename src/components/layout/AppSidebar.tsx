@@ -14,6 +14,7 @@ import {
   LifeBuoy,
   ClipboardCheck,
   Users2,
+  MessageSquare,
 } from "lucide-react";
 import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
 import { NavLink } from "@/components/NavLink";
@@ -51,6 +52,7 @@ const dataNav = [
 ];
 
 const settingsNav = [
+  { title: "WhatsApp", url: "/whatsapp-settings", icon: MessageSquare },
   { title: "Langganan", url: "/subscription", icon: CreditCard },
   { title: "Bantuan", url: "/support", icon: LifeBuoy },
 ];

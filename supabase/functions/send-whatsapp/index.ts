@@ -10,7 +10,7 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
   try {
-    const { phone, message, api_url, api_key, school_id, group_id } = await req.json();
+    const { phone, message, api_url, api_key, school_id, group_id, student_name, message_type } = await req.json();
 
     if ((!phone && !group_id) || !message) {
       return new Response(JSON.stringify({ error: 'phone or group_id, and message are required' }), {
@@ -19,16 +19,16 @@ serve(async (req) => {
       });
     }
 
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
     let finalApiUrl = api_url;
     let finalApiKey = api_key;
 
     // If school_id provided, look up integration settings
     if (school_id && (!finalApiUrl || !finalApiKey)) {
-      const supabaseAdmin = createClient(
-        Deno.env.get('SUPABASE_URL')!,
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-      );
-
       const { data: integration } = await supabaseAdmin
         .from('school_integrations')
         .select('api_url, api_key, is_active')
@@ -57,7 +57,6 @@ serve(async (req) => {
     // Build request body based on individual or group
     const sendRequests = [];
 
-    // Send to individual phone if provided
     if (phone) {
       let formattedPhone = phone.replace(/\D/g, '');
       if (formattedPhone.startsWith('0')) {
@@ -72,7 +71,6 @@ serve(async (req) => {
       );
     }
 
-    // Send to group if group_id provided
     if (group_id) {
       sendRequests.push(
         fetch(finalApiUrl, {
@@ -87,6 +85,22 @@ serve(async (req) => {
     const results = await Promise.all(responses.map(r => r.json()));
 
     const hasError = responses.some(r => !r.ok);
+
+    // Log message to wa_message_logs
+    if (school_id) {
+      try {
+        await supabaseAdmin.from('wa_message_logs').insert({
+          school_id,
+          phone: phone || null,
+          group_id: group_id || null,
+          message: message.substring(0, 500),
+          message_type: message_type || 'attendance',
+          status: hasError ? 'failed' : 'sent',
+          student_name: student_name || null,
+        });
+      } catch { /* ignore logging errors */ }
+    }
+
     if (hasError) {
       console.error('OneSender error:', JSON.stringify(results));
       return new Response(JSON.stringify({ success: false, error: `OneSender error`, details: results }), {

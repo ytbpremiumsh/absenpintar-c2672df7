@@ -26,22 +26,9 @@ interface IntegrationData {
   attendance_depart_template: string;
 }
 
-const DEFAULT_PICKUP_TEMPLATE = `📢 *Notifikasi Penjemputan*\n\n{school_name}\n\nAnanda *{student_name}* (Kelas {class}) telah dijemput pada {day}, pukul {time}.\n\nDijemput oleh: {pickup_by}\n\n_Pesan otomatis dari Smart School Pickup System_`;
-
 const DEFAULT_ARRIVE_TEMPLATE = `📋 *Notifikasi Absensi Datang*\n\n{school_name}\n\nAnanda *{student_name}* (Kelas {class}) telah tercatat HADIR pada {day}, pukul {time}.\n\nNIS: {student_id}\nMetode: {method}\n\n_Pesan otomatis dari Smart School Attendance System_`;
 
 const DEFAULT_DEPART_TEMPLATE = `📋 *Notifikasi Absensi Pulang*\n\n{school_name}\n\nAnanda *{student_name}* (Kelas {class}) telah tercatat PULANG pada {day}, pukul {time}.\n\nNIS: {student_id}\nMetode: {method}\n\n_Pesan otomatis dari Smart School Attendance System_`;
-
-const PICKUP_PLACEHOLDERS = [
-  { key: "{student_name}", label: "Nama Siswa" },
-  { key: "{class}", label: "Kelas" },
-  { key: "{time}", label: "Waktu Jemput" },
-  { key: "{day}", label: "Nama Hari" },
-  { key: "{pickup_by}", label: "Dijemput Oleh" },
-  { key: "{parent_name}", label: "Nama Wali" },
-  { key: "{student_id}", label: "NIS" },
-  { key: "{school_name}", label: "Nama Sekolah" },
-];
 
 const ATTENDANCE_PLACEHOLDERS = [
   { key: "{student_name}", label: "Nama Siswa" },
@@ -54,7 +41,7 @@ const ATTENDANCE_PLACEHOLDERS = [
   { key: "{school_name}", label: "Nama Sekolah" },
 ];
 
-const PlaceholderButtons = ({ placeholders, onInsert }: { placeholders: typeof PICKUP_PLACEHOLDERS; onInsert: (key: string) => void }) => (
+const PlaceholderButtons = ({ placeholders, onInsert }: { placeholders: typeof ATTENDANCE_PLACEHOLDERS; onInsert: (key: string) => void }) => (
   <div className="flex flex-wrap gap-1 mt-2">
     {placeholders.map((p) => (
       <button
@@ -80,7 +67,7 @@ const SuperAdminWhatsApp = () => {
     api_url: "http://proxy.onesender.net/api/v1/messages",
     api_key: "",
     is_active: false,
-    message_template: DEFAULT_PICKUP_TEMPLATE,
+    message_template: "",
     attendance_arrive_template: DEFAULT_ARRIVE_TEMPLATE,
     attendance_depart_template: DEFAULT_DEPART_TEMPLATE,
   });
@@ -112,7 +99,7 @@ const SuperAdminWhatsApp = () => {
     setEditing(null);
     setForm({
       school_id: "", api_url: "http://proxy.onesender.net/api/v1/messages", api_key: "", is_active: false,
-      message_template: DEFAULT_PICKUP_TEMPLATE,
+      message_template: "",
       attendance_arrive_template: DEFAULT_ARRIVE_TEMPLATE,
       attendance_depart_template: DEFAULT_DEPART_TEMPLATE,
     });
@@ -123,7 +110,7 @@ const SuperAdminWhatsApp = () => {
     setEditing(int);
     setForm({
       school_id: int.school_id, api_url: int.api_url, api_key: int.api_key, is_active: int.is_active,
-      message_template: int.message_template || DEFAULT_PICKUP_TEMPLATE,
+      message_template: int.message_template || "",
       attendance_arrive_template: int.attendance_arrive_template || DEFAULT_ARRIVE_TEMPLATE,
       attendance_depart_template: int.attendance_depart_template || DEFAULT_DEPART_TEMPLATE,
     });
@@ -288,23 +275,11 @@ const SuperAdminWhatsApp = () => {
             </div>
 
             {/* Template Tabs */}
-            <Tabs defaultValue="pickup" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="pickup" className="text-xs">🚗 Penjemputan</TabsTrigger>
+            <Tabs defaultValue="arrive" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="arrive" className="text-xs">📥 Absensi Datang</TabsTrigger>
                 <TabsTrigger value="depart" className="text-xs">📤 Absensi Pulang</TabsTrigger>
               </TabsList>
-
-              <TabsContent value="pickup" className="space-y-2 mt-3">
-                <Label className="text-xs text-muted-foreground">Template Notifikasi Penjemputan</Label>
-                <Textarea
-                  value={form.message_template}
-                  onChange={(e) => setForm({ ...form, message_template: e.target.value })}
-                  rows={6}
-                  className="font-mono text-xs"
-                />
-                <PlaceholderButtons placeholders={PICKUP_PLACEHOLDERS} onInsert={(key) => setForm({ ...form, message_template: form.message_template + key })} />
-              </TabsContent>
 
               <TabsContent value="arrive" className="space-y-2 mt-3">
                 <Label className="text-xs text-muted-foreground">Template Notifikasi Absensi Datang</Label>

@@ -11,6 +11,7 @@ import jsQR from "jsqr";
 import {
   Dialog, DialogContent, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 
 interface FoundStudent {
   id: string;
@@ -34,6 +35,7 @@ const ScanQR = () => {
   const [alreadyRecorded, setAlreadyRecorded] = useState(false);
   const [scanMethod, setScanMethod] = useState<"barcode" | "face">("barcode");
   const [faceScanning, setFaceScanning] = useState(false);
+  const [currentAttType, setCurrentAttType] = useState<"datang" | "pulang">("datang");
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -43,6 +45,26 @@ const ScanQR = () => {
   const scanPaused = useRef(false);
 
   const canFace = !features.loading && features.canFaceRecognition;
+
+  // Determine attendance type based on time
+  const getAttendanceType = useCallback(async (): Promise<"datang" | "pulang"> => {
+    if (!profile?.school_id) return "datang";
+    const { data: settings } = await supabase.from("pickup_settings")
+      .select("attendance_start_time, attendance_end_time, departure_start_time, departure_end_time")
+      .eq("school_id", profile.school_id).maybeSingle();
+
+    const now = new Date();
+    const currentTime = now.toTimeString().slice(0, 8);
+    const attStart = (settings as any)?.attendance_start_time || "06:00:00";
+    const attEnd = (settings as any)?.attendance_end_time || "12:00:00";
+    const depStart = (settings as any)?.departure_start_time || "12:00:00";
+    const depEnd = (settings as any)?.departure_end_time || "17:00:00";
+
+    if (currentTime >= attStart && currentTime < attEnd) return "datang";
+    if (currentTime >= depStart && currentTime <= depEnd) return "pulang";
+    if (currentTime < attStart) return "datang";
+    return "pulang";
+  }, [profile?.school_id]);
 
   const lookupStudent = useCallback(async (code: string) => {
     if (!code.trim() || !profile?.school_id || isLookingUp.current || scanPaused.current) return;
@@ -54,9 +76,12 @@ const ScanQR = () => {
         .or(`student_id.eq.${trimmed},qr_code.eq.${trimmed}`).maybeSingle();
       if (error || !data) { toast.error("Siswa tidak ditemukan untuk kode: " + trimmed); return; }
 
+      const attType = await getAttendanceType();
+      setCurrentAttType(attType);
+
       const today = new Date().toISOString().slice(0, 10);
       const { data: existing } = await supabase.from("attendance_logs")
-        .select("id").eq("student_id", data.id).eq("date", today).maybeSingle();
+        .select("id").eq("student_id", data.id).eq("date", today).eq("attendance_type", attType).maybeSingle();
 
       setAlreadyRecorded(!!existing);
       setScannedStudent(data);
@@ -64,7 +89,7 @@ const ScanQR = () => {
       setScanMethod("barcode");
       scanPaused.current = true;
     } finally { isLookingUp.current = false; }
-  }, [profile?.school_id]);
+  }, [profile?.school_id, getAttendanceType]);
 
   // Barcode scanning interval
   const startBarcodeScanning = useCallback(() => {
@@ -113,9 +138,12 @@ const ScanQR = () => {
 
       if (data.match && data.student) {
         scanPaused.current = true;
+        const attType = await getAttendanceType();
+        setCurrentAttType(attType);
+
         const today = new Date().toISOString().slice(0, 10);
         const { data: existing } = await supabase.from("attendance_logs")
-          .select("id").eq("student_id", data.student.id).eq("date", today).maybeSingle();
+          .select("id").eq("student_id", data.student.id).eq("date", today).eq("attendance_type", attType).maybeSingle();
 
         setAlreadyRecorded(!!existing);
         setScannedStudent(data.student);
@@ -128,11 +156,10 @@ const ScanQR = () => {
     } finally {
       setFaceScanning(false);
     }
-  }, [profile?.school_id]);
+  }, [profile?.school_id, getAttendanceType]);
 
   const faceTimeoutRef = useRef<number | null>(null);
 
-  // Start face recognition interval
   const startFaceScanning = useCallback(() => {
     if (faceIntervalRef.current) return;
     faceTimeoutRef.current = window.setTimeout(() => captureAndRecognize(), 2000);
@@ -146,19 +173,15 @@ const ScanQR = () => {
     if (faceIntervalRef.current) { clearInterval(faceIntervalRef.current); faceIntervalRef.current = null; }
   }, []);
 
-  // When camera becomes active, start scanning
   useEffect(() => {
     if (!cameraActive || !videoRef.current || !streamRef.current) return;
-
     const video = videoRef.current;
     const startPipelines = () => {
       startBarcodeScanning();
       if (canFace) startFaceScanning();
       else stopFaceScanning();
     };
-
     video.srcObject = streamRef.current;
-
     if (video.readyState >= HTMLMediaElement.HAVE_METADATA) {
       video.play().then(startPipelines).catch(err => console.error("Video play error:", err));
     } else {
@@ -166,11 +189,7 @@ const ScanQR = () => {
         video.play().then(startPipelines).catch(err => console.error("Video play error:", err));
       };
     }
-
-    return () => {
-      video.onloadedmetadata = null;
-      stopFaceScanning();
-    };
+    return () => { video.onloadedmetadata = null; stopFaceScanning(); };
   }, [cameraActive, startBarcodeScanning, startFaceScanning, stopFaceScanning, canFace]);
 
   const startCamera = async () => {
@@ -178,7 +197,6 @@ const ScanQR = () => {
     try {
       let stream: MediaStream;
       try {
-        // Prioritaskan kamera depan agar face recognition lebih stabil
         stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } } });
       } catch {
         stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: "environment" }, width: { ideal: 640 }, height: { ideal: 480 } } });
@@ -218,21 +236,58 @@ const ScanQR = () => {
       method,
       status: "hadir",
       recorded_by: profile.full_name || "Petugas",
+      attendance_type: currentAttType,
     });
 
     setProcessing(false);
     if (error) { toast.error("Gagal mencatat absensi: " + error.message); return; }
     setConfirmed(true);
-    toast.success(`Absensi ${scannedStudent.name} berhasil dicatat!`);
+    const typeLabel = currentAttType === "datang" ? "Datang" : "Pulang";
+    toast.success(`Absensi ${typeLabel} ${scannedStudent.name} berhasil dicatat!`);
 
+    // Send WA notification using templates
     if (scannedStudent.parent_phone) {
       try {
+        const [integrationRes, schoolRes] = await Promise.all([
+          supabase.from("school_integrations").select("attendance_arrive_template, attendance_depart_template, is_active")
+            .eq("school_id", profile.school_id).eq("integration_type", "onesender").eq("is_active", true).maybeSingle(),
+          supabase.from("schools").select("name").eq("id", profile.school_id).single(),
+        ]);
+
+        const integration = integrationRes.data as any;
+        const schoolName = schoolRes.data?.name || "";
+        const methodLabel = method === "face_recognition" ? "Face Recognition" : "Barcode Scan";
+        const timeStr = now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+        const dayNames = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+        const dayName = dayNames[now.getDay()];
+
+        const applyReplacements = (tpl: string) =>
+          tpl
+            .replace(/\{student_name\}/g, scannedStudent.name)
+            .replace(/\{class\}/g, scannedStudent.class)
+            .replace(/\{time\}/g, timeStr)
+            .replace(/\{day\}/g, dayName)
+            .replace(/\{student_id\}/g, scannedStudent.student_id)
+            .replace(/\{method\}/g, methodLabel)
+            .replace(/\{parent_name\}/g, scannedStudent.parent_name || "")
+            .replace(/\{school_name\}/g, schoolName);
+
+        let message: string;
+        if (integration) {
+          const template = currentAttType === "datang"
+            ? (integration.attendance_arrive_template || "")
+            : (integration.attendance_depart_template || "");
+          if (template) {
+            message = applyReplacements(template);
+          } else {
+            message = `📋 *Notifikasi Absensi ${typeLabel}*\n\n${schoolName}\n\nAnanda *${scannedStudent.name}* (Kelas ${scannedStudent.class}) telah tercatat ${typeLabel.toLowerCase()} pada ${dayName}, pukul ${timeStr}.\n\nMetode: ${methodLabel}\n\n_Pesan otomatis dari Smart School Attendance System_`;
+          }
+        } else {
+          message = `📋 *Notifikasi Absensi ${typeLabel}*\n\n${schoolName}\n\nAnanda *${scannedStudent.name}* (Kelas ${scannedStudent.class}) telah tercatat ${typeLabel.toLowerCase()} pada ${dayName}, pukul ${timeStr}.\n\nMetode: ${methodLabel}\n\n_Pesan otomatis dari Smart School Attendance System_`;
+        }
+
         await supabase.functions.invoke("send-whatsapp", {
-          body: {
-            school_id: profile.school_id,
-            phone: scannedStudent.parent_phone,
-            message: `📋 *Notifikasi Absensi*\n\nAnanda *${scannedStudent.name}* (Kelas ${scannedStudent.class}) telah tercatat hadir pada pukul ${now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}.\n\nMetode: ${method === "face_recognition" ? "Face Recognition" : "Barcode Scan"}\n\n_Pesan otomatis dari Smart School Attendance System_`,
-          },
+          body: { school_id: profile.school_id, phone: scannedStudent.parent_phone, message },
         });
       } catch { /* Don't fail attendance if WA fails */ }
     }
@@ -283,7 +338,6 @@ const ScanQR = () => {
               <div className="relative bg-black" style={{ minHeight: 280 }}>
                 <video ref={videoRef} className="w-full h-full object-cover" autoPlay playsInline muted
                   style={{ minHeight: 280, WebkitTransform: "scaleX(1)" }} />
-                {/* Scan overlay */}
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <div className={`w-44 h-44 border-2 rounded-lg transition-colors ${scanPaused.current ? "border-success opacity-100" : "border-primary opacity-70"}`} />
                 </div>
@@ -372,6 +426,9 @@ const ScanQR = () => {
             <DialogDescription className="text-primary-foreground/70 text-xs mt-1">
               {scanMethod === "face" ? "Wajah dikenali — konfirmasi kehadiran" : "Konfirmasi kehadiran siswa berikut"}
             </DialogDescription>
+            <Badge className="mt-2 bg-white/20 text-white border-0">
+              Mode: {currentAttType === "datang" ? "📥 Datang" : "📤 Pulang"}
+            </Badge>
           </div>
           {scannedStudent && (
             <div className="p-5 text-center space-y-4">
@@ -396,7 +453,7 @@ const ScanQR = () => {
 
               {alreadyRecorded && (
                 <div className="bg-warning/10 border border-warning/20 rounded-lg p-2 text-xs text-warning font-medium">
-                  ⚠ Siswa ini sudah tercatat absensi hari ini
+                  ⚠ Siswa ini sudah tercatat absensi {currentAttType === "datang" ? "Datang" : "Pulang"} hari ini
                 </div>
               )}
 
@@ -404,7 +461,7 @@ const ScanQR = () => {
                 <Button variant="outline" onClick={handleCancel} className="flex-1 h-11">Batal</Button>
                 <Button onClick={handleConfirm} disabled={processing || alreadyRecorded}
                   className="flex-1 h-11 bg-success hover:bg-success/90 text-success-foreground font-semibold">
-                  <CheckCircle2 className="h-4 w-4 mr-1" /> Hadir ✓
+                  <CheckCircle2 className="h-4 w-4 mr-1" /> {currentAttType === "datang" ? "Hadir ✓" : "Pulang ✓"}
                 </Button>
               </div>
             </div>
@@ -420,7 +477,7 @@ const ScanQR = () => {
             <DialogTitle className="text-lg sm:text-xl font-bold text-success-foreground">✅ Absensi Berhasil</DialogTitle>
             <DialogDescription className="text-success-foreground/90 space-y-0.5 text-sm">
               <p><strong>{scannedStudent?.name}</strong></p>
-              <p>Kelas: {scannedStudent?.class} • Status: Hadir</p>
+              <p>Kelas: {scannedStudent?.class} • {currentAttType === "datang" ? "Datang - Hadir" : "Pulang"}</p>
             </DialogDescription>
           </div>
         </DialogContent>
