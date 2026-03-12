@@ -185,9 +185,11 @@ const ExportHistory = () => {
       .S { background: ${STATUS_EXCEL_COLORS.S.bg}; color: ${STATUS_EXCEL_COLORS.S.fg}; font-weight: bold; }
       .I { background: ${STATUS_EXCEL_COLORS.I.bg}; color: ${STATUS_EXCEL_COLORS.I.fg}; font-weight: bold; }
       .A { background: ${STATUS_EXCEL_COLORS.A.bg}; color: ${STATUS_EXCEL_COLORS.A.fg}; font-weight: bold; }
+      .check { background: ${STATUS_EXCEL_COLORS.H.bg}; color: ${STATUS_EXCEL_COLORS.H.fg}; font-weight: bold; }
     </style></head><body><table>`;
 
-    const totalCols = 3 + daysInMonth + 4;
+    const ketCols = isPulangMode ? 1 : 4;
+    const totalCols = 3 + daysInMonth + ketCols;
     html += `<tr><td colspan="${totalCols}" class="title">${titleLabel}</td></tr>`;
     html += `<tr><td colspan="${totalCols}" class="subtitle">BULAN : ${monthLabel.toUpperCase()}</td></tr>`;
     html += `<tr><td colspan="${totalCols}" class="subtitle">Kelas : ${selectedClass}</td></tr>`;
@@ -195,20 +197,29 @@ const ExportHistory = () => {
 
     // Header
     html += `<tr><th rowspan="2">NO</th><th rowspan="2">NIS</th><th rowspan="2" class="name">NAMA SISWA</th>`;
-    html += `<th colspan="${daysInMonth}">TANGGAL</th><th colspan="4">KET</th></tr>`;
+    html += `<th colspan="${daysInMonth}">TANGGAL</th><th colspan="${ketCols}">KET</th></tr>`;
     html += `<tr>`;
     for (let d = 1; d <= daysInMonth; d++) html += `<th>${d}</th>`;
-    html += `<th class="H">H</th><th class="S">S</th><th class="I">I</th><th class="A">A</th></tr>`;
+    if (isPulangMode) {
+      html += `<th class="H">✓</th></tr>`;
+    } else {
+      html += `<th class="H">H</th><th class="S">S</th><th class="I">I</th><th class="A">A</th></tr>`;
+    }
 
     // Data
     activeRows.forEach((s, i) => {
       html += `<tr><td>${i + 1}</td><td>${s.student_id}</td><td class="name">${s.name}</td>`;
       for (let d = 1; d <= daysInMonth; d++) {
         const code = s.days[d] || "";
-        html += `<td${code ? ` class="${code}"` : ""}>${code}</td>`;
+        const cls = code === "✓" ? "check" : code;
+        html += `<td${cls ? ` class="${cls}"` : ""}>${code}</td>`;
       }
-      html += `<td class="H">${s.totals.H || ""}</td><td class="S">${s.totals.S || ""}</td>`;
-      html += `<td class="I">${s.totals.I || ""}</td><td class="A">${s.totals.A || ""}</td></tr>`;
+      if (isPulangMode) {
+        html += `<td class="H">${s.totals.H || ""}</td></tr>`;
+      } else {
+        html += `<td class="H">${s.totals.H || ""}</td><td class="S">${s.totals.S || ""}</td>`;
+        html += `<td class="I">${s.totals.I || ""}</td><td class="A">${s.totals.A || ""}</td></tr>`;
+      }
     });
 
     // Signature
