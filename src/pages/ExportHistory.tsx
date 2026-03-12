@@ -443,7 +443,7 @@ const ExportHistory = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {studentRows.map((s, i) => (
+                    {activeRows.map((s, i) => (
                       <tr key={s.id} className="hover:bg-muted/20 transition-colors">
                         <td className="border border-border px-1 py-1.5 text-center font-medium sticky left-0 bg-card z-10">{i + 1}</td>
                         <td className="border border-border px-2 py-1.5 text-center font-mono text-[10px]">{s.student_id}</td>
