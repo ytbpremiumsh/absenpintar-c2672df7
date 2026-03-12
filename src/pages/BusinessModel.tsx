@@ -140,18 +140,18 @@ const REVENUE_STREAMS = [
 },
 {
   icon: Globe,
-  title: "WhatsApp Notification Service",
-  desc: "Layanan notifikasi WhatsApp otomatis ke wali murid sebagai add-on premium yang menghasilkan pendapatan tambahan.",
+  title: "Layanan Notifikasi WhatsApp Terintegrasi",
+  desc: "Notifikasi WhatsApp otomatis ke wali murid sudah termasuk dalam paket bulanan — tanpa biaya tambahan per pesan.",
   details: [
-  "Biaya per pesan atau paket pesan bulanan sebagai add-on",
-  "Margin tinggi karena volume penggunaan besar per sekolah",
+  "Kuota pesan bulanan sudah termasuk dalam setiap paket langganan",
+  "Paket PREMIUM: hingga 1.000 pesan/bulan sudah include",
+  "Paket SCHOOL: unlimited pesan tanpa batasan",
   "Notifikasi otomatis ke wali murid saat siswa hadir/pulang",
-  "Meningkatkan kepuasan dan loyalitas pelanggan",
-  "Potensi ekspansi ke notifikasi akademik, jadwal, dan pengumuman"],
+  "Tanpa biaya tersembunyi — semua sudah dalam satu paket yang simpel"],
 
   gradient: "from-green-500 via-emerald-500 to-teal-600",
   glow: "shadow-green-500/20",
-  badge: "Add-on Revenue"
+  badge: "Included in Plan"
 },
 {
   icon: Layers,
@@ -201,10 +201,10 @@ const PRICING_TIERS = [
 
 
 const MARKET_DATA = [
-{ value: "250.000+", label: "Sekolah TK & SD di Indonesia", icon: School },
-{ value: "50 Juta+", label: "Siswa TK & SD Potensial", icon: Users },
-{ value: "Rp 300M+", label: "Potensi Pasar Tahunan (TAM)", icon: DollarSign },
-{ value: "< 1%", label: "Penetrasi Pasar Saat Ini", icon: Target }];
+{ value: "436.000+", label: "Sekolah TK - SMA/SMK Sederajat di Indonesia", icon: School },
+{ value: "52 Juta+", label: "Siswa TK hingga SMA/SMK Sederajat", icon: Users },
+{ value: "Rp 1,2 T+", label: "Potensi Pasar Tahunan (TAM)", icon: DollarSign },
+{ value: "< 1%", label: "Penetrasi Pasar Digital Saat Ini", icon: Target }];
 
 
 const GROWTH_MILESTONES = [
