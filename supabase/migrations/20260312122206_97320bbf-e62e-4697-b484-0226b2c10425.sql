@@ -1,0 +1,1 @@
+ALTER TABLE public.subscription_plans ADD COLUMN IF NOT EXISTS show_on_landing boolean NOT NULL DEFAULT true;

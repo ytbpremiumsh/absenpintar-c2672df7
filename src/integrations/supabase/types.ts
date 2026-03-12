@@ -648,6 +648,7 @@ export type Database = {
           max_students: number | null
           name: string
           price: number
+          show_on_landing: boolean
           sort_order: number
           updated_at: string
         }
@@ -660,6 +661,7 @@ export type Database = {
           max_students?: number | null
           name: string
           price?: number
+          show_on_landing?: boolean
           sort_order?: number
           updated_at?: string
         }
@@ -672,6 +674,7 @@ export type Database = {
           max_students?: number | null
           name?: string
           price?: number
+          show_on_landing?: boolean
           sort_order?: number
           updated_at?: string
         }
