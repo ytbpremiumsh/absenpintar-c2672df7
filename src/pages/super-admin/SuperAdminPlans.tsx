@@ -104,15 +104,6 @@ const SuperAdminPlans = () => {
         <Button onClick={openCreate} className="gradient-primary text-primary-foreground"><Plus className="h-4 w-4 mr-1" /> Tambah Paket</Button>
       </div>
 
-      <Card className="border-0 shadow-card">
-        <CardContent className="p-4 flex items-center justify-between">
-          <div>
-            <p className="font-medium text-foreground text-sm">Tampilkan Harga di Landing Page</p>
-            <p className="text-xs text-muted-foreground">Toggle untuk menampilkan/menyembunyikan section harga di halaman utama</p>
-          </div>
-          <Switch checked={showPricing} onCheckedChange={handleTogglePricing} disabled={savingToggle} />
-        </CardContent>
-      </Card>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
         {plans.map((plan) => (
