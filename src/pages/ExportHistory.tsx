@@ -311,6 +311,7 @@ const ExportHistory = () => {
   };
 
   const getCellColor = (code: string) => {
+    if (code === "✓") return "bg-success/15 text-success";
     switch (code) {
       case "H": return "bg-success/15 text-success";
       case "S": return "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400";
