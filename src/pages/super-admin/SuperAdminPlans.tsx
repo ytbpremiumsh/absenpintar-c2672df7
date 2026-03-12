@@ -20,9 +20,10 @@ interface Plan {
   max_students: number | null;
   is_active: boolean;
   sort_order: number;
+  show_on_landing: boolean;
 }
 
-const emptyPlan = { name: "", price: 0, description: "", features: "", max_students: "", is_active: true };
+const emptyPlan = { name: "", price: 0, description: "", features: "", max_students: "", is_active: true, show_on_landing: true };
 
 const SuperAdminPlans = () => {
   const [plans, setPlans] = useState<Plan[]>([]);
