@@ -120,15 +120,25 @@ const SuperAdminLanding = () => {
       return;
     }
     setSaving(true);
-    for (const key of keys) {
-      await supabase
-        .from("landing_content")
-        .update({ value: edited[key], updated_at: new Date().toISOString() })
-        .eq("key", key);
+    const rows = keys.map((key) => {
+      const existing = items.find((i) => i.key === key);
+      return {
+        key,
+        value: edited[key],
+        type: existing?.type || (key.includes("image") || key.includes("logo") ? "image" : "text"),
+        updated_at: new Date().toISOString(),
+      };
+    });
+    const { error } = await supabase
+      .from("landing_content")
+      .upsert(rows, { onConflict: "key" });
+    if (error) {
+      toast.error("Gagal menyimpan: " + error.message);
+    } else {
+      toast.success("Landing page berhasil diperbarui!");
+      setEdited({});
+      fetchContent();
     }
-    toast.success("Landing page berhasil diperbarui!");
-    setEdited({});
-    fetchContent();
     setSaving(false);
   };
 

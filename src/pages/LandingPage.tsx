@@ -407,27 +407,28 @@ const LandingPage = () => {
           </motion.div>
 
           <div className="grid sm:grid-cols-3 gap-5 items-stretch">
-            {[
-              { name: "Basic", price: "Rp 99.000", desc: "Untuk sekolah kecil", features: ["Absensi barcode", "Manajemen siswa & kelas", "Dashboard statistik", "Rekap absensi", "Maks. 200 siswa"], highlighted: false },
-              { name: "School", price: "Rp 199.000", desc: "Paling populer", features: ["Semua fitur Basic", "Unlimited siswa", "Rekap absensi lengkap", "Export laporan Excel", "Notifikasi WhatsApp"], highlighted: true },
-              { name: "Premium", price: "Rp 399.000", desc: "Fitur lengkap", features: ["Semua fitur School", "Face Recognition AI", "Multi cabang sekolah", "Custom logo sekolah", "Dukungan prioritas"], highlighted: false },
-            ].map((plan, i) => (
-              <motion.div key={plan.name} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="h-full">
+            {plans.map((plan, i) => {
+              const featureList = Array.isArray(plan.features) ? plan.features as string[] : [];
+              const isHighlighted = plan.name.toUpperCase() === "PREMIUM" || plans.length === 1;
+              const priceText = plan.price === 0 ? "Gratis" : `Rp ${plan.price.toLocaleString("id-ID")}`;
+              return (
+              <motion.div key={plan.id} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="h-full">
                 <div className={`rounded-2xl p-6 sm:p-7 border transition-all h-full flex flex-col relative overflow-hidden ${
-                  plan.highlighted 
+                  isHighlighted 
                     ? "border-primary/30 bg-card shadow-xl shadow-primary/10 ring-2 ring-primary/20" 
                     : "border-border/50 bg-card hover:border-primary/15 hover:shadow-lg"
                 }`}>
-                  {plan.highlighted && (
+                  {isHighlighted && (
                     <div className="absolute top-0 right-0 gradient-primary text-primary-foreground text-[10px] font-bold px-3 py-1 rounded-bl-xl">
                       ⭐ Rekomendasi
                     </div>
                   )}
-                  <p className="text-xs text-muted-foreground font-medium mb-1">{plan.desc}</p>
+                  <p className="text-xs text-muted-foreground font-medium mb-1">{plan.description || ""}</p>
                   <h3 className="text-lg font-bold text-foreground">{plan.name}</h3>
-                  <p className="text-3xl font-extrabold text-primary mt-3">{plan.price}<span className="text-xs text-muted-foreground font-normal">/bulan</span></p>
+                  <p className="text-3xl font-extrabold text-primary mt-3">{priceText}<span className="text-xs text-muted-foreground font-normal">/bulan</span></p>
+                  {plan.max_students && <p className="text-xs text-muted-foreground mt-1">Maks. {plan.max_students} siswa</p>}
                   <ul className="mt-6 space-y-2.5 flex-1">
-                    {plan.features.map(f => (
+                    {featureList.map((f: string) => (
                       <li key={f} className="flex items-start gap-2 text-sm">
                         <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                         <span className="text-foreground">{f}</span>
@@ -435,7 +436,7 @@ const LandingPage = () => {
                     ))}
                   </ul>
                   <button onClick={() => navigate("/register")} className={`mt-6 w-full py-3 rounded-xl font-bold text-sm transition-all ${
-                    plan.highlighted 
+                    isHighlighted 
                       ? "gradient-primary text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-primary/30" 
                       : "bg-muted text-foreground hover:bg-primary/10 hover:text-primary border border-border"
                   }`}>
@@ -443,7 +444,8 @@ const LandingPage = () => {
                   </button>
                 </div>
               </motion.div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
