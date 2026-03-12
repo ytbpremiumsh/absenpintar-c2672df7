@@ -438,16 +438,26 @@ const ExportHistory = () => {
                       <th rowSpan={2} className="border border-border px-2 py-2 text-center font-bold w-20">NIS</th>
                       <th rowSpan={2} className="border border-border px-2 py-2 text-left font-bold min-w-[140px]">NAMA SISWA</th>
                       <th colSpan={daysInMonth} className="border border-border px-1 py-1.5 text-center font-bold">TANGGAL</th>
-                      <th colSpan={4} className="border border-border px-1 py-1.5 text-center font-bold">KET</th>
+                      {isPulangMode ? (
+                        <th className="border border-border px-1 py-1.5 text-center font-bold">KET</th>
+                      ) : (
+                        <th colSpan={4} className="border border-border px-1 py-1.5 text-center font-bold">KET</th>
+                      )}
                     </tr>
                     <tr className="bg-muted/40">
                       {Array.from({ length: daysInMonth }, (_, i) => (
                         <th key={i} className="border border-border px-0.5 py-1 text-center font-semibold w-7 text-[10px]">{i + 1}</th>
                       ))}
-                      <th className="border border-border px-1 py-1 text-center font-bold text-success w-7">H</th>
-                      <th className="border border-border px-1 py-1 text-center font-bold text-blue-500 w-7">S</th>
-                      <th className="border border-border px-1 py-1 text-center font-bold text-warning w-7">I</th>
-                      <th className="border border-border px-1 py-1 text-center font-bold text-destructive w-7">A</th>
+                      {isPulangMode ? (
+                        <th className="border border-border px-1 py-1 text-center font-bold text-success w-7">✓</th>
+                      ) : (
+                        <>
+                          <th className="border border-border px-1 py-1 text-center font-bold text-success w-7">H</th>
+                          <th className="border border-border px-1 py-1 text-center font-bold text-blue-500 w-7">S</th>
+                          <th className="border border-border px-1 py-1 text-center font-bold text-warning w-7">I</th>
+                          <th className="border border-border px-1 py-1 text-center font-bold text-destructive w-7">A</th>
+                        </>
+                      )}
                     </tr>
                   </thead>
                   <tbody>
