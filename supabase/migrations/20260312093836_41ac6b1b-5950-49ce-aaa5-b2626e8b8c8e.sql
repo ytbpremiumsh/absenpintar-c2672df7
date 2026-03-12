@@ -1,0 +1,1 @@
+ALTER TABLE public.landing_content ADD CONSTRAINT landing_content_key_unique UNIQUE (key);
