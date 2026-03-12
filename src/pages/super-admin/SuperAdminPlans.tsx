@@ -30,6 +30,21 @@ const SuperAdminPlans = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Plan | null>(null);
   const [form, setForm] = useState(emptyPlan);
+  const [showPricing, setShowPricing] = useState(true);
+  const [savingToggle, setSavingToggle] = useState(false);
+
+  const fetchShowPricing = async () => {
+    const { data } = await supabase.from("platform_settings").select("value").eq("key", "show_pricing").maybeSingle();
+    setShowPricing(data?.value !== "false");
+  };
+
+  const handleTogglePricing = async (val: boolean) => {
+    setShowPricing(val);
+    setSavingToggle(true);
+    await supabase.from("platform_settings").upsert({ key: "show_pricing", value: val ? "true" : "false", updated_at: new Date().toISOString() }, { onConflict: "key" });
+    setSavingToggle(false);
+    toast.success(val ? "Section harga ditampilkan di Landing Page" : "Section harga disembunyikan dari Landing Page");
+  };
 
   const fetchPlans = async () => {
     const { data } = await supabase.from("subscription_plans").select("*").order("sort_order");
