@@ -400,6 +400,7 @@ const LandingPage = () => {
       </section>
 
       {/* ─── Pricing ─── */}
+      {showPricing && (
       <section className="py-20 sm:py-28 bg-muted/30">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-14">
@@ -451,6 +452,7 @@ const LandingPage = () => {
           </div>
         </div>
       </section>
+      )}
 
       {/* ─── Payment Methods ─── */}
       <section className="py-16 sm:py-24">
