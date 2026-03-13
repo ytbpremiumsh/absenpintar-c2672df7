@@ -102,7 +102,7 @@ const Login = () => {
           {/* Mobile Logo */}
           <div className="lg:hidden flex items-center justify-center gap-3 mb-4">
             <img
-              src="/images/logo-absensi-pintar.png"
+              src={loginLogo}
               alt="Absensi Pintar"
               className="h-10 w-10 rounded-xl shadow-md"
             />
