@@ -110,13 +110,13 @@ const Subscription = () => {
 
     toast.info("Menunggu konfirmasi pembayaran...");
     let attempts = 0;
-    const maxAttempts = 30; // 30 * 5s = 2.5 minutes
+    const maxAttempts = 60; // 60 * 3s = 3 minutes
 
     pollingRef.current = setInterval(async () => {
       attempts++;
       const { data: latestPayment } = await supabase
         .from("payment_transactions")
-        .select("status")
+        .select("status, paid_at")
         .eq("school_id", profile.school_id!)
         .order("created_at", { ascending: false })
         .limit(1)
@@ -125,13 +125,13 @@ const Subscription = () => {
       if (latestPayment?.status === "paid") {
         if (pollingRef.current) clearInterval(pollingRef.current);
         setPaymentSuccess(true);
-        toast.success("Pembayaran berhasil! Paket Anda telah diaktifkan.");
-        setTimeout(() => window.location.replace("/subscription"), 2000);
+        toast.success("🎉 Pembayaran berhasil! Paket Anda telah di-upgrade otomatis.");
+        setTimeout(() => window.location.replace("/subscription"), 2500);
       } else if (attempts >= maxAttempts) {
         if (pollingRef.current) clearInterval(pollingRef.current);
-        toast.info("Pembayaran belum dikonfirmasi. Silakan cek kembali nanti.");
+        toast.info("Pembayaran belum dikonfirmasi. Silakan cek kembali nanti atau hubungi admin.");
       }
-    }, 5000);
+    }, 3000);
 
     return () => { if (pollingRef.current) clearInterval(pollingRef.current); };
   }, [searchParams, profile?.school_id]);
