@@ -73,6 +73,7 @@ const SuperAdminPresentation = () => {
       { key: "presentation_cta_btn1_link", value: ctaBtn1Link },
       { key: "presentation_cta_btn2_link", value: ctaBtn2Link },
       { key: "login_sidebar_image", value: loginImage },
+      { key: "login_logo_url", value: loginLogo },
     ].map((r) => ({ ...r, updated_at: new Date().toISOString() }));
 
     const { error } = await supabase
