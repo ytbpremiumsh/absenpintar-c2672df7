@@ -24,8 +24,8 @@ export function PremiumGate({ children, featureLabel, featureKey, requiredPlan =
       <div className="pointer-events-none select-none blur-[6px] opacity-60">
         {children}
       </div>
-      <div className="absolute inset-0 flex items-center justify-center z-10">
-        <div className="bg-card border border-border rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 text-center space-y-4">
+      <div className="fixed inset-0 flex items-center justify-center z-10 pointer-events-none" style={{ left: 'var(--sidebar-width, 0px)' }}>
+        <div className="bg-card border border-border rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 text-center space-y-4 pointer-events-auto">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
             <Crown className="h-7 w-7 text-amber-600 dark:text-amber-400" />
           </div>

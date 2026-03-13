@@ -141,7 +141,8 @@ const Students = () => {
     const { error: uploadError } = await supabase.storage.from("student-photos").upload(path, file, { upsert: true });
     if (uploadError) { toast.error("Gagal upload foto: " + uploadError.message); setPhotoUploading(null); return; }
     const { data: urlData } = supabase.storage.from("student-photos").getPublicUrl(path);
-    await supabase.from("students").update({ photo_url: urlData.publicUrl }).eq("id", studentId);
+    const newUrl = `${urlData.publicUrl}?t=${Date.now()}`;
+    await supabase.from("students").update({ photo_url: newUrl }).eq("id", studentId);
     toast.success("Foto berhasil diupload!");
     setPhotoUploading(null);
     fetchData();
@@ -722,7 +723,7 @@ const Students = () => {
                                         {features.canUploadPhoto ? (
                                           <>
                                             <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer w-8 h-8" onChange={(e) => { if (e.target.files?.[0]) handlePhotoUpload(student.id, e.target.files[0]); }} />
-                                            <Button variant="ghost" size="icon" className="h-8 w-8" disabled={photoUploading === student.id}>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/10 hover:text-primary transition-colors" disabled={photoUploading === student.id}>
                                               {photoUploading === student.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4 text-muted-foreground" />}
                                             </Button>
                                           </>
