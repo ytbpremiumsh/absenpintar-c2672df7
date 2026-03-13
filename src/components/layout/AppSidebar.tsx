@@ -186,41 +186,14 @@ export function AppSidebar() {
               </SidebarGroupContent>
             </SidebarGroup>
 
-            {features.canWhatsApp ? (
-              <SidebarGroup>
-                <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] uppercase tracking-widest font-semibold px-3 mb-1">
-                  WhatsApp
-                </SidebarGroupLabel>
-                <SidebarGroupContent>
-                  <SidebarMenu className="space-y-0.5">{renderNavItems(whatsappNav)}</SidebarMenu>
-                </SidebarGroupContent>
-              </SidebarGroup>
-            ) : (
-              <SidebarGroup>
-                <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] uppercase tracking-widest font-semibold px-3 mb-1">
-                  WhatsApp
-                </SidebarGroupLabel>
-                <SidebarGroupContent>
-                  <SidebarMenu className="space-y-0.5">
-                    <SidebarMenuItem>
-                      <SidebarMenuButton
-                        tooltip="Upgrade ke School untuk WhatsApp"
-                        className="text-sidebar-foreground/40 hover:bg-sidebar-accent/60 rounded-xl px-3 py-2.5 transition-all duration-200 cursor-pointer"
-                        onClick={() => {
-                          toast.info("Fitur WhatsApp tersedia untuk paket School ke atas. Silakan upgrade langganan.", { duration: 4000 });
-                          navigate("/subscription");
-                          if (isMobile) setOpenMobile(false);
-                        }}
-                      >
-                        <MessageSquare className="h-4 w-4 shrink-0 opacity-50" />
-                        <span className="text-sm truncate opacity-50">WhatsApp</span>
-                        <Lock className="h-3 w-3 ml-auto text-amber-500" />
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  </SidebarMenu>
-                </SidebarGroupContent>
-              </SidebarGroup>
-            )}
+            <SidebarGroup>
+              <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] uppercase tracking-widest font-semibold px-3 mb-1">
+                WhatsApp
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu className="space-y-0.5">{renderNavItems(whatsappNav)}</SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
 
             <SidebarGroup>
               <SidebarGroupLabel className="text-sidebar-foreground/40 text-[10px] uppercase tracking-widest font-semibold px-3 mb-1">
