@@ -38,13 +38,22 @@ export function NotificationBell() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [open, setOpen] = useState(false);
 
+  const stripEmoji = (text: string) =>
+    text.replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{1F900}-\u{1F9FF}\u{2702}-\u{27B0}\u{E0020}-\u{E007F}\u{200D}\u{20E3}\u{FE0F}\u2705\u2611\u2714\u274C\u274E\u2B50\u26A0\u2139\uFE0F\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2300}-\u{23FF}\u{2B05}-\u{2B07}\u{2934}\u{2935}\u{25AA}-\u{25FE}\u{25FB}-\u{25FE}\u{1F1E0}-\u{1F1FF}💰💸✅🎉📋📢🔔⚡🏫💡🔥❤️💙💚💛🧡💜🤎🖤🤍]/gu, '').trim();
+
   const fetchNotifications = async () => {
     const { data } = await supabase
       .from("notifications")
       .select("*")
       .order("created_at", { ascending: false })
       .limit(20);
-    if (data) setNotifications(data as Notification[]);
+    if (data) {
+      // Filter out "Pembayaran Masuk" notifications (super admin only)
+      const filtered = (data as Notification[]).filter(
+        (n) => !n.title.includes("Pembayaran Masuk")
+      );
+      setNotifications(filtered);
+    }
   };
 
   useEffect(() => {
