@@ -46,6 +46,8 @@ const SuperAdminPresentation = () => {
         setCtaSubtitle(map.presentation_cta_subtitle || "");
         setCtaBtn1(map.presentation_cta_btn1 || "");
         setCtaBtn2(map.presentation_cta_btn2 || "");
+        setCtaBtn1Link(map.presentation_cta_btn1_link || "");
+        setCtaBtn2Link(map.presentation_cta_btn2_link || "");
       }
       setLoading(false);
     };
