@@ -10,6 +10,7 @@ import {
   ChevronRight, Sparkles, Play, ArrowDown,
   AlertTriangle, XCircle, Clock, FileText, Globe, Camera,
 } from "lucide-react";
+import heroDashboard from "@/assets/hero-dashboard.png";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
