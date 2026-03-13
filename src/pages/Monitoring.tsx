@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   UserCheck, UserX, Clock, Users, GraduationCap,
-  Activity, CheckCircle2, AlertTriangle, Thermometer, FileText, Scan, ExternalLink,
+  Activity, CheckCircle2, AlertTriangle, Thermometer, FileText, Scan, ExternalLink, RotateCcw, XCircle,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
