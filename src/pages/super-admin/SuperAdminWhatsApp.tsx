@@ -80,6 +80,9 @@ const SuperAdminWhatsApp = () => {
     message_template: "",
     attendance_arrive_template: DEFAULT_ARRIVE_TEMPLATE,
     attendance_depart_template: DEFAULT_DEPART_TEMPLATE,
+    attendance_group_template: DEFAULT_GROUP_TEMPLATE,
+    wa_delivery_target: "parent_only",
+    wa_enabled: true,
   });
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState<string | null>(null);
