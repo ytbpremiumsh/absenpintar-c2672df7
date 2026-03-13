@@ -66,11 +66,12 @@ const Subscription = () => {
 
         const sub = subRes.data;
         // Count unique classes from both classes table and student class assignments
-        const classTableNames = new Set((classTableRes.data || []).map((c: any) => c.name));
+        const classTableNames = new Set((classesRes.data || []).map((c: any) => c.name));
         const studentClassNames = new Set((studentRes.data || []).map((s: any) => s.class));
         const allClassNames = new Set([...classTableNames, ...studentClassNames]);
         const classCount = allClassNames.size;
         const studentCount = studentRes.data?.length || 0;
+        setSubscriptionHistory(historyRes.data || []);
 
         if (sub) {
           setCurrentSub(sub);
