@@ -69,7 +69,7 @@ const Login = () => {
         <div className="relative z-10 flex flex-col justify-between p-8 lg:p-12 w-full">
           <div className="flex items-center gap-3">
             <img
-              src="/images/logo-absensi-pintar.png"
+              src={loginLogo}
               alt="Absensi Pintar"
               className="h-10 w-10 rounded-xl shadow-lg"
             />
