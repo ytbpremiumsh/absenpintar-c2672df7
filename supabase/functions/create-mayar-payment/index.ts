@@ -2,164 +2,226 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    // Try platform_settings first, then fall back to env var
-    let MAYAR_API_KEY = Deno.env.get('MAYAR_API_KEY');
-    const tempAdmin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
-    const { data: keyFromDb } = await tempAdmin.from('platform_settings').select('value').eq('key', 'mayar_api_key').maybeSingle();
-    if (keyFromDb?.value) MAYAR_API_KEY = keyFromDb.value;
-    if (!MAYAR_API_KEY) throw new Error('MAYAR_API_KEY not configured');
+    let mayarApiKey = Deno.env.get("MAYAR_API_KEY");
 
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) throw new Error('Unauthorized');
+    const tempAdmin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
+    const { data: keyFromDb } = await tempAdmin
+      .from("platform_settings")
+      .select("value")
+      .eq("key", "mayar_api_key")
+      .maybeSingle();
+
+    if (keyFromDb?.value) mayarApiKey = keyFromDb.value;
+    if (!mayarApiKey) throw new Error("MAYAR_API_KEY not configured");
+
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) throw new Error("Unauthorized");
 
     const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) throw new Error('Unauthorized');
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
 
-    const { plan_id } = await req.json();
-    if (!plan_id) throw new Error('plan_id is required');
+    if (authError || !user) throw new Error("Unauthorized");
+
+    const { plan_id, school_id: requestedSchoolId } = await req.json();
+    if (!plan_id) throw new Error("plan_id is required");
 
     const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Get plan details
     const { data: plan, error: planError } = await supabaseAdmin
-      .from('subscription_plans')
-      .select('*')
-      .eq('id', plan_id)
+      .from("subscription_plans")
+      .select("*")
+      .eq("id", plan_id)
       .single();
-    if (planError || !plan) throw new Error('Plan not found');
 
-    // Get user profile for school_id
-    const { data: profile } = await supabaseAdmin
-      .from('profiles')
-      .select('school_id')
-      .eq('user_id', user.id)
-      .maybeSingle();
-    if (!profile?.school_id) throw new Error('No school associated with your account');
+    if (planError || !plan) throw new Error("Plan not found");
 
-    // Get school name
+    // Resolve school id robustly
+    let schoolId: string | null = null;
+
+    const { data: schoolIdFromFn } = await supabaseAdmin.rpc("get_user_school_id", {
+      _user_id: user.id,
+    });
+
+    if (schoolIdFromFn) {
+      schoolId = schoolIdFromFn;
+    } else {
+      const { data: profile } = await supabaseAdmin
+        .from("profiles")
+        .select("school_id")
+        .eq("user_id", user.id)
+        .limit(1)
+        .maybeSingle();
+      schoolId = profile?.school_id || null;
+    }
+
+    // Allow super admin fallback when school_id explicitly passed
+    if (!schoolId && requestedSchoolId) {
+      const { data: isSuperAdmin } = await supabaseAdmin.rpc("has_role", {
+        _user_id: user.id,
+        _role: "super_admin",
+      });
+      if (isSuperAdmin) schoolId = requestedSchoolId;
+    }
+
+    if (!schoolId) {
+      throw new Error("Akun Anda belum terhubung ke sekolah. Silakan hubungi Super Admin.");
+    }
+
     const { data: school } = await supabaseAdmin
-      .from('schools')
-      .select('name')
-      .eq('id', profile.school_id)
+      .from("schools")
+      .select("name")
+      .eq("id", schoolId)
       .maybeSingle();
 
-    // For free plans (price = 0), auto-approve immediately
+    // Free plan: auto-approved
     if (plan.price === 0) {
-      await supabaseAdmin.from('payment_transactions').insert({
-        school_id: profile.school_id,
+      await supabaseAdmin.from("payment_transactions").insert({
+        school_id: schoolId,
         plan_id: plan.id,
         amount: 0,
-        status: 'paid',
+        status: "paid",
         paid_at: new Date().toISOString(),
-        payment_method: 'free',
+        payment_method: "free",
       });
 
       const expiresAt = new Date();
       expiresAt.setMonth(expiresAt.getMonth() + 1);
 
       const { data: existingSub } = await supabaseAdmin
-        .from('school_subscriptions')
-        .select('id')
-        .eq('school_id', profile.school_id)
-        .eq('status', 'active')
+        .from("school_subscriptions")
+        .select("id")
+        .eq("school_id", schoolId)
+        .eq("status", "active")
+        .order("created_at", { ascending: false })
+        .limit(1)
         .maybeSingle();
 
       if (existingSub) {
-        await supabaseAdmin.from('school_subscriptions')
+        await supabaseAdmin
+          .from("school_subscriptions")
           .update({ plan_id: plan.id, expires_at: expiresAt.toISOString() })
-          .eq('id', existingSub.id);
+          .eq("id", existingSub.id);
       } else {
-        await supabaseAdmin.from('school_subscriptions').insert({
-          school_id: profile.school_id,
+        await supabaseAdmin.from("school_subscriptions").insert({
+          school_id: schoolId,
           plan_id: plan.id,
-          status: 'active',
+          status: "active",
           expires_at: expiresAt.toISOString(),
         });
       }
 
       return new Response(JSON.stringify({ success: true, auto_approved: true }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Check for existing pending payment for the same plan within the last 2 minutes
+    // Reuse pending payment in short window
     const twoMinAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
     const { data: existingPending } = await supabaseAdmin
-      .from('payment_transactions')
-      .select('id, mayar_payment_url')
-      .eq('school_id', profile.school_id)
-      .eq('plan_id', plan.id)
-      .eq('status', 'pending')
-      .gte('created_at', twoMinAgo)
-      .order('created_at', { ascending: false })
+      .from("payment_transactions")
+      .select("id, mayar_payment_url")
+      .eq("school_id", schoolId)
+      .eq("plan_id", plan.id)
+      .eq("status", "pending")
+      .gte("created_at", twoMinAgo)
+      .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
 
     if (existingPending?.mayar_payment_url) {
-      return new Response(JSON.stringify({ success: true, payment_url: existingPending.mayar_payment_url }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return new Response(
+        JSON.stringify({ success: true, payment_url: existingPending.mayar_payment_url }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
     }
 
-    // For paid plans, create Mayar payment link — DO NOT auto-approve
-    // Use the published app URL for redirect
-    const siteUrl = 'https://absenpintar.lovable.app';
-    console.log('Redirect URL:', `${siteUrl}/subscription?status=success`);
-    const mayarRes = await fetch('https://api.mayar.id/hl/v1/payment/create', {
-      method: 'POST',
+    // Build redirect URL from origin/referer to avoid wrong domain
+    let siteUrl = "https://absenpintar.lovable.app";
+    const origin = req.headers.get("origin");
+    const referer = req.headers.get("referer");
+
+    if (origin?.startsWith("http")) {
+      siteUrl = origin;
+    } else if (referer) {
+      try {
+        siteUrl = new URL(referer).origin;
+      } catch {
+        // keep default
+      }
+    }
+
+    const redirectUrl = `${siteUrl}/subscription?status=success`;
+    console.log("Redirect URL:", redirectUrl);
+
+    const mayarRes = await fetch("https://api.mayar.id/hl/v1/payment/create", {
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${MAYAR_API_KEY}`,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${mayarApiKey}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        name: `Paket ${plan.name} - ${school?.name || 'Sekolah'}`,
+        name: `Paket ${plan.name} - ${school?.name || "Sekolah"}`,
         amount: plan.price,
-        description: `Paket ${plan.name} - (${school?.name || 'Sekolah'})`,
-        email: user.email || 'noemail@school.com',
-        mobile: '08000000000',
-        redirectUrl: `${siteUrl}/subscription?status=success`,
+        description: `Paket ${plan.name} - (${school?.name || "Sekolah"})`,
+        email: user.email || "noemail@school.com",
+        mobile: "08000000000",
+        redirectUrl,
       }),
     });
 
     const mayarData = await mayarRes.json();
-    if (!mayarRes.ok) throw new Error(`Mayar API error: ${JSON.stringify(mayarData)}`);
+    if (!mayarRes.ok) {
+      console.error("Mayar API error:", mayarData);
+      throw new Error(`Mayar API error: ${mayarData?.message || JSON.stringify(mayarData)}`);
+    }
 
-    const paymentLink = mayarData.data;
+    const paymentLink = mayarData?.data;
+    if (!paymentLink?.link) {
+      throw new Error("Mayar tidak mengembalikan link pembayaran");
+    }
 
-    // Save transaction as pending — wait for webhook to confirm payment
-    await supabaseAdmin.from('payment_transactions').insert({
-      school_id: profile.school_id,
+    await supabaseAdmin.from("payment_transactions").insert({
+      school_id: schoolId,
       plan_id: plan.id,
       amount: plan.price,
-      status: 'pending',
+      status: "pending",
       mayar_transaction_id: paymentLink?.id || null,
       mayar_payment_url: paymentLink?.link || null,
     });
 
-    return new Response(JSON.stringify({ success: true, payment_url: paymentLink?.link }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    return new Response(JSON.stringify({ success: true, payment_url: paymentLink.link }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error("create-mayar-payment error:", error);
+    return new Response(JSON.stringify({ success: false, error: error.message }), {
       status: 400,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });

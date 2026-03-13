@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
   Check, Star, Zap, Crown, Loader2, Shield, Calendar, Clock,
-  GraduationCap, Users, AlertTriangle, ExternalLink, CheckCircle2,
+  GraduationCap, Users, AlertTriangle, ExternalLink, CheckCircle2, CreditCard,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,6 +41,7 @@ const Subscription = () => {
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
   const [usage, setUsage] = useState<UsageStats>({ classCount: 0, studentCount: 0, maxClasses: 2, maxStudentsPerClass: 10, maxStudentsTotal: 20 });
+  const [subscriptionHistory, setSubscriptionHistory] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -56,20 +57,21 @@ const Subscription = () => {
       setPlans(parsed);
 
       if (profile?.school_id) {
-        const [subRes, classRes, studentRes, classTableRes] = await Promise.all([
-          supabase.from("school_subscriptions").select("*, subscription_plans(*)").eq("school_id", profile.school_id).eq("status", "active").maybeSingle(),
-          supabase.from("classes").select("id, name").eq("school_id", profile.school_id),
-          supabase.from("students").select("id, class").eq("school_id", profile.school_id),
+        const [subRes, classesRes, studentRes, historyRes] = await Promise.all([
+          supabase.from("school_subscriptions").select("*, subscription_plans(*)").eq("school_id", profile.school_id).eq("status", "active").order("created_at", { ascending: false }).limit(1).maybeSingle(),
           supabase.from("classes").select("name").eq("school_id", profile.school_id),
+          supabase.from("students").select("id, class").eq("school_id", profile.school_id),
+          supabase.from("payment_transactions").select("id, amount, status, created_at, paid_at, payment_method, subscription_plans(name)").eq("school_id", profile.school_id).order("created_at", { ascending: false }).limit(20),
         ]);
 
         const sub = subRes.data;
         // Count unique classes from both classes table and student class assignments
-        const classTableNames = new Set((classTableRes.data || []).map((c: any) => c.name));
+        const classTableNames = new Set((classesRes.data || []).map((c: any) => c.name));
         const studentClassNames = new Set((studentRes.data || []).map((s: any) => s.class));
         const allClassNames = new Set([...classTableNames, ...studentClassNames]);
         const classCount = allClassNames.size;
         const studentCount = studentRes.data?.length || 0;
+        setSubscriptionHistory(historyRes.data || []);
 
         if (sub) {
           setCurrentSub(sub);
@@ -140,10 +142,26 @@ const Subscription = () => {
     setPurchasing(planId);
     try {
       const { data, error } = await supabase.functions.invoke("create-mayar-payment", {
-        body: { plan_id: planId },
+        body: { plan_id: planId, school_id: profile?.school_id || null },
       });
-      if (error) throw error;
+
+      if (error) {
+        let message = error.message || "Gagal membuat pembayaran";
+        const context = (error as any).context;
+        if (context) {
+          try {
+            const parsed = await context.json();
+            if (parsed?.error) message = parsed.error;
+          } catch {
+            // ignore parse error
+          }
+        }
+        throw new Error(message);
+      }
+
       const result = data as any;
+      if (result?.error) throw new Error(result.error);
+
       if (result?.auto_approved) {
         toast.success("Paket berhasil diaktifkan!");
         window.location.reload();
@@ -394,6 +412,56 @@ const Subscription = () => {
                 </div>
               )}
             </div>
+          </div>
+        </Card>
+      </motion.div>
+
+      {/* Subscription History */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+        <Card className="border-0 shadow-card">
+          <div className="p-5">
+            <h3 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
+              <CreditCard className="h-4 w-4 text-primary" />
+              Riwayat Langganan
+            </h3>
+
+            {subscriptionHistory.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Belum ada riwayat langganan.</p>
+            ) : (
+              <div className="space-y-2">
+                {subscriptionHistory.map((item) => {
+                  const statusClass =
+                    item.status === "paid"
+                      ? "bg-success/10 text-success border-success/20"
+                      : item.status === "pending"
+                        ? "bg-warning/10 text-warning border-warning/20"
+                        : "bg-muted text-muted-foreground border-border";
+
+                  return (
+                    <div key={item.id} className="flex items-center justify-between gap-3 rounded-lg border border-border p-3">
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-foreground truncate">
+                          Paket {(item as any).subscription_plans?.name || "-"}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(item.created_at).toLocaleDateString("id-ID", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          })}
+                          {item.paid_at ? ` • Dibayar ${new Date(item.paid_at).toLocaleDateString("id-ID")}` : ""}
+                        </p>
+                      </div>
+
+                      <div className="text-right shrink-0">
+                        <p className="text-sm font-bold text-foreground">{formatRupiah(item.amount || 0)}</p>
+                        <Badge className={`text-[10px] border ${statusClass}`}>{item.status}</Badge>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </Card>
       </motion.div>
