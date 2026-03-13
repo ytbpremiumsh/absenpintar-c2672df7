@@ -41,6 +41,7 @@ const Subscription = () => {
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
   const [usage, setUsage] = useState<UsageStats>({ classCount: 0, studentCount: 0, maxClasses: 2, maxStudentsPerClass: 10, maxStudentsTotal: 20 });
+  const [subscriptionHistory, setSubscriptionHistory] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
