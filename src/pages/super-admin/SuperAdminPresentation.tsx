@@ -37,6 +37,8 @@ const SuperAdminPresentation = () => {
   const [ctaBtn2Link, setCtaBtn2Link] = useState("");
   const [loginImage, setLoginImage] = useState("");
   const [loginLogo, setLoginLogo] = useState("");
+  const [uploadingSidebar, setUploadingSidebar] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
 
   useEffect(() => {
     const fetch = async () => {
