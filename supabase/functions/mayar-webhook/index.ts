@@ -27,20 +27,51 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    const transactionId = data?.id || data?.transaction_id;
-    if (!transactionId) {
+    // Try multiple ID fields from Mayar webhook payload
+    const transactionId = data?.id || data?.transaction_id || data?.transactionId;
+    const productId = data?.productId;
+    
+    if (!transactionId && !productId) {
       return new Response(JSON.stringify({ error: 'No transaction ID' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    // Find the payment transaction
-    const { data: payment, error: findError } = await supabaseAdmin
-      .from('payment_transactions')
-      .select('id, school_id, plan_id, status, amount')
-      .eq('mayar_transaction_id', transactionId)
-      .maybeSingle();
+    // Find the payment transaction - try transaction ID first, then product ID (payment link ID)
+    let payment = null;
+    
+    if (transactionId) {
+      const { data: found } = await supabaseAdmin
+        .from('payment_transactions')
+        .select('id, school_id, plan_id, status, amount')
+        .eq('mayar_transaction_id', transactionId)
+        .maybeSingle();
+      payment = found;
+    }
+    
+    // Fallback: productId is the payment link ID which is what we store as mayar_transaction_id
+    if (!payment && productId) {
+      const { data: found } = await supabaseAdmin
+        .from('payment_transactions')
+        .select('id, school_id, plan_id, status, amount')
+        .eq('mayar_transaction_id', productId)
+        .maybeSingle();
+      payment = found;
+    }
+    
+    // Last fallback: find most recent pending payment matching the amount and email
+    if (!payment && data?.amount) {
+      const { data: found } = await supabaseAdmin
+        .from('payment_transactions')
+        .select('id, school_id, plan_id, status, amount')
+        .eq('status', 'pending')
+        .eq('amount', data.amount)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      payment = found;
+    }
 
     if (!payment) {
       console.log('Transaction not found for ID:', transactionId);
