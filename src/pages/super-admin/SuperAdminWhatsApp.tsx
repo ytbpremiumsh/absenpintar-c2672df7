@@ -133,7 +133,6 @@ const SuperAdminWhatsApp = () => {
       wa_delivery_target: int.wa_delivery_target || "parent_only",
       wa_enabled: int.wa_enabled !== false,
     });
-    });
     setDialogOpen(true);
   };
 
