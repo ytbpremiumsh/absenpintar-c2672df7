@@ -120,7 +120,7 @@ export function NotificationBell() {
           )}
         </button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-80 p-0">
+       <PopoverContent align="end" className="w-[420px] p-0">
         <div className="flex items-center justify-between p-3 border-b">
           <h3 className="text-sm font-bold text-foreground">Notifikasi</h3>
           {unreadCount > 0 && (
@@ -129,7 +129,7 @@ export function NotificationBell() {
             </Button>
           )}
         </div>
-        <ScrollArea className="max-h-80">
+        <ScrollArea className="max-h-96">
           {notifications.length === 0 ? (
             <div className="p-6 text-center">
               <Bell className="h-8 w-8 text-muted-foreground/20 mx-auto mb-2" />
@@ -138,27 +138,20 @@ export function NotificationBell() {
           ) : (
             <div className="divide-y">
               {notifications.map((n) => {
-                const Icon = typeIcons[n.type] || Info;
-                const colorClass = typeColors[n.type] || typeColors.info;
                 return (
                   <button
                     key={n.id}
                     onClick={() => !n.is_read && markAsRead(n.id)}
-                    className={`w-full text-left p-3 hover:bg-muted/50 transition-colors flex gap-3 ${
+                    className={`w-full text-left p-3 hover:bg-muted/50 transition-colors ${
                       !n.is_read ? "bg-primary/5" : ""
                     }`}
                   >
-                    <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${colorClass}`}>
-                      <Icon className="h-4 w-4" />
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-sm font-medium text-foreground">{stripEmoji(n.title)}</p>
+                      {!n.is_read && <span className="h-2 w-2 rounded-full bg-primary shrink-0 mt-1.5" />}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-1">
-                        <p className="text-sm font-medium text-foreground truncate">{n.title}</p>
-                        {!n.is_read && <span className="h-2 w-2 rounded-full bg-primary shrink-0 mt-1.5" />}
-                      </div>
-                      <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{n.message}</p>
-                      <p className="text-[10px] text-muted-foreground/60 mt-1">{timeAgo(n.created_at)}</p>
-                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">{stripEmoji(n.message)}</p>
+                    <p className="text-[10px] text-muted-foreground/60 mt-1">{timeAgo(n.created_at)}</p>
                   </button>
                 );
               })}
