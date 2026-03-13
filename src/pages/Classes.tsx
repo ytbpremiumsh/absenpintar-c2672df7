@@ -55,6 +55,12 @@ const Classes = () => {
 
   const handleAddClass = async () => {
     if (!profile?.school_id || !newClassName.trim()) { toast.error("Nama kelas wajib diisi"); return; }
+    // Check class limit
+    if (features.maxClasses < 999 && classes.length >= features.maxClasses) {
+      toast.error(`Batas maksimal ${features.maxClasses} kelas untuk paket ${features.planName}. Silakan upgrade paket untuk menambah kelas.`);
+      navigate("/subscription");
+      return;
+    }
     setSaving(true);
     const { error } = await supabase.from("classes").insert({ school_id: profile.school_id, name: newClassName.trim() });
     setSaving(false);

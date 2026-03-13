@@ -129,9 +129,9 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        name: `Langganan ${plan.name} - ${school?.name || 'Sekolah'}`,
+        name: `Paket ${plan.name} - ${school?.name || 'Sekolah'}`,
         amount: plan.price,
-        description: `Paket ${plan.name} untuk ${school?.name || 'Sekolah'}`,
+        description: `Paket ${plan.name} - (${school?.name || 'Sekolah'})`,
         email: user.email || 'noemail@school.com',
         mobile: '08000000000',
         redirectUrl: `${siteUrl}/subscription?status=success`,

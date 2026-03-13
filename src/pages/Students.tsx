@@ -92,6 +92,22 @@ const Students = () => {
       toast.error("Nama, Kelas, dan NIS wajib diisi");
       return;
     }
+    // Check student limit
+    const maxTotal = features.maxStudentsTotal ?? (features.maxClasses >= 999 ? Infinity : features.maxClasses * features.maxStudentsPerClass);
+    if (maxTotal !== Infinity && students.length >= maxTotal) {
+      toast.error(`Batas maksimal ${maxTotal} siswa untuk paket ${features.planName}. Silakan upgrade paket untuk menambah siswa.`);
+      navigate("/subscription");
+      return;
+    }
+    // Check per-class limit
+    if (features.maxStudentsPerClass < 999) {
+      const classStudentCount = students.filter(s => s.class === form.class).length;
+      if (classStudentCount >= features.maxStudentsPerClass) {
+        toast.error(`Batas maksimal ${features.maxStudentsPerClass} siswa per kelas untuk paket ${features.planName}. Silakan upgrade paket.`);
+        navigate("/subscription");
+        return;
+      }
+    }
     setSaving(true);
     const { error } = await supabase.from("students").insert({
       school_id: profile.school_id,
