@@ -82,6 +82,42 @@ serve(async (req) => {
       });
     }
 
+    // Auto-provision WhatsApp integration for School/Premium plans
+    const { data: planInfo } = await supabaseAdmin.from('subscription_plans').select('name').eq('id', payment.plan_id).single();
+    const approvedPlanName = planInfo?.name || '';
+    
+    if (['School', 'Premium'].includes(approvedPlanName)) {
+      const { data: existingInt } = await supabaseAdmin
+        .from('school_integrations')
+        .select('id')
+        .eq('school_id', payment.school_id)
+        .eq('integration_type', 'onesender')
+        .maybeSingle();
+
+      if (!existingInt) {
+        const { data: refInt } = await supabaseAdmin
+          .from('school_integrations')
+          .select('api_key, api_url')
+          .eq('integration_type', 'onesender')
+          .eq('is_active', true)
+          .limit(1)
+          .maybeSingle();
+
+        if (refInt?.api_key && refInt?.api_url) {
+          await supabaseAdmin.from('school_integrations').insert({
+            school_id: payment.school_id,
+            integration_type: 'onesender',
+            api_key: refInt.api_key,
+            api_url: refInt.api_url,
+            is_active: true,
+            wa_enabled: true,
+          });
+        }
+      } else {
+        await supabaseAdmin.from('school_integrations').update({ is_active: true }).eq('id', existingInt.id);
+      }
+    }
+
     return new Response(JSON.stringify({ success: true, expires_at: expiresAt.toISOString() }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

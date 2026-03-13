@@ -236,7 +236,7 @@ const WhatsAppSettings = () => {
   }
 
   return (
-    <PremiumGate featureLabel="WhatsApp Gateway" requiredPlan="Premium">
+    <PremiumGate featureLabel="WhatsApp Gateway" featureKey="canWhatsApp" requiredPlan="School">
       <div className="mx-auto max-w-4xl space-y-6">
         <div>
           <h1 className="flex items-center gap-2 text-xl font-bold sm:text-2xl">

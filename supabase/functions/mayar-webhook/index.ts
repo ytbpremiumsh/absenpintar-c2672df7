@@ -145,18 +145,56 @@ serve(async (req) => {
     const expiresFormatted = expiresAt.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
     const amountFormatted = `Rp ${(payment.amount || 0).toLocaleString('id-ID')}`;
 
+    // Auto-provision WhatsApp integration for School/Premium plans
+    if (['School', 'Premium'].includes(planName)) {
+      const { data: existingInt } = await supabaseAdmin
+        .from('school_integrations')
+        .select('id')
+        .eq('school_id', payment.school_id)
+        .eq('integration_type', 'onesender')
+        .maybeSingle();
+
+      if (!existingInt) {
+        // Copy API credentials from any existing school integration
+        const { data: refInt } = await supabaseAdmin
+          .from('school_integrations')
+          .select('api_key, api_url')
+          .eq('integration_type', 'onesender')
+          .eq('is_active', true)
+          .limit(1)
+          .maybeSingle();
+
+        if (refInt?.api_key && refInt?.api_url) {
+          await supabaseAdmin.from('school_integrations').insert({
+            school_id: payment.school_id,
+            integration_type: 'onesender',
+            api_key: refInt.api_key,
+            api_url: refInt.api_url,
+            is_active: true,
+            wa_enabled: true,
+          });
+          console.log(`WhatsApp integration auto-provisioned for school ${payment.school_id}`);
+        }
+      } else {
+        // Activate existing integration
+        await supabaseAdmin.from('school_integrations')
+          .update({ is_active: true })
+          .eq('id', existingInt.id);
+      }
+    }
+
     // Notification for the school (user sees this)
     await supabaseAdmin.from('notifications').insert({
       school_id: payment.school_id,
-      title: '✅ Pembayaran Berhasil — Upgrade Sukses!',
+      title: 'Pembayaran Berhasil — Upgrade Sukses',
       message: `Paket ${planName} telah aktif untuk ${schoolName}. Langganan berlaku hingga ${expiresFormatted}. Terima kasih atas pembayaran sebesar ${amountFormatted}.`,
       type: 'success',
     });
 
-    // Notification for super admin (school_id = null means global/super admin)
+    // Notification for super admin
     await supabaseAdmin.from('notifications').insert({
       school_id: null,
-      title: '💰 Pembayaran Masuk — Auto Approved',
+      title: 'Pembayaran Masuk — Auto Approved',
       message: `${schoolName} telah membayar Paket ${planName} sebesar ${amountFormatted}. Langganan otomatis diaktifkan hingga ${expiresFormatted}.`,
       type: 'info',
     });
