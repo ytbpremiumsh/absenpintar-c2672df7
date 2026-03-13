@@ -204,17 +204,17 @@ const Subscription = () => {
       {/* Payment Success Banner */}
       {(paymentSuccess || searchParams.get("status") === "success") && (
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
-          <Card className="border-success/30 bg-success/5 shadow-card">
+          <Card className={`border-0 shadow-card ${paymentSuccess ? "bg-success/5 border-success/30" : "bg-primary/5 border-primary/30"}`}>
             <div className="p-4 flex items-center gap-3">
-              <CheckCircle2 className="h-6 w-6 text-success shrink-0" />
-              <div>
+              <CheckCircle2 className={`h-6 w-6 shrink-0 ${paymentSuccess ? "text-success" : "text-primary"}`} />
+              <div className="flex-1">
                 <p className="text-sm font-bold text-foreground">
-                  {paymentSuccess ? "Pembayaran Berhasil!" : "Menunggu Konfirmasi Pembayaran..."}
+                  {paymentSuccess ? "🎉 Pembayaran Berhasil — Upgrade Sukses!" : "⏳ Menunggu Konfirmasi Pembayaran..."}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {paymentSuccess
-                    ? "Paket langganan Anda telah diaktifkan secara otomatis."
-                    : "Sistem sedang memverifikasi pembayaran Anda. Halaman akan otomatis diperbarui."}
+                    ? "Paket langganan Anda telah di-upgrade secara otomatis. Notifikasi telah dikirim ke akun Anda dan Super Admin."
+                    : "Sistem sedang memverifikasi pembayaran Anda. Halaman akan otomatis diperbarui setelah pembayaran dikonfirmasi."}
                 </p>
               </div>
               {!paymentSuccess && <Loader2 className="h-5 w-5 animate-spin text-primary shrink-0 ml-auto" />}
