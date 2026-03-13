@@ -91,21 +91,26 @@ const Monitoring = () => {
     const schoolId = profile.school_id;
     const today = new Date().toISOString().slice(0, 10);
 
-    const [studentsRes, logsRes] = await Promise.all([
+    const [studentsRes, logsRes, settingsRes] = await Promise.all([
       supabase.from("students").select("id, name, class, parent_name, student_id, photo_url").eq("school_id", schoolId),
       supabase.from("attendance_logs").select("id, student_id, time, status, method, created_at, attendance_type").eq("school_id", schoolId).eq("date", today).order("created_at", { ascending: false }),
+      supabase.from("pickup_settings").select("attendance_end_time").eq("school_id", schoolId).maybeSingle(),
     ]);
 
     const allStudents = studentsRes.data || [];
     const logs = logsRes.data || [];
+    const attEnd = (settingsRes.data as any)?.attendance_end_time || "12:00:00";
+    const jakartaNow = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" }));
+    const currentTime = jakartaNow.toTimeString().slice(0, 8);
+    const autoAlfa = currentTime > attEnd;
 
-    const datangLogs = logs.filter((l: any) => (l.attendance_type || 'datang') === 'datang');
+    const datangLogs = logs.filter((l: any) => (l.attendance_type || "datang") === "datang");
     const mapped: StudentWithStatus[] = allStudents.map((s: any) => {
       const log = datangLogs.find((l: any) => l.student_id === s.id);
       return {
         id: s.id, name: s.name, class: s.class,
         parent_name: s.parent_name, student_id: s.student_id, photo_url: s.photo_url,
-        status: log ? (log.status as any) : "belum",
+        status: log ? (log.status as any) : (autoAlfa ? "alfa" : "belum"),
         attendance_time: log?.time,
         log_id: log?.id,
       };
