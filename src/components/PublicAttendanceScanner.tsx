@@ -198,10 +198,10 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
 
   const startFaceScanning = useCallback(() => {
     if (faceIntervalRef.current) return;
-    faceTimeoutRef.current = window.setTimeout(() => captureAndRecognize(), 2000);
+    faceTimeoutRef.current = window.setTimeout(() => captureAndRecognize(), 3000);
     faceIntervalRef.current = window.setInterval(() => {
       if (!scanPaused.current) captureAndRecognize();
-    }, 4000);
+    }, 8000);
   }, [captureAndRecognize]);
 
   const stopFaceScanning = useCallback(() => {
