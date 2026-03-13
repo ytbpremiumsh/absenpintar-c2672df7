@@ -21,13 +21,15 @@ interface Notification {
 
 const typeIcons: Record<string, typeof Info> = {
   info: Info,
+  success: Check,
   subscription: CreditCard,
   announcement: Megaphone,
 };
 
 const typeColors: Record<string, string> = {
   info: "bg-primary/10 text-primary",
-  subscription: "bg-success/10 text-success",
+  success: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+  subscription: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
   announcement: "bg-warning/10 text-warning",
 };
 
