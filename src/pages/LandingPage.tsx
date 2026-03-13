@@ -471,30 +471,57 @@ const LandingPage = () => {
       </section>
 
       {/* ─── Footer ─── */}
-      <footer className="border-t border-border py-12 bg-card/50">
+      <footer className="border-t border-border py-16 bg-card/50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-8">
-            <div className="flex items-center gap-3">
-              {get("footer_logo") ? (
-                <img src={get("footer_logo")} alt="Logo" className="h-10 w-10 rounded-xl object-cover shadow-md" />
-              ) : (
-                <div className="h-10 w-10 rounded-xl gradient-primary flex items-center justify-center shadow-md">
-                  <GraduationCap className="h-5 w-5 text-primary-foreground" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+            {/* Brand & Tagline */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                {get("footer_logo") ? (
+                  <img src={get("footer_logo")} alt="Logo" className="h-10 w-10 rounded-xl object-cover shadow-md" />
+                ) : (
+                  <div className="h-10 w-10 rounded-xl gradient-primary flex items-center justify-center shadow-md">
+                    <GraduationCap className="h-5 w-5 text-primary-foreground" />
+                  </div>
+                )}
+                <div>
+                  <p className="font-bold text-foreground text-sm">Absensi Pintar</p>
+                  <p className="text-xs text-muted-foreground">by Smart School System</p>
                 </div>
-              )}
-              <div>
-                <p className="font-bold text-foreground text-sm">Smart School Attendance</p>
-                <p className="text-xs text-muted-foreground">Sistem Absensi Digital Modern</p>
               </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Solusi absensi digital #1 untuk sekolah modern. Hemat waktu guru, tingkatkan kedisiplinan siswa, dan beri ketenangan kepada orang tua — semua dalam satu platform.
+              </p>
             </div>
-            <div className="flex flex-col items-center md:items-end gap-2 text-sm text-muted-foreground">
-              {get("footer_address") && <span className="flex items-center gap-1.5 text-xs"><MapPin className="h-3.5 w-3.5" /> {get("footer_address")}</span>}
-              {get("footer_email") && <span className="flex items-center gap-1.5 text-xs"><Mail className="h-3.5 w-3.5" /> {get("footer_email")}</span>}
-              {get("footer_phone") && <span className="flex items-center gap-1.5 text-xs"><Phone className="h-3.5 w-3.5" /> {get("footer_phone")}</span>}
+
+            {/* Keunggulan */}
+            <div className="space-y-3">
+              <p className="font-bold text-foreground text-sm">Kenapa Sekolah Memilih Kami?</p>
+              <ul className="space-y-2 text-xs text-muted-foreground">
+                <li className="flex items-start gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" /> Scan barcode & face recognition — absensi kurang dari 1 detik</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" /> Notifikasi WhatsApp otomatis langsung ke orang tua</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" /> Dashboard real-time untuk kepala sekolah & guru</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" /> Gratis untuk memulai, tanpa biaya setup</li>
+              </ul>
+            </div>
+
+            {/* Kontak */}
+            <div className="space-y-3">
+              <p className="font-bold text-foreground text-sm">Hubungi Kami</p>
+              <div className="flex flex-col gap-2 text-xs text-muted-foreground">
+                {get("footer_address") && <span className="flex items-start gap-1.5"><MapPin className="h-3.5 w-3.5 mt-0.5 shrink-0" /> {get("footer_address")}</span>}
+                {get("footer_email") && <span className="flex items-center gap-1.5"><Mail className="h-3.5 w-3.5 shrink-0" /> {get("footer_email")}</span>}
+                {get("footer_phone") && <span className="flex items-center gap-1.5"><Phone className="h-3.5 w-3.5 shrink-0" /> {get("footer_phone")}</span>}
+              </div>
+              <p className="text-xs text-muted-foreground/70 leading-relaxed pt-2">
+                Punya pertanyaan? Tim kami siap membantu Anda kapan saja. Konsultasi gratis untuk kebutuhan sekolah Anda.
+              </p>
             </div>
           </div>
-          <div className="mt-8 pt-6 border-t border-border text-center">
-            <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Smart School Attendance System. All rights reserved.</p>
+
+          <div className="mt-10 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Absensi Pintar — Smart School Attendance System. All rights reserved.</p>
+            <p className="text-[10px] text-muted-foreground/50">Dipercaya sekolah-sekolah di seluruh Indonesia 🇮🇩</p>
           </div>
         </div>
       </footer>
