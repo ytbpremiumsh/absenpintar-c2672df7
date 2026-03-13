@@ -36,6 +36,7 @@ const ScanQR = () => {
   const [scanMethod, setScanMethod] = useState<"barcode" | "face">("barcode");
   const [faceScanning, setFaceScanning] = useState(false);
   const [currentAttType, setCurrentAttType] = useState<"datang" | "pulang">("datang");
+  const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
