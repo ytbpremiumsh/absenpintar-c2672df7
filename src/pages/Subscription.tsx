@@ -459,12 +459,7 @@ const Subscription = () => {
             ) : (
               <div className="space-y-2">
                 {subscriptionHistory.map((item) => {
-                  const statusClass =
-                    item.status === "paid"
-                      ? "bg-success/10 text-success border-success/20"
-                      : item.status === "pending"
-                        ? "bg-warning/10 text-warning border-warning/20"
-                        : "bg-muted text-muted-foreground border-border";
+                  const statusClass = "bg-success/10 text-success border-success/20";
 
                   return (
                     <div key={item.id} className="flex items-center justify-between gap-3 rounded-lg border border-border p-3">
