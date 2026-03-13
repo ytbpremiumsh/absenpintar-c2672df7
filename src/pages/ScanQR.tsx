@@ -430,7 +430,7 @@ const ScanQR = () => {
                 <Camera className="h-7 w-7 sm:h-8 sm:w-8 text-primary-foreground" />
               </div>
               {cameraError && <p className="text-destructive text-xs sm:text-sm text-center px-4">{cameraError}</p>}
-              <Button onClick={startCamera} className="gradient-primary hover:opacity-90">
+              <Button onClick={() => startCamera()} className="gradient-primary hover:opacity-90">
                 <Camera className="h-4 w-4 mr-2" /> Aktifkan Kamera
               </Button>
               <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-muted-foreground">
