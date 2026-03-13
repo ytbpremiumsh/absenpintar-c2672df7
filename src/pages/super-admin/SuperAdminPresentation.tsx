@@ -64,6 +64,8 @@ const SuperAdminPresentation = () => {
       { key: "presentation_cta_subtitle", value: ctaSubtitle },
       { key: "presentation_cta_btn1", value: ctaBtn1 },
       { key: "presentation_cta_btn2", value: ctaBtn2 },
+      { key: "presentation_cta_btn1_link", value: ctaBtn1Link },
+      { key: "presentation_cta_btn2_link", value: ctaBtn2Link },
     ].map((r) => ({ ...r, updated_at: new Date().toISOString() }));
 
     const { error } = await supabase
