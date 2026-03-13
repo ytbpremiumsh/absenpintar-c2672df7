@@ -129,6 +129,10 @@ const SuperAdminWhatsApp = () => {
       message_template: int.message_template || "",
       attendance_arrive_template: int.attendance_arrive_template || DEFAULT_ARRIVE_TEMPLATE,
       attendance_depart_template: int.attendance_depart_template || DEFAULT_DEPART_TEMPLATE,
+      attendance_group_template: int.attendance_group_template || DEFAULT_GROUP_TEMPLATE,
+      wa_delivery_target: int.wa_delivery_target || "parent_only",
+      wa_enabled: int.wa_enabled !== false,
+    });
     });
     setDialogOpen(true);
   };
