@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   UserCheck, UserX, Clock, Users, GraduationCap,
-  Activity, CheckCircle2, AlertTriangle, Thermometer, FileText, Scan, ExternalLink,
+  Activity, CheckCircle2, AlertTriangle, Thermometer, FileText, Scan, ExternalLink, RotateCcw, XCircle,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -101,8 +101,10 @@ const Monitoring = () => {
     const logs = logsRes.data || [];
     const attEnd = (settingsRes.data as any)?.attendance_end_time || "12:00:00";
     const jakartaNow = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" }));
-    const currentTime = jakartaNow.toTimeString().slice(0, 8);
-    const autoAlfa = currentTime > attEnd;
+    const currentHour = jakartaNow.getHours();
+    // Auto-alfa only at midnight (24:00) — i.e. the next day when date changes
+    // During the current day, students without attendance stay as "belum"
+    const autoAlfa = false; // Never auto-alfa during the same day; handled by date change
 
     const datangLogs = logs.filter((l: any) => (l.attendance_type || "datang") === "datang");
     const mapped: StudentWithStatus[] = allStudents.map((s: any) => {
@@ -110,7 +112,7 @@ const Monitoring = () => {
       return {
         id: s.id, name: s.name, class: s.class,
         parent_name: s.parent_name, student_id: s.student_id, photo_url: s.photo_url,
-        status: log ? (log.status as any) : (autoAlfa ? "alfa" : "belum"),
+        status: log ? (log.status as any) : "belum",
         attendance_time: log?.time,
         log_id: log?.id,
       };
@@ -480,12 +482,22 @@ const Monitoring = () => {
                 <SelectTrigger><SelectValue placeholder="Pilih status" /></SelectTrigger>
                 <SelectContent>
                   {editStudent?.log_id && (
-                    <SelectItem value="belum">🔄 Batalkan (Belum Absen)</SelectItem>
+                    <SelectItem value="belum">
+                      <span className="flex items-center gap-2"><RotateCcw className="h-4 w-4 text-muted-foreground" /> Batalkan (Belum Absen)</span>
+                    </SelectItem>
                   )}
-                  <SelectItem value="hadir">✅ Hadir</SelectItem>
-                  <SelectItem value="izin">📝 Izin</SelectItem>
-                  <SelectItem value="sakit">🤒 Sakit</SelectItem>
-                  <SelectItem value="alfa">❌ Alfa</SelectItem>
+                  <SelectItem value="hadir">
+                    <span className="flex items-center gap-2"><UserCheck className="h-4 w-4 text-success" /> Hadir</span>
+                  </SelectItem>
+                  <SelectItem value="izin">
+                    <span className="flex items-center gap-2"><FileText className="h-4 w-4 text-warning" /> Izin</span>
+                  </SelectItem>
+                  <SelectItem value="sakit">
+                    <span className="flex items-center gap-2"><Thermometer className="h-4 w-4 text-blue-500" /> Sakit</span>
+                  </SelectItem>
+                  <SelectItem value="alfa">
+                    <span className="flex items-center gap-2"><XCircle className="h-4 w-4 text-destructive" /> Alfa</span>
+                  </SelectItem>
                 </SelectContent>
               </Select>
               <div className="flex gap-2">

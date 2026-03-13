@@ -69,7 +69,10 @@ serve(async (req) => {
       if (!classes[s.class]) classes[s.class] = [];
       const logDatang = logs.find((l: any) => l.student_id === s.id && l.attendance_type === 'datang');
       const logPulang = logs.find((l: any) => l.student_id === s.id && l.attendance_type === 'pulang');
-      const autoAlfa = currentTime > attEnd;
+      // Auto-alfa only applies when viewing data from a past date (next day)
+      // During the current day, students without attendance remain "belum"
+      const isToday = today === (new Date().toISOString().split('T')[0]);
+      const autoAlfa = !isToday; // Only mark alfa for past dates
       classes[s.class].push({
         id: s.id,
         name: s.name,
@@ -109,9 +112,10 @@ serve(async (req) => {
     const totalSakit = datangLogs.filter((l: any) => l.status === "sakit").length;
     const dbAlfa = datangLogs.filter((l: any) => l.status === "alfa").length;
     const remaining = totalStudents - (totalHadir + totalIzin + totalSakit + dbAlfa);
-    const autoAlfa = currentTime > attEnd;
-    const totalAlfa = autoAlfa ? dbAlfa + remaining : dbAlfa;
-    const totalBelum = autoAlfa ? 0 : remaining;
+    const isToday2 = today === (new Date().toISOString().split('T')[0]);
+    const autoAlfa2 = !isToday2;
+    const totalAlfa = autoAlfa2 ? dbAlfa + remaining : dbAlfa;
+    const totalBelum = autoAlfa2 ? 0 : remaining;
 
     // Determine plan features
     const sub = subRes.data as any;
