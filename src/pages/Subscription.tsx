@@ -141,9 +141,35 @@ const Subscription = () => {
   const handlePurchase = async (planId: string) => {
     setPurchasing(planId);
     try {
-      const { data, error } = await supabase.functions.invoke("create-mayar-payment", {
-        body: { plan_id: planId, school_id: profile?.school_id || null },
-      });
+      if (!profile?.school_id) throw new Error("Akun Anda belum terhubung ke sekolah.");
+
+      const { data: sessionData } = await supabase.auth.getSession();
+      let accessToken = sessionData.session?.access_token;
+
+      if (!accessToken) {
+        const { data: refreshData } = await supabase.auth.refreshSession();
+        accessToken = refreshData.session?.access_token;
+      }
+
+      if (!accessToken) {
+        throw new Error("Sesi login berakhir. Silakan login ulang lalu coba lagi.");
+      }
+
+      const invokeCreatePayment = (token: string) =>
+        supabase.functions.invoke("create-mayar-payment", {
+          body: { plan_id: planId, school_id: profile.school_id },
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+      let { data, error } = await invokeCreatePayment(accessToken);
+
+      if (error && /unauthorized|401|non-2xx/i.test(error.message || "")) {
+        const { data: retrySession } = await supabase.auth.refreshSession();
+        const retryToken = retrySession.session?.access_token;
+        if (retryToken) {
+          ({ data, error } = await invokeCreatePayment(retryToken));
+        }
+      }
 
       if (error) {
         let message = error.message || "Gagal membuat pembayaran";
@@ -155,6 +181,9 @@ const Subscription = () => {
           } catch {
             // ignore parse error
           }
+        }
+        if (/unauthorized/i.test(message)) {
+          message = "Sesi login berakhir. Silakan login ulang lalu coba lagi.";
         }
         throw new Error(message);
       }
