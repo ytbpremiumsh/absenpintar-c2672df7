@@ -499,20 +499,28 @@ const Presentation = () => {
         <div className="max-w-3xl mx-auto px-4 text-center">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">
-              Siap Memodernisasi{" "}
-              <span className={`bg-gradient-to-r ${d ? "from-indigo-300 to-violet-300" : "from-indigo-600 to-violet-500"} bg-clip-text text-transparent`}>
-                Absensi Sekolah Anda?
-              </span>
+              {ctaTitle ? (
+                <span className={`bg-gradient-to-r ${d ? "from-white via-white to-indigo-300" : "from-slate-900 via-slate-800 to-indigo-600"} bg-clip-text text-transparent`}>
+                  {ctaTitle}
+                </span>
+              ) : (
+                <>
+                  Siap Memodernisasi{" "}
+                  <span className={`bg-gradient-to-r ${d ? "from-indigo-300 to-violet-300" : "from-indigo-600 to-violet-500"} bg-clip-text text-transparent`}>
+                    Absensi Sekolah Anda?
+                  </span>
+                </>
+              )}
             </h2>
             <p className={`mt-4 ${muted} max-w-lg mx-auto text-sm sm:text-base`}>
-              Bergabung sekarang dan rasakan kemudahan sistem absensi digital yang aman, cepat, dan transparan.
+              {ctaSubtitle || "Bergabung sekarang dan rasakan kemudahan sistem absensi digital yang aman, cepat, dan transparan."}
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
               <a href="/register" className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-500 to-violet-600 text-white px-8 py-3.5 rounded-2xl font-semibold shadow-2xl shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all text-sm">
-                <Zap className="h-4 w-4" /> Daftar Gratis
+                <Zap className="h-4 w-4" /> {ctaBtn1 || "Daftar Gratis"}
               </a>
               <a href="/login" className={`inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-2xl font-semibold transition-all text-sm border ${d ? "bg-white/5 hover:bg-white/10 border-white/10" : "bg-white hover:bg-slate-50 border-slate-200 text-slate-700"}`}>
-                Masuk ke Dashboard <ChevronRight className="h-4 w-4" />
+                {ctaBtn2 || "Masuk ke Dashboard"} <ChevronRight className="h-4 w-4" />
               </a>
             </div>
           </motion.div>
