@@ -61,7 +61,7 @@ const Subscription = () => {
           supabase.from("school_subscriptions").select("*, subscription_plans(*)").eq("school_id", profile.school_id).eq("status", "active").order("created_at", { ascending: false }).limit(1).maybeSingle(),
           supabase.from("classes").select("name").eq("school_id", profile.school_id),
           supabase.from("students").select("id, class").eq("school_id", profile.school_id),
-          supabase.from("payment_transactions").select("id, amount, status, created_at, paid_at, payment_method, subscription_plans(name)").eq("school_id", profile.school_id).order("created_at", { ascending: false }).limit(20),
+          supabase.from("payment_transactions").select("id, amount, status, created_at, paid_at, payment_method, subscription_plans(name)").eq("school_id", profile.school_id).eq("status", "paid").order("created_at", { ascending: false }).limit(20),
         ]);
 
         const sub = subRes.data;
@@ -141,9 +141,35 @@ const Subscription = () => {
   const handlePurchase = async (planId: string) => {
     setPurchasing(planId);
     try {
-      const { data, error } = await supabase.functions.invoke("create-mayar-payment", {
-        body: { plan_id: planId, school_id: profile?.school_id || null },
-      });
+      if (!profile?.school_id) throw new Error("Akun Anda belum terhubung ke sekolah.");
+
+      const { data: sessionData } = await supabase.auth.getSession();
+      let accessToken = sessionData.session?.access_token;
+
+      if (!accessToken) {
+        const { data: refreshData } = await supabase.auth.refreshSession();
+        accessToken = refreshData.session?.access_token;
+      }
+
+      if (!accessToken) {
+        throw new Error("Sesi login berakhir. Silakan login ulang lalu coba lagi.");
+      }
+
+      const invokeCreatePayment = (token: string) =>
+        supabase.functions.invoke("create-mayar-payment", {
+          body: { plan_id: planId, school_id: profile.school_id },
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+      let { data, error } = await invokeCreatePayment(accessToken);
+
+      if (error && /unauthorized|401|non-2xx/i.test(error.message || "")) {
+        const { data: retrySession } = await supabase.auth.refreshSession();
+        const retryToken = retrySession.session?.access_token;
+        if (retryToken) {
+          ({ data, error } = await invokeCreatePayment(retryToken));
+        }
+      }
 
       if (error) {
         let message = error.message || "Gagal membuat pembayaran";
@@ -155,6 +181,9 @@ const Subscription = () => {
           } catch {
             // ignore parse error
           }
+        }
+        if (/unauthorized/i.test(message)) {
+          message = "Sesi login berakhir. Silakan login ulang lalu coba lagi.";
         }
         throw new Error(message);
       }
@@ -430,12 +459,7 @@ const Subscription = () => {
             ) : (
               <div className="space-y-2">
                 {subscriptionHistory.map((item) => {
-                  const statusClass =
-                    item.status === "paid"
-                      ? "bg-success/10 text-success border-success/20"
-                      : item.status === "pending"
-                        ? "bg-warning/10 text-warning border-warning/20"
-                        : "bg-muted text-muted-foreground border-border";
+                  const statusClass = "bg-success/10 text-success border-success/20";
 
                   return (
                     <div key={item.id} className="flex items-center justify-between gap-3 rounded-lg border border-border p-3">
@@ -455,7 +479,7 @@ const Subscription = () => {
 
                       <div className="text-right shrink-0">
                         <p className="text-sm font-bold text-foreground">{formatRupiah(item.amount || 0)}</p>
-                        <Badge className={`text-[10px] border ${statusClass}`}>{item.status}</Badge>
+                        <Badge className={`text-[10px] border ${statusClass}`}>berhasil</Badge>
                       </div>
                     </div>
                   );

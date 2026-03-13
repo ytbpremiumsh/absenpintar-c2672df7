@@ -10,14 +10,14 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    let mayarApiKey = Deno.env.get("MAYAR_API_KEY");
-
-    const tempAdmin = createClient(
+    const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    const { data: keyFromDb } = await tempAdmin
+    let mayarApiKey = Deno.env.get("MAYAR_API_KEY");
+
+    const { data: keyFromDb } = await supabaseAdmin
       .from("platform_settings")
       .select("value")
       .eq("key", "mayar_api_key")
@@ -26,29 +26,19 @@ serve(async (req) => {
     if (keyFromDb?.value) mayarApiKey = keyFromDb.value;
     if (!mayarApiKey) throw new Error("MAYAR_API_KEY not configured");
 
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("Unauthorized");
-
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
+    const authHeader = req.headers.get("Authorization") ?? req.headers.get("authorization");
+    const accessToken = authHeader?.replace(/^Bearer\s+/i, "").trim();
+    if (!accessToken) throw new Error("Unauthorized");
 
     const {
       data: { user },
       error: authError,
-    } = await supabase.auth.getUser();
+    } = await supabaseAdmin.auth.getUser(accessToken);
 
     if (authError || !user) throw new Error("Unauthorized");
 
     const { plan_id, school_id: requestedSchoolId } = await req.json();
     if (!plan_id) throw new Error("plan_id is required");
-
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
 
     const { data: plan, error: planError } = await supabaseAdmin
       .from("subscription_plans")
@@ -160,21 +150,8 @@ serve(async (req) => {
       );
     }
 
-    // Build redirect URL from origin/referer to avoid wrong domain
-    let siteUrl = "https://absenpintar.lovable.app";
-    const origin = req.headers.get("origin");
-    const referer = req.headers.get("referer");
-
-    if (origin?.startsWith("http")) {
-      siteUrl = origin;
-    } else if (referer) {
-      try {
-        siteUrl = new URL(referer).origin;
-      } catch {
-        // keep default
-      }
-    }
-
+    // Keep redirect stable to the published app domain
+    const siteUrl = "https://absenpintar.lovable.app";
     const redirectUrl = `${siteUrl}/subscription?status=success`;
     console.log("Redirect URL:", redirectUrl);
 
