@@ -357,9 +357,6 @@ const Monitoring = () => {
                     </motion.div>
                   );
                 })}
-                    </motion.div>
-                  );
-                })}
               </AnimatePresence>
             </div>
           )}
