@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Bell, Check, Info, CreditCard, Megaphone, X } from "lucide-react";
+import { Bell, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -7,7 +7,6 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
 
 interface Notification {
   id: string;
@@ -19,24 +18,14 @@ interface Notification {
   created_at: string;
 }
 
-const typeIcons: Record<string, typeof Info> = {
-  info: Info,
-  success: Check,
-  subscription: CreditCard,
-  announcement: Megaphone,
-};
-
-const typeColors: Record<string, string> = {
-  info: "bg-primary/10 text-primary",
-  success: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-  subscription: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-  announcement: "bg-warning/10 text-warning",
-};
 
 export function NotificationBell() {
   const { profile } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [open, setOpen] = useState(false);
+
+  const stripEmoji = (text: string) =>
+    text.replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{1F900}-\u{1F9FF}\u{2702}-\u{27B0}\u{E0020}-\u{E007F}\u{200D}\u{20E3}\u{FE0F}\u2705\u2611\u2714\u274C\u274E\u2B50\u26A0\u2139\uFE0F\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2300}-\u{23FF}\u{2B05}-\u{2B07}\u{2934}\u{2935}\u{25AA}-\u{25FE}\u{25FB}-\u{25FE}\u{1F1E0}-\u{1F1FF}💰💸✅🎉📋📢🔔⚡🏫💡🔥❤️💙💚💛🧡💜🤎🖤🤍]/gu, '').trim();
 
   const fetchNotifications = async () => {
     const { data } = await supabase
@@ -44,7 +33,13 @@ export function NotificationBell() {
       .select("*")
       .order("created_at", { ascending: false })
       .limit(20);
-    if (data) setNotifications(data as Notification[]);
+    if (data) {
+      // Filter out "Pembayaran Masuk" notifications (super admin only)
+      const filtered = (data as Notification[]).filter(
+        (n) => !n.title.includes("Pembayaran Masuk")
+      );
+      setNotifications(filtered);
+    }
   };
 
   useEffect(() => {
@@ -111,7 +106,7 @@ export function NotificationBell() {
           )}
         </button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-80 p-0">
+       <PopoverContent align="end" className="w-[420px] p-0">
         <div className="flex items-center justify-between p-3 border-b">
           <h3 className="text-sm font-bold text-foreground">Notifikasi</h3>
           {unreadCount > 0 && (
@@ -120,7 +115,7 @@ export function NotificationBell() {
             </Button>
           )}
         </div>
-        <ScrollArea className="max-h-80">
+        <ScrollArea className="max-h-96">
           {notifications.length === 0 ? (
             <div className="p-6 text-center">
               <Bell className="h-8 w-8 text-muted-foreground/20 mx-auto mb-2" />
@@ -129,27 +124,20 @@ export function NotificationBell() {
           ) : (
             <div className="divide-y">
               {notifications.map((n) => {
-                const Icon = typeIcons[n.type] || Info;
-                const colorClass = typeColors[n.type] || typeColors.info;
                 return (
                   <button
                     key={n.id}
                     onClick={() => !n.is_read && markAsRead(n.id)}
-                    className={`w-full text-left p-3 hover:bg-muted/50 transition-colors flex gap-3 ${
+                    className={`w-full text-left p-3 hover:bg-muted/50 transition-colors ${
                       !n.is_read ? "bg-primary/5" : ""
                     }`}
                   >
-                    <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${colorClass}`}>
-                      <Icon className="h-4 w-4" />
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-sm font-medium text-foreground">{stripEmoji(n.title)}</p>
+                      {!n.is_read && <span className="h-2 w-2 rounded-full bg-primary shrink-0 mt-1.5" />}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-1">
-                        <p className="text-sm font-medium text-foreground truncate">{n.title}</p>
-                        {!n.is_read && <span className="h-2 w-2 rounded-full bg-primary shrink-0 mt-1.5" />}
-                      </div>
-                      <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{n.message}</p>
-                      <p className="text-[10px] text-muted-foreground/60 mt-1">{timeAgo(n.created_at)}</p>
-                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">{stripEmoji(n.message)}</p>
+                    <p className="text-[10px] text-muted-foreground/60 mt-1">{timeAgo(n.created_at)}</p>
                   </button>
                 );
               })}
