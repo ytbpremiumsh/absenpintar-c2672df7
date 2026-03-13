@@ -375,7 +375,7 @@ const LandingPage = () => {
           <div className="grid sm:grid-cols-3 gap-5 items-stretch">
             {plans.map((plan, i) => {
               const featureList = Array.isArray(plan.features) ? plan.features as string[] : [];
-              const isHighlighted = plan.name.toUpperCase() === "PREMIUM" || plans.length === 1;
+              const isHighlighted = plan.name.toUpperCase() === "SCHOOL" || plans.length === 1;
               const priceText = plan.price === 0 ? "Gratis" : `Rp ${plan.price.toLocaleString("id-ID")}`;
               return (
               <motion.div key={plan.id} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="h-full">
