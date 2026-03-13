@@ -195,6 +195,13 @@ const Students = () => {
 
         if (rows.length === 0) { toast.error("File kosong"); return; }
 
+        // Check student limit before import
+        const maxTotal = features.maxStudentsTotal ?? (features.maxClasses >= 999 ? Infinity : features.maxClasses * features.maxStudentsPerClass);
+        if (maxTotal !== Infinity && (students.length + rows.length) > maxTotal) {
+          toast.error(`Import akan melebihi batas ${maxTotal} siswa untuk paket ${features.planName}. Sisa kuota: ${Math.max(0, maxTotal - students.length)} siswa. Silakan upgrade paket.`);
+          return;
+        }
+
         const toInsert = rows.map((row) => ({
           school_id: profile!.school_id!,
           name: row["Nama Siswa"] || row["name"] || "",
