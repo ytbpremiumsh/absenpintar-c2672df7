@@ -10,6 +10,7 @@ import {
   ChevronRight, Sparkles, Play, ArrowDown,
   AlertTriangle, XCircle, Clock, FileText, Globe, Camera,
 } from "lucide-react";
+import heroDashboard from "@/assets/hero-dashboard.png";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -190,38 +191,17 @@ const LandingPage = () => {
             </div>
 
             {/* Right: Hero Image or Stats */}
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4, duration: 0.7 }}
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.8, ease: "easeOut" }}
               className="relative hidden lg:block">
               <div className="relative">
-                {/* Decorative card */}
-                <div className="absolute -top-4 -right-4 w-full h-full rounded-3xl bg-primary/5 border border-primary/10" />
-                <div className="relative bg-card border border-border rounded-3xl p-8 shadow-elevated overflow-hidden">
-                  {get("hero_image") ? (
-                    <img src={get("hero_image")} alt="Absensi Pintar" className="w-full h-auto rounded-2xl object-cover" />
-                  ) : (
-                  <div className="grid grid-cols-2 gap-4">
-                    {STATS.map((s, i) => (
-                      <motion.div key={s.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 + i * 0.1 }}
-                        className="bg-muted/50 rounded-2xl p-5 text-center border border-border/50 hover:border-primary/20 transition-colors">
-                        <s.icon className="h-6 w-6 text-primary mx-auto mb-3" />
-                        <div className="text-2xl font-extrabold text-foreground">{s.value}</div>
-                        <div className="text-xs text-muted-foreground mt-1 font-medium">{s.label}</div>
-                      </motion.div>
-                    ))}
-                  </div>
-                  )}
-                  {!get("hero_image") && (
-                  <div className="mt-5 p-4 rounded-xl bg-primary/5 border border-primary/10 flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-xl gradient-primary flex items-center justify-center shrink-0">
-                      <CheckCircle2 className="h-5 w-5 text-primary-foreground" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-foreground">Dipercaya Sekolah Indonesia</p>
-                      <p className="text-xs text-muted-foreground">Platform absensi modern & terpercaya</p>
-                    </div>
-                  </div>
-                  )}
-                </div>
+                {/* Glow effect behind image */}
+                <div className="absolute -inset-4 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent rounded-[2rem] blur-2xl" />
+                <div className="absolute -inset-1 bg-gradient-to-br from-primary/15 to-primary/5 rounded-3xl" />
+                <img
+                  src={heroDashboard}
+                  alt="Dashboard Absensi Pintar"
+                  className="relative w-full h-auto rounded-2xl border border-border/50 shadow-[0_25px_60px_-12px_rgba(0,0,0,0.25),0_0_40px_-8px_hsl(234_89%_60%/0.15)]"
+                />
               </div>
             </motion.div>
           </div>
