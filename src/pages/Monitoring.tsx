@@ -101,8 +101,10 @@ const Monitoring = () => {
     const logs = logsRes.data || [];
     const attEnd = (settingsRes.data as any)?.attendance_end_time || "12:00:00";
     const jakartaNow = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" }));
-    const currentTime = jakartaNow.toTimeString().slice(0, 8);
-    const autoAlfa = currentTime > attEnd;
+    const currentHour = jakartaNow.getHours();
+    // Auto-alfa only at midnight (24:00) — i.e. the next day when date changes
+    // During the current day, students without attendance stay as "belum"
+    const autoAlfa = false; // Never auto-alfa during the same day; handled by date change
 
     const datangLogs = logs.filter((l: any) => (l.attendance_type || "datang") === "datang");
     const mapped: StudentWithStatus[] = allStudents.map((s: any) => {
@@ -110,7 +112,7 @@ const Monitoring = () => {
       return {
         id: s.id, name: s.name, class: s.class,
         parent_name: s.parent_name, student_id: s.student_id, photo_url: s.photo_url,
-        status: log ? (log.status as any) : (autoAlfa ? "alfa" : "belum"),
+        status: log ? (log.status as any) : "belum",
         attendance_time: log?.time,
         log_id: log?.id,
       };
