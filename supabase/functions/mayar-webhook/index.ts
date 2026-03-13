@@ -38,7 +38,7 @@ serve(async (req) => {
     // Find the payment transaction
     const { data: payment, error: findError } = await supabaseAdmin
       .from('payment_transactions')
-      .select('id, school_id, plan_id')
+      .select('id, school_id, plan_id, status, amount')
       .eq('mayar_transaction_id', transactionId)
       .maybeSingle();
 
@@ -49,23 +49,46 @@ serve(async (req) => {
       });
     }
 
+    // Skip if already paid (idempotency)
+    if (payment.status === 'paid') {
+      console.log('Payment already processed:', payment.id);
+      return new Response(JSON.stringify({ message: 'Already processed' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // Update payment status to paid
     await supabaseAdmin
       .from('payment_transactions')
       .update({ status: 'paid', paid_at: new Date().toISOString(), payment_method: data?.paymentMethod || 'mayar' })
       .eq('id', payment.id);
 
-    // Create or update school subscription
-    const expiresAt = new Date();
-    expiresAt.setMonth(expiresAt.getMonth() + 1);
+    // Get plan and school info for notifications
+    const [planRes, schoolRes] = await Promise.all([
+      supabaseAdmin.from('subscription_plans').select('name').eq('id', payment.plan_id).single(),
+      supabaseAdmin.from('schools').select('name').eq('id', payment.school_id).single(),
+    ]);
+    const planName = planRes.data?.name || 'Unknown';
+    const schoolName = schoolRes.data?.name || 'Sekolah';
 
-    // Check existing subscription
+    // Create or extend school subscription
     const { data: existingSub } = await supabaseAdmin
       .from('school_subscriptions')
-      .select('id')
+      .select('id, expires_at')
       .eq('school_id', payment.school_id)
       .eq('status', 'active')
       .maybeSingle();
+
+    const now = new Date();
+    let expiresAt: Date;
+
+    if (existingSub?.expires_at) {
+      const currentExpiry = new Date(existingSub.expires_at);
+      expiresAt = currentExpiry > now ? currentExpiry : now;
+    } else {
+      expiresAt = now;
+    }
+    expiresAt.setMonth(expiresAt.getMonth() + 1);
 
     if (existingSub) {
       await supabaseAdmin
@@ -83,7 +106,28 @@ serve(async (req) => {
         });
     }
 
-    return new Response(JSON.stringify({ success: true }), {
+    const expiresFormatted = expiresAt.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    const amountFormatted = `Rp ${(payment.amount || 0).toLocaleString('id-ID')}`;
+
+    // Notification for the school (user sees this)
+    await supabaseAdmin.from('notifications').insert({
+      school_id: payment.school_id,
+      title: '✅ Pembayaran Berhasil — Upgrade Sukses!',
+      message: `Paket ${planName} telah aktif untuk ${schoolName}. Langganan berlaku hingga ${expiresFormatted}. Terima kasih atas pembayaran sebesar ${amountFormatted}.`,
+      type: 'success',
+    });
+
+    // Notification for super admin (school_id = null means global/super admin)
+    await supabaseAdmin.from('notifications').insert({
+      school_id: null,
+      title: '💰 Pembayaran Masuk — Auto Approved',
+      message: `${schoolName} telah membayar Paket ${planName} sebesar ${amountFormatted}. Langganan otomatis diaktifkan hingga ${expiresFormatted}.`,
+      type: 'info',
+    });
+
+    console.log(`Payment ${payment.id} auto-approved. Plan: ${planName}, School: ${schoolName}, Expires: ${expiresFormatted}`);
+
+    return new Response(JSON.stringify({ success: true, expires_at: expiresAt.toISOString() }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
