@@ -51,8 +51,13 @@ const dataNav = [
   { title: "Staff / Operator", url: "/staff", icon: Users2 },
 ];
 
+const whatsappNav = [
+  { title: "Template WA", url: "/wa-templates", icon: FileText },
+  { title: "Broadcast Grup", url: "/wa-broadcast", icon: Send },
+  { title: "Riwayat WA", url: "/wa-history", icon: History },
+];
+
 const settingsNav = [
-  { title: "WhatsApp", url: "/whatsapp-settings", icon: MessageSquare },
   { title: "Langganan", url: "/subscription", icon: CreditCard },
   { title: "Bantuan", url: "/support", icon: LifeBuoy },
 ];
