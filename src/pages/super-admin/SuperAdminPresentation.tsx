@@ -19,6 +19,7 @@ const KEYS = [
   "presentation_cta_btn2",
   "presentation_cta_btn1_link",
   "presentation_cta_btn2_link",
+  "login_sidebar_image",
 ];
 
 const SuperAdminPresentation = () => {
