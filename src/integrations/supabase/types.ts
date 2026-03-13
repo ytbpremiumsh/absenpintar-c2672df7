@@ -467,6 +467,7 @@ export type Database = {
           api_url: string | null
           attendance_arrive_template: string | null
           attendance_depart_template: string | null
+          attendance_group_template: string | null
           created_at: string
           id: string
           integration_type: string
@@ -474,12 +475,15 @@ export type Database = {
           message_template: string | null
           school_id: string
           updated_at: string
+          wa_delivery_target: string | null
+          wa_enabled: boolean | null
         }
         Insert: {
           api_key?: string | null
           api_url?: string | null
           attendance_arrive_template?: string | null
           attendance_depart_template?: string | null
+          attendance_group_template?: string | null
           created_at?: string
           id?: string
           integration_type?: string
@@ -487,12 +491,15 @@ export type Database = {
           message_template?: string | null
           school_id: string
           updated_at?: string
+          wa_delivery_target?: string | null
+          wa_enabled?: boolean | null
         }
         Update: {
           api_key?: string | null
           api_url?: string | null
           attendance_arrive_template?: string | null
           attendance_depart_template?: string | null
+          attendance_group_template?: string | null
           created_at?: string
           id?: string
           integration_type?: string
@@ -500,6 +507,8 @@ export type Database = {
           message_template?: string | null
           school_id?: string
           updated_at?: string
+          wa_delivery_target?: string | null
+          wa_enabled?: boolean | null
         }
         Relationships: [
           {
