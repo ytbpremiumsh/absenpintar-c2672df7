@@ -253,7 +253,6 @@ const ScanQR = () => {
           .select("attendance_arrive_template, attendance_depart_template, attendance_group_template, wa_delivery_target, wa_enabled, is_active")
           .eq("school_id", profile.school_id)
           .eq("integration_type", "onesender")
-          .eq("is_active", true)
           .maybeSingle(),
         supabase.from("schools").select("name").eq("id", profile.school_id).single(),
         supabase.from("classes").select("wa_group_id").eq("school_id", profile.school_id).eq("name", scannedStudent.class).maybeSingle(),

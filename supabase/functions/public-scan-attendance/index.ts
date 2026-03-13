@@ -114,7 +114,6 @@ serve(async (req) => {
           .select('attendance_arrive_template, attendance_depart_template, attendance_group_template, wa_delivery_target, wa_enabled, is_active, api_url, api_key')
           .eq('school_id', school_id)
           .eq('integration_type', 'onesender')
-          .eq('is_active', true)
           .maybeSingle(),
         supabase
           .from('schools')
