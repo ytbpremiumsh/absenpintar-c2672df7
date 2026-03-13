@@ -150,6 +150,9 @@ const SuperAdminWhatsApp = () => {
       message_template: form.message_template,
       attendance_arrive_template: form.attendance_arrive_template,
       attendance_depart_template: form.attendance_depart_template,
+      attendance_group_template: form.attendance_group_template,
+      wa_delivery_target: form.wa_delivery_target,
+      wa_enabled: form.wa_enabled,
     };
 
     let error;
