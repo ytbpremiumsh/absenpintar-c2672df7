@@ -144,8 +144,24 @@ const Subscription = () => {
       const { data, error } = await supabase.functions.invoke("create-mayar-payment", {
         body: { plan_id: planId },
       });
-      if (error) throw error;
+
+      if (error) {
+        let message = error.message || "Gagal membuat pembayaran";
+        const context = (error as any).context;
+        if (context) {
+          try {
+            const parsed = await context.json();
+            if (parsed?.error) message = parsed.error;
+          } catch {
+            // ignore parse error
+          }
+        }
+        throw new Error(message);
+      }
+
       const result = data as any;
+      if (result?.error) throw new Error(result.error);
+
       if (result?.auto_approved) {
         toast.success("Paket berhasil diaktifkan!");
         window.location.reload();
