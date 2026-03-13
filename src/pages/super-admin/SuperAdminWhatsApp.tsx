@@ -43,6 +43,11 @@ const ATTENDANCE_PLACEHOLDERS = [
   { key: "{school_name}", label: "Nama Sekolah" },
 ];
 
+const GROUP_PLACEHOLDERS = [
+  ...ATTENDANCE_PLACEHOLDERS,
+  { key: "{type}", label: "Tipe (Datang/Pulang)" },
+];
+
 const PlaceholderButtons = ({ placeholders, onInsert }: { placeholders: typeof ATTENDANCE_PLACEHOLDERS; onInsert: (key: string) => void }) => (
   <div className="flex flex-wrap gap-1 mt-2">
     {placeholders.map((p) => (
