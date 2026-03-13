@@ -193,14 +193,16 @@ const ScanQR = () => {
     return () => { video.onloadedmetadata = null; stopFaceScanning(); };
   }, [cameraActive, startBarcodeScanning, startFaceScanning, stopFaceScanning, canFace]);
 
-  const startCamera = async () => {
+  const startCamera = async (preferredFacing?: "user" | "environment") => {
     setCameraError("");
+    const facing = preferredFacing || facingMode;
     try {
       let stream: MediaStream;
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } } });
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing, width: { ideal: 640 }, height: { ideal: 480 } } });
       } catch {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: "environment" }, width: { ideal: 640 }, height: { ideal: 480 } } });
+        const fallback = facing === "user" ? "environment" : "user";
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: fallback, width: { ideal: 640 }, height: { ideal: 480 } } });
       }
       streamRef.current = stream;
       setCameraActive(true);
@@ -208,6 +210,13 @@ const ScanQR = () => {
       if (err.name === "NotAllowedError") setCameraError("Izin kamera ditolak. Berikan izin kamera di pengaturan browser.");
       else setCameraError("Gagal mengakses kamera: " + (err.message || "Unknown error"));
     }
+  };
+
+  const switchCamera = () => {
+    const newFacing = facingMode === "user" ? "environment" : "user";
+    setFacingMode(newFacing);
+    stopCamera();
+    setTimeout(() => startCamera(newFacing), 300);
   };
 
   const stopCamera = () => {
