@@ -34,7 +34,6 @@ serve(async (req) => {
         .select('api_url, api_key, is_active')
         .eq('school_id', school_id)
         .eq('integration_type', 'onesender')
-        .eq('is_active', true)
         .maybeSingle();
 
       if (!integration) {
