@@ -17,6 +17,8 @@ const KEYS = [
   "presentation_cta_subtitle",
   "presentation_cta_btn1",
   "presentation_cta_btn2",
+  "presentation_cta_btn1_link",
+  "presentation_cta_btn2_link",
 ];
 
 const SuperAdminPresentation = () => {
