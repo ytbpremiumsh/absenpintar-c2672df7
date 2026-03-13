@@ -88,10 +88,15 @@ serve(async (req) => {
       });
     }
 
-    // Update payment status to paid
+    // Update payment status to paid + store actual Mayar transaction ID
     await supabaseAdmin
       .from('payment_transactions')
-      .update({ status: 'paid', paid_at: new Date().toISOString(), payment_method: data?.paymentMethod || 'mayar' })
+      .update({ 
+        status: 'paid', 
+        paid_at: new Date().toISOString(), 
+        payment_method: data?.paymentMethod || 'mayar',
+        mayar_transaction_id: transactionId || payment.mayar_transaction_id,
+      })
       .eq('id', payment.id);
 
     // Get plan and school info for notifications
