@@ -139,6 +139,20 @@ const REVENUE_STREAMS = [
   badge: "High Value"
 },
 {
+  icon: CreditCard,
+  title: "Kartu Pelajar Digital dengan Barcode",
+  desc: "Barcode siswa dapat dicetak menjadi kartu pelajar/kartu sekolah resmi yang terintegrasi langsung dengan sistem absensi.",
+  details: [
+  "Cetak kartu pelajar dengan barcode unik per siswa — langsung terhubung ke sistem absensi",
+  "Desain kartu profesional dengan logo sekolah, foto siswa, dan identitas lengkap",
+  "Biaya cetak per kartu menjadi revenue tambahan dari setiap sekolah",
+  "Kartu bisa digunakan untuk absensi, perpustakaan, dan identifikasi siswa",
+  "Repeat order setiap tahun ajaran baru — revenue berulang dari pencetakan ulang"],
+  gradient: "from-blue-500 via-indigo-500 to-violet-600",
+  glow: "shadow-blue-500/20",
+  badge: "Physical Product"
+},
+{
   icon: Globe,
   title: "Layanan Notifikasi WhatsApp Terintegrasi",
   desc: "Notifikasi WhatsApp otomatis ke wali murid sudah termasuk dalam paket bulanan — tanpa biaya tambahan per pesan.",
@@ -148,7 +162,6 @@ const REVENUE_STREAMS = [
   "Paket SCHOOL: unlimited pesan tanpa batasan",
   "Notifikasi otomatis ke wali murid saat siswa hadir/pulang",
   "Tanpa biaya tersembunyi — semua sudah dalam satu paket yang simpel"],
-
   gradient: "from-green-500 via-emerald-500 to-teal-600",
   glow: "shadow-green-500/20",
   badge: "Included in Plan"
@@ -163,7 +176,6 @@ const REVENUE_STREAMS = [
   "Integrasi dengan sistem akademik atau ERP sekolah yang sudah ada",
   "One-time setup fee + maintenance recurring",
   "Potensi partnership jangka panjang dengan institusi besar"],
-
   gradient: "from-amber-500 via-orange-500 to-red-500",
   glow: "shadow-amber-500/20",
   badge: "Premium Service"
