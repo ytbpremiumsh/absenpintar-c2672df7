@@ -119,8 +119,8 @@ serve(async (req) => {
     }
 
     // For paid plans, create Mayar payment link — DO NOT auto-approve
-    const projectId = Deno.env.get('SUPABASE_URL')?.split('//')[1]?.split('.')[0] || '';
-    const siteUrl = projectId ? `https://${projectId}.lovable.app` : 'https://smartschoolattendance.lovable.app';
+    // Use the published app URL for redirect
+    const siteUrl = 'https://absenpintar.lovable.app';
     console.log('Redirect URL:', `${siteUrl}/subscription?status=success`);
     const mayarRes = await fetch('https://api.mayar.id/hl/v1/payment/create', {
       method: 'POST',
