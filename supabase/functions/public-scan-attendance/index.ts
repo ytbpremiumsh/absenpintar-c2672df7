@@ -139,12 +139,15 @@ serve(async (req) => {
         const dayName = dayNames[jakartaTime.getDay()];
         const typeLabel = attendance_type === 'datang' ? 'Datang (Hadir)' : 'Pulang';
 
+        const dateStr = `${String(jakartaTime.getDate()).padStart(2, '0')}/${String(jakartaTime.getMonth() + 1).padStart(2, '0')}/${jakartaTime.getFullYear()}`;
+
         const applyReplacements = (tpl: string) =>
           tpl
             .replace(/\{student_name\}/g, student.name)
             .replace(/\{class\}/g, student.class)
             .replace(/\{time\}/g, timeStr)
             .replace(/\{day\}/g, dayName)
+            .replace(/\{date\}/g, dateStr)
             .replace(/\{student_id\}/g, student.student_id)
             .replace(/\{method\}/g, methodLabel)
             .replace(/\{parent_name\}/g, student.parent_name || '')

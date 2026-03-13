@@ -17,6 +17,7 @@ const PLACEHOLDERS = [
   { key: "{class}", label: "Kelas" },
   { key: "{time}", label: "Waktu" },
   { key: "{day}", label: "Nama Hari" },
+  { key: "{date}", label: "Tanggal" },
   { key: "{student_id}", label: "NIS" },
   { key: "{method}", label: "Metode" },
   { key: "{parent_name}", label: "Nama Wali" },
