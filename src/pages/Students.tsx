@@ -141,7 +141,8 @@ const Students = () => {
     const { error: uploadError } = await supabase.storage.from("student-photos").upload(path, file, { upsert: true });
     if (uploadError) { toast.error("Gagal upload foto: " + uploadError.message); setPhotoUploading(null); return; }
     const { data: urlData } = supabase.storage.from("student-photos").getPublicUrl(path);
-    await supabase.from("students").update({ photo_url: urlData.publicUrl }).eq("id", studentId);
+    const newUrl = `${urlData.publicUrl}?t=${Date.now()}`;
+    await supabase.from("students").update({ photo_url: newUrl }).eq("id", studentId);
     toast.success("Foto berhasil diupload!");
     setPhotoUploading(null);
     fetchData();
