@@ -150,21 +150,8 @@ serve(async (req) => {
       );
     }
 
-    // Build redirect URL from origin/referer to avoid wrong domain
-    let siteUrl = "https://absenpintar.lovable.app";
-    const origin = req.headers.get("origin");
-    const referer = req.headers.get("referer");
-
-    if (origin?.startsWith("http")) {
-      siteUrl = origin;
-    } else if (referer) {
-      try {
-        siteUrl = new URL(referer).origin;
-      } catch {
-        // keep default
-      }
-    }
-
+    // Keep redirect stable to the published app domain
+    const siteUrl = "https://absenpintar.lovable.app";
     const redirectUrl = `${siteUrl}/subscription?status=success`;
     console.log("Redirect URL:", redirectUrl);
 
