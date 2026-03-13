@@ -14,3 +14,9 @@ verify_jwt = false
 
 [functions.manage-mayar-key]
 verify_jwt = false
+
+[functions.update-user]
+verify_jwt = false
+
+[functions.create-user]
+verify_jwt = false
