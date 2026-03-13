@@ -375,9 +375,14 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
                     </>
                   )}
                 </div>
-                <Button variant="outline" size="sm" onClick={stopCamera} className="h-7 text-xs px-2">
-                  <X className="h-3 w-3 mr-1" /> Tutup
-                </Button>
+                <div className="flex items-center gap-1.5">
+                  <Button variant="outline" size="sm" onClick={switchCamera} className="h-7 text-xs px-2" title={facingMode === "user" ? "Ganti ke Kamera Belakang" : "Ganti ke Kamera Depan"}>
+                    <SwitchCamera className="h-3 w-3 mr-1" /> {facingMode === "user" ? "Belakang" : "Depan"}
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={stopCamera} className="h-7 text-xs px-2">
+                    <X className="h-3 w-3 mr-1" /> Tutup
+                  </Button>
+                </div>
               </div>
             </>
           ) : (
