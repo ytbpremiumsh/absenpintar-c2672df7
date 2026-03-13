@@ -328,7 +328,7 @@ const WhatsAppSettings = () => {
               </CardContent>
             </Card>
 
-            <Button onClick={handleSaveSettings} disabled={saving || !integrationId}>
+            <Button onClick={handleSaveSettings} disabled={saving}>
               {saving ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Save className="mr-1 h-4 w-4" />}
               Simpan Pengaturan
             </Button>
