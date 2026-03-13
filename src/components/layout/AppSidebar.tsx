@@ -10,18 +10,15 @@ import {
   GraduationCap,
   UserCheck,
   FileBarChart,
-  Lock,
   LifeBuoy,
   ClipboardCheck,
   Users2,
-  FileText,
-  Send,
+  MessageSquare,
 } from "lucide-react";
 import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -53,9 +50,7 @@ const dataNav = [
 ];
 
 const whatsappNav = [
-  { title: "Template WA", url: "/wa-templates", icon: FileText },
-  { title: "Broadcast Grup", url: "/wa-broadcast", icon: Send },
-  { title: "Riwayat WA", url: "/wa-history", icon: History },
+  { title: "WhatsApp", url: "/whatsapp", icon: MessageSquare },
 ];
 
 const settingsNav = [
