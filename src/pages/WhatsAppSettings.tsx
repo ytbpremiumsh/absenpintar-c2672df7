@@ -219,11 +219,6 @@ const WhatsAppSettings = () => {
           </p>
         </div>
 
-        {!isActive && (
-          <Card className="border-warning/30 bg-warning/5">
-            <CardContent className="p-4 text-sm text-warning">Integrasi WhatsApp belum aktif untuk sekolah ini.</CardContent>
-          </Card>
-        )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3">

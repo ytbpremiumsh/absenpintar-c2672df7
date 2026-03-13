@@ -19,6 +19,7 @@ const KEYS = [
   "presentation_cta_btn2",
   "presentation_cta_btn1_link",
   "presentation_cta_btn2_link",
+  "login_sidebar_image",
 ];
 
 const SuperAdminPresentation = () => {
@@ -33,6 +34,7 @@ const SuperAdminPresentation = () => {
   const [ctaBtn2, setCtaBtn2] = useState("");
   const [ctaBtn1Link, setCtaBtn1Link] = useState("");
   const [ctaBtn2Link, setCtaBtn2Link] = useState("");
+  const [loginImage, setLoginImage] = useState("");
 
   useEffect(() => {
     const fetch = async () => {
@@ -48,6 +50,7 @@ const SuperAdminPresentation = () => {
         setCtaBtn2(map.presentation_cta_btn2 || "");
         setCtaBtn1Link(map.presentation_cta_btn1_link || "");
         setCtaBtn2Link(map.presentation_cta_btn2_link || "");
+        setLoginImage(map.login_sidebar_image || "");
       }
       setLoading(false);
     };
@@ -66,6 +69,7 @@ const SuperAdminPresentation = () => {
       { key: "presentation_cta_btn2", value: ctaBtn2 },
       { key: "presentation_cta_btn1_link", value: ctaBtn1Link },
       { key: "presentation_cta_btn2_link", value: ctaBtn2Link },
+      { key: "login_sidebar_image", value: loginImage },
     ].map((r) => ({ ...r, updated_at: new Date().toISOString() }));
 
     const { error } = await supabase
@@ -175,6 +179,23 @@ const SuperAdminPresentation = () => {
               <Input value={ctaBtn2Link} onChange={(e) => setCtaBtn2Link(e.target.value)} placeholder="/login" />
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Login Page Settings */}
+      <Card className="border-0 shadow-card">
+        <CardContent className="p-4 sm:p-6 space-y-4">
+          <h3 className="font-bold text-foreground text-sm">Halaman Login</h3>
+          <p className="text-xs text-muted-foreground">Gambar sidebar yang tampil di halaman login (URL gambar)</p>
+          <div className="space-y-1">
+            <Label className="text-xs">URL Gambar Sidebar Login</Label>
+            <Input value={loginImage} onChange={(e) => setLoginImage(e.target.value)} placeholder="/images/presentation/students.jpeg" />
+          </div>
+          {loginImage && (
+            <div className="rounded-lg overflow-hidden border border-border w-48 h-32">
+              <img src={loginImage} alt="Preview" className="w-full h-full object-cover" />
+            </div>
+          )}
         </CardContent>
       </Card>
 
