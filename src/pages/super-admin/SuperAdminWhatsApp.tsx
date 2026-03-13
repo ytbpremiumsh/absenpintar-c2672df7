@@ -24,6 +24,9 @@ interface IntegrationData {
   message_template: string;
   attendance_arrive_template: string;
   attendance_depart_template: string;
+  attendance_group_template: string;
+  wa_delivery_target: string;
+  wa_enabled: boolean;
 }
 
 const DEFAULT_ARRIVE_TEMPLATE = `📋 *Notifikasi Absensi Datang*\n\n{school_name}\n\nAnanda *{student_name}* (Kelas {class}) telah tercatat HADIR pada {day}, pukul {time}.\n\nNIS: {student_id}\nMetode: {method}\n\n_Pesan otomatis dari Smart School Attendance System_`;
