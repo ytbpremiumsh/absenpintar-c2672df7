@@ -326,10 +326,19 @@ const StudentDetail = () => {
                   </div>
                 )}
                 {features.canUploadPhoto && (
-                  <div className="absolute inset-0 rounded-2xl bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-center justify-center cursor-pointer hover:bg-black/50">
-                    <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => { if (e.target.files?.[0]) handlePhotoUpload(e.target.files[0]); }} />
+                  <div className="absolute inset-0 rounded-2xl bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-200 flex flex-col items-center justify-center cursor-pointer hover:bg-black/50">
+                    <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer z-10" onChange={(e) => { if (e.target.files?.[0]) handlePhotoUpload(e.target.files[0]); }} />
                     {uploading ? <Loader2 className="h-6 w-6 text-white animate-spin" /> : <Camera className="h-6 w-6 text-white drop-shadow-md" />}
-                    <span className="text-white text-[10px] font-medium absolute bottom-1.5">Ganti Foto</span>
+                    <span className="text-white text-[10px] font-medium mt-0.5">Ganti Foto</span>
+                    {student.photo_url && (
+                      <button
+                        type="button"
+                        className="relative z-20 mt-1 px-2 py-0.5 bg-destructive/80 hover:bg-destructive text-white text-[10px] rounded transition-colors"
+                        onClick={(e) => { e.stopPropagation(); handlePhotoDelete(); }}
+                      >
+                        Hapus Foto
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
