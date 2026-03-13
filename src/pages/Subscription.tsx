@@ -64,7 +64,11 @@ const Subscription = () => {
         ]);
 
         const sub = subRes.data;
-        const classCount = classRes.data?.length || 0;
+        // Count unique classes from both classes table and student class assignments
+        const classTableNames = new Set((classTableRes.data || []).map((c: any) => c.name));
+        const studentClassNames = new Set((studentRes.data || []).map((s: any) => s.class));
+        const allClassNames = new Set([...classTableNames, ...studentClassNames]);
+        const classCount = allClassNames.size;
         const studentCount = studentRes.data?.length || 0;
 
         if (sub) {
