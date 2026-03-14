@@ -277,6 +277,8 @@ const ScanQR = () => {
         const timeStr = now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
         const dayNames = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
         const dayName = dayNames[now.getDay()];
+        const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+        const dateStr = `${now.getDate()} ${monthNames[now.getMonth()]} ${now.getFullYear()}`;
         const typeLabel = currentAttType === "datang" ? "Datang (Hadir)" : "Pulang";
 
         const applyReplacements = (tpl: string) =>
