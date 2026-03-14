@@ -291,7 +291,8 @@ const ScanQR = () => {
             .replace(/\{method\}/g, methodLabel)
             .replace(/\{parent_name\}/g, scannedStudent.parent_name || "")
             .replace(/\{school_name\}/g, schoolName)
-            .replace(/\{type\}/g, typeLabel);
+            .replace(/\{type\}/g, typeLabel)
+            .replace(/\{date\}/g, dateStr);
 
         const sendTasks: Promise<any>[] = [];
 

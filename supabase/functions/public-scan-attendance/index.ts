@@ -139,7 +139,8 @@ serve(async (req) => {
         const dayName = dayNames[jakartaTime.getDay()];
         const typeLabel = attendance_type === 'datang' ? 'Datang (Hadir)' : 'Pulang';
 
-        const dateStr = `${String(jakartaTime.getDate()).padStart(2, '0')}/${String(jakartaTime.getMonth() + 1).padStart(2, '0')}/${jakartaTime.getFullYear()}`;
+        const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+        const dateStr = `${jakartaTime.getDate()} ${monthNames[jakartaTime.getMonth()]} ${jakartaTime.getFullYear()}`;
 
         const applyReplacements = (tpl: string) =>
           tpl
