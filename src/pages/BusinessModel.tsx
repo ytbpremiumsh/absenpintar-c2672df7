@@ -440,8 +440,8 @@ const BusinessModel = () => {
         <div className="max-w-7xl mx-auto">
           <motion.div custom={0} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
             <span className={`text-[11px] font-bold uppercase tracking-[0.2em] ${dark ? "text-emerald-400" : "text-emerald-600"} mb-4 block`}>Peluang Pasar</span>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">Pasar yang Sangat Besar & Belum Tergarap</h2>
-            <p className={`mt-4 ${mutedText} max-w-2xl mx-auto`}>Indonesia memiliki ratusan ribu sekolah TK dan SD yang belum memiliki sistem absensi digital. Ini adalah peluang blue ocean yang masif.</p>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">Pasar yang Sangat Besar & Belum Banyak Digarap</h2>
+            <p className={`mt-4 ${mutedText} max-w-2xl mx-auto`}>Indonesia punya ratusan ribu sekolah dari TK hingga SMA/SMK yang belum punya sistem absensi digital. Ini peluang besar yang masih terbuka lebar.</p>
           </motion.div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
