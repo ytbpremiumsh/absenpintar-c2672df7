@@ -110,75 +110,72 @@ const SOLUTIONS = [
 const REVENUE_STREAMS = [
 {
   icon: Repeat,
-  title: "Langganan Bulanan (SaaS Recurring)",
-  desc: "Pendapatan berulang yang stabil dan terprediksi setiap bulan dari setiap sekolah yang berlangganan.",
+  title: "Langganan Bulanan (SaaS)",
+  desc: "Sekolah membayar biaya bulanan tetap untuk menggunakan sistem — pendapatan stabil setiap bulan.",
   details: [
-  "Model subscription per sekolah — pembayaran otomatis setiap bulan",
-  "Paket bertingkat (Basic, Premium, School) menyesuaikan skala sekolah",
-  "Upgrade otomatis saat jumlah siswa melebihi kuota paket",
-  "Retensi tinggi karena sistem menjadi bagian dari operasional harian sekolah",
-  "Revenue churn sangat rendah — data terintegrasi membuat switching cost tinggi"],
-
+  "Paket bertingkat (Basic, School, Premium) sesuai ukuran dan kebutuhan sekolah",
+  "Upgrade otomatis saat jumlah siswa bertambah melebihi kuota",
+  "Sekolah akan terus berlangganan karena sistem sudah jadi bagian rutinitas harian",
+  "Data sudah terintegrasi sehingga sekolah tidak mudah pindah ke platform lain"],
   gradient: "from-emerald-500 via-teal-500 to-cyan-600",
   glow: "shadow-emerald-500/20",
-  badge: "Primary Revenue"
+  badge: "Pendapatan Utama"
 },
 {
   icon: Building2,
-  title: "Enterprise & Multi-Cabang",
-  desc: "Paket khusus untuk yayasan atau grup sekolah yang mengelola beberapa cabang sekaligus dalam satu dashboard terpusat.",
+  title: "Paket Yayasan & Multi Cabang",
+  desc: "Paket khusus untuk yayasan atau grup sekolah yang punya beberapa cabang — dikelola dalam satu dashboard.",
   details: [
-  "Harga premium untuk manajemen multi-cabang terpusat",
-  "Dashboard grup dengan analitik kehadiran lintas cabang",
-  "Custom branding per cabang sekolah",
-  "Dedicated account manager untuk enterprise client",
-  "SLA (Service Level Agreement) khusus dengan uptime 99.9%"],
-
+  "Harga khusus untuk yayasan yang mengelola banyak sekolah sekaligus",
+  "Satu dashboard untuk memantau kehadiran di semua cabang",
+  "Setiap cabang bisa punya branding dan logo sendiri",
+  "Ada tim khusus yang mendampingi klien enterprise",
+  "Jaminan layanan (SLA) dengan uptime 99.9%"],
   gradient: "from-violet-500 via-purple-500 to-indigo-600",
   glow: "shadow-violet-500/20",
-  badge: "High Value"
+  badge: "Bernilai Tinggi"
 },
 {
   icon: CreditCard,
-  title: "Kartu Pelajar Digital dengan Barcode",
-  desc: "Barcode siswa dapat dicetak menjadi kartu pelajar/kartu sekolah resmi yang terintegrasi langsung dengan sistem absensi.",
+  title: "Kartu Pelajar Digital + Barcode",
+  desc: "Barcode siswa bisa dicetak jadi kartu pelajar resmi yang langsung terhubung ke sistem absensi.",
   details: [
-  "Cetak kartu pelajar dengan barcode unik per siswa — langsung terhubung ke sistem absensi",
-  "Desain kartu profesional dengan logo sekolah, foto siswa, dan identitas lengkap",
-  "Biaya cetak per kartu menjadi revenue tambahan dari setiap sekolah",
-  "Kartu bisa digunakan untuk absensi, perpustakaan, dan identifikasi siswa",
-  "Repeat order setiap tahun ajaran baru — revenue berulang dari pencetakan ulang"],
+  "Setiap siswa punya barcode unik yang tercetak di kartu pelajar",
+  "Desain profesional lengkap dengan logo sekolah, foto, dan data siswa",
+  "Biaya cetak per kartu menjadi tambahan pendapatan dari sekolah",
+  "Kartu bisa dipakai untuk absensi, perpustakaan, dan identifikasi",
+  "Setiap tahun ajaran baru, sekolah pesan cetak ulang — pendapatan berulang"],
   gradient: "from-blue-500 via-indigo-500 to-violet-600",
   glow: "shadow-blue-500/20",
-  badge: "Physical Product"
+  badge: "Produk Fisik"
 },
 {
   icon: Globe,
-  title: "Layanan Notifikasi WhatsApp Terintegrasi",
-  desc: "Notifikasi WhatsApp otomatis ke wali murid sudah termasuk dalam paket bulanan — tanpa biaya tambahan per pesan.",
+  title: "Notifikasi WhatsApp Terintegrasi",
+  desc: "Notifikasi otomatis ke wali murid sudah termasuk dalam paket bulanan — tanpa biaya tambahan per pesan.",
   details: [
-  "Kuota pesan bulanan sudah termasuk dalam setiap paket langganan",
-  "Paket PREMIUM: hingga 1.000 pesan/bulan sudah include",
-  "Paket SCHOOL: unlimited pesan tanpa batasan",
-  "Notifikasi otomatis ke wali murid saat siswa hadir/pulang",
-  "Tanpa biaya tersembunyi — semua sudah dalam satu paket yang simpel"],
+  "Kuota pesan bulanan sudah include di setiap paket langganan",
+  "Paket SCHOOL: hingga 1.000 pesan/bulan sudah termasuk",
+  "Paket PREMIUM: pesan unlimited tanpa batasan",
+  "Wali murid otomatis dapat notifikasi saat anak hadir/pulang",
+  "Tidak ada biaya tersembunyi — semuanya sudah dalam satu paket simpel"],
   gradient: "from-green-500 via-emerald-500 to-teal-600",
   glow: "shadow-green-500/20",
-  badge: "Included in Plan"
+  badge: "Termasuk Paket"
 },
 {
   icon: Layers,
   title: "Kustomisasi & White Label",
-  desc: "Layanan kustomisasi untuk sekolah yang menginginkan branding sendiri dan fitur khusus sesuai kebutuhan.",
+  desc: "Layanan khusus untuk sekolah yang ingin sistem dengan branding dan fitur sesuai keinginan mereka.",
   details: [
-  "White-label solution dengan branding sekolah sepenuhnya",
-  "Custom development untuk fitur tambahan",
-  "Integrasi dengan sistem akademik atau ERP sekolah yang sudah ada",
-  "One-time setup fee + maintenance recurring",
-  "Potensi partnership jangka panjang dengan institusi besar"],
+  "Sistem bisa dibuat dengan brand sekolah sepenuhnya (white-label)",
+  "Fitur tambahan bisa dikembangkan sesuai permintaan",
+  "Bisa dihubungkan dengan sistem akademik sekolah yang sudah ada",
+  "Biaya setup sekali bayar + biaya perawatan bulanan",
+  "Peluang kerja sama jangka panjang dengan institusi besar"],
   gradient: "from-amber-500 via-orange-500 to-red-500",
   glow: "shadow-amber-500/20",
-  badge: "Premium Service"
+  badge: "Layanan Premium"
 }];
 
 
@@ -193,7 +190,7 @@ const PRICING_TIERS = [
   gradient: "from-blue-500 to-cyan-600"
 },
 {
-  name: "PREMIUM",
+  name: "SCHOOL",
   price: "Rp 249.000",
   period: "/bulan",
   students: "≤ 500 siswa",
@@ -202,11 +199,11 @@ const PRICING_TIERS = [
   gradient: "from-indigo-500 to-violet-600"
 },
 {
-  name: "SCHOOL",
+  name: "PREMIUM",
   price: "Custom",
   period: "",
   students: "Unlimited",
-  features: ["Semua fitur PREMIUM", "Multi Cabang", "White Label", "Dedicated Support", "Custom Integration", "SLA 99.9%"],
+  features: ["Semua fitur SCHOOL", "Multi Cabang", "White Label", "Dedicated Support", "Custom Integration", "SLA 99.9%"],
   highlight: false,
   gradient: "from-amber-500 to-orange-600"
 }];
@@ -220,35 +217,35 @@ const MARKET_DATA = [
 
 
 const GROWTH_MILESTONES = [
-{ quarter: "Q1-Q2", title: "Foundation", schools: "50 sekolah", revenue: "Rp 12.5 jt/bln", focus: "Akuisisi awal, product-market fit, testimonial dari early adopters", color: "from-blue-500 to-indigo-500" },
-{ quarter: "Q3-Q4", title: "Growth", schools: "200 sekolah", revenue: "Rp 50 jt/bln", focus: "Referral program, partnership dinas pendidikan, ekspansi regional", color: "from-indigo-500 to-violet-500" },
-{ quarter: "Tahun 2", title: "Scale", schools: "1.000 sekolah", revenue: "Rp 250 jt/bln", focus: "Tim sales dedicated, enterprise deals, ekspansi nasional", color: "from-violet-500 to-purple-500" },
-{ quarter: "Tahun 3", title: "Dominance", schools: "5.000+ sekolah", revenue: "Rp 1.25 M/bln", focus: "Market leader, ekspansi fitur akademik, ARR Rp 15M+", color: "from-purple-500 to-pink-500" }];
+{ quarter: "Q1-Q2", title: "Fondasi", schools: "50 sekolah", revenue: "Rp 12.5 jt/bln", focus: "Akuisisi pelanggan awal, memastikan produk sesuai kebutuhan pasar, mengumpulkan testimoni", color: "from-blue-500 to-indigo-500" },
+{ quarter: "Q3-Q4", title: "Pertumbuhan", schools: "200 sekolah", revenue: "Rp 50 jt/bln", focus: "Program referral, kerja sama dengan dinas pendidikan, ekspansi ke daerah lain", color: "from-indigo-500 to-violet-500" },
+{ quarter: "Tahun 2", title: "Ekspansi", schools: "1.000 sekolah", revenue: "Rp 250 jt/bln", focus: "Tim penjualan khusus, kontrak yayasan besar, ekspansi ke seluruh Indonesia", color: "from-violet-500 to-purple-500" },
+{ quarter: "Tahun 3", title: "Dominasi Pasar", schools: "5.000+ sekolah", revenue: "Rp 1.25 M/bln", focus: "Pemimpin pasar, tambah fitur akademik, pendapatan tahunan Rp 15M+", color: "from-purple-500 to-pink-500" }];
 
 
 const COMPETITIVE_ADVANTAGES = [
-{ icon: Zap, title: "Time to Value < 5 Menit", desc: "Setup instan — import data siswa dari Excel, cetak barcode, langsung operasional. Kompetitor butuh berminggu-minggu." },
-{ icon: CreditCard, title: "Harga Terjangkau", desc: "Mulai dari Rp 99.000/bulan — jauh lebih murah dari solusi enterprise yang bisa mencapai jutaan rupiah per bulan." },
-{ icon: ShieldCheck, title: "Keamanan Terverifikasi", desc: "Setiap absensi melalui verifikasi barcode digital. Data tersimpan aman di cloud dengan enkripsi end-to-end." },
-{ icon: Heart, title: "Pengalaman Pengguna Terbaik", desc: "UI/UX modern yang intuitif. Staf sekolah dan wali murid bisa menggunakan tanpa pelatihan khusus." },
-{ icon: Globe, title: "Transparansi untuk Wali Murid", desc: "Live Monitor Publik + notifikasi WhatsApp otomatis — wali murid selalu tahu status kehadiran anak mereka." },
-{ icon: Rocket, title: "Skalabilitas Tanpa Batas", desc: "Arsitektur cloud-native yang bisa melayani dari 30 siswa hingga ribuan siswa tanpa degradasi performa." }];
+{ icon: Zap, title: "Siap Pakai dalam 5 Menit", desc: "Tinggal import data siswa dari Excel, cetak barcode, dan sistem langsung bisa digunakan. Tidak perlu instalasi rumit." },
+{ icon: CreditCard, title: "Harga Terjangkau untuk Semua Sekolah", desc: "Mulai dari Rp 99.000/bulan — jauh lebih hemat dibanding solusi mahal yang bisa jutaan per bulan." },
+{ icon: ShieldCheck, title: "Data Aman & Terverifikasi", desc: "Setiap absensi diverifikasi lewat barcode digital. Semua data tersimpan aman di cloud dengan perlindungan maksimal." },
+{ icon: Heart, title: "Mudah Digunakan Siapa Saja", desc: "Tampilan modern dan intuitif. Guru, staf, dan wali murid bisa langsung pakai tanpa pelatihan khusus." },
+{ icon: Globe, title: "Wali Murid Selalu Tahu", desc: "Monitoring kehadiran bisa diakses online + notifikasi WhatsApp otomatis — orang tua tidak perlu khawatir lagi." },
+{ icon: Rocket, title: "Bisa Dipakai Sekolah Kecil hingga Besar", desc: "Sistem berbasis cloud yang bisa melayani dari 30 siswa hingga ribuan siswa tanpa masalah performa." }];
 
 
 const UNIT_ECONOMICS = [
-{ label: "Customer Acquisition Cost (CAC)", value: "Rp 150.000", note: "Via referral & digital marketing" },
-{ label: "Average Revenue Per User (ARPU)", value: "Rp 200.000/bln", note: "Rata-rata paket Premium" },
-{ label: "Customer Lifetime Value (LTV)", value: "Rp 7.200.000", note: "Rata-rata 36 bulan retention" },
-{ label: "LTV/CAC Ratio", value: "48x", note: "Sangat sehat (benchmark > 3x)" },
-{ label: "Payback Period", value: "< 1 Bulan", note: "ROI tercepat di industri EdTech" },
-{ label: "Gross Margin", value: "85-90%", note: "SaaS margin tinggi, biaya infrastruktur rendah" }];
+{ label: "Biaya Akuisisi Pelanggan", value: "Rp 150.000", note: "Lewat referral & pemasaran digital" },
+{ label: "Pendapatan Rata-rata / Sekolah", value: "Rp 200.000/bln", note: "Rata-rata paket School" },
+{ label: "Nilai Pelanggan Seumur Hidup", value: "Rp 7.200.000", note: "Rata-rata berlangganan 36 bulan" },
+{ label: "Rasio Nilai / Biaya Akuisisi", value: "48x", note: "Sangat sehat (standar industri > 3x)" },
+{ label: "Balik Modal", value: "< 1 Bulan", note: "Tercepat di industri EdTech" },
+{ label: "Margin Keuntungan Kotor", value: "85-90%", note: "Margin tinggi khas bisnis SaaS" }];
 
 
 const STATS = [
-{ value: "Rp 15M+", label: "Target ARR Tahun 3" },
-{ value: "85-90%", label: "Gross Margin" },
-{ value: "48x", label: "LTV/CAC Ratio" },
-{ value: "< 5%", label: "Monthly Churn" }];
+{ value: "Rp 15M+", label: "Target Pendapatan Tahun 3" },
+{ value: "85-90%", label: "Margin Keuntungan" },
+{ value: "48x", label: "Rasio Nilai Pelanggan" },
+{ value: "< 5%", label: "Churn Bulanan" }];
 
 
 const BusinessModel = () => {
@@ -356,7 +353,7 @@ const BusinessModel = () => {
         </motion.p>
 
         <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.7 }} className={`mt-4 text-base sm:text-lg md:text-xl ${mutedText} max-w-2xl leading-relaxed`}>
-          {subtitle || "Peluang bisnis EdTech dengan model SaaS recurring revenue, gross margin 85%+, dan potensi pasar ratusan miliar rupiah di Indonesia."}
+          {subtitle || "Bisnis EdTech dengan model SaaS yang menghasilkan pendapatan berulang setiap bulan, margin keuntungan 85%+, dan peluang pasar ratusan miliar rupiah di Indonesia."}
         </motion.p>
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="mt-10 flex flex-col sm:flex-row gap-3">
@@ -443,8 +440,8 @@ const BusinessModel = () => {
         <div className="max-w-7xl mx-auto">
           <motion.div custom={0} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
             <span className={`text-[11px] font-bold uppercase tracking-[0.2em] ${dark ? "text-emerald-400" : "text-emerald-600"} mb-4 block`}>Peluang Pasar</span>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">Pasar yang Sangat Besar & Belum Tergarap</h2>
-            <p className={`mt-4 ${mutedText} max-w-2xl mx-auto`}>Indonesia memiliki ratusan ribu sekolah TK dan SD yang belum memiliki sistem absensi digital. Ini adalah peluang blue ocean yang masif.</p>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">Pasar yang Sangat Besar & Belum Banyak Digarap</h2>
+            <p className={`mt-4 ${mutedText} max-w-2xl mx-auto`}>Indonesia punya ratusan ribu sekolah dari TK hingga SMA/SMK yang belum punya sistem absensi digital. Ini peluang besar yang masih terbuka lebar.</p>
           </motion.div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -465,8 +462,8 @@ const BusinessModel = () => {
         <div className="max-w-7xl mx-auto">
           <motion.div custom={0} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
             <span className={`text-[11px] font-bold uppercase tracking-[0.2em] ${dark ? "text-indigo-400" : "text-indigo-600"} mb-4 block`}>Sumber Pendapatan</span>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">5 Pilar Pendapatan</h2>
-            <p className={`mt-4 ${mutedText} max-w-2xl mx-auto`}>Model bisnis Absensi Pintar dirancang dengan multiple revenue streams untuk memaksimalkan profitabilitas.</p>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">5 Sumber Pendapatan</h2>
+            <p className={`mt-4 ${mutedText} max-w-2xl mx-auto`}>Absensi Pintar punya beberapa cara menghasilkan uang — tidak hanya dari satu sumber, tapi dari lima pilar yang saling menguatkan.</p>
           </motion.div>
 
           {REVENUE_STREAMS.map((stream, idx) =>
@@ -516,8 +513,8 @@ const BusinessModel = () => {
         <div className="max-w-7xl mx-auto">
           <motion.div custom={0} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
             <span className={`text-[11px] font-bold uppercase tracking-[0.2em] ${dark ? "text-amber-400" : "text-amber-600"} mb-4 block`}>Struktur Harga</span>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">Harga Kompetitif, Margin Tinggi</h2>
-            <p className={`mt-4 ${mutedText} max-w-xl mx-auto`}>Setiap tier dirancang untuk memaksimalkan conversion rate sekaligus menjaga gross margin di atas 85%.</p>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">Harga Terjangkau, Keuntungan Besar</h2>
+            <p className={`mt-4 ${mutedText} max-w-xl mx-auto`}>Tiga pilihan paket yang dirancang agar sekolah mudah memilih dan kami tetap untung besar.</p>
           </motion.div>
 
           <div className="grid sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
@@ -555,9 +552,9 @@ const BusinessModel = () => {
       <section className="py-20 sm:py-32 px-4">
         <div className="max-w-7xl mx-auto">
           <motion.div custom={0} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
-            <span className={`text-[11px] font-bold uppercase tracking-[0.2em] ${dark ? "text-cyan-400" : "text-cyan-600"} mb-4 block`}>Unit Economics</span>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">Fundamental Bisnis yang Kuat</h2>
-            <p className={`mt-4 ${mutedText} max-w-xl mx-auto`}>Metrik kunci yang menunjukkan keberlanjutan dan profitabilitas model bisnis Absensi Pintar.</p>
+            <span className={`text-[11px] font-bold uppercase tracking-[0.2em] ${dark ? "text-cyan-400" : "text-cyan-600"} mb-4 block`}>Angka-Angka Penting</span>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">Fondasi Bisnis yang Kokoh</h2>
+            <p className={`mt-4 ${mutedText} max-w-xl mx-auto`}>Angka-angka kunci yang membuktikan bisnis Absensi Pintar berkelanjutan dan menguntungkan.</p>
           </motion.div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
@@ -577,9 +574,9 @@ const BusinessModel = () => {
       <section className={`py-20 sm:py-32 px-4 ${sectionAlt}`}>
         <div className="max-w-5xl mx-auto">
           <motion.div custom={0} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
-            <span className={`text-[11px] font-bold uppercase tracking-[0.2em] ${dark ? "text-pink-400" : "text-pink-600"} mb-4 block`}>Growth Roadmap</span>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">Proyeksi Pertumbuhan 3 Tahun</h2>
-            <p className={`mt-4 ${mutedText} max-w-xl mx-auto`}>Roadmap realistis berdasarkan penetrasi pasar bertahap dengan fokus pada retensi dan referral.</p>
+            <span className={`text-[11px] font-bold uppercase tracking-[0.2em] ${dark ? "text-pink-400" : "text-pink-600"} mb-4 block`}>Peta Pertumbuhan</span>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">Rencana Pertumbuhan 3 Tahun</h2>
+            <p className={`mt-4 ${mutedText} max-w-xl mx-auto`}>Rencana realistis untuk tumbuh secara bertahap — fokus pada kepuasan pelanggan dan rekomendasi dari mulut ke mulut.</p>
           </motion.div>
 
           <div className="space-y-5">
@@ -608,9 +605,9 @@ const BusinessModel = () => {
         <div className={`absolute inset-0 bg-gradient-to-b from-transparent ${ambientSection} to-transparent pointer-events-none`} />
         <div className="max-w-7xl mx-auto relative z-10">
           <motion.div custom={0} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
-            <span className={`text-[11px] font-bold uppercase tracking-[0.2em] ${dark ? "text-violet-400" : "text-indigo-500"} mb-4 block`}>Competitive Moat</span>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">Keunggulan Kompetitif</h2>
-            <p className={`mt-4 ${mutedText} max-w-xl mx-auto`}>Kombinasi teknologi, harga, dan pengalaman pengguna yang menciptakan barrier to entry bagi kompetitor.</p>
+            <span className={`text-[11px] font-bold uppercase tracking-[0.2em] ${dark ? "text-violet-400" : "text-indigo-500"} mb-4 block`}>Kenapa Kami Unggul</span>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">Keunggulan Kami</h2>
+            <p className={`mt-4 ${mutedText} max-w-xl mx-auto`}>Kombinasi teknologi mudah, harga terjangkau, dan pengalaman pengguna terbaik yang sulit ditiru kompetitor.</p>
           </motion.div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -636,10 +633,10 @@ const BusinessModel = () => {
             <Rocket className="h-8 w-8 text-white" />
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-4">
-            Siap Menjadi Bagian dari <br className="hidden sm:block" />Revolusi EdTech Indonesia?
+            Siap Bergabung dalam <br className="hidden sm:block" />Revolusi EdTech Indonesia?
           </h2>
           <p className={`${mutedText} text-base sm:text-lg mb-10 max-w-xl mx-auto`}>
-            Dengan pasar yang masif, unit economics yang kuat, dan produk yang sudah siap — Absensi Pintar adalah peluang bisnis yang layak dan profitable.
+            Pasar besar, bisnis yang sudah terbukti menguntungkan, dan produk yang siap pakai — Absensi Pintar adalah peluang bisnis EdTech yang layak dipertimbangkan.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a href="/register" className={`inline-flex items-center justify-center gap-2 ${ctaBg} text-white px-10 py-4 rounded-2xl font-bold transition-all shadow-2xl text-base`}>
@@ -649,7 +646,7 @@ const BusinessModel = () => {
               Lihat Demo Produk <ArrowUpRight className="h-5 w-5" />
             </a>
           </div>
-          <p className={`${subtleText} text-xs mt-4`}>Produk sudah live • Revenue-ready • Skalabel secara nasional</p>
+          <p className={`${subtleText} text-xs mt-4`}>Produk sudah aktif • Siap menghasilkan • Bisa berkembang ke seluruh Indonesia</p>
         </motion.div>
       </section>
 
