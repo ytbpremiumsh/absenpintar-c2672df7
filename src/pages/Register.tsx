@@ -3,8 +3,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { School, Eye, EyeOff, Loader2, Search, CheckCircle2, MapPin, GraduationCap } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { School, Eye, EyeOff, Loader2, Search, CheckCircle2, MapPin, GraduationCap, PenLine } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
@@ -24,10 +24,15 @@ const Register = () => {
   const [step, setStep] = useState<1 | 2>(1);
   const [showPassword, setShowPassword] = useState(false);
 
-  // Step 1 - NPSN
+  // Step 1 - School input mode
+  const [inputMode, setInputMode] = useState<"npsn" | "manual" | null>(null);
   const [npsn, setNpsn] = useState("");
   const [lookingUp, setLookingUp] = useState(false);
   const [schoolData, setSchoolData] = useState<SchoolData | null>(null);
+
+  // Manual school input
+  const [manualName, setManualName] = useState("");
+  const [manualAddress, setManualAddress] = useState("");
 
   // Step 2 - Admin details
   const [fullName, setFullName] = useState("");
@@ -45,16 +50,11 @@ const Register = () => {
     setLookingUp(true);
     setSchoolData(null);
     try {
-
-      // Use fetch directly since we need query params
       const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/lookup-npsn?npsn=${npsn}`;
       const response = await fetch(url, {
-        headers: {
-          'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-        },
+        headers: { 'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
       });
       const data = await response.json();
-
       if (!response.ok || !data.success) {
         toast.error(data.error || "Sekolah tidak ditemukan");
         setLookingUp(false);
@@ -68,9 +68,33 @@ const Register = () => {
     setLookingUp(false);
   };
 
+  const handleManualConfirm = () => {
+    if (!manualName.trim()) { toast.error("Nama sekolah wajib diisi"); return; }
+    setSchoolData({
+      npsn: "",
+      name: manualName.trim(),
+      address: manualAddress.trim(),
+      level: "",
+      status: "",
+      district: "",
+      province: "",
+    });
+    toast.success("Data sekolah berhasil diisi");
+  };
+
+  const canProceed = !!schoolData;
+
+  const resetStep1 = () => {
+    setInputMode(null);
+    setNpsn("");
+    setSchoolData(null);
+    setManualName("");
+    setManualAddress("");
+  };
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!schoolData) { toast.error("Cari NPSN terlebih dahulu"); return; }
+    if (!schoolData) { toast.error("Data sekolah belum diisi"); return; }
     if (!fullName.trim()) { toast.error("Nama lengkap wajib diisi"); return; }
     if (!email.trim()) { toast.error("Email wajib diisi"); return; }
     if (password.length < 6) { toast.error("Password minimal 6 karakter"); return; }
@@ -78,7 +102,6 @@ const Register = () => {
 
     setRegistering(true);
     try {
-      // Call create-user edge function which creates user + profile + role
       const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-user`, {
         method: 'POST',
         headers: {
@@ -90,7 +113,7 @@ const Register = () => {
           password,
           full_name: fullName,
           role: 'school_admin',
-          npsn: schoolData.npsn,
+          npsn: schoolData.npsn || undefined,
           school_name: schoolData.name,
           school_address: schoolData.address,
           phone,
@@ -120,7 +143,7 @@ const Register = () => {
             <School className="h-8 w-8 text-primary-foreground" />
           </div>
           <h1 className="text-2xl font-bold text-primary-foreground">Daftar Sekolah Baru</h1>
-          <p className="text-primary-foreground/60 text-sm mt-1">Registrasi menggunakan NPSN sekolah Anda</p>
+          <p className="text-primary-foreground/60 text-sm mt-1">Registrasi data sekolah untuk mulai menggunakan sistem</p>
         </div>
 
         {/* Step Indicator */}
@@ -138,45 +161,127 @@ const Register = () => {
           <CardContent className="pt-6">
             {step === 1 ? (
               <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="npsn">NPSN (Nomor Pokok Sekolah Nasional)</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="npsn"
-                      placeholder="Masukkan 8 digit NPSN"
-                      value={npsn}
-                      onChange={(e) => {
-                        const v = e.target.value.replace(/\D/g, '').slice(0, 8);
-                        setNpsn(v);
-                        if (v.length < 8) setSchoolData(null);
-                      }}
-                      className="h-11 font-mono text-lg tracking-widest"
-                      maxLength={8}
-                    />
-                    <Button
+                {/* Mode selection */}
+                {!inputMode && !schoolData && (
+                  <div className="space-y-3">
+                    <p className="text-sm font-medium text-foreground text-center mb-1">Pilih cara memasukkan data sekolah</p>
+                    <button
                       type="button"
-                      onClick={handleNpsnLookup}
-                      disabled={npsn.length !== 8 || lookingUp}
-                      className="h-11 px-4 gradient-primary text-primary-foreground"
+                      onClick={() => setInputMode("npsn")}
+                      className="w-full flex items-center gap-4 p-4 rounded-xl border border-border hover:border-primary/40 hover:bg-primary/5 transition-all text-left group"
                     >
-                      {lookingUp ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                      <div className="h-11 w-11 rounded-xl gradient-primary flex items-center justify-center shrink-0 shadow-md">
+                        <Search className="h-5 w-5 text-primary-foreground" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">Cari dengan NPSN</p>
+                        <p className="text-[11px] text-muted-foreground">Data sekolah otomatis terisi dari database Dapodik</p>
+                      </div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setInputMode("manual")}
+                      className="w-full flex items-center gap-4 p-4 rounded-xl border border-border hover:border-primary/40 hover:bg-primary/5 transition-all text-left group"
+                    >
+                      <div className="h-11 w-11 rounded-xl bg-secondary flex items-center justify-center shrink-0">
+                        <PenLine className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">Isi Manual</p>
+                        <p className="text-[11px] text-muted-foreground">Masukkan nama sekolah dan alamat secara manual</p>
+                      </div>
+                    </button>
+                  </div>
+                )}
+
+                {/* NPSN Input */}
+                {inputMode === "npsn" && !schoolData && (
+                  <div className="space-y-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="npsn">NPSN (Nomor Pokok Sekolah Nasional)</Label>
+                      <div className="flex gap-2">
+                        <Input
+                          id="npsn"
+                          placeholder="Masukkan 8 digit NPSN"
+                          value={npsn}
+                          onChange={(e) => {
+                            const v = e.target.value.replace(/\D/g, '').slice(0, 8);
+                            setNpsn(v);
+                          }}
+                          className="h-11 font-mono text-lg tracking-widest"
+                          maxLength={8}
+                        />
+                        <Button
+                          type="button"
+                          onClick={handleNpsnLookup}
+                          disabled={npsn.length !== 8 || lookingUp}
+                          className="h-11 px-4 gradient-primary text-primary-foreground"
+                        >
+                          {lookingUp ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                        </Button>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground">Masukkan NPSN untuk mencari data sekolah otomatis dari Dapodik</p>
+                    </div>
+                    <Button type="button" variant="ghost" size="sm" onClick={resetStep1} className="text-xs text-muted-foreground">
+                      ← Pilih metode lain
                     </Button>
                   </div>
-                  <p className="text-[11px] text-muted-foreground">Masukkan NPSN untuk mencari data sekolah otomatis dari Dapodik</p>
-                </div>
+                )}
 
+                {/* Manual Input */}
+                {inputMode === "manual" && !schoolData && (
+                  <div className="space-y-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="schoolName">Nama Sekolah</Label>
+                      <Input
+                        id="schoolName"
+                        placeholder="Contoh: SDN 1 Surabaya"
+                        value={manualName}
+                        onChange={(e) => setManualName(e.target.value)}
+                        className="h-11"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="schoolAddress">Alamat Sekolah <span className="text-muted-foreground font-normal">(opsional)</span></Label>
+                      <Input
+                        id="schoolAddress"
+                        placeholder="Jl. Pendidikan No. 1, Kota ..."
+                        value={manualAddress}
+                        onChange={(e) => setManualAddress(e.target.value)}
+                        className="h-11"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button type="button" variant="ghost" size="sm" onClick={resetStep1} className="text-xs text-muted-foreground">
+                        ← Kembali
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={handleManualConfirm}
+                        disabled={!manualName.trim()}
+                        className="flex-1 h-10 gradient-primary text-primary-foreground"
+                      >
+                        Konfirmasi
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* School Data Result */}
                 {schoolData && (
                   <div className="p-4 rounded-xl bg-success/5 border border-success/20 space-y-2">
                     <div className="flex items-center gap-2">
                       <CheckCircle2 className="h-5 w-5 text-success" />
-                      <span className="text-sm font-bold text-foreground">Sekolah Ditemukan!</span>
+                      <span className="text-sm font-bold text-foreground">
+                        {schoolData.npsn ? "Sekolah Ditemukan!" : "Data Sekolah Siap"}
+                      </span>
                     </div>
                     <div className="space-y-1.5">
                       <div className="flex items-start gap-2">
                         <School className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
                         <div>
                           <p className="text-sm font-semibold text-foreground">{schoolData.name}</p>
-                          <p className="text-xs text-muted-foreground">NPSN: {schoolData.npsn}</p>
+                          {schoolData.npsn && <p className="text-xs text-muted-foreground">NPSN: {schoolData.npsn}</p>}
                         </div>
                       </div>
                       {schoolData.address && (
@@ -185,20 +290,25 @@ const Register = () => {
                           <p className="text-xs text-muted-foreground">{schoolData.address}</p>
                         </div>
                       )}
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {schoolData.level && <Badge variant="secondary" className="text-[10px]"><GraduationCap className="h-3 w-3 mr-0.5" />{schoolData.level}</Badge>}
-                        {schoolData.status && <Badge variant="outline" className="text-[10px]">{schoolData.status}</Badge>}
-                        {schoolData.district && <Badge variant="outline" className="text-[10px]">{schoolData.district}</Badge>}
-                        {schoolData.province && <Badge variant="outline" className="text-[10px]">{schoolData.province}</Badge>}
-                      </div>
+                      {(schoolData.level || schoolData.status || schoolData.district || schoolData.province) && (
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {schoolData.level && <Badge variant="secondary" className="text-[10px]"><GraduationCap className="h-3 w-3 mr-0.5" />{schoolData.level}</Badge>}
+                          {schoolData.status && <Badge variant="outline" className="text-[10px]">{schoolData.status}</Badge>}
+                          {schoolData.district && <Badge variant="outline" className="text-[10px]">{schoolData.district}</Badge>}
+                          {schoolData.province && <Badge variant="outline" className="text-[10px]">{schoolData.province}</Badge>}
+                        </div>
+                      )}
                     </div>
+                    <Button type="button" variant="ghost" size="sm" onClick={resetStep1} className="text-xs text-muted-foreground mt-1 px-0">
+                      Ubah data sekolah
+                    </Button>
                   </div>
                 )}
 
                 <Button
                   type="button"
                   onClick={() => setStep(2)}
-                  disabled={!schoolData}
+                  disabled={!canProceed}
                   className="w-full h-11 gradient-primary hover:opacity-90 text-primary-foreground"
                 >
                   Lanjutkan
@@ -213,7 +323,11 @@ const Register = () => {
                   </div>
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-foreground truncate">{schoolData?.name}</p>
-                    <p className="text-[10px] text-muted-foreground">NPSN: {schoolData?.npsn}</p>
+                    {schoolData?.npsn ? (
+                      <p className="text-[10px] text-muted-foreground">NPSN: {schoolData.npsn}</p>
+                    ) : (
+                      <p className="text-[10px] text-muted-foreground">Input manual</p>
+                    )}
                   </div>
                   <Button type="button" variant="ghost" size="sm" className="ml-auto text-xs shrink-0" onClick={() => setStep(1)}>Ubah</Button>
                 </div>
@@ -283,7 +397,7 @@ const Register = () => {
           </CardContent>
         </Card>
 
-        <p className="text-center text-primary-foreground/40 text-xs mt-6">© 2026 Smart School Pickup System</p>
+        <p className="text-center text-primary-foreground/40 text-xs mt-6">© 2026 Smart School Attendance System</p>
       </div>
     </div>
   );
