@@ -191,7 +191,7 @@ const EXTRA_FEATURES = [
 
 const STATS = [
   { value: "< 1 detik", label: "Waktu Scan" },
-  { value: "3 Metode", label: "QR · Face · RFID" },
+  { value: "3 Metode", label: "QR · Face · NIS Manual" },
   { value: "100%", label: "Data Terenkripsi" },
   { value: "Real-Time", label: "Live Monitoring" },
 ];
