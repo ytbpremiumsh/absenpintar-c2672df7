@@ -113,11 +113,10 @@ const REVENUE_STREAMS = [
   title: "Langganan Bulanan (SaaS)",
   desc: "Sekolah membayar biaya bulanan tetap untuk menggunakan sistem — pendapatan stabil setiap bulan.",
   details: [
-  "Sekolah cukup bayar bulanan — seperti berlangganan Netflix tapi untuk absensi",
-  "Ada 3 pilihan paket (Basic, School, Premium) sesuai kebutuhan dan ukuran sekolah",
-  "Otomatis naik paket saat jumlah siswa bertambah",
-  "Sekolah akan terus berlangganan karena sudah jadi bagian dari rutinitas harian",
-  "Data sudah terintegrasi sehingga sekolah tidak mudah pindah ke sistem lain"],
+  "Paket bertingkat (Basic, School, Premium) sesuai ukuran dan kebutuhan sekolah",
+  "Upgrade otomatis saat jumlah siswa bertambah melebihi kuota",
+  "Sekolah akan terus berlangganan karena sistem sudah jadi bagian rutinitas harian",
+  "Data sudah terintegrasi sehingga sekolah tidak mudah pindah ke platform lain"],
   gradient: "from-emerald-500 via-teal-500 to-cyan-600",
   glow: "shadow-emerald-500/20",
   badge: "Pendapatan Utama"
