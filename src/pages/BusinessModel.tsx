@@ -574,9 +574,9 @@ const BusinessModel = () => {
       <section className={`py-20 sm:py-32 px-4 ${sectionAlt}`}>
         <div className="max-w-5xl mx-auto">
           <motion.div custom={0} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
-            <span className={`text-[11px] font-bold uppercase tracking-[0.2em] ${dark ? "text-pink-400" : "text-pink-600"} mb-4 block`}>Growth Roadmap</span>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">Proyeksi Pertumbuhan 3 Tahun</h2>
-            <p className={`mt-4 ${mutedText} max-w-xl mx-auto`}>Roadmap realistis berdasarkan penetrasi pasar bertahap dengan fokus pada retensi dan referral.</p>
+            <span className={`text-[11px] font-bold uppercase tracking-[0.2em] ${dark ? "text-pink-400" : "text-pink-600"} mb-4 block`}>Peta Pertumbuhan</span>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">Rencana Pertumbuhan 3 Tahun</h2>
+            <p className={`mt-4 ${mutedText} max-w-xl mx-auto`}>Rencana realistis untuk tumbuh secara bertahap — fokus pada kepuasan pelanggan dan rekomendasi dari mulut ke mulut.</p>
           </motion.div>
 
           <div className="space-y-5">
