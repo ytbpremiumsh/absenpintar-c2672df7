@@ -465,7 +465,7 @@ const Presentation = () => {
                     <div className="w-full max-w-5xl relative group my-8">
                       <div className={`absolute -inset-4 bg-gradient-to-r ${f.accent} rounded-3xl opacity-0 group-hover:opacity-10 blur-2xl transition-opacity duration-700`} />
                       <div className={`relative rounded-2xl overflow-hidden border ${d ? "border-white/10" : "border-slate-200"} shadow-2xl ${d ? "shadow-black/40" : "shadow-slate-400/30"}`}>
-                        <img src={f.image} alt={f.title} className="w-full h-auto" loading="lazy" />
+                        <img src={f.image} alt={f.title} className="w-full h-auto scale-[1.06]" loading="lazy" />
                       </div>
                     </div>
 
