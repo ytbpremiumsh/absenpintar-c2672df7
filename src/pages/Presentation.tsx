@@ -443,11 +443,17 @@ const Presentation = () => {
             </p>
           </motion.div>
 
-          <div className="space-y-24 sm:space-y-32">
+          <div className="space-y-16 sm:space-y-32">
             {FEATURES.map((f, idx) => {
               const isEven = idx % 2 === 0;
               const Icon = f.icon;
               const isLast = idx === FEATURES.length - 1;
+
+              const separator = idx > 0 ? (
+                <div key={`sep-${idx}`} className={`block sm:hidden w-16 h-px mx-auto ${d ? "bg-white/10" : "bg-slate-200"}`} />
+              ) : null;
+
+              const content = (() => {
 
               if (isLast) {
                 return (
