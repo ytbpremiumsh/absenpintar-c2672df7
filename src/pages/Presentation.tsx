@@ -46,9 +46,9 @@ const FEATURES = [
   {
     title: "Live Monitoring Absensi",
     subtitle: "Pantau Kehadiran Secara Real-Time",
-    desc: "Sistem monitoring canggih dengan scanner built-in yang mendukung QR Code, Face Recognition, dan RFID. Progress bar kehadiran seluruh sekolah terlihat dalam satu layar dengan live feed aktivitas terbaru.",
+    desc: "Sistem monitoring canggih dengan scanner built-in yang mendukung QR Code, Face Recognition, dan NIS Manual. Progress bar kehadiran seluruh sekolah terlihat dalam satu layar dengan live feed aktivitas terbaru.",
     points: [
-      "Scanner multi-mode: QR Code, Face Recognition, dan RFID dalam satu halaman",
+      "Scanner multi-mode: QR Code, Face Recognition, dan NIS Manual dalam satu halaman",
       "Progress bar kehadiran real-time dengan persentase visual",
       "Live feed — setiap scan langsung muncul di panel aktivitas",
       "Mode Datang & Pulang otomatis sesuai jam operasional sekolah",
