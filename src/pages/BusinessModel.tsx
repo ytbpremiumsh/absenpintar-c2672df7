@@ -242,10 +242,10 @@ const UNIT_ECONOMICS = [
 
 
 const STATS = [
-{ value: "Rp 15M+", label: "Target ARR Tahun 3" },
-{ value: "85-90%", label: "Gross Margin" },
-{ value: "48x", label: "LTV/CAC Ratio" },
-{ value: "< 5%", label: "Monthly Churn" }];
+{ value: "Rp 15M+", label: "Target Pendapatan Tahun 3" },
+{ value: "85-90%", label: "Margin Keuntungan" },
+{ value: "48x", label: "Rasio Nilai Pelanggan" },
+{ value: "< 5%", label: "Churn Bulanan" }];
 
 
 const BusinessModel = () => {
