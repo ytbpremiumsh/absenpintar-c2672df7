@@ -60,12 +60,12 @@ const FEATURES = [
   },
   {
     title: "Scan Absensi Multi-Metode",
-    subtitle: "Barcode + Face Recognition + RFID",
-    desc: "Halaman scan absensi yang mendukung 3 metode sekaligus: scan barcode via kamera, pengenalan wajah (Face Recognition), dan input NIS manual. Dirancang untuk kecepatan dan kemudahan penggunaan di lapangan.",
+    subtitle: "QR Code + Face Recognition + NIS Manual",
+    desc: "Halaman scan absensi yang mendukung 3 metode sekaligus: scan QR Code via kamera, pengenalan wajah (Face Recognition), dan input NIS manual. Dirancang untuk kecepatan dan kemudahan penggunaan di lapangan.",
     points: [
-      "Kamera aktif untuk scan barcode QR Code secara instan",
+      "Scan QR Code — kamera aktif untuk scan barcode secara instan",
       "Face Recognition — cukup arahkan wajah siswa ke kamera",
-      "Input NIS manual sebagai alternatif jika kartu tidak tersedia",
+      "NIS Manual — input NIS sebagai alternatif jika kartu tidak tersedia",
       "Indikator waktu & tanggal absensi di bagian atas halaman",
     ],
     image: "/images/presentation/ss-scan.png",
