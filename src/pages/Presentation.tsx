@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Shield, QrCode, Monitor, Users, GraduationCap, BarChart3, Clock, Bell, Globe, FileText, Settings, ChevronRight, CheckCircle2, Zap, Smartphone, Sparkles, Sun, Moon, ArrowDown, Star, TrendingUp, Eye, Download, UserCheck, ScanLine, BookOpen, AlertTriangle, XCircle, ArrowRight } from "lucide-react";
+import { Loader2, Shield, QrCode, Monitor, Users, GraduationCap, BarChart3, Clock, Bell, Globe, FileText, Settings, ChevronRight, CheckCircle2, Zap, Smartphone, Sparkles, Sun, Moon, ArrowDown, Star, TrendingUp, Eye, Download, UserCheck, ScanLine, BookOpen, AlertTriangle, XCircle, ArrowRight, LayoutDashboard } from "lucide-react";
 import { motion } from "framer-motion";
 import { Navigate } from "react-router-dom";
 
@@ -202,12 +202,26 @@ const FEATURES = [
       "Pembayaran otomatis via transfer bank, e-wallet, dan QRIS",
       "Dashboard langganan: masa aktif, fitur tersedia, statistik penggunaan",
       "Aktivasi otomatis setelah pembayaran berhasil diverifikasi",
-      "Terintegrasi dengan Payment Gateway Mayar",
     ],
     image: "/images/presentation/ss-langganan.png",
     icon: Star,
     accent: "from-amber-500 to-orange-600",
     badge: "Subscription",
+  },
+  {
+    title: "Super Admin Panel",
+    subtitle: "Pusat Kendali Manajemen Platform",
+    desc: "Panel Super Admin menyediakan kontrol penuh untuk mengelola seluruh ekosistem Sistem Manajemen Absensi Sekolah. Mulai dari monitoring sekolah, pengelolaan langganan & pembayaran, komunikasi, hingga integrasi — semua dalam satu dashboard terpusat.",
+    points: [
+      "Dashboard overview: total sekolah, siswa, kelas, pengguna, langganan aktif, dan pendapatan",
+      "Billing & Langganan: kelola paket, langganan aktif, dan riwayat pembayaran seluruh sekolah",
+      "Komunikasi: kirim pengumuman platform dan kelola tiket bantuan dari sekolah",
+      "Integrasi: konfigurasi WhatsApp Gateway, notifikasi registrasi, dan Multi Cabang",
+    ],
+    image: "/images/presentation/ss-superadmin.png",
+    icon: LayoutDashboard,
+    accent: "from-slate-600 to-indigo-700",
+    badge: "Super Admin",
   },
 ];
 
@@ -425,7 +439,7 @@ const Presentation = () => {
               <span className={`bg-gradient-to-r ${d ? "from-indigo-300 to-violet-300" : "from-indigo-600 to-violet-500"} bg-clip-text text-transparent`}>Butuhkan</span>
             </h2>
             <p className={`mt-4 ${muted} max-w-xl mx-auto text-sm sm:text-base`}>
-              10 fitur utama yang dirancang untuk mempermudah proses absensi siswa secara digital, aman, dan efisien.
+              13 fitur utama yang dirancang untuk mempermudah proses absensi siswa secara digital, aman, dan efisien.
             </p>
           </motion.div>
 
