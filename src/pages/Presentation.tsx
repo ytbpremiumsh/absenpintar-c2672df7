@@ -207,10 +207,6 @@ const FEATURES = [
     icon: Star,
     accent: "from-amber-500 to-orange-600",
     badge: "Subscription",
-    image: "/images/presentation/ss-rekap.png",
-    icon: FileText,
-    accent: "from-blue-600 to-indigo-700",
-    badge: "Export",
   },
 ];
 
