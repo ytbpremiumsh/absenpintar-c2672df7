@@ -447,17 +447,48 @@ const Presentation = () => {
             {FEATURES.map((f, idx) => {
               const isEven = idx % 2 === 0;
               const Icon = f.icon;
+              const isLast = idx === FEATURES.length - 1;
+
+              if (isLast) {
+                return (
+                  <motion.div key={f.title} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} variants={fadeUp} custom={1} className="flex flex-col items-center text-center">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className={`h-10 w-10 rounded-xl bg-gradient-to-br ${f.accent} flex items-center justify-center shadow-lg`}>
+                        <Icon className="h-5 w-5 text-white" />
+                      </div>
+                      <span className={`text-[10px] font-bold uppercase tracking-widest ${d ? "text-slate-500" : "text-slate-400"}`}>{f.badge}</span>
+                    </div>
+                    <h3 className="text-2xl sm:text-3xl font-extrabold tracking-tight">{f.title}</h3>
+                    <p className={`text-xs uppercase tracking-widest font-semibold mt-1 ${d ? "text-indigo-400" : "text-indigo-500"}`}>{f.subtitle}</p>
+                    <p className={`mt-4 text-sm leading-relaxed max-w-2xl ${d ? "text-slate-300" : "text-slate-600"}`}>{f.desc}</p>
+
+                    <div className="w-full max-w-5xl relative group my-8">
+                      <div className={`absolute -inset-4 bg-gradient-to-r ${f.accent} rounded-3xl opacity-0 group-hover:opacity-10 blur-2xl transition-opacity duration-700`} />
+                      <div className={`relative rounded-2xl overflow-hidden border ${d ? "border-white/10" : "border-slate-200"} shadow-2xl ${d ? "shadow-black/40" : "shadow-slate-400/30"}`}>
+                        <img src={f.image} alt={f.title} className="w-full h-auto" loading="lazy" />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-left max-w-3xl w-full">
+                      {f.points.map((p, i) => (
+                        <div key={i} className="flex items-start gap-2.5">
+                          <CheckCircle2 className={`h-4 w-4 mt-0.5 flex-shrink-0 ${d ? "text-emerald-400" : "text-emerald-500"}`} />
+                          <span className={`text-sm ${d ? "text-slate-400" : "text-slate-500"}`}>{p}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                );
+              }
+
               return (
                 <motion.div key={f.title} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} variants={fadeUp} custom={1} className={`flex flex-col ${isEven ? "lg:flex-row" : "lg:flex-row-reverse"} gap-8 lg:gap-16 items-center`}>
-                  {/* Screenshot */}
                   <div className="w-full lg:w-[58%] relative group">
                     <div className={`absolute -inset-4 bg-gradient-to-r ${f.accent} rounded-3xl opacity-0 group-hover:opacity-10 blur-2xl transition-opacity duration-700`} />
                     <div className={`relative rounded-2xl overflow-hidden border ${d ? "border-white/10" : "border-slate-200"} shadow-2xl ${d ? "shadow-black/40" : "shadow-slate-400/30"}`}>
                       <img src={f.image} alt={f.title} className="w-full h-auto" loading="lazy" />
                     </div>
                   </div>
-
-                  {/* Content */}
                   <div className="w-full lg:w-[42%]">
                     <div className="flex items-center gap-3 mb-4">
                       <div className={`h-10 w-10 rounded-xl bg-gradient-to-br ${f.accent} flex items-center justify-center shadow-lg`}>
