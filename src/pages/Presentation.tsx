@@ -203,7 +203,7 @@ const FEATURES = [
       "Dashboard langganan: masa aktif, fitur tersedia, statistik penggunaan",
       "Aktivasi otomatis setelah pembayaran berhasil diverifikasi",
     ],
-    image: "/images/presentation/ss-dashboard.png",
+    image: "/images/presentation/ss-langganan.png",
     icon: Star,
     accent: "from-amber-500 to-orange-600",
     badge: "Subscription",
