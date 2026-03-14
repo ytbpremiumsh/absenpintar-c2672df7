@@ -633,10 +633,10 @@ const BusinessModel = () => {
             <Rocket className="h-8 w-8 text-white" />
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-4">
-            Siap Menjadi Bagian dari <br className="hidden sm:block" />Revolusi EdTech Indonesia?
+            Siap Bergabung dalam <br className="hidden sm:block" />Revolusi EdTech Indonesia?
           </h2>
           <p className={`${mutedText} text-base sm:text-lg mb-10 max-w-xl mx-auto`}>
-            Dengan pasar yang masif, unit economics yang kuat, dan produk yang sudah siap — Absensi Pintar adalah peluang bisnis yang layak dan profitable.
+            Pasar besar, bisnis yang sudah terbukti menguntungkan, dan produk yang siap pakai — Absensi Pintar adalah peluang bisnis EdTech yang layak dipertimbangkan.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a href="/register" className={`inline-flex items-center justify-center gap-2 ${ctaBg} text-white px-10 py-4 rounded-2xl font-bold transition-all shadow-2xl text-base`}>
