@@ -513,8 +513,8 @@ const BusinessModel = () => {
         <div className="max-w-7xl mx-auto">
           <motion.div custom={0} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
             <span className={`text-[11px] font-bold uppercase tracking-[0.2em] ${dark ? "text-amber-400" : "text-amber-600"} mb-4 block`}>Struktur Harga</span>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">Harga Kompetitif, Margin Tinggi</h2>
-            <p className={`mt-4 ${mutedText} max-w-xl mx-auto`}>Setiap tier dirancang untuk memaksimalkan conversion rate sekaligus menjaga gross margin di atas 85%.</p>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">Harga Terjangkau, Keuntungan Besar</h2>
+            <p className={`mt-4 ${mutedText} max-w-xl mx-auto`}>Tiga pilihan paket yang dirancang agar sekolah mudah memilih dan kami tetap untung besar.</p>
           </motion.div>
 
           <div className="grid sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
