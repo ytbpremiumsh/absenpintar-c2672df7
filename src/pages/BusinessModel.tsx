@@ -605,9 +605,9 @@ const BusinessModel = () => {
         <div className={`absolute inset-0 bg-gradient-to-b from-transparent ${ambientSection} to-transparent pointer-events-none`} />
         <div className="max-w-7xl mx-auto relative z-10">
           <motion.div custom={0} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
-            <span className={`text-[11px] font-bold uppercase tracking-[0.2em] ${dark ? "text-violet-400" : "text-indigo-500"} mb-4 block`}>Competitive Moat</span>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">Keunggulan Kompetitif</h2>
-            <p className={`mt-4 ${mutedText} max-w-xl mx-auto`}>Kombinasi teknologi, harga, dan pengalaman pengguna yang menciptakan barrier to entry bagi kompetitor.</p>
+            <span className={`text-[11px] font-bold uppercase tracking-[0.2em] ${dark ? "text-violet-400" : "text-indigo-500"} mb-4 block`}>Kenapa Kami Unggul</span>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">Keunggulan Kami</h2>
+            <p className={`mt-4 ${mutedText} max-w-xl mx-auto`}>Kombinasi teknologi mudah, harga terjangkau, dan pengalaman pengguna terbaik yang sulit ditiru kompetitor.</p>
           </motion.div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
