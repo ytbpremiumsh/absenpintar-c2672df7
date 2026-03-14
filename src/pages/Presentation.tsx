@@ -439,7 +439,7 @@ const Presentation = () => {
               <span className={`bg-gradient-to-r ${d ? "from-indigo-300 to-violet-300" : "from-indigo-600 to-violet-500"} bg-clip-text text-transparent`}>Butuhkan</span>
             </h2>
             <p className={`mt-4 ${muted} max-w-xl mx-auto text-sm sm:text-base`}>
-              10 fitur utama yang dirancang untuk mempermudah proses absensi siswa secara digital, aman, dan efisien.
+              13 fitur utama yang dirancang untuk mempermudah proses absensi siswa secara digital, aman, dan efisien.
             </p>
           </motion.div>
 
