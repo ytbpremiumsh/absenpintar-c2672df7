@@ -9,6 +9,39 @@ const fadeUp = {
   visible: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.1, duration: 0.6 } }),
 };
 
+const BUSINESS_MODEL = [
+  {
+    icon: School,
+    title: "Target Pasar Besar ",
+    desc: "Indonesia memiliki lebih dari 200.000 sekolah tingkat TK, SD, SMP, dan SMA. Jika hanya 1% sekolah menggunakan sistem ini, sudah ada lebih dari 2.000 sekolah sebagai potensi pengguna."
+  },
+  {
+    icon: CreditCard,
+    title: "Model Bisnis Berlangganan",
+    desc: "Absensi Pintar menggunakan model SaaS (Software as a Service). Sekolah cukup berlangganan bulanan tanpa perlu membeli perangkat mahal atau membangun sistem sendiri."
+  },
+  {
+    icon: TrendingUp,
+    title: "Potensi Revenue",
+    desc: "Jika 100 sekolah berlangganan dengan biaya Rp199.000 per bulan, maka pendapatan mencapai sekitar Rp19,9 juta per bulan atau lebih dari Rp238 juta per tahun."
+  },
+  {
+    icon: Rocket,
+    title: "Skalabilitas Produk",
+    desc: "Sistem dirancang multi-sekolah sehingga satu platform dapat digunakan oleh banyak sekolah sekaligus tanpa harus membuat sistem baru untuk setiap sekolah."
+  },
+  {
+    icon: Users,
+    title: "Value untuk Sekolah",
+    desc: "Sekolah tidak perlu lagi melakukan rekap absensi manual, laporan dapat dibuat otomatis, dan orang tua dapat memantau kehadiran anak secara real-time."
+  },
+  {
+    icon: Globe,
+    title: "Potensi Ekspansi",
+    desc: "Selain absensi, platform ini dapat berkembang menjadi sistem manajemen sekolah seperti pembayaran SPP, komunikasi sekolah–orang tua, dan laporan akademik."
+  }
+];
+
 const PROBLEMS = [
   { icon: AlertTriangle, title: "Absensi Manual", desc: "Pencatatan kehadiran masih pakai buku tulis, rawan kesalahan dan manipulasi data." },
   { icon: Clock, title: "Proses Lambat", desc: "Guru harus memanggil siswa satu per satu untuk absensi, memakan waktu belajar." },
