@@ -184,8 +184,8 @@ const PRICING_TIERS = [
   name: "BASIC",
   price: "Rp 99.000",
   period: "/bulan",
-  students: "≤ 100 siswa",
-  features: ["Scan Barcode", "Dashboard Realtime", "Rekap Harian", "2 Kelas", "10 Siswa/Kelas"],
+  students: "Maks. 200 siswa",
+  features: ["Semua fitur Free", "Import/Export Data Siswa", "Upload Foto Siswa", "Rekap & Export Laporan (PDF/Excel)", "Maks 10 Kelas", "Maks 200 Siswa"],
   highlight: false,
   gradient: "from-blue-500 to-cyan-600"
 },
@@ -193,17 +193,17 @@ const PRICING_TIERS = [
   name: "SCHOOL",
   price: "Rp 249.000",
   period: "/bulan",
-  students: "≤ 500 siswa",
-  features: ["Semua fitur BASIC", "Notifikasi WhatsApp", "Export Laporan", "Live Monitor Publik", "Multi Admin & Staff", "Riwayat Unlimited"],
+  students: "Kelas & Siswa Unlimited",
+  features: ["Semua fitur Basic", "Custom Logo Sekolah", "Notifikasi WhatsApp Otomatis", "Multi Staff / Operator", "Kelas & Siswa Unlimited", "Prioritas Bantuan"],
   highlight: true,
   gradient: "from-indigo-500 to-violet-600"
 },
 {
   name: "PREMIUM",
-  price: "Custom",
-  period: "",
+  price: "Rp 399.000",
+  period: "/bulan",
   students: "Unlimited",
-  features: ["Semua fitur SCHOOL", "Multi Cabang", "White Label", "Dedicated Support", "Custom Integration", "SLA 99.9%"],
+  features: ["Semua fitur School", "Face Recognition / Scan Wajah", "Multi Cabang Sekolah", "Kelas & Siswa Unlimited", "Dedicated Support", "Fitur Terbaru Lebih Awal"],
   highlight: false,
   gradient: "from-amber-500 to-orange-600"
 }];
