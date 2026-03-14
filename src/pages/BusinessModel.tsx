@@ -110,75 +110,73 @@ const SOLUTIONS = [
 const REVENUE_STREAMS = [
 {
   icon: Repeat,
-  title: "Langganan Bulanan (SaaS Recurring)",
-  desc: "Pendapatan berulang yang stabil dan terprediksi setiap bulan dari setiap sekolah yang berlangganan.",
+  title: "Langganan Bulanan (SaaS)",
+  desc: "Sekolah membayar biaya bulanan tetap untuk menggunakan sistem — pendapatan stabil setiap bulan.",
   details: [
-  "Model subscription per sekolah — pembayaran otomatis setiap bulan",
-  "Paket bertingkat (Basic, Premium, School) menyesuaikan skala sekolah",
-  "Upgrade otomatis saat jumlah siswa melebihi kuota paket",
-  "Retensi tinggi karena sistem menjadi bagian dari operasional harian sekolah",
-  "Revenue churn sangat rendah — data terintegrasi membuat switching cost tinggi"],
-
+  "Sekolah cukup bayar bulanan — seperti berlangganan Netflix tapi untuk absensi",
+  "Ada 3 pilihan paket (Basic, School, Premium) sesuai kebutuhan dan ukuran sekolah",
+  "Otomatis naik paket saat jumlah siswa bertambah",
+  "Sekolah akan terus berlangganan karena sudah jadi bagian dari rutinitas harian",
+  "Data sudah terintegrasi sehingga sekolah tidak mudah pindah ke sistem lain"],
   gradient: "from-emerald-500 via-teal-500 to-cyan-600",
   glow: "shadow-emerald-500/20",
-  badge: "Primary Revenue"
+  badge: "Pendapatan Utama"
 },
 {
   icon: Building2,
-  title: "Enterprise & Multi-Cabang",
-  desc: "Paket khusus untuk yayasan atau grup sekolah yang mengelola beberapa cabang sekaligus dalam satu dashboard terpusat.",
+  title: "Paket Yayasan & Multi Cabang",
+  desc: "Paket khusus untuk yayasan atau grup sekolah yang punya beberapa cabang — dikelola dalam satu dashboard.",
   details: [
-  "Harga premium untuk manajemen multi-cabang terpusat",
-  "Dashboard grup dengan analitik kehadiran lintas cabang",
-  "Custom branding per cabang sekolah",
-  "Dedicated account manager untuk enterprise client",
-  "SLA (Service Level Agreement) khusus dengan uptime 99.9%"],
-
+  "Harga khusus untuk yayasan yang mengelola banyak sekolah sekaligus",
+  "Satu dashboard untuk memantau kehadiran di semua cabang",
+  "Setiap cabang bisa punya branding dan logo sendiri",
+  "Ada tim khusus yang mendampingi klien enterprise",
+  "Jaminan layanan (SLA) dengan uptime 99.9%"],
   gradient: "from-violet-500 via-purple-500 to-indigo-600",
   glow: "shadow-violet-500/20",
-  badge: "High Value"
+  badge: "Bernilai Tinggi"
 },
 {
   icon: CreditCard,
-  title: "Kartu Pelajar Digital dengan Barcode",
-  desc: "Barcode siswa dapat dicetak menjadi kartu pelajar/kartu sekolah resmi yang terintegrasi langsung dengan sistem absensi.",
+  title: "Kartu Pelajar Digital + Barcode",
+  desc: "Barcode siswa bisa dicetak jadi kartu pelajar resmi yang langsung terhubung ke sistem absensi.",
   details: [
-  "Cetak kartu pelajar dengan barcode unik per siswa — langsung terhubung ke sistem absensi",
-  "Desain kartu profesional dengan logo sekolah, foto siswa, dan identitas lengkap",
-  "Biaya cetak per kartu menjadi revenue tambahan dari setiap sekolah",
-  "Kartu bisa digunakan untuk absensi, perpustakaan, dan identifikasi siswa",
-  "Repeat order setiap tahun ajaran baru — revenue berulang dari pencetakan ulang"],
+  "Setiap siswa punya barcode unik yang tercetak di kartu pelajar",
+  "Desain profesional lengkap dengan logo sekolah, foto, dan data siswa",
+  "Biaya cetak per kartu menjadi tambahan pendapatan dari sekolah",
+  "Kartu bisa dipakai untuk absensi, perpustakaan, dan identifikasi",
+  "Setiap tahun ajaran baru, sekolah pesan cetak ulang — pendapatan berulang"],
   gradient: "from-blue-500 via-indigo-500 to-violet-600",
   glow: "shadow-blue-500/20",
-  badge: "Physical Product"
+  badge: "Produk Fisik"
 },
 {
   icon: Globe,
-  title: "Layanan Notifikasi WhatsApp Terintegrasi",
-  desc: "Notifikasi WhatsApp otomatis ke wali murid sudah termasuk dalam paket bulanan — tanpa biaya tambahan per pesan.",
+  title: "Notifikasi WhatsApp Terintegrasi",
+  desc: "Notifikasi otomatis ke wali murid sudah termasuk dalam paket bulanan — tanpa biaya tambahan per pesan.",
   details: [
-  "Kuota pesan bulanan sudah termasuk dalam setiap paket langganan",
-  "Paket PREMIUM: hingga 1.000 pesan/bulan sudah include",
-  "Paket SCHOOL: unlimited pesan tanpa batasan",
-  "Notifikasi otomatis ke wali murid saat siswa hadir/pulang",
-  "Tanpa biaya tersembunyi — semua sudah dalam satu paket yang simpel"],
+  "Kuota pesan bulanan sudah include di setiap paket langganan",
+  "Paket SCHOOL: hingga 1.000 pesan/bulan sudah termasuk",
+  "Paket PREMIUM: pesan unlimited tanpa batasan",
+  "Wali murid otomatis dapat notifikasi saat anak hadir/pulang",
+  "Tidak ada biaya tersembunyi — semuanya sudah dalam satu paket simpel"],
   gradient: "from-green-500 via-emerald-500 to-teal-600",
   glow: "shadow-green-500/20",
-  badge: "Included in Plan"
+  badge: "Termasuk Paket"
 },
 {
   icon: Layers,
   title: "Kustomisasi & White Label",
-  desc: "Layanan kustomisasi untuk sekolah yang menginginkan branding sendiri dan fitur khusus sesuai kebutuhan.",
+  desc: "Layanan khusus untuk sekolah yang ingin sistem dengan branding dan fitur sesuai keinginan mereka.",
   details: [
-  "White-label solution dengan branding sekolah sepenuhnya",
-  "Custom development untuk fitur tambahan",
-  "Integrasi dengan sistem akademik atau ERP sekolah yang sudah ada",
-  "One-time setup fee + maintenance recurring",
-  "Potensi partnership jangka panjang dengan institusi besar"],
+  "Sistem bisa dibuat dengan brand sekolah sepenuhnya (white-label)",
+  "Fitur tambahan bisa dikembangkan sesuai permintaan",
+  "Bisa dihubungkan dengan sistem akademik sekolah yang sudah ada",
+  "Biaya setup sekali bayar + biaya perawatan bulanan",
+  "Peluang kerja sama jangka panjang dengan institusi besar"],
   gradient: "from-amber-500 via-orange-500 to-red-500",
   glow: "shadow-amber-500/20",
-  badge: "Premium Service"
+  badge: "Layanan Premium"
 }];
 
 
