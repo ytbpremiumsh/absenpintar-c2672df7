@@ -198,7 +198,7 @@ const FEATURES = [
     subtitle: "Yang Sekolah Anda Butuhkan",
     desc: "Sistem langganan fleksibel dengan berbagai paket sesuai kebutuhan sekolah. Mulai dari paket gratis hingga premium dengan fitur lengkap termasuk Face Recognition, Multi Cabang, dan WhatsApp Gateway. Pembayaran mudah melalui berbagai metode.",
     points: [
-      "Paket fleksibel: Free, Basic, School, dan Premium ",
+      "Paket fleksibel: Free, Basic, School, dan Premium",
       "Pembayaran otomatis via transfer bank, e-wallet, dan QRIS",
       "Dashboard langganan: masa aktif, fitur tersedia, statistik penggunaan",
       "Aktivasi otomatis setelah pembayaran berhasil diverifikasi",
