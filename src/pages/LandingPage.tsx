@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ScanLine, Monitor, MessageSquare, FileBarChart,
   ArrowRight, CheckCircle2, Mail, Phone, MapPin,
@@ -9,6 +9,7 @@ import {
   UserCheck, BarChart3, Shield, Smartphone, Star, TrendingUp, Lock,
   ChevronRight, Sparkles, Play, ArrowDown,
   AlertTriangle, XCircle, Clock, FileText, Globe, Camera,
+  Quote, ChevronLeft,
 } from "lucide-react";
 import heroDashboard from "@/assets/hero-dashboard.png";
 
