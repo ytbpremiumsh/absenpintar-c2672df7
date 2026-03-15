@@ -17,7 +17,7 @@ const Classes = () => {
   const { profile } = useAuth();
   const navigate = useNavigate();
   const features = useSubscriptionFeatures();
-  const { canWhatsApp, loading: subscriptionLoading } = features;
+  const { loading: subscriptionLoading } = features;
   const [students, setStudents] = useState<any[]>([]);
   const [todayLogs, setTodayLogs] = useState<any[]>([]);
   const [classes, setClasses] = useState<any[]>([]);
