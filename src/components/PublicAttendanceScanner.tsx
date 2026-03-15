@@ -397,11 +397,6 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
               <p className="text-[10px] text-muted-foreground">
                 {canFaceRecognition ? "Barcode + Face Recognition + RFID" : "Barcode Scan Only"}
               </p>
-              {!canFaceRecognition && (
-                <p className="text-[9px] text-amber-600 dark:text-amber-400 font-medium">
-                  <Crown className="h-3 w-3 inline mr-0.5" />Face Recognition & RFID tersedia di paket Premium
-                </p>
-              )}
             </div>
           )}
 
