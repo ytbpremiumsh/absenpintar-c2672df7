@@ -490,50 +490,59 @@ const Subscription = () => {
         </Card>
       </motion.div>
 
-      {/* Upgrade Plans */}
-      {upgradePlans.length > 0 && (
+      {/* All Plans */}
+      {plans.length > 0 && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
           <div className="space-y-4">
             <div className="text-center">
-              <h2 className="text-lg font-bold text-foreground">Upgrade Paket</h2>
+              <h2 className="text-lg font-bold text-foreground">Pilih Paket Langganan</h2>
               <p className="text-muted-foreground text-xs">Tingkatkan fitur dan kapasitas sekolah Anda</p>
             </div>
 
-            <div className={`grid gap-4 ${upgradePlans.length === 1 ? "max-w-sm mx-auto" : upgradePlans.length === 2 ? "md:grid-cols-2 max-w-2xl mx-auto" : "md:grid-cols-3"}`}>
-              {upgradePlans.map((plan, i) => {
-                const highlighted = plan.name === "School" || (upgradePlans.length === 1);
+            <div className={`grid gap-3 ${plans.length <= 2 ? "md:grid-cols-2" : plans.length === 3 ? "md:grid-cols-3" : `grid-cols-2 md:grid-cols-${Math.min(plans.length, 4)}`}`}>
+              {plans.map((plan, i) => {
+                const isCurrent = currentPlan?.id === plan.id || (!currentPlan?.id && plan.price === 0 && (currentPlan?.name === plan.name || (!currentSub && plan.price === 0)));
+                const isLower = currentPlan && plan.price < (currentPlan.price || 0) && !isCurrent;
+                const highlighted = !isCurrent && (plan.name === "School" || plans.filter(p => p.price > (currentPlan?.price || 0)).length === 1 && plan.price > (currentPlan?.price || 0));
                 const PIcon = iconMap[plan.name] || Star;
                 return (
-                  <motion.div key={plan.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + i * 0.08 }}>
-                    <Card className={`shadow-card border-0 relative overflow-hidden h-full flex flex-col ${highlighted ? "ring-2 ring-primary" : ""}`}>
-                      {highlighted && <div className="gradient-primary text-primary-foreground text-xs font-semibold text-center py-1">Rekomendasi</div>}
-                      <div className="p-5 text-center flex-1 flex flex-col">
-                        <div className={`h-11 w-11 rounded-xl flex items-center justify-center mx-auto mb-2 ${highlighted ? "gradient-primary text-primary-foreground" : "bg-secondary text-foreground"}`}>
+                  <motion.div key={plan.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + i * 0.06 }}>
+                    <Card className={`shadow-card border-0 relative overflow-hidden h-full flex flex-col ${isCurrent ? "ring-2 ring-primary" : highlighted ? "ring-2 ring-primary/50" : ""}`}>
+                      {isCurrent && <div className="gradient-primary text-primary-foreground text-[11px] font-semibold text-center py-1">Paket Saat Ini</div>}
+                      {!isCurrent && highlighted && <div className="bg-primary/10 text-primary text-[11px] font-semibold text-center py-1">Rekomendasi</div>}
+                      <div className="p-4 text-center flex-1 flex flex-col">
+                        <div className={`h-10 w-10 rounded-xl flex items-center justify-center mx-auto mb-2 ${isCurrent ? "gradient-primary text-primary-foreground" : highlighted ? "bg-primary/10 text-primary" : "bg-secondary text-foreground"}`}>
                           <PIcon className="h-5 w-5" />
                         </div>
-                        <h3 className="text-base font-bold">{plan.name}</h3>
-                        <p className="text-[11px] text-muted-foreground mb-2">{plan.description}</p>
-                        <p className="text-xl font-extrabold text-primary mb-3">
-                          {formatRupiah(plan.price)}<span className="text-xs text-muted-foreground font-normal"> /bln</span>
+                        <h3 className="text-sm font-bold">{plan.name}</h3>
+                        {plan.description && <p className="text-[10px] text-muted-foreground mb-1">{plan.description}</p>}
+                        <p className="text-lg font-extrabold text-primary mb-2">
+                          {formatRupiah(plan.price)}<span className="text-[10px] text-muted-foreground font-normal"> /bln</span>
                         </p>
-                        <ul className="space-y-1.5 text-left flex-1 mb-4">
+                        <ul className="space-y-1 text-left flex-1 mb-3">
                           {plan.features.map((f: string) => (
-                            <li key={f} className="flex items-start gap-1.5 text-xs">
-                              <Check className="h-3.5 w-3.5 text-success shrink-0 mt-0.5" />
+                            <li key={f} className="flex items-start gap-1.5 text-[11px]">
+                              <Check className="h-3 w-3 text-success shrink-0 mt-0.5" />
                               <span>{f}</span>
                             </li>
                           ))}
                         </ul>
+                        {plan.max_students && <p className="text-[10px] text-muted-foreground mb-2">Maks {plan.max_students} siswa</p>}
                         <Button
-                          className={`w-full ${highlighted ? "gradient-primary hover:opacity-90 text-primary-foreground" : ""}`}
-                          variant={highlighted ? "default" : "outline"}
-                          disabled={purchasing === plan.id}
+                          className={`w-full text-xs ${isCurrent ? "opacity-60" : highlighted ? "gradient-primary hover:opacity-90 text-primary-foreground" : ""}`}
+                          variant={isCurrent ? "secondary" : highlighted ? "default" : "outline"}
+                          size="sm"
+                          disabled={isCurrent || isLower || purchasing === plan.id}
                           onClick={() => handlePurchase(plan.id)}
                         >
                           {purchasing === plan.id ? (
-                            <><Loader2 className="h-4 w-4 mr-1 animate-spin" />Memproses...</>
+                            <><Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />Memproses...</>
+                          ) : isCurrent ? (
+                            <><Check className="h-3.5 w-3.5 mr-1" />Paket Saat Ini</>
+                          ) : isLower ? (
+                            "Paket Lebih Rendah"
                           ) : (
-                            <>Upgrade <ExternalLink className="h-4 w-4 ml-1" /></>
+                            <>Upgrade <ExternalLink className="h-3.5 w-3.5 ml-1" /></>
                           )}
                         </Button>
                       </div>
