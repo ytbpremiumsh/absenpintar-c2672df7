@@ -321,15 +321,13 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
             <Badge variant="outline" className="text-[8px] px-1.5 py-0">
               <ScanLine className="h-2.5 w-2.5 mr-0.5" />QR
             </Badge>
+            <Badge variant="outline" className="text-[8px] px-1.5 py-0">
+              <UserCheck className="h-2.5 w-2.5 mr-0.5" />Face
+            </Badge>
             {canFaceRecognition && (
-              <>
-                <Badge variant="outline" className="text-[8px] px-1.5 py-0">
-                  <UserCheck className="h-2.5 w-2.5 mr-0.5" />Face
-                </Badge>
-                <Badge variant="outline" className="text-[8px] px-1.5 py-0">
-                  <CreditCard className="h-2.5 w-2.5 mr-0.5" />RFID
-                </Badge>
-              </>
+              <Badge variant="outline" className="text-[8px] px-1.5 py-0">
+                <CreditCard className="h-2.5 w-2.5 mr-0.5" />RFID
+              </Badge>
             )}
           </div>
         </div>
@@ -357,8 +355,10 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
                       <div className="h-2 w-2 rounded-full bg-success animate-pulse" />
                       <span className="text-[10px]">
                         <ScanLine className="h-2.5 w-2.5 inline mr-0.5" />QR
-                        {canFaceRecognition && (
+                        {canFaceRecognition ? (
                           <>{" + "}<UserCheck className="h-2.5 w-2.5 inline mx-0.5" />Face + <CreditCard className="h-2.5 w-2.5 inline mx-0.5" />RFID</>
+                        ) : (
+                          <>{" + "}<UserCheck className="h-2.5 w-2.5 inline mx-0.5" />Face</>
                         )}
                       </span>
                     </>
@@ -384,7 +384,7 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
                 <Camera className="h-4 w-4 mr-2" /> Aktifkan Kamera
               </Button>
               <p className="text-[10px] text-muted-foreground">
-                {canFaceRecognition ? "Barcode + Face Recognition + RFID" : "Barcode Scan Only"}
+                {canFaceRecognition ? "Barcode + Face Recognition + RFID" : "Barcode + Face Recognition"}
               </p>
             </div>
           )}
