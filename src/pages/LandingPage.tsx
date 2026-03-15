@@ -296,7 +296,7 @@ const LandingPage = () => {
 
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}
               className="mt-5 text-xs text-muted-foreground/60">
-              ✓ Gratis tanpa kartu kredit &nbsp;•&nbsp; ✓ Setup 5 menit &nbsp;•&nbsp; ✓ Batalkan kapan saja
+              ✓ Penggunaan mudah &nbsp;•&nbsp; ✓ Pembayaran instan &nbsp;•&nbsp; ✓ Siap pakai dalam hitungan menit
             </motion.p>
           </div>
 
