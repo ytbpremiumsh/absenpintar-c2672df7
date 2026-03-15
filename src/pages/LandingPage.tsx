@@ -437,6 +437,35 @@ const LandingPage = () => {
       </section>
       )}
 
+      {/* ─── Trusted By Schools ─── */}
+      <section className="py-16 sm:py-20 relative overflow-hidden">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-12">
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-3 block">Kepercayaan</span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
+              Telah Dipercaya oleh Sekolah-Sekolah
+            </h2>
+            <p className="mt-3 text-muted-foreground text-sm max-w-lg mx-auto">Bergabung bersama sekolah-sekolah yang telah merasakan manfaat absensi digital.</p>
+          </motion.div>
+
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={1}
+            className="flex flex-wrap justify-center items-center gap-5 sm:gap-8">
+            {TRUSTED_SCHOOLS.map((school, i) => (
+              <motion.div key={school.name} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
+                className="group flex flex-col items-center gap-2">
+                <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl bg-card border border-border/60 flex items-center justify-center shadow-sm group-hover:border-primary/25 group-hover:shadow-lg group-hover:shadow-primary/5 transition-all duration-300">
+                  <span className="text-sm sm:text-base font-extrabold text-primary/70 group-hover:text-primary transition-colors">{school.initials}</span>
+                </div>
+                <span className="text-[10px] sm:text-xs text-muted-foreground text-center max-w-[90px] leading-tight">{school.name}</span>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ─── Testimonials ─── */}
+      <TestimonialSlider />
+
       {/* ─── Payment Methods ─── */}
       <section className="py-16 sm:py-24">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
