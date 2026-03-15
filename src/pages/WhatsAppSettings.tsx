@@ -198,6 +198,16 @@ const WhatsAppSettings = () => {
     }
   };
 
+  const handleSaveClassGroupId = async (classId: string, className: string) => {
+    setSavingGroupId(classId);
+    const newValue = editingGroupIds[classId]?.trim() || null;
+    const { error } = await supabase.from("classes").update({ wa_group_id: newValue }).eq("id", classId);
+    setSavingGroupId(null);
+    if (error) { toast.error("Gagal menyimpan: " + error.message); return; }
+    toast.success(`ID Group WA kelas "${className}" berhasil disimpan`);
+    setClasses(prev => prev.map(c => c.id === classId ? { ...c, wa_group_id: newValue } : c));
+  };
+
   const handleSendToGroup = async () => {
     if (!selectedClass || !groupMessage.trim() || !schoolId) {
       toast.error("Pilih kelas dan isi pesan");
