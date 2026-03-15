@@ -247,7 +247,7 @@ const Subscription = () => {
   const Icon = iconMap[planName] || Zap;
 
   return (
-    <div className="space-y-6 max-w-3xl mx-auto">
+    <div className="space-y-6 max-w-5xl mx-auto">
       {/* Payment Success Banner */}
       {(paymentSuccess || searchParams.get("status") === "success") && (
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
