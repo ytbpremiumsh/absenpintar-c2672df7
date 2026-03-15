@@ -186,7 +186,7 @@ const TestimonialSlider = ({ testimonials }: { testimonials: Testimonial[] }) =>
 
           {/* Dots */}
           <div className="flex justify-center gap-2 mt-6">
-            {TESTIMONIALS.map((_, i) => (
+            {testimonials.map((_, i) => (
               <button key={i} onClick={() => { setDirection(i > current ? 1 : -1); setCurrent(i); }}
                 className={`h-2 rounded-full transition-all duration-300 ${i === current ? "w-6 bg-primary" : "w-2 bg-border hover:bg-primary/30"}`} />
             ))}
