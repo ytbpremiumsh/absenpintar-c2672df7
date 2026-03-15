@@ -108,13 +108,13 @@ const TestimonialSlider = ({ testimonials }: { testimonials: Testimonial[] }) =>
 
   const next = useCallback(() => {
     setDirection(1);
-    setCurrent((prev) => (prev + 1) % TESTIMONIALS.length);
-  }, []);
+    setCurrent((prev) => (prev + 1) % testimonials.length);
+  }, [testimonials.length]);
 
   const prev = useCallback(() => {
     setDirection(-1);
-    setCurrent((prev) => (prev - 1 + TESTIMONIALS.length) % TESTIMONIALS.length);
-  }, []);
+    setCurrent((prev) => (prev - 1 + testimonials.length) % testimonials.length);
+  }, [testimonials.length]);
 
   useEffect(() => {
     const timer = setInterval(next, 6000);
