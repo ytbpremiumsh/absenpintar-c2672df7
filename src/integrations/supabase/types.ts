@@ -162,6 +162,69 @@ export type Database = {
         }
         Relationships: []
       }
+      landing_testimonials: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          rating: number
+          role: string
+          sort_order: number
+          text: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          rating?: number
+          role: string
+          sort_order?: number
+          text: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          rating?: number
+          role?: string
+          sort_order?: number
+          text?: string
+        }
+        Relationships: []
+      }
+      landing_trusted_schools: {
+        Row: {
+          created_at: string
+          id: string
+          initials: string
+          is_active: boolean
+          logo_url: string | null
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          initials: string
+          is_active?: boolean
+          logo_url?: string | null
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          initials?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
