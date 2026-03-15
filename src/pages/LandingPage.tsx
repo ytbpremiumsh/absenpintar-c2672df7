@@ -52,6 +52,25 @@ const WORKFLOW = [
   { step: "04", title: "Rekap & Laporan", desc: "Download rekap lengkap dalam format Excel atau PDF." },
 ];
 
+const TRUSTED_SCHOOLS = [
+  { name: "SD Negeri 1 Jakarta", initials: "SDN1" },
+  { name: "SMP Islam Al-Azhar", initials: "SIA" },
+  { name: "TK Bunda Mulia", initials: "TBM" },
+  { name: "SD IT Nurul Fikri", initials: "SINF" },
+  { name: "SMP Negeri 5 Bandung", initials: "SMP5" },
+  { name: "TK Aisyiyah Bustanul", initials: "TAB" },
+  { name: "SD Muhammadiyah 9", initials: "SDM9" },
+  { name: "SMP Labschool", initials: "LAB" },
+];
+
+const TESTIMONIALS = [
+  { name: "Ibu Sari Dewi", role: "Kepala Sekolah, SD Negeri 1 Jakarta", text: "Sejak menggunakan Absensi Pintar, proses absensi jadi lebih cepat dan akurat. Guru-guru sangat terbantu karena tidak perlu lagi mencatat manual. Orang tua juga senang karena langsung dapat notifikasi WhatsApp.", rating: 5 },
+  { name: "Pak Ahmad Fauzi", role: "Wakil Kepala Sekolah, SMP Islam Al-Azhar", text: "Sistem yang luar biasa! Dashboard real-time memudahkan kami memantau kehadiran siswa. Rekap otomatis setiap bulan menghemat waktu administrasi hingga 80%. Sangat direkomendasikan!", rating: 5 },
+  { name: "Ibu Rina Kartika", role: "Guru Kelas, TK Bunda Mulia", text: "Fitur scan barcode sangat memudahkan. Anak-anak TK yang belum bisa absen sendiri bisa dibantu dengan cepat. Notifikasi ke orang tua juga membuat mereka lebih tenang.", rating: 5 },
+  { name: "Pak Hendra Wijaya", role: "Kepala Sekolah, SD IT Nurul Fikri", text: "Kami sudah mencoba berbagai sistem absensi, tapi Absensi Pintar yang paling cocok untuk kebutuhan sekolah kami. Setup mudah, harga terjangkau, dan support responsif.", rating: 5 },
+  { name: "Ibu Linda Kusuma", role: "Wali Murid, SMP Negeri 5 Bandung", text: "Sebagai orang tua, saya sangat apresiasi notifikasi WhatsApp otomatis. Saya bisa tahu kapan anak saya tiba di sekolah tanpa harus menelepon guru setiap hari.", rating: 5 },
+];
+
 const PROBLEMS = [
   { icon: AlertTriangle, title: "Absensi Manual", desc: "Pencatatan kehadiran masih pakai buku tulis, rawan kesalahan dan manipulasi data." },
   { icon: Clock, title: "Proses Lambat", desc: "Guru harus memanggil siswa satu per satu untuk absensi, memakan waktu belajar." },
