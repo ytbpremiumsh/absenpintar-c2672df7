@@ -330,15 +330,6 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
                   <CreditCard className="h-2.5 w-2.5 mr-0.5" />RFID
                 </Badge>
               </>
-            ) : (
-              <>
-                <Badge variant="outline" className="text-[8px] px-1.5 py-0 opacity-40">
-                  <Lock className="h-2.5 w-2.5 mr-0.5" />Face
-                </Badge>
-                <Badge variant="outline" className="text-[8px] px-1.5 py-0 opacity-40">
-                  <Lock className="h-2.5 w-2.5 mr-0.5" />RFID
-                </Badge>
-              </>
             )}
           </div>
         </div>
