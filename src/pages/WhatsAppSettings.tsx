@@ -75,10 +75,12 @@ const WhatsAppSettings = () => {
   const [waEnabled, setWaEnabled] = useState(true);
   const [deliveryTarget, setDeliveryTarget] = useState("parent_only");
 
-  const [classes, setClasses] = useState<{ name: string; wa_group_id: string | null }[]>([]);
+  const [classes, setClasses] = useState<{ id: string; name: string; wa_group_id: string | null }[]>([]);
   const [selectedClass, setSelectedClass] = useState("");
   const [groupMessage, setGroupMessage] = useState("");
   const [sendingGroup, setSendingGroup] = useState(false);
+  const [editingGroupIds, setEditingGroupIds] = useState<Record<string, string>>({});
+  const [savingGroupId, setSavingGroupId] = useState<string | null>(null);
 
   const [logs, setLogs] = useState<any[]>([]);
   const [logsLoading, setLogsLoading] = useState(false);
