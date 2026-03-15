@@ -355,8 +355,10 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
                       <div className="h-2 w-2 rounded-full bg-success animate-pulse" />
                       <span className="text-[10px]">
                         <ScanLine className="h-2.5 w-2.5 inline mr-0.5" />QR
-                        {canFaceRecognition && (
+                        {canFaceRecognition ? (
                           <>{" + "}<UserCheck className="h-2.5 w-2.5 inline mx-0.5" />Face + <CreditCard className="h-2.5 w-2.5 inline mx-0.5" />RFID</>
+                        ) : (
+                          <>{" + "}<UserCheck className="h-2.5 w-2.5 inline mx-0.5" />Face</>
                         )}
                       </span>
                     </>
