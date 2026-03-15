@@ -250,52 +250,6 @@ const Classes = () => {
                         </div>
                       </div>
                       <div className="flex items-center gap-1">
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              {subscriptionLoading ? (
-                                <Button variant="ghost" size="icon" className="h-8 w-8" disabled>
-                                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                                </Button>
-                              ) : canWhatsApp ? (
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8"
-                                  onClick={async (e) => {
-                                    e.stopPropagation();
-                                    try {
-                                      const row = info.id
-                                        ? ({ id: info.id, wa_group_id: info.waGroupId || null } as any)
-                                        : await ensureClassRow(cls);
-
-                                      if (!row?.id) return;
-
-                                      setGroupIdTarget({ id: row.id, name: cls, waGroupId: row.wa_group_id || "" });
-                                      setGroupIdValue(row.wa_group_id || "");
-                                      setGroupIdDialogOpen(true);
-                                    } catch (err: any) {
-                                      toast.error("Gagal menyiapkan kelas: " + (err?.message || "Unknown error"));
-                                    }
-                                  }}
-                                >
-                                  <MessageCircle className={`h-4 w-4 ${info.waGroupId ? "text-success" : "text-muted-foreground"}`} />
-                                </Button>
-                              ) : (
-                                <Button variant="ghost" size="icon" className="h-8 w-8 opacity-40 cursor-not-allowed" disabled>
-                                  <Lock className="h-4 w-4 text-muted-foreground" />
-                                </Button>
-                              )}
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              {subscriptionLoading
-                                ? "Memeriksa paket..."
-                                : canWhatsApp
-                                  ? (info.waGroupId ? "WA Group: Terhubung" : "Atur ID Group WA")
-                                  : "Upgrade paket untuk fitur WA Group"}
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
                         <Button variant="ghost" size="icon" className="h-8 w-8"
                           onClick={(e) => {
                             e.stopPropagation();
