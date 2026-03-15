@@ -576,7 +576,7 @@ const LandingPage = () => {
       </section>
 
       {/* ─── Testimonials ─── */}
-      <TestimonialSlider />
+      <TestimonialSlider testimonials={testimonials} />
 
       {/* ─── Payment Methods ─── */}
       <section className="py-16 sm:py-24">
