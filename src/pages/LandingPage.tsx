@@ -121,7 +121,9 @@ const TestimonialSlider = ({ testimonials }: { testimonials: Testimonial[] }) =>
     return () => clearInterval(timer);
   }, [next]);
 
-  const t = TESTIMONIALS[current];
+  const t = testimonials[current];
+
+  if (!t) return null;
 
   const variants = {
     enter: (d: number) => ({ x: d > 0 ? 80 : -80, opacity: 0 }),
