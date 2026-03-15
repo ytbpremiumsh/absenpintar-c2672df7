@@ -99,7 +99,10 @@ interface PlanRow {
   sort_order: number;
 }
 
-const TestimonialSlider = () => {
+interface TrustedSchool { name: string; initials: string; logo_url: string | null; }
+interface Testimonial { name: string; role: string; text: string; rating: number; }
+
+const TestimonialSlider = ({ testimonials }: { testimonials: Testimonial[] }) => {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
 
