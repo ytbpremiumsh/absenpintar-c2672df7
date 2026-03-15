@@ -389,9 +389,13 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
               <Button onClick={() => startCamera()} size="sm" className="gradient-primary hover:opacity-90">
                 <Camera className="h-4 w-4 mr-2" /> Aktifkan Kamera
               </Button>
-              <p className="text-[10px] text-muted-foreground">
-                {canFaceRecognition ? "Barcode + Face Recognition + RFID" : "Barcode + Face Recognition"}
-              </p>
+              {canFaceRecognition ? (
+                <p className="text-[10px] text-muted-foreground">Barcode + Face Recognition + RFID</p>
+              ) : (
+                <p className="text-[10px] text-muted-foreground">
+                  Barcode Only • <span className="text-amber-600 font-semibold"><Crown className="h-3 w-3 inline mr-0.5" />Face Recognition khusus Premium</span>
+                </p>
+              )}
             </div>
           )}
 
