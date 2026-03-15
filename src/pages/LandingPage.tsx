@@ -52,18 +52,18 @@ const WORKFLOW = [
   { step: "04", title: "Rekap & Laporan", desc: "Download rekap lengkap dalam format Excel atau PDF." },
 ];
 
-const TRUSTED_SCHOOLS = [
-  { name: "SD Negeri 1 Jakarta", initials: "SDN1" },
-  { name: "SMP Islam Al-Azhar", initials: "SIA" },
-  { name: "TK Bunda Mulia", initials: "TBM" },
-  { name: "SD IT Nurul Fikri", initials: "SINF" },
-  { name: "SMP Negeri 5 Bandung", initials: "SMP5" },
-  { name: "TK Aisyiyah Bustanul", initials: "TAB" },
-  { name: "SD Muhammadiyah 9", initials: "SDM9" },
-  { name: "SMP Labschool", initials: "LAB" },
+const DEFAULT_TRUSTED_SCHOOLS = [
+  { name: "SD Negeri 1 Jakarta", initials: "SDN1", logo_url: null },
+  { name: "SMP Islam Al-Azhar", initials: "SIA", logo_url: null },
+  { name: "TK Bunda Mulia", initials: "TBM", logo_url: null },
+  { name: "SD IT Nurul Fikri", initials: "SINF", logo_url: null },
+  { name: "SMP Negeri 5 Bandung", initials: "SMP5", logo_url: null },
+  { name: "TK Aisyiyah Bustanul", initials: "TAB", logo_url: null },
+  { name: "SD Muhammadiyah 9", initials: "SDM9", logo_url: null },
+  { name: "SMP Labschool", initials: "LAB", logo_url: null },
 ];
 
-const TESTIMONIALS = [
+const DEFAULT_TESTIMONIALS = [
   { name: "Ibu Sari Dewi", role: "Kepala Sekolah, SD Negeri 1 Jakarta", text: "Sejak menggunakan Absensi Pintar, proses absensi jadi lebih cepat dan akurat. Guru-guru sangat terbantu karena tidak perlu lagi mencatat manual. Orang tua juga senang karena langsung dapat notifikasi WhatsApp.", rating: 5 },
   { name: "Pak Ahmad Fauzi", role: "Wakil Kepala Sekolah, SMP Islam Al-Azhar", text: "Sistem yang luar biasa! Dashboard real-time memudahkan kami memantau kehadiran siswa. Rekap otomatis setiap bulan menghemat waktu administrasi hingga 80%. Sangat direkomendasikan!", rating: 5 },
   { name: "Ibu Rina Kartika", role: "Guru Kelas, TK Bunda Mulia", text: "Fitur scan barcode sangat memudahkan. Anak-anak TK yang belum bisa absen sendiri bisa dibantu dengan cepat. Notifikasi ke orang tua juga membuat mereka lebih tenang.", rating: 5 },
