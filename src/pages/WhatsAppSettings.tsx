@@ -98,7 +98,7 @@ const WhatsAppSettings = () => {
           .eq("school_id", schoolId)
           .eq("integration_type", "onesender")
           .maybeSingle(),
-        supabase.from("classes").select("name, wa_group_id").eq("school_id", schoolId).order("name"),
+        supabase.from("classes").select("id, name, wa_group_id").eq("school_id", schoolId).order("name"),
       ]);
 
       if (intRes.data) {
