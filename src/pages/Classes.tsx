@@ -377,10 +377,10 @@ const Classes = () => {
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-1.5 mt-3">
-                      <Badge className="bg-success/10 text-success border-0 text-[10px]">✓ {info.hadir}</Badge>
-                      <Badge className="bg-warning/10 text-warning border-0 text-[10px]">📝 {info.izin}</Badge>
-                      <Badge className="bg-blue-50 text-blue-600 border-0 text-[10px]">🤒 {info.sakit}</Badge>
-                      <Badge className="bg-destructive/10 text-destructive border-0 text-[10px]">✗ {info.alfa}</Badge>
+                      <Badge className="bg-success/10 text-success border-0 text-[10px] gap-1"><CheckCircle2 className="h-3 w-3" /> {info.hadir}</Badge>
+                      <Badge className="bg-warning/10 text-warning border-0 text-[10px] gap-1"><FileText className="h-3 w-3" /> {info.izin}</Badge>
+                      <Badge className="bg-info/10 text-info border-0 text-[10px] gap-1"><Thermometer className="h-3 w-3" /> {info.sakit}</Badge>
+                      <Badge className="bg-destructive/10 text-destructive border-0 text-[10px] gap-1"><XCircle className="h-3 w-3" /> {info.alfa}</Badge>
                     </div>
                   </CardContent>
                 </Card>
