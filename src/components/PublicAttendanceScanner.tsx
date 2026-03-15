@@ -384,7 +384,7 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
                 <Camera className="h-4 w-4 mr-2" /> Aktifkan Kamera
               </Button>
               <p className="text-[10px] text-muted-foreground">
-                {canFaceRecognition ? "Barcode + Face Recognition + RFID" : "Barcode Scan Only"}
+                {canFaceRecognition ? "Barcode + Face Recognition + RFID" : "Barcode + Face Recognition"}
               </p>
             </div>
           )}
