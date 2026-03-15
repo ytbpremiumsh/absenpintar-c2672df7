@@ -321,7 +321,7 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
             <Badge variant="outline" className="text-[8px] px-1.5 py-0">
               <ScanLine className="h-2.5 w-2.5 mr-0.5" />QR
             </Badge>
-            {canFaceRecognition ? (
+            {canFaceRecognition && (
               <>
                 <Badge variant="outline" className="text-[8px] px-1.5 py-0">
                   <UserCheck className="h-2.5 w-2.5 mr-0.5" />Face
