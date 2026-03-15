@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ScanLine, Monitor, MessageSquare, FileBarChart,
   ArrowRight, CheckCircle2, Mail, Phone, MapPin,
@@ -9,6 +9,7 @@ import {
   UserCheck, BarChart3, Shield, Smartphone, Star, TrendingUp, Lock,
   ChevronRight, Sparkles, Play, ArrowDown,
   AlertTriangle, XCircle, Clock, FileText, Globe, Camera,
+  Quote, ChevronLeft,
 } from "lucide-react";
 import heroDashboard from "@/assets/hero-dashboard.png";
 
@@ -51,6 +52,25 @@ const WORKFLOW = [
   { step: "04", title: "Rekap & Laporan", desc: "Download rekap lengkap dalam format Excel atau PDF." },
 ];
 
+const TRUSTED_SCHOOLS = [
+  { name: "SD Negeri 1 Jakarta", initials: "SDN1" },
+  { name: "SMP Islam Al-Azhar", initials: "SIA" },
+  { name: "TK Bunda Mulia", initials: "TBM" },
+  { name: "SD IT Nurul Fikri", initials: "SINF" },
+  { name: "SMP Negeri 5 Bandung", initials: "SMP5" },
+  { name: "TK Aisyiyah Bustanul", initials: "TAB" },
+  { name: "SD Muhammadiyah 9", initials: "SDM9" },
+  { name: "SMP Labschool", initials: "LAB" },
+];
+
+const TESTIMONIALS = [
+  { name: "Ibu Sari Dewi", role: "Kepala Sekolah, SD Negeri 1 Jakarta", text: "Sejak menggunakan Absensi Pintar, proses absensi jadi lebih cepat dan akurat. Guru-guru sangat terbantu karena tidak perlu lagi mencatat manual. Orang tua juga senang karena langsung dapat notifikasi WhatsApp.", rating: 5 },
+  { name: "Pak Ahmad Fauzi", role: "Wakil Kepala Sekolah, SMP Islam Al-Azhar", text: "Sistem yang luar biasa! Dashboard real-time memudahkan kami memantau kehadiran siswa. Rekap otomatis setiap bulan menghemat waktu administrasi hingga 80%. Sangat direkomendasikan!", rating: 5 },
+  { name: "Ibu Rina Kartika", role: "Guru Kelas, TK Bunda Mulia", text: "Fitur scan barcode sangat memudahkan. Anak-anak TK yang belum bisa absen sendiri bisa dibantu dengan cepat. Notifikasi ke orang tua juga membuat mereka lebih tenang.", rating: 5 },
+  { name: "Pak Hendra Wijaya", role: "Kepala Sekolah, SD IT Nurul Fikri", text: "Kami sudah mencoba berbagai sistem absensi, tapi Absensi Pintar yang paling cocok untuk kebutuhan sekolah kami. Setup mudah, harga terjangkau, dan support responsif.", rating: 5 },
+  { name: "Ibu Linda Kusuma", role: "Wali Murid, SMP Negeri 5 Bandung", text: "Sebagai orang tua, saya sangat apresiasi notifikasi WhatsApp otomatis. Saya bisa tahu kapan anak saya tiba di sekolah tanpa harus menelepon guru setiap hari.", rating: 5 },
+];
+
 const PROBLEMS = [
   { icon: AlertTriangle, title: "Absensi Manual", desc: "Pencatatan kehadiran masih pakai buku tulis, rawan kesalahan dan manipulasi data." },
   { icon: Clock, title: "Proses Lambat", desc: "Guru harus memanggil siswa satu per satu untuk absensi, memakan waktu belajar." },
@@ -78,6 +98,99 @@ interface PlanRow {
   max_students: number | null;
   sort_order: number;
 }
+
+const TestimonialSlider = () => {
+  const [current, setCurrent] = useState(0);
+  const [direction, setDirection] = useState(0);
+
+  const next = useCallback(() => {
+    setDirection(1);
+    setCurrent((prev) => (prev + 1) % TESTIMONIALS.length);
+  }, []);
+
+  const prev = useCallback(() => {
+    setDirection(-1);
+    setCurrent((prev) => (prev - 1 + TESTIMONIALS.length) % TESTIMONIALS.length);
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(next, 6000);
+    return () => clearInterval(timer);
+  }, [next]);
+
+  const t = TESTIMONIALS[current];
+
+  const variants = {
+    enter: (d: number) => ({ x: d > 0 ? 80 : -80, opacity: 0 }),
+    center: { x: 0, opacity: 1 },
+    exit: (d: number) => ({ x: d > 0 ? -80 : 80, opacity: 0 }),
+  };
+
+  return (
+    <section className="py-16 sm:py-24 bg-muted/30 relative overflow-hidden">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-12">
+          <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-3 block">Testimoni</span>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
+            Apa Kata Mereka?
+          </h2>
+          <p className="mt-3 text-muted-foreground text-sm max-w-lg mx-auto">Cerita nyata dari pengguna Absensi Pintar di seluruh Indonesia.</p>
+        </motion.div>
+
+        <div className="relative">
+          {/* Nav buttons */}
+          <button onClick={prev} className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 sm:-translate-x-6 z-20 h-10 w-10 rounded-full bg-card border border-border shadow-lg flex items-center justify-center hover:bg-muted transition-colors">
+            <ChevronLeft className="h-5 w-5 text-foreground" />
+          </button>
+          <button onClick={next} className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 sm:translate-x-6 z-20 h-10 w-10 rounded-full bg-card border border-border shadow-lg flex items-center justify-center hover:bg-muted transition-colors">
+            <ChevronRight className="h-5 w-5 text-foreground" />
+          </button>
+
+          {/* Card */}
+          <div className="overflow-hidden min-h-[260px] flex items-center">
+            <AnimatePresence mode="wait" custom={direction}>
+              <motion.div
+                key={current}
+                custom={direction}
+                variants={variants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{ duration: 0.35, ease: "easeInOut" }}
+                className="w-full"
+              >
+                <div className="bg-card border border-border/50 rounded-2xl p-8 sm:p-10 text-center relative">
+                  <Quote className="h-8 w-8 text-primary/15 absolute top-6 left-6" />
+                  <div className="flex justify-center gap-1 mb-5">
+                    {Array.from({ length: t.rating }).map((_, i) => (
+                      <Star key={i} className="h-4 w-4 text-amber-400 fill-amber-400" />
+                    ))}
+                  </div>
+                  <p className="text-sm sm:text-base text-foreground leading-relaxed italic max-w-2xl mx-auto">
+                    "{t.text}"
+                  </p>
+                  <div className="mt-6">
+                    <p className="font-bold text-foreground text-sm">{t.name}</p>
+                    <p className="text-xs text-muted-foreground">{t.role}</p>
+                  </div>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Dots */}
+          <div className="flex justify-center gap-2 mt-6">
+            {TESTIMONIALS.map((_, i) => (
+              <button key={i} onClick={() => { setDirection(i > current ? 1 : -1); setCurrent(i); }}
+                className={`h-2 rounded-full transition-all duration-300 ${i === current ? "w-6 bg-primary" : "w-2 bg-border hover:bg-primary/30"}`} />
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -416,6 +529,35 @@ const LandingPage = () => {
         </div>
       </section>
       )}
+
+      {/* ─── Trusted By Schools ─── */}
+      <section className="py-16 sm:py-20 relative overflow-hidden">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-12">
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-3 block">Kepercayaan</span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
+              Telah Dipercaya oleh Sekolah-Sekolah
+            </h2>
+            <p className="mt-3 text-muted-foreground text-sm max-w-lg mx-auto">Bergabung bersama sekolah-sekolah yang telah merasakan manfaat absensi digital.</p>
+          </motion.div>
+
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={1}
+            className="flex flex-wrap justify-center items-center gap-5 sm:gap-8">
+            {TRUSTED_SCHOOLS.map((school, i) => (
+              <motion.div key={school.name} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
+                className="group flex flex-col items-center gap-2">
+                <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl bg-card border border-border/60 flex items-center justify-center shadow-sm group-hover:border-primary/25 group-hover:shadow-lg group-hover:shadow-primary/5 transition-all duration-300">
+                  <span className="text-sm sm:text-base font-extrabold text-primary/70 group-hover:text-primary transition-colors">{school.initials}</span>
+                </div>
+                <span className="text-[10px] sm:text-xs text-muted-foreground text-center max-w-[90px] leading-tight">{school.name}</span>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ─── Testimonials ─── */}
+      <TestimonialSlider />
 
       {/* ─── Payment Methods ─── */}
       <section className="py-16 sm:py-24">
