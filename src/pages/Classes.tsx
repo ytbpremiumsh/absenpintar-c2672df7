@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { GraduationCap, Users, UserCheck, UserX, ChevronRight, Plus, Trash2, Loader2, Clock, AlertTriangle, Pencil, MessageCircle, Lock, CheckCircle2, FileText, Thermometer, XCircle } from "lucide-react";
+import { GraduationCap, Users, UserCheck, UserX, ChevronRight, Plus, Trash2, Loader2, Clock, AlertTriangle, Pencil, CheckCircle2, FileText, Thermometer, XCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
