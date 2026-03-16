@@ -230,18 +230,18 @@ const Dashboard = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
         {stats.map((stat, i) => (
           <motion.div key={stat.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
-            <Card className="shadow-card border-0 hover:shadow-elevated transition-shadow">
-              <CardContent className="p-3">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{stat.label}</p>
-                    <p className="text-2xl font-bold mt-0.5">{loading ? "..." : stat.value}</p>
-                  </div>
-                  <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${stat.color}`}>
+            <Card className="shadow-card border-0 hover:shadow-elevated transition-shadow h-full">
+              <CardContent className="p-2.5 sm:p-3 h-full">
+                <div className="flex flex-col items-center text-center gap-1.5 sm:flex-row sm:text-left sm:items-start sm:justify-between sm:gap-0">
+                  <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${stat.color}`}>
                     <stat.icon className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-wider leading-tight">{stat.label}</p>
+                    <p className="text-xl sm:text-2xl font-bold mt-0.5">{loading ? "..." : stat.value}</p>
                   </div>
                 </div>
               </CardContent>

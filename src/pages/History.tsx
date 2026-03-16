@@ -148,7 +148,7 @@ const History = () => {
       </div>
 
       {/* Mini Stats */}
-      <div className="grid grid-cols-5 gap-3">
+      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-3">
         {[
           { icon: Users, value: stats.total, label: "Total", color: "text-foreground", bg: "bg-secondary" },
           { icon: CheckCircle2, value: stats.hadir, label: "Hadir", color: "text-success", bg: "bg-success/10" },
@@ -157,13 +157,13 @@ const History = () => {
           { icon: XCircle, value: stats.alfa, label: "Alfa", color: "text-destructive", bg: "bg-destructive/10" },
         ].map((stat) => (
           <Card key={stat.label} className="border-0 shadow-card">
-            <CardContent className="p-3 flex items-center gap-2.5">
-              <div className={`h-8 w-8 rounded-lg ${stat.bg} flex items-center justify-center shrink-0`}>
-                <stat.icon className={`h-4 w-4 ${stat.color}`} />
+            <CardContent className="p-2.5 sm:p-3 flex flex-col items-center text-center sm:flex-row sm:text-left gap-1.5 sm:gap-2.5">
+              <div className={`h-7 w-7 sm:h-8 sm:w-8 rounded-lg ${stat.bg} flex items-center justify-center shrink-0`}>
+                <stat.icon className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${stat.color}`} />
               </div>
               <div>
-                <p className={`text-lg font-extrabold leading-tight ${stat.color}`}>{stat.value}</p>
-                <p className="text-[10px] text-muted-foreground font-medium">{stat.label}</p>
+                <p className={`text-base sm:text-lg font-extrabold leading-tight ${stat.color}`}>{stat.value}</p>
+                <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium">{stat.label}</p>
               </div>
             </CardContent>
           </Card>
