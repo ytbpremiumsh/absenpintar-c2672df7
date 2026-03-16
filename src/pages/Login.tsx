@@ -44,8 +44,28 @@ const Login = () => {
     toast.success("Login berhasil!");
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
-      const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
-      const isSuperAdmin = roles?.some((r: any) => r.role === "super_admin");
+      const [{ data: roles }, { data: profileData }] = await Promise.all([
+        supabase.from("user_roles").select("role").eq("user_id", user.id),
+        supabase.from("profiles").select("full_name, school_id").eq("user_id", user.id).maybeSingle(),
+      ]);
+      const rolesList = (roles || []).map((r: any) => r.role);
+      const isSuperAdmin = rolesList.includes("super_admin");
+
+      // Log login event
+      let schoolName: string | null = null;
+      if (profileData?.school_id) {
+        const { data: schoolData } = await supabase.from("schools").select("name").eq("id", profileData.school_id).maybeSingle();
+        schoolName = schoolData?.name || null;
+      }
+      await supabase.from("login_logs").insert({
+        user_id: user.id,
+        email: user.email || null,
+        full_name: profileData?.full_name || null,
+        role: rolesList.join(", ") || null,
+        school_name: schoolName,
+        user_agent: navigator.userAgent,
+      } as any);
+
       setLoading(false);
       navigate(isSuperAdmin ? "/super-admin" : "/dashboard");
     } else {
