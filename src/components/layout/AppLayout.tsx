@@ -54,7 +54,8 @@ function AppContent() {
               {profile?.full_name || "Dashboard"}
             </span>
           </div>
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+            <ThemeToggle />
             <NotificationBell />
 
             <DropdownMenu>
