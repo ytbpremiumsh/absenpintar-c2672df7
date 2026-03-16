@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LayoutDashboard, School, CreditCard, Receipt, LogOut, Shield, CalendarCheck, MessageSquare, Building2, Megaphone, LifeBuoy, Globe, Presentation, TrendingUp, MessageSquareQuote, History } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarFooter, SidebarHeader, useSidebar,
@@ -127,9 +128,12 @@ export function SuperAdminLayout() {
               <SidebarTrigger />
               <span className="text-sm font-medium text-muted-foreground hidden sm:inline">Super Admin Panel</span>
             </div>
-            <Avatar className="h-8 w-8">
-              <AvatarFallback className="bg-destructive text-destructive-foreground text-xs font-semibold">{initials}</AvatarFallback>
-            </Avatar>
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <Avatar className="h-8 w-8">
+                <AvatarFallback className="bg-destructive text-destructive-foreground text-xs font-semibold">{initials}</AvatarFallback>
+              </Avatar>
+            </div>
           </header>
           <main className="flex-1 p-4 md:p-6 overflow-auto"><Outlet /></main>
         </div>

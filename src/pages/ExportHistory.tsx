@@ -259,11 +259,14 @@ const ExportHistory = () => {
     doc.text(`Kelas : ${selectedClass}`, 14, 30);
 
     const head = isPulangMode
-      ? [["NO", "NIS", "NAMA", ...Array.from({ length: daysInMonth }, (_, i) => String(i + 1)), "✓"]]
+      ? [["NO", "NIS", "NAMA", ...Array.from({ length: daysInMonth }, (_, i) => String(i + 1)), "V"]]
       : [["NO", "NIS", "NAMA", ...Array.from({ length: daysInMonth }, (_, i) => String(i + 1)), "H", "S", "I", "A"]];
     const body = activeRows.map((s, i) => {
       const row: (string | number)[] = [i + 1, s.student_id, s.name];
-      for (let d = 1; d <= daysInMonth; d++) row.push(s.days[d] || "");
+      for (let d = 1; d <= daysInMonth; d++) {
+        const val = s.days[d] || "";
+        row.push(val === "✓" ? "V" : val);
+      }
       if (isPulangMode) {
         row.push(s.totals.H);
       } else {
@@ -296,18 +299,29 @@ const ExportHistory = () => {
           const colIdx = data.column.index;
           const totalCols = 3 + daysInMonth;
           // Color status cells in the day columns
-          if (colIdx >= 3 && colIdx < totalCols && cellText in statusColors) {
-            data.cell.styles.fillColor = statusColors[cellText].bg;
-            data.cell.styles.textColor = statusColors[cellText].fg;
-            data.cell.styles.fontStyle = "bold";
+          if (colIdx >= 3 && colIdx < totalCols) {
+            if (cellText in statusColors) {
+              data.cell.styles.fillColor = statusColors[cellText].bg;
+              data.cell.styles.textColor = statusColors[cellText].fg;
+              data.cell.styles.fontStyle = "bold";
+            } else if (cellText === "V") {
+              data.cell.styles.fillColor = statusColors.H.bg;
+              data.cell.styles.textColor = statusColors.H.fg;
+              data.cell.styles.fontStyle = "bold";
+            }
           }
           // Color summary columns
-          const summaryMap = ["H", "S", "I", "A"];
           if (colIdx >= totalCols) {
-            const key = summaryMap[colIdx - totalCols];
-            if (key && statusColors[key]) {
-              data.cell.styles.textColor = statusColors[key].fg;
+            if (isPulangMode) {
+              data.cell.styles.textColor = statusColors.H.fg;
               data.cell.styles.fontStyle = "bold";
+            } else {
+              const summaryMap = ["H", "S", "I", "A"];
+              const key = summaryMap[colIdx - totalCols];
+              if (key && statusColors[key]) {
+                data.cell.styles.textColor = statusColors[key].fg;
+                data.cell.styles.fontStyle = "bold";
+              }
             }
           }
         }

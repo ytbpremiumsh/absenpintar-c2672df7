@@ -12,6 +12,7 @@ import {
   Quote, ChevronLeft,
 } from "lucide-react";
 import heroDashboard from "@/assets/hero-dashboard.png";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -257,6 +258,7 @@ const LandingPage = () => {
             <img src="/images/logo-absensi-pintar.png" alt="Absensi Pintar" className="h-9 sm:h-10 object-contain" />
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
+            <ThemeToggle />
             <button onClick={() => navigate("/login")} className="text-sm font-semibold text-muted-foreground hover:text-foreground px-3 sm:px-4 py-2 transition-colors rounded-xl hover:bg-muted">
               Masuk
             </button>
