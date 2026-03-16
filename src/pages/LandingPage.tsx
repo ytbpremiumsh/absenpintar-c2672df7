@@ -12,6 +12,7 @@ import {
   Quote, ChevronLeft,
 } from "lucide-react";
 import heroDashboard from "@/assets/hero-dashboard.png";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
