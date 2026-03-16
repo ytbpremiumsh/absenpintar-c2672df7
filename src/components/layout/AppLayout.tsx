@@ -3,6 +3,7 @@ import { AppSidebar } from "./AppSidebar";
 import { Outlet, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { Settings, LogOut, School, KeyRound, Menu } from "lucide-react";
 import { NotificationBell } from "@/components/NotificationBell";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
