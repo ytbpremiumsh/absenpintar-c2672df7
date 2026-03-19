@@ -284,7 +284,7 @@ const LandingPage = () => {
           <div className="text-center max-w-3xl mx-auto">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
               <span className="inline-flex items-center gap-2 bg-primary/8 border border-primary/15 rounded-full px-4 py-1.5 text-xs font-bold text-primary mb-6">
-                <Sparkles className="h-3.5 w-3.5" /> Sistem Absensi Digital #1 Indonesia
+                <Sparkles className="h-3.5 w-3.5" /> ATSkolla — Absensi Digital Sekolah #1 Indonesia
               </span>
             </motion.div>
 
