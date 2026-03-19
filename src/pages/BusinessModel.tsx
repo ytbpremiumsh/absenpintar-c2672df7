@@ -652,7 +652,7 @@ const BusinessModel = () => {
 
       {/* Footer */}
       <footer className={`border-t ${footerBg} py-8 px-4 text-center transition-colors duration-300`}>
-        <p className={`${footerText} text-xs`}>© {new Date().getFullYear()} Absensi Pintar — Smart School Attendance System. All rights reserved.</p>
+        <p className={`${footerText} text-xs`}>© {new Date().getFullYear()} ATSkolla — Absensi Digital Sekolah. All rights reserved.</p>
       </footer>
     </div>);
 

@@ -204,7 +204,7 @@ const Login = () => {
           </div>
 
           <p className="text-center text-muted-foreground/50 text-xs">
-            © 2026 Absensi Pintar - Smart School Attendance
+            © 2026 ATSkolla - Absensi Digital Sekolah
           </p>
         </div>
       </div>

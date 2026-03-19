@@ -126,7 +126,7 @@ export function AppSidebar() {
           )}
           <div className="flex flex-col min-w-0">
             <span className="text-sm font-extrabold text-sidebar-foreground tracking-tight truncate">
-              {isPremiumBrand && schoolData ? schoolData.name : "Smart Attendance"}
+              {isPremiumBrand && schoolData ? schoolData.name : "ATSkolla"}
             </span>
             <Badge className={`w-fit text-[9px] font-bold border-0 px-1.5 py-0 h-4 ${planColors[features.planName] || planColors.Free}`}>
               {features.planName === "Free" ? "Free" : `Paket ${features.planName}`}

@@ -683,7 +683,7 @@ const LandingPage = () => {
           </div>
 
           <div className="mt-10 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3">
-            <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Absensi Pintar — Smart School Attendance System. All rights reserved.</p>
+            <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} ATSkolla — Absensi Digital Sekolah. All rights reserved.</p>
             <p className="text-[10px] text-muted-foreground/50">Dipercaya sekolah-sekolah di seluruh Indonesia 🇮🇩</p>
           </div>
         </div>

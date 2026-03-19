@@ -614,10 +614,10 @@ const Presentation = () => {
       <footer className={`border-t py-10 ${d ? "border-white/5" : "border-slate-200"}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <img src="/images/logo-absensi-pintar.png" alt="Absensi Pintar" className="h-7 object-contain" />
+            <img src="/images/logo-absensi-pintar.png" alt="ATSkolla" className="h-7 object-contain" />
           </div>
           <p className={`text-xs ${d ? "text-slate-600" : "text-slate-400"}`}>
-            © {new Date().getFullYear()} Absensi Pintar. Smart School Attendance Platform.
+            © {new Date().getFullYear()} ATSkolla — Absensi Digital Sekolah.
           </p>
         </div>
       </footer>
