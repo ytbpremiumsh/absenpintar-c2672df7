@@ -521,7 +521,7 @@ const Presentation = () => {
       <section className={`py-20 sm:py-32 ${d ? "bg-white/[0.01]" : "bg-slate-50/80"}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-14">
-            <span className={`text-xs font-semibold uppercase tracking-widest ${d ? "text-indigo-400" : "text-indigo-500"}`}>Dan Masih Banyak Lagi</span>
+            <span className={`text-xs font-semibold uppercase tracking-widest ${d ? "text-amber-400" : "text-amber-600"}`}>Dan Masih Banyak Lagi</span>
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mt-3">Fitur Pendukung</h2>
           </motion.div>
 
