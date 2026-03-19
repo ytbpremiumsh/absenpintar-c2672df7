@@ -300,7 +300,7 @@ const Presentation = () => {
       <nav className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-2xl border-b ${navBg} transition-colors duration-300`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/images/logo-absensi-pintar.png" alt="ATSkolla" className="h-9 object-contain" />
+            <img src="/images/logo-atskolla.png" alt="ATSkolla" className="h-9 object-contain" />
           </div>
           <div className="flex items-center gap-2">
             <button onClick={() => setDark(!d)} className={`h-9 w-9 rounded-xl flex items-center justify-center transition-all ${d ? "bg-white/10 hover:bg-white/15 text-yellow-300" : "bg-slate-100 hover:bg-slate-200 text-slate-600"}`}>
@@ -317,7 +317,7 @@ const Presentation = () => {
       <section className="min-h-screen flex flex-col items-center justify-center relative px-4 text-center pt-16">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="mb-8">
           <span className={`inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-medium border ${d ? "bg-white/5 border-white/10 text-indigo-300" : "bg-indigo-50 border-indigo-100 text-indigo-600"}`}>
-            <Sparkles className="h-3.5 w-3.5" /> Sistem Absensi Sekolah #1 di Indonesia
+            <Sparkles className="h-3.5 w-3.5" /> ATSkolla — Absensi Digital Sekolah #1 di Indonesia
           </span>
         </motion.div>
 
@@ -398,7 +398,7 @@ const Presentation = () => {
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-14">
             <span className={`text-xs font-bold uppercase tracking-[0.2em] ${d ? "text-indigo-400" : "text-indigo-500"} mb-3 block`}>Jawaban Tepat</span>
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-              Smart School Attendance System
+              ATSkolla — Absensi Digital Sekolah
             </h2>
             <p className={`mt-3 ${muted} max-w-2xl mx-auto text-sm sm:text-base`}>Setiap permasalahan memiliki solusi teknologi modern yang terintegrasi dalam satu platform.</p>
           </motion.div>
@@ -614,7 +614,7 @@ const Presentation = () => {
       <footer className={`border-t py-10 ${d ? "border-white/5" : "border-slate-200"}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <img src="/images/logo-absensi-pintar.png" alt="ATSkolla" className="h-7 object-contain" />
+            <img src="/images/logo-atskolla.png" alt="ATSkolla" className="h-7 object-contain" />
           </div>
           <p className={`text-xs ${d ? "text-slate-600" : "text-slate-400"}`}>
             © {new Date().getFullYear()} ATSkolla — Absensi Digital Sekolah.

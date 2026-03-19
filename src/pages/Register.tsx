@@ -397,7 +397,7 @@ const Register = () => {
           </CardContent>
         </Card>
 
-        <p className="text-center text-primary-foreground/40 text-xs mt-6">© 2026 Smart School Attendance System</p>
+        <p className="text-center text-primary-foreground/40 text-xs mt-6">© 2026 ATSkolla — Absensi Digital Sekolah</p>
       </div>
     </div>
   );

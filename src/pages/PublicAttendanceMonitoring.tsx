@@ -375,7 +375,7 @@ const PublicAttendanceMonitoring = () => {
         <div className="text-center py-4 border-t border-border">
           <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
             <LiveDot />
-            <span>Smart School Attendance System • Data diperbarui otomatis setiap 8 detik</span>
+            <span>ATSkolla — Absensi Digital Sekolah • Data diperbarui otomatis setiap 8 detik</span>
           </div>
         </div>
       </div>

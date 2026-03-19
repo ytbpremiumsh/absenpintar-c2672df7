@@ -255,7 +255,7 @@ const LandingPage = () => {
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-background/90 backdrop-blur-xl shadow-sm border-b border-border" : "bg-transparent"}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-18 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <img src="/images/logo-absensi-pintar.png" alt="ATSkolla" className="h-9 sm:h-10 object-contain" />
+            <img src="/images/logo-atskolla.png" alt="ATSkolla" className="h-9 sm:h-10 object-contain" />
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
             <ThemeToggle />
@@ -290,8 +290,8 @@ const LandingPage = () => {
 
             <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.7 }}
               className="text-4xl sm:text-5xl lg:text-6xl xl:text-[4.25rem] font-extrabold tracking-tight leading-[1.05]">
-              <span className="text-foreground">Absensi Sekolah </span>
-              <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">Lebih Cerdas</span>
+              <span className="text-foreground">ATSkolla — </span>
+              <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">Absensi Digital Sekolah</span>
             </motion.h1>
 
             <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.6 }}
@@ -368,7 +368,7 @@ const LandingPage = () => {
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-14">
             <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-3 block">Jawaban Tepat</span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight">
-              Smart School Attendance System
+              ATSkolla — Absensi Digital Sekolah
             </h2>
             <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">Setiap permasalahan memiliki solusi teknologi modern yang terintegrasi dalam satu platform.</p>
           </motion.div>

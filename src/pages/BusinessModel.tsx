@@ -316,7 +316,7 @@ const BusinessModel = () => {
       <nav className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-xl border-b ${navBg} transition-colors duration-300`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/images/logo-absensi-pintar.png" alt="ATSkolla" className="h-9 object-contain" />
+            <img src="/images/logo-atskolla.png" alt="ATSkolla" className="h-9 object-contain" />
             
           </div>
           <div className="flex items-center gap-2">
@@ -349,7 +349,7 @@ const BusinessModel = () => {
         </motion.h1>
 
         <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.7 }} className={`mt-4 text-lg sm:text-xl font-semibold ${dark ? "text-indigo-300" : "text-indigo-600"}`}>
-          Smart School Attendance System
+          ATSkolla — Absensi Digital Sekolah
         </motion.p>
 
         <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.7 }} className={`mt-4 text-base sm:text-lg md:text-xl ${mutedText} max-w-2xl leading-relaxed`}>

@@ -16,7 +16,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [loginImage, setLoginImage] = useState("/images/presentation/students.jpeg");
-  const [loginLogo, setLoginLogo] = useState("/images/logo-absensi-pintar.png");
+  const [loginLogo, setLoginLogo] = useState("/images/logo-atskolla.png");
 
   useEffect(() => {
     supabase
