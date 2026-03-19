@@ -368,7 +368,7 @@ const LandingPage = () => {
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-14">
             <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-3 block">Jawaban Tepat</span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight">
-              Smart School Attendance System
+              ATSkolla — Absensi Digital Sekolah
             </h2>
             <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">Setiap permasalahan memiliki solusi teknologi modern yang terintegrasi dalam satu platform.</p>
           </motion.div>

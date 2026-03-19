@@ -321,7 +321,7 @@ const ScanQR = () => {
           const groupTemplate = integration.attendance_group_template || "";
           const groupMessage = groupTemplate
             ? applyReplacements(groupTemplate)
-            : `📋 *Notifikasi Absensi ${typeLabel}*\n\n${schoolName}\n\nSiswa *${scannedStudent.name}* (Kelas ${scannedStudent.class}) telah tercatat ${typeLabel.toLowerCase()} pada ${dayName}, pukul ${timeStr}.\n\nMetode: ${methodLabel}\n\n_Pesan otomatis dari Smart School Attendance System_`;
+            : `📋 *Notifikasi Absensi ${typeLabel}*\n\n${schoolName}\n\nSiswa *${scannedStudent.name}* (Kelas ${scannedStudent.class}) telah tercatat ${typeLabel.toLowerCase()} pada ${dayName}, pukul ${timeStr}.\n\nMetode: ${methodLabel}\n\n_Pesan otomatis dari ATSkolla_`;
 
           sendTasks.push(
             supabase.functions.invoke("send-whatsapp", {

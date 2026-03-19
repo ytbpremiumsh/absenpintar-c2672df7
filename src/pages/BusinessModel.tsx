@@ -349,7 +349,7 @@ const BusinessModel = () => {
         </motion.h1>
 
         <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.7 }} className={`mt-4 text-lg sm:text-xl font-semibold ${dark ? "text-indigo-300" : "text-indigo-600"}`}>
-          Smart School Attendance System
+          ATSkolla — Absensi Digital Sekolah
         </motion.p>
 
         <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.7 }} className={`mt-4 text-base sm:text-lg md:text-xl ${mutedText} max-w-2xl leading-relaxed`}>
