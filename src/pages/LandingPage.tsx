@@ -134,27 +134,25 @@ const TestimonialSlider = ({ testimonials }: { testimonials: Testimonial[] }) =>
   };
 
   return (
-    <section className="py-16 sm:py-24 bg-muted/30 relative overflow-hidden">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
+    <section className="py-16 sm:py-24 bg-amber-50/40 dark:bg-amber-950/10 relative overflow-hidden">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none" />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-12">
-          <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-3 block">Testimoni</span>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
+          <span className="text-xs font-bold uppercase tracking-[0.2em] text-amber-600 dark:text-amber-400 mb-3 block">Testimoni</span>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             Apa Kata Mereka?
           </h2>
-          <p className="mt-3 text-muted-foreground text-sm max-w-lg mx-auto">Cerita nyata dari pengguna ATSkolla di seluruh Indonesia.</p>
+          <p className="mt-3 text-slate-500 dark:text-slate-400 text-sm max-w-lg mx-auto">Cerita nyata dari pengguna ATSkolla di seluruh Indonesia.</p>
         </motion.div>
 
         <div className="relative">
-          {/* Nav buttons */}
-          <button onClick={prev} className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 sm:-translate-x-6 z-20 h-10 w-10 rounded-full bg-card border border-border shadow-lg flex items-center justify-center hover:bg-muted transition-colors">
-            <ChevronLeft className="h-5 w-5 text-foreground" />
+          <button onClick={prev} className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 sm:-translate-x-6 z-20 h-10 w-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+            <ChevronLeft className="h-5 w-5 text-slate-700 dark:text-white" />
           </button>
-          <button onClick={next} className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 sm:translate-x-6 z-20 h-10 w-10 rounded-full bg-card border border-border shadow-lg flex items-center justify-center hover:bg-muted transition-colors">
-            <ChevronRight className="h-5 w-5 text-foreground" />
+          <button onClick={next} className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 sm:translate-x-6 z-20 h-10 w-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+            <ChevronRight className="h-5 w-5 text-slate-700 dark:text-white" />
           </button>
 
-          {/* Card */}
           <div className="overflow-hidden min-h-[260px] flex items-center">
             <AnimatePresence mode="wait" custom={direction}>
               <motion.div
@@ -167,30 +165,29 @@ const TestimonialSlider = ({ testimonials }: { testimonials: Testimonial[] }) =>
                 transition={{ duration: 0.35, ease: "easeInOut" }}
                 className="w-full"
               >
-                <div className="bg-card border border-border/50 rounded-2xl p-8 sm:p-10 text-center relative">
-                  <Quote className="h-8 w-8 text-primary/15 absolute top-6 left-6" />
+                <div className="bg-white dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/50 rounded-2xl p-8 sm:p-10 text-center relative">
+                  <Quote className="h-8 w-8 text-amber-500/15 absolute top-6 left-6" />
                   <div className="flex justify-center gap-1 mb-5">
                     {Array.from({ length: t.rating }).map((_, i) => (
                       <Star key={i} className="h-4 w-4 text-amber-400 fill-amber-400" />
                     ))}
                   </div>
-                  <p className="text-sm sm:text-base text-foreground leading-relaxed italic max-w-2xl mx-auto">
+                  <p className="text-sm sm:text-base text-slate-700 dark:text-slate-200 leading-relaxed italic max-w-2xl mx-auto">
                     "{t.text}"
                   </p>
                   <div className="mt-6">
-                    <p className="font-bold text-foreground text-sm">{t.name}</p>
-                    <p className="text-xs text-muted-foreground">{t.role}</p>
+                    <p className="font-bold text-slate-900 dark:text-white text-sm">{t.name}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{t.role}</p>
                   </div>
                 </div>
               </motion.div>
             </AnimatePresence>
           </div>
 
-          {/* Dots */}
           <div className="flex justify-center gap-2 mt-6">
             {testimonials.map((_, i) => (
               <button key={i} onClick={() => { setDirection(i > current ? 1 : -1); setCurrent(i); }}
-                className={`h-2 rounded-full transition-all duration-300 ${i === current ? "w-6 bg-primary" : "w-2 bg-border hover:bg-primary/30"}`} />
+                className={`h-2 rounded-full transition-all duration-300 ${i === current ? "w-6 bg-amber-500" : "w-2 bg-slate-300 dark:bg-slate-600 hover:bg-amber-300"}`} />
             ))}
           </div>
         </div>
@@ -241,29 +238,29 @@ const LandingPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-slate-950">
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center gap-3">
-          <div className="h-10 w-10 rounded-xl gradient-primary animate-pulse" />
-          <p className="text-muted-foreground text-sm">Memuat...</p>
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 animate-pulse" />
+          <p className="text-slate-500 text-sm">Memuat...</p>
         </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
+    <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-white overflow-x-hidden">
       {/* ─── Navbar ─── */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-background/90 backdrop-blur-xl shadow-sm border-b border-border" : "bg-transparent"}`}>
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl shadow-sm border-b border-slate-200 dark:border-slate-800" : "bg-transparent"}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-18 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <img src="/images/logo-atskolla.png" alt="ATSkolla" className="h-9 sm:h-10 object-contain" />
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
             <ThemeToggle />
-            <button onClick={() => navigate("/login")} className="text-sm font-semibold text-muted-foreground hover:text-foreground px-3 sm:px-4 py-2 transition-colors rounded-xl hover:bg-muted">
+            <button onClick={() => navigate("/login")} className="text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-3 sm:px-4 py-2 transition-colors rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800">
               Masuk
             </button>
-            <button onClick={() => navigate("/register")} className="inline-flex items-center gap-1.5 gradient-primary text-primary-foreground px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98]">
+            <button onClick={() => navigate("/register")} className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-orange-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 hover:scale-[1.02] active:scale-[0.98]">
               Mulai Gratis <ArrowRight className="h-3.5 w-3.5" />
             </button>
           </div>
@@ -272,60 +269,58 @@ const LandingPage = () => {
 
       {/* ─── Hero Section ─── */}
       <section className="relative pt-28 sm:pt-36 pb-16 sm:pb-24 overflow-hidden">
-        {/* Background effects */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-primary/8 rounded-full blur-[120px]" />
-          <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-primary/5 rounded-full blur-[100px]" />
-          <div className="absolute top-1/3 left-0 w-[300px] h-[300px] bg-primary/3 rounded-full blur-[80px]" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-amber-500/8 rounded-full blur-[120px]" />
+          <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-orange-500/5 rounded-full blur-[100px]" />
+          <div className="absolute top-1/3 left-0 w-[300px] h-[300px] bg-amber-400/3 rounded-full blur-[80px]" />
         </div>
         <div className="absolute inset-0 grid-bg opacity-50 pointer-events-none" />
 
         <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          {/* Centered Text */}
           <div className="text-center max-w-3xl mx-auto">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-              <span className="inline-flex items-center gap-2 bg-primary/8 border border-primary/15 rounded-full px-4 py-1.5 text-xs font-bold text-primary mb-6">
+              <span className="inline-flex items-center gap-2 bg-amber-500/8 border border-amber-500/15 rounded-full px-4 py-1.5 text-xs font-bold text-amber-700 dark:text-amber-300 mb-6">
                 <Sparkles className="h-3.5 w-3.5" /> ATSkolla — Absensi Digital Sekolah #1 Indonesia
               </span>
             </motion.div>
 
             <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.7 }}
               className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-extrabold tracking-tight leading-tight">
-              <TypingEffect texts={["ATSkolla — Absensi Digital Sekolah", "Cepat, Aman & Mudah Digunakan", "Solusi Absensi Modern untuk Sekolah"]} speed={60} className="bg-gradient-to-r from-foreground via-foreground to-primary bg-clip-text text-transparent" />
+              <TypingEffect texts={["ATSkolla — Absensi Digital Sekolah", "Cepat, Aman & Mudah Digunakan", "Solusi Absensi Modern untuk Sekolah"]} speed={60} className="bg-gradient-to-r from-slate-900 via-slate-800 to-amber-700 dark:from-white dark:via-white dark:to-amber-300 bg-clip-text text-transparent" />
             </motion.h1>
 
             <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.6 }}
-              className="mt-5 text-base sm:text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
+              className="mt-5 text-base sm:text-lg text-slate-500 dark:text-slate-400 max-w-xl mx-auto leading-relaxed">
               Platform absensi modern dengan barcode scan & face recognition AI. Dirancang khusus untuk sekolah Indonesia — cepat, aman, dan mudah digunakan.
             </motion.p>
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }}
               className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
               <button onClick={() => navigate("/register")}
-                className="inline-flex items-center justify-center gap-2 gradient-primary text-primary-foreground px-7 py-3.5 rounded-2xl font-bold transition-all shadow-xl shadow-primary/25 hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] text-sm">
+                className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white px-7 py-3.5 rounded-2xl font-bold transition-all shadow-xl shadow-amber-500/25 hover:shadow-amber-500/40 hover:scale-[1.02] active:scale-[0.98] text-sm">
                 <Zap className="h-4 w-4" /> Coba Gratis Sekarang
               </button>
               <a href="#how-it-works"
-                className="inline-flex items-center justify-center gap-2 bg-card hover:bg-muted text-foreground px-7 py-3.5 rounded-2xl font-semibold transition-all text-sm border border-border shadow-sm">
+                className="inline-flex items-center justify-center gap-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-7 py-3.5 rounded-2xl font-semibold transition-all text-sm border border-slate-200 dark:border-slate-700 shadow-sm">
                 <Play className="h-4 w-4" /> Cara Kerja
               </a>
             </motion.div>
 
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}
-              className="mt-5 text-xs text-muted-foreground/60">
+              className="mt-5 text-xs text-slate-400 dark:text-slate-500">
               ✓ Penggunaan mudah &nbsp;•&nbsp; ✓ Pembayaran instan &nbsp;•&nbsp; ✓ Siap pakai dalam hitungan menit
             </motion.p>
           </div>
 
-          {/* Centered Hero Image */}
+          {/* Hero Image */}
           <motion.div initial={{ opacity: 0, y: 50, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ delay: 0.5, duration: 1, ease: "easeOut" }}
             className="mt-14 sm:mt-16 relative mx-auto max-w-5xl">
-            <div className="absolute -inset-6 bg-gradient-to-br from-primary/20 via-primary/8 to-transparent rounded-[2.5rem] blur-3xl animate-pulse" />
-            <div className="absolute -inset-2 bg-gradient-to-br from-primary/10 to-primary/5 rounded-3xl" />
+            <div className="absolute -inset-6 bg-gradient-to-br from-amber-500/20 via-orange-500/8 to-transparent rounded-[2.5rem] blur-3xl animate-pulse" />
+            <div className="absolute -inset-2 bg-gradient-to-br from-amber-500/10 to-orange-500/5 rounded-3xl" />
             <motion.img
               src={heroDashboard}
               alt="Dashboard ATSkolla"
-              className="relative w-full h-auto rounded-2xl border border-border/50 shadow-[0_30px_80px_-15px_rgba(0,0,0,0.3),0_0_50px_-10px_hsl(234_89%_60%/0.18)]"
+              className="relative w-full h-auto rounded-2xl border border-slate-200/50 dark:border-slate-700/50 shadow-[0_30px_80px_-15px_rgba(0,0,0,0.3),0_0_50px_-10px_rgba(245,158,11,0.18)]"
               whileHover={{ scale: 1.01, y: -4 }}
               transition={{ duration: 0.4 }}
             />
@@ -334,63 +329,63 @@ const LandingPage = () => {
       </section>
 
       {/* ─── Problems ─── */}
-      <section className="py-20 sm:py-28 bg-muted/30 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-destructive/3 rounded-full blur-[120px] pointer-events-none" />
+      <section className="py-20 sm:py-28 bg-slate-50/80 dark:bg-slate-900/50 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-red-500/3 rounded-full blur-[120px] pointer-events-none" />
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-14">
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-destructive mb-3 block">Latar Belakang</span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight">
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-red-500 mb-3 block">Latar Belakang</span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               Masalah Absensi di Sekolah
             </h2>
-            <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">Sistem absensi manual di sekolah Indonesia masih menyimpan banyak masalah dan ketidakefisienan.</p>
+            <p className="mt-3 text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">Sistem absensi manual di sekolah Indonesia masih menyimpan banyak masalah dan ketidakefisienan.</p>
           </motion.div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-16">
             {PROBLEMS.map((p, i) => (
               <motion.div key={p.title} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
-                className="group bg-card border border-destructive/10 rounded-2xl p-6 hover:border-destructive/25 hover:shadow-lg hover:shadow-destructive/5 transition-all duration-300">
-                <div className="h-10 w-10 rounded-xl bg-destructive/10 flex items-center justify-center mb-4 group-hover:bg-destructive/15 transition-colors">
-                  <p.icon className="h-5 w-5 text-destructive" />
+                className="group bg-white dark:bg-slate-800/50 border border-red-100 dark:border-red-500/10 rounded-2xl p-6 hover:border-red-200 dark:hover:border-red-500/25 hover:shadow-lg hover:shadow-red-500/5 transition-all duration-300">
+                <div className="h-10 w-10 rounded-xl bg-red-50 dark:bg-red-500/10 flex items-center justify-center mb-4 group-hover:bg-red-100 dark:group-hover:bg-red-500/15 transition-colors">
+                  <p.icon className="h-5 w-5 text-red-500 dark:text-red-400" />
                 </div>
-                <h3 className="font-bold text-foreground text-base mb-1.5">{p.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{p.desc}</p>
+                <h3 className="font-bold text-slate-900 dark:text-white text-base mb-1.5">{p.title}</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{p.desc}</p>
               </motion.div>
             ))}
           </div>
 
-          {/* Arrow transition */}
+          {/* Arrow */}
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="flex flex-col items-center mb-16">
-            <div className="h-14 w-14 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-xl shadow-primary/20">
-              <ArrowDown className="h-6 w-6 text-primary-foreground" />
+            <div className="h-14 w-14 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-xl shadow-amber-500/20">
+              <ArrowDown className="h-6 w-6 text-white" />
             </div>
-            <p className="mt-3 font-bold text-primary text-sm">Solusi Kami</p>
+            <p className="mt-3 font-bold text-amber-600 dark:text-amber-400 text-sm">Solusi Kami</p>
           </motion.div>
 
           {/* Solutions */}
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-14">
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-3 block">Jawaban Tepat</span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight">
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-amber-600 dark:text-amber-400 mb-3 block">Jawaban Tepat</span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               ATSkolla — Absensi Digital Sekolah
             </h2>
-            <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">Setiap permasalahan memiliki solusi teknologi modern yang terintegrasi dalam satu platform.</p>
+            <p className="mt-3 text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">Setiap permasalahan memiliki solusi teknologi modern yang terintegrasi dalam satu platform.</p>
           </motion.div>
 
           <div className="grid sm:grid-cols-2 gap-5">
             {SOLUTIONS.map((s, i) => (
               <motion.div key={s.solution} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
-                className="group bg-card border border-primary/10 rounded-2xl p-6 hover:border-primary/25 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300">
+                className="group bg-white dark:bg-slate-800/50 border border-amber-100 dark:border-amber-500/10 rounded-2xl p-6 hover:border-amber-200 dark:hover:border-amber-500/25 hover:shadow-lg hover:shadow-amber-500/5 transition-all duration-300">
                 <div className="flex items-start gap-4">
-                  <div className="h-11 w-11 rounded-xl gradient-primary flex items-center justify-center shrink-0 shadow-lg shadow-primary/15 group-hover:scale-105 transition-transform">
-                    <s.icon className="h-5 w-5 text-primary-foreground" />
+                  <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/15 group-hover:scale-105 transition-transform">
+                    <s.icon className="h-5 w-5 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
-                      <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-destructive/10 text-destructive">{s.problem}</span>
-                      <ArrowRight className="h-3.5 w-3.5 text-primary shrink-0" />
-                      <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary">{s.solution}</span>
+                      <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400">{s.problem}</span>
+                      <ArrowRight className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                      <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400">{s.solution}</span>
                     </div>
-                    <h3 className="font-bold text-foreground text-sm mb-1">{s.solution}</h3>
-                    <p className="text-xs text-muted-foreground leading-relaxed">{s.desc}</p>
+                    <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-1">{s.solution}</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{s.desc}</p>
                   </div>
                 </div>
               </motion.div>
@@ -401,28 +396,28 @@ const LandingPage = () => {
 
       {/* ─── How It Works ─── */}
       <section id="how-it-works" className="py-20 sm:py-28 relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-muted/50 via-transparent to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-50/50 dark:from-slate-900/30 via-transparent to-transparent pointer-events-none" />
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-16">
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-3 block">Cara Kerja</span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight">
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-amber-600 dark:text-amber-400 mb-3 block">Cara Kerja</span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               Mulai dalam 4 Langkah Mudah
             </h2>
-            <p className="mt-3 text-muted-foreground max-w-lg mx-auto">Proses sederhana dari pendaftaran hingga monitoring kehadiran siswa.</p>
+            <p className="mt-3 text-slate-500 dark:text-slate-400 max-w-lg mx-auto">Proses sederhana dari pendaftaran hingga monitoring kehadiran siswa.</p>
           </motion.div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {WORKFLOW.map((w, i) => (
               <motion.div key={w.step} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
                 className="relative group">
-                <div className="bg-card border border-border/60 rounded-2xl p-6 h-full hover:border-primary/25 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300">
-                  <span className="text-4xl font-black text-primary/15 group-hover:text-primary/25 transition-colors">{w.step}</span>
-                  <h3 className="text-base font-bold text-foreground mt-2 mb-2">{w.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{w.desc}</p>
+                <div className="bg-white dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 rounded-2xl p-6 h-full hover:border-amber-200 dark:hover:border-amber-500/25 hover:shadow-lg hover:shadow-amber-500/5 transition-all duration-300">
+                  <span className="text-4xl font-black text-amber-500/15 group-hover:text-amber-500/25 transition-colors">{w.step}</span>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white mt-2 mb-2">{w.title}</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{w.desc}</p>
                 </div>
                 {i < WORKFLOW.length - 1 && (
                   <div className="hidden lg:flex absolute top-1/2 -right-3 -translate-y-1/2 z-10">
-                    <ChevronRight className="h-5 w-5 text-primary/30" />
+                    <ChevronRight className="h-5 w-5 text-amber-500/30" />
                   </div>
                 )}
               </motion.div>
@@ -435,22 +430,22 @@ const LandingPage = () => {
       <section id="features" className="py-20 sm:py-28">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-16">
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-3 block">Fitur Unggulan</span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight">
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-amber-600 dark:text-amber-400 mb-3 block">Fitur Unggulan</span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               Semua yang Sekolah Anda Butuhkan
             </h2>
-            <p className="mt-3 text-muted-foreground max-w-xl mx-auto">Platform lengkap untuk mengelola absensi siswa secara digital.</p>
+            <p className="mt-3 text-slate-500 dark:text-slate-400 max-w-xl mx-auto">Platform lengkap untuk mengelola absensi siswa secara digital.</p>
           </motion.div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {FEATURES.map((f, i) => (
               <motion.div key={f.title} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
-                className="group bg-card border border-border/50 rounded-2xl p-6 sm:p-7 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 hover:-translate-y-1">
+                className="group bg-white dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 rounded-2xl p-6 sm:p-7 hover:border-amber-200 dark:hover:border-amber-500/20 hover:shadow-xl hover:shadow-amber-500/5 transition-all duration-300 hover:-translate-y-1">
                 <div className={`h-12 w-12 rounded-2xl bg-gradient-to-br ${f.color} flex items-center justify-center shadow-lg mb-5 group-hover:scale-110 transition-transform duration-300`}>
                   <f.icon className="h-6 w-6 text-white" />
                 </div>
-                <h3 className="font-bold text-foreground text-base mb-2">{f.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
+                <h3 className="font-bold text-slate-900 dark:text-white text-base mb-2">{f.title}</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{f.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -459,34 +454,32 @@ const LandingPage = () => {
 
       {/* ─── Why Choose Us ─── */}
       <section className="py-20 sm:py-28 relative overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-primary/3 rounded-full blur-[150px] pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-amber-500/3 rounded-full blur-[150px] pointer-events-none" />
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            {/* Left text */}
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
-              <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-3 block">Kenapa Kami</span>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight leading-tight">
-                Solusi Absensi Digital yang <span className="text-primary">Terpercaya</span>
+              <span className="text-xs font-bold uppercase tracking-[0.2em] text-amber-600 dark:text-amber-400 mb-3 block">Kenapa Kami</span>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
+                Solusi Absensi Digital yang <span className="text-amber-600 dark:text-amber-400">Terpercaya</span>
               </h2>
-              <p className="mt-4 text-muted-foreground leading-relaxed">
+              <p className="mt-4 text-slate-500 dark:text-slate-400 leading-relaxed">
                 Kami menyediakan solusi menyeluruh untuk membantu sekolah Anda mengelola kehadiran siswa dengan teknologi terkini.
               </p>
               <button onClick={() => navigate("/register")}
-                className="mt-8 inline-flex items-center gap-2 gradient-primary text-primary-foreground px-6 py-3 rounded-xl font-semibold text-sm shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all hover:scale-[1.02]">
+                className="mt-8 inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white px-6 py-3 rounded-xl font-semibold text-sm shadow-lg shadow-amber-500/20 hover:shadow-amber-500/40 transition-all hover:scale-[1.02]">
                 Mulai Sekarang <ArrowRight className="h-4 w-4" />
               </button>
             </motion.div>
 
-            {/* Right cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {WHY_ITEMS.map((item, i) => (
                 <motion.div key={item.title} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
-                  className="bg-card border border-border/50 rounded-2xl p-5 hover:border-primary/20 hover:shadow-lg transition-all duration-300">
-                  <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
-                    <item.icon className="h-5 w-5 text-primary" />
+                  className="bg-white dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 rounded-2xl p-5 hover:border-amber-200 dark:hover:border-amber-500/20 hover:shadow-lg transition-all duration-300">
+                  <div className="h-10 w-10 rounded-xl bg-amber-500/10 flex items-center justify-center mb-3">
+                    <item.icon className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                   </div>
-                  <h3 className="font-bold text-foreground text-sm mb-1">{item.title}</h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
+                  <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-1">{item.title}</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{item.desc}</p>
                 </motion.div>
               ))}
             </div>
@@ -496,12 +489,12 @@ const LandingPage = () => {
 
       {/* ─── Pricing ─── */}
       {showPricing && (
-      <section className="py-20 sm:py-28 bg-muted/30">
+      <section className="py-20 sm:py-28 bg-slate-50/80 dark:bg-slate-900/50">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-14">
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-3 block">Harga</span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight">Pilih Paket Terbaik</h2>
-            <p className="mt-3 text-muted-foreground max-w-lg mx-auto">Harga transparan, tanpa biaya tersembunyi. Mulai gratis, upgrade kapan saja.</p>
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-amber-600 dark:text-amber-400 mb-3 block">Harga</span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">Pilih Paket Terbaik</h2>
+            <p className="mt-3 text-slate-500 dark:text-slate-400 max-w-lg mx-auto">Harga transparan, tanpa biaya tersembunyi. Mulai gratis, upgrade kapan saja.</p>
           </motion.div>
 
           <div className="grid sm:grid-cols-3 gap-5 items-stretch">
@@ -513,30 +506,30 @@ const LandingPage = () => {
               <motion.div key={plan.id} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="h-full">
                 <div className={`rounded-2xl p-6 sm:p-7 border transition-all h-full flex flex-col relative overflow-hidden ${
                   isHighlighted 
-                    ? "border-primary/30 bg-card shadow-xl shadow-primary/10 ring-2 ring-primary/20" 
-                    : "border-border/50 bg-card hover:border-primary/15 hover:shadow-lg"
+                    ? "border-amber-300 dark:border-amber-500/30 bg-white dark:bg-slate-800 shadow-xl shadow-amber-500/10 ring-2 ring-amber-500/20" 
+                    : "border-slate-200 dark:border-slate-700/50 bg-white dark:bg-slate-800/50 hover:border-amber-200 dark:hover:border-amber-500/15 hover:shadow-lg"
                 }`}>
                   {isHighlighted && (
-                    <div className="absolute top-0 right-0 gradient-primary text-primary-foreground text-[10px] font-bold px-3 py-1 rounded-bl-xl">
+                    <div className="absolute top-0 right-0 bg-gradient-to-r from-amber-500 to-orange-600 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl">
                       ⭐ Rekomendasi
                     </div>
                   )}
-                  <p className="text-xs text-muted-foreground font-medium mb-1">{plan.description || ""}</p>
-                  <h3 className="text-lg font-bold text-foreground">{plan.name}</h3>
-                  <p className="text-3xl font-extrabold text-primary mt-3">{priceText}<span className="text-xs text-muted-foreground font-normal">/bulan</span></p>
-                  {plan.max_students && <p className="text-xs text-muted-foreground mt-1">Maks. {plan.max_students} siswa</p>}
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mb-1">{plan.description || ""}</p>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">{plan.name}</h3>
+                  <p className="text-3xl font-extrabold text-amber-600 dark:text-amber-400 mt-3">{priceText}<span className="text-xs text-slate-400 font-normal">/bulan</span></p>
+                  {plan.max_students && <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Maks. {plan.max_students} siswa</p>}
                   <ul className="mt-6 space-y-2.5 flex-1">
                     {featureList.map((f: string) => (
                       <li key={f} className="flex items-start gap-2 text-sm">
-                        <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                        <span className="text-foreground">{f}</span>
+                        <CheckCircle2 className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                        <span className="text-slate-700 dark:text-slate-200">{f}</span>
                       </li>
                     ))}
                   </ul>
                   <button onClick={() => navigate("/register")} className={`mt-6 w-full py-3 rounded-xl font-bold text-sm transition-all ${
                     isHighlighted 
-                      ? "gradient-primary text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-primary/30" 
-                      : "bg-muted text-foreground hover:bg-primary/10 hover:text-primary border border-border"
+                      ? "bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/20 hover:shadow-amber-500/30" 
+                      : "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-amber-50 dark:hover:bg-amber-500/10 hover:text-amber-700 dark:hover:text-amber-300 border border-slate-200 dark:border-slate-600"
                   }`}>
                     Mulai Sekarang
                   </button>
@@ -553,11 +546,11 @@ const LandingPage = () => {
       <section className="py-16 sm:py-20 relative overflow-hidden">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-12">
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-3 block">Kepercayaan</span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-amber-600 dark:text-amber-400 mb-3 block">Kepercayaan</span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               Telah Dipercaya oleh Sekolah-Sekolah
             </h2>
-            <p className="mt-3 text-muted-foreground text-sm max-w-lg mx-auto">Bergabung bersama sekolah-sekolah yang telah merasakan manfaat absensi digital.</p>
+            <p className="mt-3 text-slate-500 dark:text-slate-400 text-sm max-w-lg mx-auto">Bergabung bersama sekolah-sekolah yang telah merasakan manfaat absensi digital.</p>
           </motion.div>
 
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={1}
@@ -565,14 +558,14 @@ const LandingPage = () => {
             {trustedSchools.map((school, i) => (
               <motion.div key={school.name} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
                 className="group flex flex-col items-center gap-2">
-                <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl bg-card border border-border/60 flex items-center justify-center shadow-sm group-hover:border-primary/25 group-hover:shadow-lg group-hover:shadow-primary/5 transition-all duration-300 overflow-hidden">
+                <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700 flex items-center justify-center shadow-sm group-hover:border-amber-200 dark:group-hover:border-amber-500/25 group-hover:shadow-lg group-hover:shadow-amber-500/5 transition-all duration-300 overflow-hidden">
                   {school.logo_url ? (
                     <img src={school.logo_url} alt={school.name} className="h-full w-full object-contain p-2" />
                   ) : (
-                    <span className="text-sm sm:text-base font-extrabold text-primary/70 group-hover:text-primary transition-colors">{school.initials}</span>
+                    <span className="text-sm sm:text-base font-extrabold text-amber-500/70 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">{school.initials}</span>
                   )}
                 </div>
-                <span className="text-[10px] sm:text-xs text-muted-foreground text-center max-w-[90px] leading-tight">{school.name}</span>
+                <span className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 text-center max-w-[90px] leading-tight">{school.name}</span>
               </motion.div>
             ))}
           </motion.div>
@@ -586,9 +579,9 @@ const LandingPage = () => {
       <section className="py-16 sm:py-24">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-10">
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-3 block">Pembayaran</span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground">Semua Metode Pembayaran</h2>
-            <p className="mt-3 text-muted-foreground text-sm">Bebas pilih cara bayar yang paling nyaman.</p>
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-amber-600 dark:text-amber-400 mb-3 block">Pembayaran</span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">Semua Metode Pembayaran</h2>
+            <p className="mt-3 text-slate-500 dark:text-slate-400 text-sm">Bebas pilih cara bayar yang paling nyaman.</p>
           </motion.div>
           <div className="space-y-6">
             {[
@@ -597,8 +590,8 @@ const LandingPage = () => {
               { title: "Gerai / Outlet", img: "/images/payments/gerai.webp", small: true },
             ].map((cat, ci) => (
               <motion.div key={ci} custom={ci} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
-                className="bg-card border border-border/50 rounded-2xl p-5 sm:p-6">
-                <h4 className="font-bold text-foreground text-sm mb-3">{cat.title}</h4>
+                className="bg-white dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 rounded-2xl p-5 sm:p-6">
+                <h4 className="font-bold text-slate-900 dark:text-white text-sm mb-3">{cat.title}</h4>
                 <img src={cat.img} alt={cat.title} className={cat.small ? "h-8 sm:h-10 w-auto object-contain" : "max-w-full sm:max-w-2xl h-auto object-contain"} />
               </motion.div>
             ))}
@@ -610,83 +603,79 @@ const LandingPage = () => {
       <section className="py-20 sm:py-28 px-4">
         <div className="max-w-4xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }}
-            className="gradient-primary rounded-3xl p-10 sm:p-14 text-center relative overflow-hidden">
-            {/* Decorative circles */}
+            className="bg-gradient-to-r from-amber-500 to-orange-600 rounded-3xl p-10 sm:p-14 text-center relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3" />
             <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/3" />
 
             <div className="relative z-10">
               <div className="h-14 w-14 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center mx-auto mb-6">
-                <GraduationCap className="h-7 w-7 text-primary-foreground" />
+                <GraduationCap className="h-7 w-7 text-white" />
               </div>
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-primary-foreground tracking-tight mb-4">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight mb-4">
                 Siap Tingkatkan Absensi Sekolah?
               </h2>
-              <p className="text-primary-foreground/80 text-sm sm:text-base mb-8 max-w-lg mx-auto">
+              <p className="text-white/80 text-sm sm:text-base mb-8 max-w-lg mx-auto">
                 Bergabung sekarang dan rasakan kemudahan absensi digital. Tanpa biaya setup.
               </p>
               <button onClick={() => navigate("/register")}
-                className="inline-flex items-center gap-2 bg-white text-primary px-8 py-3.5 rounded-2xl font-bold text-sm transition-all hover:bg-white/90 shadow-xl hover:scale-[1.02] active:scale-[0.98]">
+                className="inline-flex items-center gap-2 bg-white text-amber-700 px-8 py-3.5 rounded-2xl font-bold text-sm transition-all hover:bg-white/90 shadow-xl hover:scale-[1.02] active:scale-[0.98]">
                 <Zap className="h-4 w-4" /> Daftar Gratis Sekarang
               </button>
-              <p className="text-primary-foreground/50 text-xs mt-4">Tidak perlu kartu kredit • Setup instan</p>
+              <p className="text-white/50 text-xs mt-4">Tidak perlu kartu kredit • Setup instan</p>
             </div>
           </motion.div>
         </div>
       </section>
 
       {/* ─── Footer ─── */}
-      <footer className="border-t border-border py-16 bg-card/50">
+      <footer className="border-t border-slate-200 dark:border-slate-800 py-16 bg-slate-50/50 dark:bg-slate-900/50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            {/* Brand & Tagline */}
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 {get("footer_logo") ? (
                   <img src={get("footer_logo")} alt="Logo" className="h-10 w-10 rounded-xl object-cover shadow-md" />
                 ) : (
-                  <div className="h-10 w-10 rounded-xl gradient-primary flex items-center justify-center shadow-md">
-                    <GraduationCap className="h-5 w-5 text-primary-foreground" />
+                  <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-md">
+                    <GraduationCap className="h-5 w-5 text-white" />
                   </div>
                 )}
                 <div>
-                  <p className="font-bold text-foreground text-sm">ATSkolla</p>
-                  <p className="text-xs text-muted-foreground">Absensi Digital Sekolah</p>
+                  <p className="font-bold text-slate-900 dark:text-white text-sm">ATSkolla</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Absensi Digital Sekolah</p>
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                 Solusi absensi digital #1 untuk sekolah modern. Hemat waktu guru, tingkatkan kedisiplinan siswa, dan beri ketenangan kepada orang tua — semua dalam satu platform.
               </p>
             </div>
 
-            {/* Keunggulan */}
             <div className="space-y-3">
-              <p className="font-bold text-foreground text-sm">Kenapa Sekolah Memilih Kami?</p>
-              <ul className="space-y-2 text-xs text-muted-foreground">
-                <li className="flex items-start gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" /> Scan barcode & face recognition — absensi kurang dari 1 detik</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" /> Notifikasi WhatsApp otomatis langsung ke orang tua</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" /> Dashboard real-time untuk kepala sekolah & guru</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" /> Gratis untuk memulai, tanpa biaya setup</li>
+              <p className="font-bold text-slate-900 dark:text-white text-sm">Kenapa Sekolah Memilih Kami?</p>
+              <ul className="space-y-2 text-xs text-slate-500 dark:text-slate-400">
+                <li className="flex items-start gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" /> Scan barcode & face recognition — absensi kurang dari 1 detik</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" /> Notifikasi WhatsApp otomatis langsung ke orang tua</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" /> Dashboard real-time untuk kepala sekolah & guru</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" /> Gratis untuk memulai, tanpa biaya setup</li>
               </ul>
             </div>
 
-            {/* Kontak */}
             <div className="space-y-3">
-              <p className="font-bold text-foreground text-sm">Hubungi Kami</p>
-              <div className="flex flex-col gap-2 text-xs text-muted-foreground">
+              <p className="font-bold text-slate-900 dark:text-white text-sm">Hubungi Kami</p>
+              <div className="flex flex-col gap-2 text-xs text-slate-500 dark:text-slate-400">
                 {get("footer_address") && <span className="flex items-start gap-1.5"><MapPin className="h-3.5 w-3.5 mt-0.5 shrink-0" /> {get("footer_address")}</span>}
                 {get("footer_email") && <span className="flex items-center gap-1.5"><Mail className="h-3.5 w-3.5 shrink-0" /> {get("footer_email")}</span>}
                 {get("footer_phone") && <span className="flex items-center gap-1.5"><Phone className="h-3.5 w-3.5 shrink-0" /> {get("footer_phone")}</span>}
               </div>
-              <p className="text-xs text-muted-foreground/70 leading-relaxed pt-2">
+              <p className="text-xs text-slate-400 dark:text-slate-500 leading-relaxed pt-2">
                 Punya pertanyaan? Tim kami siap membantu Anda kapan saja. Konsultasi gratis untuk kebutuhan sekolah Anda.
               </p>
             </div>
           </div>
 
-          <div className="mt-10 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3">
-            <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} ATSkolla — Absensi Digital Sekolah. All rights reserved.</p>
-            <p className="text-[10px] text-muted-foreground/50">Dipercaya sekolah-sekolah di seluruh Indonesia 🇮🇩</p>
+          <div className="mt-10 pt-6 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p className="text-xs text-slate-500 dark:text-slate-400">© {new Date().getFullYear()} ATSkolla — Absensi Digital Sekolah. All rights reserved.</p>
+            <p className="text-[10px] text-slate-400 dark:text-slate-500">Dipercaya sekolah-sekolah di seluruh Indonesia 🇮🇩</p>
           </div>
         </div>
       </footer>
