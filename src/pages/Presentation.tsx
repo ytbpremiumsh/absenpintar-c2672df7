@@ -300,7 +300,7 @@ const Presentation = () => {
       <nav className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-2xl border-b ${navBg} transition-colors duration-300`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/images/logo-absensi-pintar.png" alt="Absensi Pintar" className="h-9 object-contain" />
+            <img src="/images/logo-absensi-pintar.png" alt="ATSkolla" className="h-9 object-contain" />
           </div>
           <div className="flex items-center gap-2">
             <button onClick={() => setDark(!d)} className={`h-9 w-9 rounded-xl flex items-center justify-center transition-all ${d ? "bg-white/10 hover:bg-white/15 text-yellow-300" : "bg-slate-100 hover:bg-slate-200 text-slate-600"}`}>
