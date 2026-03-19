@@ -387,10 +387,10 @@ const Presentation = () => {
 
           {/* Arrow */}
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="flex flex-col items-center mb-16">
-            <div className="h-14 w-14 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-xl shadow-indigo-500/20">
+            <div className="h-14 w-14 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-xl shadow-amber-500/20">
               <ArrowDown className="h-6 w-6 text-white" />
             </div>
-            <p className={`mt-3 font-bold text-sm ${d ? "text-indigo-400" : "text-indigo-600"}`}>Solusi Kami</p>
+            <p className={`mt-3 font-bold text-sm ${d ? "text-amber-400" : "text-amber-600"}`}>Solusi Kami</p>
           </motion.div>
 
           {/* Solutions */}
