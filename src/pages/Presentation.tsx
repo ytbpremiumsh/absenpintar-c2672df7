@@ -490,7 +490,7 @@ const Presentation = () => {
                       <span className={`text-[10px] font-bold uppercase tracking-widest ${d ? "text-slate-500" : "text-slate-400"}`}>{f.badge}</span>
                     </div>
                     <h3 className="text-2xl sm:text-3xl font-extrabold tracking-tight">{f.title}</h3>
-                    <p className={`text-xs uppercase tracking-widest font-semibold mt-1 ${d ? "text-indigo-400" : "text-indigo-500"}`}>{f.subtitle}</p>
+                    <p className={`text-xs uppercase tracking-widest font-semibold mt-1 ${d ? "text-amber-400" : "text-amber-600"}`}>{f.subtitle}</p>
                     <p className={`mt-4 text-sm leading-relaxed ${d ? "text-slate-300" : "text-slate-600"}`}>{f.desc}</p>
                     <ul className="mt-5 space-y-2.5">
                       {f.points.map((p, i) => (
