@@ -255,7 +255,7 @@ const LandingPage = () => {
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-background/90 backdrop-blur-xl shadow-sm border-b border-border" : "bg-transparent"}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-18 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <img src="/images/logo-absensi-pintar.png" alt="Absensi Pintar" className="h-9 sm:h-10 object-contain" />
+            <img src="/images/logo-absensi-pintar.png" alt="ATSkolla" className="h-9 sm:h-10 object-contain" />
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
             <ThemeToggle />
