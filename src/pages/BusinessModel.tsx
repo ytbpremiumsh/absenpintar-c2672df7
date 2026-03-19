@@ -57,7 +57,7 @@ const PROBLEMS = [
 
 
 /* ═══════════════════════════════════════════
-   SOLUSI ABSENSI PINTAR
+   SOLUSI ATSKOLLA
    ═══════════════════════════════════════════ */
 const SOLUTIONS = [
 {

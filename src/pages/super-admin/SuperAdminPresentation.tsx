@@ -145,7 +145,7 @@ const SuperAdminPresentation = () => {
           <h3 className="font-bold text-foreground text-sm">Konten Hero</h3>
           <div className="space-y-1">
             <Label className="text-xs">Judul Utama</Label>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Absensi Pintar" />
+            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="ATSkolla" />
           </div>
           <div className="space-y-1">
             <Label className="text-xs">Subtitle</Label>
