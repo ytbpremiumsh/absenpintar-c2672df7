@@ -278,7 +278,7 @@ const Presentation = () => {
     fetchData();
   }, []);
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-slate-950"><Loader2 className="h-8 w-8 animate-spin text-indigo-400" /></div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-slate-950"><Loader2 className="h-8 w-8 animate-spin text-amber-400" /></div>;
   if (!isPublic) return <Navigate to="/" replace />;
 
   const d = dark;
