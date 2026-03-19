@@ -348,7 +348,7 @@ const BusinessModel = () => {
           <span className={`bg-gradient-to-b ${heroTitle} bg-clip-text text-transparent`}>{title}</span>
         </motion.h1>
 
-        <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.7 }} className={`mt-4 text-lg sm:text-xl font-semibold ${dark ? "text-indigo-300" : "text-indigo-600"}`}>
+        <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.7 }} className={`mt-4 text-lg sm:text-xl font-semibold ${dark ? "text-amber-300" : "text-amber-600"}`}>
           ATSkolla — Absensi Digital Sekolah
         </motion.p>
 
