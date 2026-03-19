@@ -529,7 +529,7 @@ const Presentation = () => {
             {EXTRA_FEATURES.map((f, i) => {
               const Icon = f.icon;
               return (
-                <motion.div key={f.title} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i} className={`rounded-2xl border p-6 transition-all duration-300 ${d ? "bg-white/[0.02] border-white/[0.06] hover:border-white/[0.12] hover:bg-white/[0.04]" : "bg-white border-slate-200 hover:border-indigo-200 hover:shadow-lg"}`}>
+                <motion.div key={f.title} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i} className={`rounded-2xl border p-6 transition-all duration-300 ${d ? "bg-white/[0.02] border-white/[0.06] hover:border-white/[0.12] hover:bg-white/[0.04]" : "bg-white border-slate-200 hover:border-amber-200 hover:shadow-lg"}`}>
                   <div className={`h-10 w-10 rounded-xl bg-gradient-to-br ${f.color} flex items-center justify-center shadow-lg mb-4`}>
                     <Icon className="h-5 w-5 text-white" />
                   </div>
