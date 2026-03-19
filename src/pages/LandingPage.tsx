@@ -141,7 +141,7 @@ const TestimonialSlider = ({ testimonials }: { testimonials: Testimonial[] }) =>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
             Apa Kata Mereka?
           </h2>
-          <p className="mt-3 text-muted-foreground text-sm max-w-lg mx-auto">Cerita nyata dari pengguna Absensi Pintar di seluruh Indonesia.</p>
+          <p className="mt-3 text-muted-foreground text-sm max-w-lg mx-auto">Cerita nyata dari pengguna ATSkolla di seluruh Indonesia.</p>
         </motion.div>
 
         <div className="relative">
