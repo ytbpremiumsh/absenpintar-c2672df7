@@ -290,8 +290,8 @@ const LandingPage = () => {
             </motion.div>
 
             <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.7 }}
-              className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight leading-tight">
-              <TypingEffect text="ATSkolla — Absensi Digital Sekolah" speed={60} className="bg-gradient-to-r from-foreground via-foreground to-primary bg-clip-text text-transparent" />
+              className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-extrabold tracking-tight leading-tight">
+              <TypingEffect texts={["ATSkolla — Absensi Digital Sekolah", "Cepat, Aman & Mudah Digunakan", "Solusi Absensi Modern untuk Sekolah"]} speed={60} className="bg-gradient-to-r from-foreground via-foreground to-primary bg-clip-text text-transparent" />
             </motion.h1>
 
             <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.6 }}

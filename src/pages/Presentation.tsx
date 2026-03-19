@@ -322,8 +322,8 @@ const Presentation = () => {
           </span>
         </motion.div>
 
-        <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.7 }} className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight leading-tight">
-          <TypingEffect text={title || "ATSkolla — Absensi Digital Sekolah"} speed={60} className={`bg-gradient-to-b ${d ? "from-white via-white to-white/50" : "from-slate-900 via-slate-800 to-indigo-700"} bg-clip-text text-transparent`} />
+        <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.7 }} className="text-2xl sm:text-3xl md:text-5xl font-extrabold tracking-tight leading-tight">
+          <TypingEffect texts={[title || "ATSkolla — Absensi Digital Sekolah", "Cepat, Aman & Mudah Digunakan", "Solusi Absensi Modern untuk Sekolah"]} speed={60} className={`bg-gradient-to-b ${d ? "from-white via-white to-white/50" : "from-slate-900 via-slate-800 to-amber-700"} bg-clip-text text-transparent`} />
         </motion.h1>
 
         <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.6 }} className={`mt-6 text-base sm:text-lg md:text-xl ${muted} max-w-2xl leading-relaxed`}>
