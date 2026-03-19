@@ -410,10 +410,10 @@ const BusinessModel = () => {
       <section id="solutions" className="py-20 sm:py-32 px-4">
         <div className="max-w-7xl mx-auto">
           <motion.div custom={0} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
-            <span className={`text-[11px] font-bold uppercase tracking-[0.2em] ${dark ? "text-emerald-400" : "text-emerald-600"} mb-4 block`}>Solusi Absensi Pintar</span>
+            <span className={`text-[11px] font-bold uppercase tracking-[0.2em] ${dark ? "text-emerald-400" : "text-emerald-600"} mb-4 block`}>Solusi ATSkolla</span>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">Solusi untuk Setiap Masalah</h2>
             <p className={`mt-4 ${mutedText} max-w-2xl mx-auto`}>
-              Absensi Pintar hadir sebagai solusi digital yang menjawab setiap permasalahan absensi di sekolah — dari pencatatan hingga pelaporan.
+              ATSkolla hadir sebagai solusi digital yang menjawab setiap permasalahan absensi di sekolah — dari pencatatan hingga pelaporan.
             </p>
           </motion.div>
 
