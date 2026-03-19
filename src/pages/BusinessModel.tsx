@@ -463,7 +463,7 @@ const BusinessModel = () => {
           <motion.div custom={0} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
             <span className={`text-[11px] font-bold uppercase tracking-[0.2em] ${dark ? "text-indigo-400" : "text-indigo-600"} mb-4 block`}>Sumber Pendapatan</span>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">5 Sumber Pendapatan</h2>
-            <p className={`mt-4 ${mutedText} max-w-2xl mx-auto`}>Absensi Pintar punya beberapa cara menghasilkan uang — tidak hanya dari satu sumber, tapi dari lima pilar yang saling menguatkan.</p>
+            <p className={`mt-4 ${mutedText} max-w-2xl mx-auto`}>ATSkolla punya beberapa cara menghasilkan uang — tidak hanya dari satu sumber, tapi dari lima pilar yang saling menguatkan.</p>
           </motion.div>
 
           {REVENUE_STREAMS.map((stream, idx) =>
