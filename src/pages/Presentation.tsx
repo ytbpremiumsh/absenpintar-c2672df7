@@ -244,7 +244,7 @@ const STATS = [
 const Presentation = () => {
   const [loading, setLoading] = useState(true);
   const [isPublic, setIsPublic] = useState(false);
-  const [title, setTitle] = useState("Absensi Pintar");
+  const [title, setTitle] = useState("ATSkolla");
   const [subtitle, setSubtitle] = useState("");
   const [ctaTitle, setCtaTitle] = useState("");
   const [ctaSubtitle, setCtaSubtitle] = useState("");
