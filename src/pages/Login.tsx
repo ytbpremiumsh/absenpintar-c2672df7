@@ -75,7 +75,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex bg-white dark:bg-slate-950">
+    <div className="min-h-screen flex bg-gradient-to-br from-slate-50 via-white to-indigo-50/30 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/30">
       {/* Left Sidebar - Hero Image */}
       <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden">
         <div className="absolute inset-0">
@@ -84,7 +84,7 @@ const Login = () => {
             alt="Smart School"
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-amber-700/90 via-amber-600/60 to-amber-500/30" />
+          <div className="absolute inset-0 bg-gradient-to-t from-indigo-900/90 via-indigo-700/60 to-blue-600/30" />
         </div>
         <div className="relative z-10 flex flex-col justify-between p-8 lg:p-12 w-full">
           <div className="flex items-center gap-3">
@@ -147,7 +147,7 @@ const Login = () => {
                   placeholder="email@sekolah.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="h-12 pl-10 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 focus:bg-white dark:focus:bg-slate-800 focus:border-amber-500 focus:ring-amber-500/20 transition-colors"
+                  className="h-12 pl-10 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 focus:bg-white dark:focus:bg-slate-800 focus:border-indigo-500 focus:ring-indigo-500/20 transition-colors"
                   required
                 />
               </div>
@@ -165,7 +165,7 @@ const Login = () => {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="h-12 pl-10 pr-10 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 focus:bg-white dark:focus:bg-slate-800 focus:border-amber-500 focus:ring-amber-500/20 transition-colors"
+                  className="h-12 pl-10 pr-10 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 focus:bg-white dark:focus:bg-slate-800 focus:border-indigo-500 focus:ring-indigo-500/20 transition-colors"
                   required
                 />
                 <button
@@ -181,7 +181,7 @@ const Login = () => {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full h-12 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold text-sm uppercase tracking-wide shadow-lg shadow-amber-500/20 hover:shadow-amber-500/30 transition-all"
+              className="w-full h-12 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-semibold text-sm uppercase tracking-wide shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30 transition-all"
             >
               {loading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -197,7 +197,7 @@ const Login = () => {
           <div className="text-center">
             <p className="text-sm text-slate-500 dark:text-slate-400">
               Belum punya akun?{" "}
-              <Link to="/register" className="text-amber-600 dark:text-amber-400 font-semibold hover:underline">
+              <Link to="/register" className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">
                 Daftar Sekolah
               </Link>
             </p>
