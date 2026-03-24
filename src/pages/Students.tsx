@@ -88,10 +88,11 @@ const Students = () => {
   useEffect(() => { fetchData(); }, [profile?.school_id]);
 
   const handleAdd = async () => {
-    if (!profile?.school_id || !form.name || !form.student_id || !form.class) {
+    if (!form.name || !form.student_id || !form.class) {
       toast.error("Nama, Kelas, dan NIS wajib diisi");
       return;
     }
+    if (!profile?.school_id) { toast.error("Data sekolah belum dimuat, silakan tunggu sebentar"); return; }
     // Check student limit
     const maxTotal = features.maxStudentsTotal ?? (features.maxClasses >= 999 ? Infinity : features.maxClasses * features.maxStudentsPerClass);
     if (maxTotal !== Infinity && students.length >= maxTotal) {

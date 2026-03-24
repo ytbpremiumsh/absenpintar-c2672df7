@@ -57,7 +57,7 @@ const ManageWaliKelas = () => {
   const schoolId = profile?.school_id;
 
   const fetchData = async () => {
-    if (!schoolId) return;
+    if (!schoolId) { setLoading(false); return; }
 
     const [assignmentsRes, classesRes, studentsRes] = await Promise.all([
       supabase.from("class_teachers").select("*").eq("school_id", schoolId),
@@ -92,9 +92,10 @@ const ManageWaliKelas = () => {
   useEffect(() => { fetchData(); }, [schoolId]);
 
   const handleCreate = async () => {
-    if (!formName || !formEmail || !formPassword || !formClass || !schoolId) {
-      toast.error("Semua field harus diisi"); return;
+    if (!formName || !formEmail || !formPassword || !formClass) {
+      toast.error("Nama, email, password, dan kelas harus diisi"); return;
     }
+    if (!schoolId) { toast.error("Data sekolah belum dimuat, silakan tunggu sebentar"); return; }
     if (formPassword.length < 6) { toast.error("Password minimal 6 karakter"); return; }
 
     setCreating(true);

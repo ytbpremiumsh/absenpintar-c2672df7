@@ -47,7 +47,7 @@ const ManageStaff = () => {
   const schoolId = profile?.school_id;
 
   const fetchStaff = async () => {
-    if (!schoolId) return;
+    if (!schoolId) { setLoading(false); return; }
     const { data: profiles } = await supabase.from("profiles").select("user_id, full_name").eq("school_id", schoolId);
     if (!profiles || profiles.length === 0) { setStaff([]); setLoading(false); return; }
 
@@ -66,7 +66,8 @@ const ManageStaff = () => {
   useEffect(() => { fetchStaff(); }, [schoolId]);
 
   const handleCreate = async () => {
-    if (!formName || !formEmail || !formPassword || !schoolId) { toast.error("Nama, email, dan password harus diisi"); return; }
+    if (!formName || !formEmail || !formPassword) { toast.error("Nama, email, dan password harus diisi"); return; }
+    if (!schoolId) { toast.error("Data sekolah belum dimuat, silakan tunggu sebentar"); return; }
     if (formPassword.length < 6) { toast.error("Password minimal 6 karakter"); return; }
 
     setCreating(true);

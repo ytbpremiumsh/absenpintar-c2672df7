@@ -14,6 +14,7 @@ import {
   Trophy, Medal, Crown, Sparkles
 } from "lucide-react";
 import { useReferral } from "@/hooks/useReferral";
+import { PremiumGate } from "@/components/PremiumGate";
 import confetti from "canvas-confetti";
 
 const statusColors: Record<string, string> = {

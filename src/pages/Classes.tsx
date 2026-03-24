@@ -53,7 +53,8 @@ const Classes = () => {
   useEffect(() => { fetchData(); }, [profile?.school_id]);
 
   const handleAddClass = async () => {
-    if (!profile?.school_id || !newClassName.trim()) { toast.error("Nama kelas wajib diisi"); return; }
+    if (!newClassName.trim()) { toast.error("Nama kelas wajib diisi"); return; }
+    if (!profile?.school_id) { toast.error("Data sekolah belum dimuat, silakan tunggu sebentar"); return; }
     // Check class limit
     if (features.maxClasses < 999 && classes.length >= features.maxClasses) {
       toast.error(`Batas maksimal ${features.maxClasses} kelas untuk paket ${features.planName}. Silakan upgrade paket untuk menambah kelas.`);
