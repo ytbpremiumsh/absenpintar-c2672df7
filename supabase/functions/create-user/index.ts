@@ -17,7 +17,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    const { email, password, full_name, role, school_id, npsn, school_name, school_address, phone } = await req.json();
+    const { email, password, full_name, role, school_id, npsn, school_name, school_address, phone, referral_code } = await req.json();
 
     // Determine school_id: use provided or create new school from NPSN
     let resolvedSchoolId = school_id;
@@ -58,12 +58,65 @@ serve(async (req) => {
 
     const userId = userData.user.id;
 
-    // Update profile with school_id
-    if (resolvedSchoolId) {
-      await supabaseAdmin
+    // Generate unique referral code
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let refCodeGenerated = 'ATS-';
+    for (let i = 0; i < 6; i++) refCodeGenerated += chars.charAt(Math.floor(Math.random() * chars.length));
+
+    // Update profile with school_id and referral code
+    const profileUpdate: any = { full_name, referral_code: refCodeGenerated };
+    if (resolvedSchoolId) profileUpdate.school_id = resolvedSchoolId;
+
+    await supabaseAdmin
+      .from('profiles')
+      .update(profileUpdate)
+      .eq('user_id', userId);
+
+    // Handle referral attribution
+    if (referral_code) {
+      const { data: referrerProfile } = await supabaseAdmin
         .from('profiles')
-        .update({ school_id: resolvedSchoolId, full_name })
-        .eq('user_id', userId);
+        .select('user_id')
+        .eq('referral_code', referral_code)
+        .maybeSingle();
+
+      if (referrerProfile && referrerProfile.user_id !== userId) {
+        // Set referred_by
+        await supabaseAdmin
+          .from('profiles')
+          .update({ referred_by: referrerProfile.user_id })
+          .eq('user_id', userId);
+
+        // Create referral record
+        await supabaseAdmin
+          .from('referrals')
+          .insert({
+            referrer_id: referrerProfile.user_id,
+            referred_user_id: userId,
+            status: 'registered',
+            points_awarded: 0,
+          });
+
+        // Trigger referral event
+        try {
+          const refUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/referral`;
+          await fetch(refUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': Deno.env.get('SUPABASE_ANON_KEY')!,
+            },
+            body: JSON.stringify({
+              action: 'handle_event',
+              event_type: 'REGISTER',
+              referred_user_id: userId,
+              api_key: Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'),
+            }),
+          });
+        } catch (e) {
+          console.error('Referral event error:', e);
+        }
+      }
     }
 
     // Assign role
