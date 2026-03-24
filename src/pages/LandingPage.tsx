@@ -545,7 +545,7 @@ const LandingPage = () => {
       <section className="py-16 sm:py-20 relative overflow-hidden">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-12">
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-amber-600 dark:text-amber-400 mb-3 block">Kepercayaan</span>
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-400 mb-3 block">Kepercayaan</span>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               Telah Dipercaya oleh Sekolah-Sekolah
             </h2>
@@ -557,11 +557,11 @@ const LandingPage = () => {
             {trustedSchools.map((school, i) => (
               <motion.div key={school.name} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
                 className="group flex flex-col items-center gap-2">
-                <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700 flex items-center justify-center shadow-sm group-hover:border-amber-200 dark:group-hover:border-amber-500/25 group-hover:shadow-lg group-hover:shadow-amber-500/5 transition-all duration-300 overflow-hidden">
+                <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700 flex items-center justify-center shadow-sm group-hover:border-indigo-200 dark:group-hover:border-indigo-500/25 group-hover:shadow-lg group-hover:shadow-indigo-500/5 transition-all duration-300 overflow-hidden">
                   {school.logo_url ? (
                     <img src={school.logo_url} alt={school.name} className="h-full w-full object-contain p-2" />
                   ) : (
-                    <span className="text-sm sm:text-base font-extrabold text-amber-500/70 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">{school.initials}</span>
+                    <span className="text-sm sm:text-base font-extrabold text-indigo-500/70 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{school.initials}</span>
                   )}
                 </div>
                 <span className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 text-center max-w-[90px] leading-tight">{school.name}</span>
