@@ -399,7 +399,7 @@ const LandingPage = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-slate-50/50 dark:from-slate-900/30 via-transparent to-transparent pointer-events-none" />
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-16">
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-amber-600 dark:text-amber-400 mb-3 block">Cara Kerja</span>
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-400 mb-3 block">Cara Kerja</span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               Mulai dalam 4 Langkah Mudah
             </h2>
@@ -410,14 +410,14 @@ const LandingPage = () => {
             {WORKFLOW.map((w, i) => (
               <motion.div key={w.step} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
                 className="relative group">
-                <div className="bg-white dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 rounded-2xl p-6 h-full hover:border-amber-200 dark:hover:border-amber-500/25 hover:shadow-lg hover:shadow-amber-500/5 transition-all duration-300">
-                  <span className="text-4xl font-black text-amber-500/15 group-hover:text-amber-500/25 transition-colors">{w.step}</span>
+                <div className="bg-white dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 rounded-2xl p-6 h-full hover:border-indigo-200 dark:hover:border-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/5 transition-all duration-300">
+                  <span className="text-4xl font-black text-indigo-500/15 group-hover:text-indigo-500/25 transition-colors">{w.step}</span>
                   <h3 className="text-base font-bold text-slate-900 dark:text-white mt-2 mb-2">{w.title}</h3>
                   <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{w.desc}</p>
                 </div>
                 {i < WORKFLOW.length - 1 && (
                   <div className="hidden lg:flex absolute top-1/2 -right-3 -translate-y-1/2 z-10">
-                    <ChevronRight className="h-5 w-5 text-amber-500/30" />
+                    <ChevronRight className="h-5 w-5 text-indigo-500/30" />
                   </div>
                 )}
               </motion.div>
@@ -430,7 +430,7 @@ const LandingPage = () => {
       <section id="features" className="py-20 sm:py-28">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-16">
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-amber-600 dark:text-amber-400 mb-3 block">Fitur Unggulan</span>
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-400 mb-3 block">Fitur Unggulan</span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               Semua yang Sekolah Anda Butuhkan
             </h2>
@@ -440,7 +440,7 @@ const LandingPage = () => {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {FEATURES.map((f, i) => (
               <motion.div key={f.title} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
-                className="group bg-white dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 rounded-2xl p-6 sm:p-7 hover:border-amber-200 dark:hover:border-amber-500/20 hover:shadow-xl hover:shadow-amber-500/5 transition-all duration-300 hover:-translate-y-1">
+                className="group bg-white dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 rounded-2xl p-6 sm:p-7 hover:border-indigo-200 dark:hover:border-indigo-500/20 hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-300 hover:-translate-y-1">
                 <div className={`h-12 w-12 rounded-2xl bg-gradient-to-br ${f.color} flex items-center justify-center shadow-lg mb-5 group-hover:scale-110 transition-transform duration-300`}>
                   <f.icon className="h-6 w-6 text-white" />
                 </div>
@@ -454,19 +454,19 @@ const LandingPage = () => {
 
       {/* ─── Why Choose Us ─── */}
       <section className="py-20 sm:py-28 relative overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-amber-500/3 rounded-full blur-[150px] pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-indigo-500/3 rounded-full blur-[150px] pointer-events-none" />
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
-              <span className="text-xs font-bold uppercase tracking-[0.2em] text-amber-600 dark:text-amber-400 mb-3 block">Kenapa Kami</span>
+              <span className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-400 mb-3 block">Kenapa Kami</span>
               <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
-                Solusi Absensi Digital yang <span className="text-amber-600 dark:text-amber-400">Terpercaya</span>
+                Solusi Absensi Digital yang <span className="text-indigo-600 dark:text-indigo-400">Terpercaya</span>
               </h2>
               <p className="mt-4 text-slate-500 dark:text-slate-400 leading-relaxed">
                 Kami menyediakan solusi menyeluruh untuk membantu sekolah Anda mengelola kehadiran siswa dengan teknologi terkini.
               </p>
               <button onClick={() => navigate("/register")}
-                className="mt-8 inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white px-6 py-3 rounded-xl font-semibold text-sm shadow-lg shadow-amber-500/20 hover:shadow-amber-500/40 transition-all hover:scale-[1.02]">
+                className="mt-8 inline-flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-6 py-3 rounded-xl font-semibold text-sm shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 transition-all hover:scale-[1.02]">
                 Mulai Sekarang <ArrowRight className="h-4 w-4" />
               </button>
             </motion.div>
@@ -474,9 +474,9 @@ const LandingPage = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {WHY_ITEMS.map((item, i) => (
                 <motion.div key={item.title} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
-                  className="bg-white dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 rounded-2xl p-5 hover:border-amber-200 dark:hover:border-amber-500/20 hover:shadow-lg transition-all duration-300">
-                  <div className="h-10 w-10 rounded-xl bg-amber-500/10 flex items-center justify-center mb-3">
-                    <item.icon className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                  className="bg-white dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 rounded-2xl p-5 hover:border-indigo-200 dark:hover:border-indigo-500/20 hover:shadow-lg transition-all duration-300">
+                  <div className="h-10 w-10 rounded-xl bg-indigo-500/10 flex items-center justify-center mb-3">
+                    <item.icon className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
                   </div>
                   <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-1">{item.title}</h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{item.desc}</p>
