@@ -22,7 +22,7 @@ const Teachers = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!profile?.school_id) return;
+      if (!profile?.school_id) { setLoading(false); return; }
       const { data } = await supabase
         .from("students")
         .select("*")

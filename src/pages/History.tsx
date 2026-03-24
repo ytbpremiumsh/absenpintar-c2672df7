@@ -53,7 +53,7 @@ const History = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!profile?.school_id) return;
+    if (!profile?.school_id) { setLoading(false); return; }
     const fetchLogs = async () => {
       let query = supabase
         .from("attendance_logs")

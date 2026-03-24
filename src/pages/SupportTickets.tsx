@@ -38,7 +38,7 @@ const SupportTickets = () => {
   const [selectedTicket, setSelectedTicket] = useState<any>(null);
 
   const fetchTickets = async () => {
-    if (!profile?.school_id) return;
+    if (!profile?.school_id) { setLoading(false); return; }
     const { data } = await supabase
       .from("support_tickets")
       .select("*")
