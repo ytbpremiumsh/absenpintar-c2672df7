@@ -578,7 +578,7 @@ const LandingPage = () => {
       <section className="py-16 sm:py-24">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-10">
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-amber-600 dark:text-amber-400 mb-3 block">Pembayaran</span>
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-400 mb-3 block">Pembayaran</span>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">Semua Metode Pembayaran</h2>
             <p className="mt-3 text-slate-500 dark:text-slate-400 text-sm">Bebas pilih cara bayar yang paling nyaman.</p>
           </motion.div>
@@ -602,7 +602,7 @@ const LandingPage = () => {
       <section className="py-20 sm:py-28 px-4">
         <div className="max-w-4xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }}
-            className="bg-gradient-to-r from-amber-500 to-orange-600 rounded-3xl p-10 sm:p-14 text-center relative overflow-hidden">
+            className="bg-gradient-to-r from-indigo-600 to-blue-700 rounded-3xl p-10 sm:p-14 text-center relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3" />
             <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/3" />
 
@@ -617,7 +617,7 @@ const LandingPage = () => {
                 Bergabung sekarang dan rasakan kemudahan absensi digital. Tanpa biaya setup.
               </p>
               <button onClick={() => navigate("/register")}
-                className="inline-flex items-center gap-2 bg-white text-amber-700 px-8 py-3.5 rounded-2xl font-bold text-sm transition-all hover:bg-white/90 shadow-xl hover:scale-[1.02] active:scale-[0.98]">
+                className="inline-flex items-center gap-2 bg-white text-indigo-700 px-8 py-3.5 rounded-2xl font-bold text-sm transition-all hover:bg-white/90 shadow-xl hover:scale-[1.02] active:scale-[0.98]">
                 <Zap className="h-4 w-4" /> Daftar Gratis Sekarang
               </button>
               <p className="text-white/50 text-xs mt-4">Tidak perlu kartu kredit • Setup instan</p>
@@ -635,7 +635,7 @@ const LandingPage = () => {
                 {get("footer_logo") ? (
                   <img src={get("footer_logo")} alt="Logo" className="h-10 w-10 rounded-xl object-cover shadow-md" />
                 ) : (
-                  <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-md">
+                  <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-600 to-blue-600 flex items-center justify-center shadow-md">
                     <GraduationCap className="h-5 w-5 text-white" />
                   </div>
                 )}
@@ -652,10 +652,10 @@ const LandingPage = () => {
             <div className="space-y-3">
               <p className="font-bold text-slate-900 dark:text-white text-sm">Kenapa Sekolah Memilih Kami?</p>
               <ul className="space-y-2 text-xs text-slate-500 dark:text-slate-400">
-                <li className="flex items-start gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" /> Scan barcode & face recognition — absensi kurang dari 1 detik</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" /> Notifikasi WhatsApp otomatis langsung ke orang tua</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" /> Dashboard real-time untuk kepala sekolah & guru</li>
-                <li className="flex items-start gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" /> Gratis untuk memulai, tanpa biaya setup</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-indigo-500 mt-0.5 shrink-0" /> Scan barcode & face recognition — absensi kurang dari 1 detik</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-indigo-500 mt-0.5 shrink-0" /> Notifikasi WhatsApp otomatis langsung ke orang tua</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-indigo-500 mt-0.5 shrink-0" /> Dashboard real-time untuk kepala sekolah & guru</li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="h-3.5 w-3.5 text-indigo-500 mt-0.5 shrink-0" /> Gratis untuk memulai, tanpa biaya setup</li>
               </ul>
             </div>
 
