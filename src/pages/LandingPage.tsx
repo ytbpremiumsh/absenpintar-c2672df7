@@ -134,11 +134,11 @@ const TestimonialSlider = ({ testimonials }: { testimonials: Testimonial[] }) =>
   };
 
   return (
-    <section className="py-16 sm:py-24 bg-amber-50/40 dark:bg-amber-950/10 relative overflow-hidden">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none" />
+    <section className="py-16 sm:py-24 bg-indigo-50/40 dark:bg-indigo-950/10 relative overflow-hidden">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none" />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-12">
-          <span className="text-xs font-bold uppercase tracking-[0.2em] text-amber-600 dark:text-amber-400 mb-3 block">Testimoni</span>
+          <span className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-400 mb-3 block">Testimoni</span>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             Apa Kata Mereka?
           </h2>
@@ -166,7 +166,7 @@ const TestimonialSlider = ({ testimonials }: { testimonials: Testimonial[] }) =>
                 className="w-full"
               >
                 <div className="bg-white dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/50 rounded-2xl p-8 sm:p-10 text-center relative">
-                  <Quote className="h-8 w-8 text-amber-500/15 absolute top-6 left-6" />
+                  <Quote className="h-8 w-8 text-indigo-500/15 absolute top-6 left-6" />
                   <div className="flex justify-center gap-1 mb-5">
                     {Array.from({ length: t.rating }).map((_, i) => (
                       <Star key={i} className="h-4 w-4 text-amber-400 fill-amber-400" />
@@ -187,7 +187,7 @@ const TestimonialSlider = ({ testimonials }: { testimonials: Testimonial[] }) =>
           <div className="flex justify-center gap-2 mt-6">
             {testimonials.map((_, i) => (
               <button key={i} onClick={() => { setDirection(i > current ? 1 : -1); setCurrent(i); }}
-                className={`h-2 rounded-full transition-all duration-300 ${i === current ? "w-6 bg-amber-500" : "w-2 bg-slate-300 dark:bg-slate-600 hover:bg-amber-300"}`} />
+                className={`h-2 rounded-full transition-all duration-300 ${i === current ? "w-6 bg-indigo-500" : "w-2 bg-slate-300 dark:bg-slate-600 hover:bg-indigo-300"}`} />
             ))}
           </div>
         </div>
