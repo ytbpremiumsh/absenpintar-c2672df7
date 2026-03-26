@@ -56,7 +56,6 @@ const whatsappNav = [
 ];
 
 const settingsNav = [
-  { title: "Referral & Poin", url: "/referral", icon: Gift },
   { title: "Langganan", url: "/subscription", icon: CreditCard },
   { title: "Bantuan", url: "/support", icon: LifeBuoy },
 ];

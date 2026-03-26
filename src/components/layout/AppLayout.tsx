@@ -1,7 +1,7 @@
 import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { Outlet, Navigate, useNavigate, useLocation } from "react-router-dom";
-import { Settings, LogOut, School, KeyRound, Menu } from "lucide-react";
+import { Settings, LogOut, School, KeyRound, Menu, Gift } from "lucide-react";
 import { NotificationBell } from "@/components/NotificationBell";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -84,6 +84,10 @@ function AppContent() {
                 <DropdownMenuItem onClick={() => navigate("/account-settings")}>
                   <KeyRound className="h-4 w-4 mr-2" />
                   Ganti Password
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/referral")}>
+                  <Gift className="h-4 w-4 mr-2" />
+                  Referral & Poin
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive">
