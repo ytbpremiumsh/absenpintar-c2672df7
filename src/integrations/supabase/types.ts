@@ -567,6 +567,33 @@ export type Database = {
           },
         ]
       }
+      promo_content: {
+        Row: {
+          created_at: string
+          id: string
+          key: string
+          type: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key: string
+          type?: string
+          updated_at?: string
+          value?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key?: string
+          type?: string
+          updated_at?: string
+          value?: string
+        }
+        Relationships: []
+      }
       qr_instructions: {
         Row: {
           created_at: string
