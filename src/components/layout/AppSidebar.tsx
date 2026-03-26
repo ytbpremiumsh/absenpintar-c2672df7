@@ -69,8 +69,16 @@ export function AppSidebar() {
   const isActive = (path: string) => location.pathname.startsWith(path);
 
   const [schoolData, setSchoolData] = useState<{ name: string; logo: string | null } | null>(null);
+  const [platformLogo, setPlatformLogo] = useState<string | null>(null);
 
   const isPremiumBrand = ["School", "Premium"].includes(features.planName);
+
+  useEffect(() => {
+    // Fetch platform logo (same as login page)
+    supabase.from("platform_settings").select("key, value").eq("key", "login_logo_url").maybeSingle().then(({ data }) => {
+      if (data?.value) setPlatformLogo(data.value);
+    });
+  }, []);
 
   useEffect(() => {
     if (!profile?.school_id) return;
@@ -121,6 +129,8 @@ export function AppSidebar() {
         <div className="flex items-center gap-3">
           {isPremiumBrand && schoolData?.logo ? (
             <img src={schoolData.logo} alt={schoolData.name} className="h-9 w-9 rounded-xl object-cover shrink-0 shadow-md" />
+          ) : platformLogo ? (
+            <img src={platformLogo} alt="ATSkolla" className="h-9 w-9 rounded-xl object-cover shrink-0 shadow-md" />
           ) : (
             <img src={atskollaLogo} alt="ATSkolla" className="h-9 w-9 rounded-xl object-cover shrink-0 shadow-md" />
           )}
