@@ -53,6 +53,7 @@ import ReferralDashboard from "./pages/ReferralDashboard";
 import NotFound from "./pages/NotFound";
 import Penawaran from "./pages/Penawaran";
 import SuperAdminPenawaran from "./pages/super-admin/SuperAdminPenawaran";
+import ForgotPassword from "./pages/ForgotPassword";
 
 const queryClient = new QueryClient();
 
@@ -68,6 +69,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/register" element={<Register />} />
             <Route path="/live/:schoolId" element={<PublicMonitoring />} />
             <Route path="/live/:schoolId/:className" element={<PublicClassMonitoring />} />

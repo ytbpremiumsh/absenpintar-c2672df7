@@ -194,7 +194,10 @@ const Login = () => {
             </Button>
           </form>
 
-          <div className="text-center">
+          <div className="text-center space-y-2">
+            <Link to="/forgot-password" className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline">
+              Lupa Password?
+            </Link>
             <p className="text-sm text-slate-500 dark:text-slate-400">
               Belum punya akun?{" "}
               <Link to="/register" className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">

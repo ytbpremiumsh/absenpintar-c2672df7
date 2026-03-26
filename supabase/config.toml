@@ -23,3 +23,12 @@ verify_jwt = false
 
 [functions.referral]
 verify_jwt = false
+
+[functions.forgot-password]
+verify_jwt = false
+
+[functions.send-otp]
+verify_jwt = false
+
+[functions.verify-otp-reset]
+verify_jwt = false
