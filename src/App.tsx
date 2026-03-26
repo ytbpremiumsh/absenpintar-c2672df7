@@ -50,6 +50,8 @@ import Presentation from "./pages/Presentation";
 import BusinessModel from "./pages/BusinessModel";
 import ReferralDashboard from "./pages/ReferralDashboard";
 import NotFound from "./pages/NotFound";
+import Penawaran from "./pages/Penawaran";
+import SuperAdminPenawaran from "./pages/super-admin/SuperAdminPenawaran";
 
 const queryClient = new QueryClient();
 
@@ -70,6 +72,7 @@ const App = () => (
             <Route path="/attendance/:schoolId" element={<PublicAttendanceMonitoring />} />
             <Route path="/presentation" element={<Presentation />} />
             <Route path="/business-model" element={<BusinessModel />} />
+            <Route path="/penawaran" element={<Penawaran />} />
             {/* Super Admin */}
             <Route element={<SuperAdminLayout />}>
               <Route path="/super-admin" element={<SuperAdminDashboard />} />
@@ -88,6 +91,7 @@ const App = () => (
               <Route path="/super-admin/testimonials" element={<SuperAdminTestimonials />} />
               <Route path="/super-admin/login-logs" element={<SuperAdminLoginLogs />} />
               <Route path="/super-admin/referral" element={<SuperAdminReferral />} />
+              <Route path="/super-admin/penawaran" element={<SuperAdminPenawaran />} />
             </Route>
             {/* School Admin / Staff */}
             <Route element={<AppLayout />}>

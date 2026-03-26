@@ -2,7 +2,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Outlet, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
-import { LayoutDashboard, School, CreditCard, Receipt, LogOut, Shield, CalendarCheck, MessageSquare, Building2, Megaphone, LifeBuoy, Globe, Presentation, TrendingUp, MessageSquareQuote, History, Gift } from "lucide-react";
+import { LayoutDashboard, School, CreditCard, Receipt, LogOut, Shield, CalendarCheck, MessageSquare, Building2, Megaphone, LifeBuoy, Globe, Presentation, TrendingUp, MessageSquareQuote, History, Gift, Megaphone as MegaphoneIcon } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import {
@@ -28,6 +28,7 @@ const navItems = [
   { title: "Presentasi", url: "/super-admin/presentation", icon: Presentation, group: "content" },
   { title: "Model Bisnis", url: "/super-admin/business-model", icon: TrendingUp, group: "content" },
   { title: "Referral & Poin", url: "/super-admin/referral", icon: Gift, group: "billing" },
+  { title: "Halaman Penawaran", url: "/super-admin/penawaran", icon: Globe, group: "content" },
 ];
 
 const groups = [
