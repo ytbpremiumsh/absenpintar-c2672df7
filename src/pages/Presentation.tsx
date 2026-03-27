@@ -86,7 +86,7 @@ const FEATURES = [
     ],
     image: "/images/presentation/ss-classes.png",
     icon: GraduationCap,
-    accent: "from-amber-500 to-orange-600",
+    accent: "from-indigo-600 to-blue-600",
     badge: "Organized",
   },
   {
@@ -206,7 +206,7 @@ const FEATURES = [
     ],
     image: "/images/presentation/ss-langganan.png",
     icon: Star,
-    accent: "from-amber-500 to-orange-600",
+    accent: "from-indigo-600 to-blue-600",
     badge: "Subscription",
   },
   {
@@ -443,10 +443,10 @@ const Presentation = () => {
       <section id="features" className="relative py-20 sm:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-50px" }} variants={fadeUp} custom={0} className="text-center mb-16 sm:mb-24">
-            <span className={`text-xs font-semibold uppercase tracking-widest ${d ? "text-amber-400" : "text-amber-600"}`}>Fitur Utama</span>
+            <span className={`text-xs font-semibold uppercase tracking-widest ${d ? "text-indigo-400" : "text-indigo-600"}`}>Fitur Utama</span>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mt-3">
               Semua yang Sekolah Anda <br className="hidden sm:block" />
-              <span className={`bg-gradient-to-r ${d ? "from-amber-300 to-orange-300" : "from-amber-600 to-orange-500"} bg-clip-text text-transparent`}>Butuhkan</span>
+              <span className={`bg-gradient-to-r ${d ? "from-indigo-300 to-blue-300" : "from-indigo-600 to-blue-500"} bg-clip-text text-transparent`}>Butuhkan</span>
             </h2>
             <p className={`mt-4 ${muted} max-w-xl mx-auto text-sm sm:text-base`}>
               13 fitur utama yang dirancang untuk mempermudah proses absensi siswa secara digital, aman, dan efisien.
@@ -468,7 +468,7 @@ const Presentation = () => {
                     <span className={`text-[10px] font-bold uppercase tracking-widest ${d ? "text-slate-500" : "text-slate-400"}`}>{f.badge}</span>
                   </div>
                   <h3 className="text-2xl sm:text-3xl font-extrabold tracking-tight">{f.title}</h3>
-                   <p className={`text-xs uppercase tracking-widest font-semibold mt-1 ${d ? "text-amber-400" : "text-amber-600"}`}>{f.subtitle}</p>
+                   <p className={`text-xs uppercase tracking-widest font-semibold mt-1 ${d ? "text-indigo-400" : "text-indigo-600"}`}>{f.subtitle}</p>
                   <p className={`mt-4 text-sm leading-relaxed max-w-2xl ${d ? "text-slate-300" : "text-slate-600"}`}>{f.desc}</p>
                   <div className="w-full max-w-5xl relative group my-8">
                     <div className={`absolute -inset-4 bg-gradient-to-r ${f.accent} rounded-3xl opacity-0 group-hover:opacity-10 blur-2xl transition-opacity duration-700`} />
@@ -501,7 +501,7 @@ const Presentation = () => {
                       <span className={`text-[10px] font-bold uppercase tracking-widest ${d ? "text-slate-500" : "text-slate-400"}`}>{f.badge}</span>
                     </div>
                     <h3 className="text-2xl sm:text-3xl font-extrabold tracking-tight">{f.title}</h3>
-                    <p className={`text-xs uppercase tracking-widest font-semibold mt-1 ${d ? "text-amber-400" : "text-amber-600"}`}>{f.subtitle}</p>
+                    <p className={`text-xs uppercase tracking-widest font-semibold mt-1 ${d ? "text-indigo-400" : "text-indigo-600"}`}>{f.subtitle}</p>
                     <p className={`mt-4 text-sm leading-relaxed ${d ? "text-slate-300" : "text-slate-600"}`}>{f.desc}</p>
                     <ul className="mt-5 space-y-2.5">
                       {f.points.map((p, i) => (
@@ -532,7 +532,7 @@ const Presentation = () => {
       <section className={`py-20 sm:py-32 ${d ? "bg-white/[0.01]" : "bg-slate-50/80"}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-14">
-            <span className={`text-xs font-semibold uppercase tracking-widest ${d ? "text-amber-400" : "text-amber-600"}`}>Dan Masih Banyak Lagi</span>
+            <span className={`text-xs font-semibold uppercase tracking-widest ${d ? "text-indigo-400" : "text-indigo-600"}`}>Dan Masih Banyak Lagi</span>
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mt-3">Fitur Pendukung</h2>
           </motion.div>
 
@@ -540,7 +540,7 @@ const Presentation = () => {
             {EXTRA_FEATURES.map((f, i) => {
               const Icon = f.icon;
               return (
-                <motion.div key={f.title} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i} className={`rounded-2xl border p-6 transition-all duration-300 ${d ? "bg-white/[0.02] border-white/[0.06] hover:border-white/[0.12] hover:bg-white/[0.04]" : "bg-white border-slate-200 hover:border-amber-200 hover:shadow-lg"}`}>
+                <motion.div key={f.title} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i} className={`rounded-2xl border p-6 transition-all duration-300 ${d ? "bg-white/[0.02] border-white/[0.06] hover:border-white/[0.12] hover:bg-white/[0.04]" : "bg-white border-slate-200 hover:border-indigo-200 hover:shadow-lg"}`}>
                   <div className={`h-10 w-10 rounded-xl bg-gradient-to-br ${f.color} flex items-center justify-center shadow-lg mb-4`}>
                     <Icon className="h-5 w-5 text-white" />
                   </div>
@@ -559,7 +559,7 @@ const Presentation = () => {
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-14">
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
                Mengapa{" "}
-              <span className={`bg-gradient-to-r ${d ? "from-amber-300 to-orange-300" : "from-amber-600 to-orange-500"} bg-clip-text text-transparent`}>
+              <span className={`bg-gradient-to-r ${d ? "from-indigo-300 to-blue-300" : "from-indigo-600 to-blue-500"} bg-clip-text text-transparent`}>
                 ATSkolla?
               </span>
             </h2>
@@ -574,8 +574,8 @@ const Presentation = () => {
             ].map((item, i) => {
               const Icon = item.icon;
               return (
-                <motion.div key={item.title} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i} className={`rounded-2xl border p-6 text-center transition-all duration-300 ${d ? "bg-white/[0.02] border-white/[0.06] hover:border-white/[0.12]" : "bg-white border-slate-200 hover:border-amber-200 hover:shadow-lg"}`}>
-                  <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/20 mx-auto mb-4">
+                <motion.div key={item.title} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i} className={`rounded-2xl border p-6 text-center transition-all duration-300 ${d ? "bg-white/[0.02] border-white/[0.06] hover:border-white/[0.12]" : "bg-white border-slate-200 hover:border-indigo-200 hover:shadow-lg"}`}>
+                  <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-indigo-600 to-blue-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 mx-auto mb-4">
                     <Icon className="h-5 w-5 text-white" />
                   </div>
                   <h4 className="font-bold text-sm">{item.title}</h4>
@@ -588,7 +588,7 @@ const Presentation = () => {
       </section>
 
       {/* ===== CTA ===== */}
-      <section className={`py-20 sm:py-32 ${d ? "bg-gradient-to-b from-amber-950/20 to-transparent" : "bg-gradient-to-b from-amber-50/60 to-transparent"}`}>
+      <section className={`py-20 sm:py-32 ${d ? "bg-gradient-to-b from-indigo-950/20 to-transparent" : "bg-gradient-to-b from-indigo-50/60 to-transparent"}`}>
         <div className="max-w-3xl mx-auto px-4 text-center">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">
@@ -599,7 +599,7 @@ const Presentation = () => {
               ) : (
                 <>
                   Siap Memodernisasi{" "}
-                  <span className={`bg-gradient-to-r ${d ? "from-amber-300 to-orange-300" : "from-amber-600 to-orange-500"} bg-clip-text text-transparent`}>
+                  <span className={`bg-gradient-to-r ${d ? "from-indigo-300 to-blue-300" : "from-indigo-600 to-blue-500"} bg-clip-text text-transparent`}>
                     Absensi Sekolah Anda?
                   </span>
                 </>
@@ -609,7 +609,7 @@ const Presentation = () => {
               {ctaSubtitle || "Bergabung sekarang dan rasakan kemudahan sistem absensi digital yang aman, cepat, dan transparan."}
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
-              <a href={ctaBtn1Link} className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white px-8 py-3.5 rounded-2xl font-semibold shadow-2xl shadow-amber-500/25 hover:shadow-amber-500/40 transition-all text-sm">
+              <a href={ctaBtn1Link} className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-8 py-3.5 rounded-2xl font-semibold shadow-2xl shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all text-sm">
                 <Zap className="h-4 w-4" /> {ctaBtn1 || "Daftar Gratis"}
               </a>
               <a href={ctaBtn2Link} className={`inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-2xl font-semibold transition-all text-sm border ${d ? "bg-white/5 hover:bg-white/10 border-white/10" : "bg-white hover:bg-slate-50 border-slate-200 text-slate-700"}`}>

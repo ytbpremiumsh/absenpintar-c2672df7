@@ -86,7 +86,7 @@ const SOLUTIONS = [
   problem: "Laporan Tidak Akurat",
   solution: "Dashboard Analitik Lengkap",
   desc: "Dashboard menampilkan statistik kehadiran per kelas, per siswa, dan per periode dengan visualisasi data yang jelas.",
-  gradient: "from-amber-500 to-orange-600"
+  gradient: "from-indigo-600 to-blue-600"
 },
 {
   icon: Bell,
@@ -173,8 +173,8 @@ const REVENUE_STREAMS = [
   "Bisa dihubungkan dengan sistem akademik sekolah yang sudah ada",
   "Biaya setup sekali bayar + biaya perawatan bulanan",
   "Peluang kerja sama jangka panjang dengan institusi besar"],
-  gradient: "from-amber-500 via-orange-500 to-red-500",
-  glow: "shadow-amber-500/20",
+  gradient: "from-indigo-500 via-blue-500 to-cyan-500",
+  glow: "shadow-indigo-500/20",
   badge: "Layanan Premium"
 }];
 
@@ -205,7 +205,7 @@ const PRICING_TIERS = [
   students: "Unlimited",
   features: ["Semua fitur School", "Face Recognition / Scan Wajah", "Multi Cabang Sekolah", "Kelas & Siswa Unlimited", "Dedicated Support", "Fitur Terbaru Lebih Awal"],
   highlight: false,
-  gradient: "from-amber-500 to-orange-600"
+  gradient: "from-indigo-600 to-blue-600"
 }];
 
 
@@ -272,7 +272,7 @@ const BusinessModel = () => {
     fetchData();
   }, []);
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-white"><Loader2 className="h-8 w-8 animate-spin text-amber-500" /></div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-white"><Loader2 className="h-8 w-8 animate-spin text-indigo-500" /></div>;
   if (!isPublic) return <Navigate to="/" replace />;
 
   const bg = dark ? "bg-slate-950 text-white" : "bg-white text-slate-900";
@@ -281,25 +281,25 @@ const BusinessModel = () => {
   const mutedText = dark ? "text-slate-400" : "text-slate-500";
   const subtleText = dark ? "text-slate-500" : "text-slate-400";
   const sectionAlt = dark ? "bg-white/[0.01]" : "bg-slate-50/80";
-  const cardBg = dark ? "bg-white/[0.03] border-white/[0.06] hover:border-white/[0.12] hover:bg-white/[0.06]" : "bg-white border-slate-200/80 hover:border-amber-200 hover:shadow-lg hover:shadow-amber-500/5";
+  const cardBg = dark ? "bg-white/[0.03] border-white/[0.06] hover:border-white/[0.12] hover:bg-white/[0.06]" : "bg-white border-slate-200/80 hover:border-indigo-200 hover:shadow-lg hover:shadow-indigo-500/5";
   const checkColor = dark ? "text-emerald-400" : "text-emerald-500";
   const detailText = dark ? "text-slate-400" : "text-slate-500";
   const dividerColor = dark ? "bg-slate-700" : "bg-slate-300";
   const badgeLabel = dark ? "text-slate-500" : "text-slate-400";
   const footerBg = dark ? "border-white/5" : "border-slate-200";
   const footerText = dark ? "text-slate-600" : "text-slate-400";
-  const ambientGlow1 = dark ? "bg-amber-600/8" : "bg-amber-200/40";
+  const ambientGlow1 = dark ? "bg-indigo-600/8" : "bg-indigo-200/40";
   const ambientGlow2 = dark ? "bg-orange-600/6" : "bg-orange-200/30";
-  const statGradient = dark ? "from-amber-400 to-orange-300" : "from-amber-600 to-orange-500";
-  const heroBadgeBg = dark ? "bg-white/5 border-white/10 text-amber-300" : "bg-amber-50 border-amber-100 text-amber-700";
+  const statGradient = dark ? "from-amber-400 to-orange-300" : "from-indigo-600 to-blue-500";
+  const heroBadgeBg = dark ? "bg-white/5 border-white/10 text-indigo-300" : "bg-indigo-50 border-indigo-100 text-indigo-700";
   const heroTitle = dark ? "from-white via-white to-white/60" : "from-slate-900 via-slate-800 to-amber-700";
-  const ctaBg = dark ? "bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 shadow-amber-600/30 hover:shadow-amber-500/50" : "bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 shadow-amber-600/20 hover:shadow-amber-500/40";
+  const ctaBg = dark ? "bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-orange-500 shadow-indigo-600/30 hover:shadow-indigo-500/50" : "bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-amber-400 hover:to-orange-500 shadow-indigo-600/20 hover:shadow-indigo-500/40";
   const secondaryBtn = dark ? "bg-white/5 hover:bg-white/10 border-white/10 text-white" : "bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700";
   const ambientSection = dark ? "via-amber-950/10" : "via-amber-50/50";
-  const ctaSectionBg = dark ? "from-amber-950/20" : "from-amber-50/60";
-  const whyCardBg = dark ? "bg-white/[0.02] border-white/[0.06] hover:border-white/[0.12]" : "bg-white border-slate-200/80 hover:border-amber-200 hover:shadow-lg";
-  const whyIconBg = dark ? "bg-gradient-to-br from-amber-600 to-orange-600 shadow-amber-500/20" : "bg-gradient-to-br from-amber-500 to-orange-600 shadow-amber-500/20";
-  const highlightCardBg = dark ? "bg-gradient-to-br from-amber-950/60 to-orange-950/60 border-amber-500/30" : "bg-gradient-to-br from-amber-50 to-orange-50 border-amber-300";
+  const ctaSectionBg = dark ? "from-indigo-950/20" : "from-indigo-50/60";
+  const whyCardBg = dark ? "bg-white/[0.02] border-white/[0.06] hover:border-white/[0.12]" : "bg-white border-slate-200/80 hover:border-indigo-200 hover:shadow-lg";
+  const whyIconBg = dark ? "bg-gradient-to-br from-indigo-600 to-blue-600 shadow-indigo-500/20" : "bg-gradient-to-br from-indigo-600 to-blue-600 shadow-indigo-500/20";
+  const highlightCardBg = dark ? "bg-gradient-to-br from-indigo-950/60 to-orange-950/60 border-indigo-500/30" : "bg-gradient-to-br from-indigo-50 to-orange-50 border-indigo-300";
   const problemCardBg = dark ? "bg-red-950/20 border-red-500/20" : "bg-red-50/80 border-red-200/80";
   const problemIconBg = dark ? "bg-red-500/20 text-red-400" : "bg-red-100 text-red-500";
   const solutionCardBg = dark ? "bg-emerald-950/20 border-emerald-500/20" : "bg-emerald-50/50 border-emerald-200/80";
@@ -348,7 +348,7 @@ const BusinessModel = () => {
           <span className={`bg-gradient-to-b ${heroTitle} bg-clip-text text-transparent`}>{title}</span>
         </motion.h1>
 
-        <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.7 }} className={`mt-4 text-lg sm:text-xl font-semibold ${dark ? "text-amber-300" : "text-amber-600"}`}>
+        <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.7 }} className={`mt-4 text-lg sm:text-xl font-semibold ${dark ? "text-indigo-300" : "text-indigo-600"}`}>
           ATSkolla — Absensi Digital Sekolah
         </motion.p>
 
@@ -512,7 +512,7 @@ const BusinessModel = () => {
       <section className={`py-20 sm:py-32 px-4 ${sectionAlt}`}>
         <div className="max-w-7xl mx-auto">
           <motion.div custom={0} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
-            <span className={`text-[11px] font-bold uppercase tracking-[0.2em] ${dark ? "text-amber-400" : "text-amber-600"} mb-4 block`}>Struktur Harga</span>
+            <span className={`text-[11px] font-bold uppercase tracking-[0.2em] ${dark ? "text-indigo-400" : "text-indigo-600"} mb-4 block`}>Struktur Harga</span>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">Harga Terjangkau, Keuntungan Besar</h2>
             <p className={`mt-4 ${mutedText} max-w-xl mx-auto`}>Tiga pilihan paket yang dirancang agar sekolah mudah memilih dan kami tetap untung besar.</p>
           </motion.div>
