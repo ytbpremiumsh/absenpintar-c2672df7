@@ -458,7 +458,7 @@ const BusinessModel = () => {
               <motion.div key={item.label} custom={i} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "100px" }} transition={{ duration: 0.5, delay: i * 0.08 }}
                 className={`group rounded-2xl overflow-hidden border transition-all duration-300 ${cardBg}`}>
                 <div className="aspect-video overflow-hidden">
-                  <img src={item.src} alt={item.label} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <img src={item.src} alt={item.label} className="w-full h-full object-cover transition-transform duration-700" style={{ transform: "scale(1.04)" }} />
                 </div>
                 <div className="p-4">
                   <p className="font-semibold text-sm">{item.label}</p>
