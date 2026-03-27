@@ -34,7 +34,7 @@ serve(async (req) => {
 
     const { data: profile } = await supabaseAdmin
       .from('profiles')
-      .select('school_id, full_name')
+      .select('school_id, full_name, phone')
       .eq('user_id', user.id)
       .maybeSingle();
 
@@ -42,7 +42,6 @@ serve(async (req) => {
     let integration = null;
 
     if (schoolId) {
-      // User has a school - check their school's WA integration
       const { data: intData } = await supabaseAdmin
         .from('school_integrations')
         .select('api_url, api_key, is_active')
@@ -52,7 +51,7 @@ serve(async (req) => {
       integration = intData;
     }
 
-    // If no school or no integration found, try to find ANY active WA integration (fallback for super admins)
+    // Fallback: find any active WA integration
     if (!integration?.is_active || !integration?.api_url || !integration?.api_key) {
       const { data: fallback } = await supabaseAdmin
         .from('school_integrations')
@@ -71,11 +70,25 @@ serve(async (req) => {
     }
 
     const hasWa = !!(integration?.is_active && integration?.api_url && integration?.api_key);
+    const userPhone = profile?.phone || null;
+
+    // Mask phone for display: 0812****5678
+    let maskedPhone = '';
+    if (userPhone) {
+      const clean = userPhone.replace(/\D/g, '');
+      if (clean.length >= 8) {
+        maskedPhone = clean.substring(0, 4) + '****' + clean.substring(clean.length - 4);
+      } else {
+        maskedPhone = clean.substring(0, 2) + '****';
+      }
+    }
 
     return new Response(JSON.stringify({
       success: true,
       user_name: profile?.full_name || email,
       has_wa_integration: hasWa,
+      has_phone: !!userPhone,
+      masked_phone: maskedPhone,
       school_id: schoolId || '',
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

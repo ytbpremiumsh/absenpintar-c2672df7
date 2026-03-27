@@ -11,8 +11,8 @@ serve(async (req) => {
 
   try {
     const { email, phone, school_id } = await req.json();
-    if (!email || !phone) {
-      return new Response(JSON.stringify({ error: 'Email dan phone wajib diisi' }), {
+    if (!email) {
+      return new Response(JSON.stringify({ error: 'Email wajib diisi' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
@@ -22,12 +22,49 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    // Verify user exists
+    // Verify user exists and get stored phone
     const { data: { users } } = await supabaseAdmin.auth.admin.listUsers();
     const user = users.find(u => u.email?.toLowerCase() === email.toLowerCase());
     if (!user) {
       return new Response(JSON.stringify({ error: 'Email tidak ditemukan' }), {
         status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Get stored phone from profile
+    const { data: profile } = await supabaseAdmin
+      .from('profiles')
+      .select('phone')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    const storedPhone = profile?.phone;
+
+    // Determine which phone to use
+    // If phone is provided from client, validate it matches stored phone
+    let targetPhone = storedPhone;
+
+    if (phone) {
+      // Normalize both for comparison
+      const normalizePhone = (p: string) => {
+        let n = p.replace(/\D/g, '');
+        if (n.startsWith('62')) n = '0' + n.substring(2);
+        return n;
+      };
+      const normalizedInput = normalizePhone(phone);
+      const normalizedStored = storedPhone ? normalizePhone(storedPhone) : '';
+
+      if (normalizedStored && normalizedInput !== normalizedStored) {
+        return new Response(JSON.stringify({ error: 'Nomor WhatsApp tidak sesuai dengan data yang terdaftar' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      targetPhone = phone;
+    }
+
+    if (!targetPhone) {
+      return new Response(JSON.stringify({ error: 'Nomor WhatsApp belum terdaftar di profil. Silakan hubungi admin.' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
@@ -45,10 +82,10 @@ serve(async (req) => {
     await supabaseAdmin.from('password_reset_otps').insert({
       email: email.toLowerCase(),
       otp_code: otpCode,
-      phone: phone,
+      phone: targetPhone,
     });
 
-    // Get WA integration - try specific school first, then fallback to any active
+    // Get WA integration
     let integration = null;
     let logSchoolId = school_id;
 
@@ -87,7 +124,7 @@ serve(async (req) => {
     }
 
     // Format phone
-    let formattedPhone = phone.replace(/\D/g, '');
+    let formattedPhone = targetPhone.replace(/\D/g, '');
     if (formattedPhone.startsWith('0')) {
       formattedPhone = '62' + formattedPhone.substring(1);
     }
@@ -117,11 +154,10 @@ serve(async (req) => {
       });
     }
 
-    // Log the message
     if (logSchoolId) {
       await supabaseAdmin.from('wa_message_logs').insert({
         school_id: logSchoolId,
-        phone,
+        phone: targetPhone,
         message: 'Kode OTP Reset Password',
         message_type: 'otp',
         status: 'sent',
