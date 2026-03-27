@@ -548,6 +548,7 @@ export type Database = {
           full_name: string
           id: string
           lifetime_points: number
+          phone: string | null
           referral_code: string | null
           referred_by: string | null
           school_id: string | null
@@ -561,6 +562,7 @@ export type Database = {
           full_name: string
           id?: string
           lifetime_points?: number
+          phone?: string | null
           referral_code?: string | null
           referred_by?: string | null
           school_id?: string | null
@@ -574,6 +576,7 @@ export type Database = {
           full_name?: string
           id?: string
           lifetime_points?: number
+          phone?: string | null
           referral_code?: string | null
           referred_by?: string | null
           school_id?: string | null

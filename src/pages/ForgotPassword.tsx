@@ -4,23 +4,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { ArrowLeft, Loader2, Mail, Phone, Lock, ShieldCheck, KeyRound } from "lucide-react";
+import { ArrowLeft, Loader2, Mail, Lock, ShieldCheck, KeyRound } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
-type Step = "email" | "phone" | "otp" | "new-password" | "done";
+type Step = "email" | "otp" | "new-password" | "done";
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>("email");
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [userName, setUserName] = useState("");
   const [schoolId, setSchoolId] = useState("");
+  const [maskedPhone, setMaskedPhone] = useState("");
 
   const handleCheckEmail = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,39 +30,33 @@ const ForgotPassword = () => {
         body: { email },
       });
       if (error) throw error;
-      if (data.error) {
-        toast.error(data.error);
-        setLoading(false);
-        return;
-      }
+      if (data.error) { toast.error(data.error); setLoading(false); return; }
       if (!data.has_wa_integration) {
-        toast.error("Sekolah belum mengonfigurasi integrasi WhatsApp. Hubungi admin sekolah.");
+        toast.error("Belum ada integrasi WhatsApp yang aktif. Hubungi admin.");
         setLoading(false);
         return;
       }
+      if (!data.has_phone) {
+        toast.error("Nomor WhatsApp belum terdaftar di profil Anda. Hubungi admin untuk menambahkan nomor.");
+        setLoading(false);
+        return;
+      }
+
       setUserName(data.user_name || "");
       setSchoolId(data.school_id || "");
-      setStep("phone");
-    } catch (err: any) {
-      toast.error(err.message || "Terjadi kesalahan");
-    }
-    setLoading(false);
-  };
+      setMaskedPhone(data.masked_phone || "");
 
-  const handleSendOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!phone) { toast.error("Nomor WhatsApp wajib diisi"); return; }
-    setLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("send-otp", {
-        body: { email, phone, school_id: schoolId },
+      // Auto-send OTP using stored phone
+      const { data: otpData, error: otpError } = await supabase.functions.invoke("send-otp", {
+        body: { email, school_id: data.school_id },
       });
-      if (error) throw error;
-      if (data.error) { toast.error(data.error); setLoading(false); return; }
+      if (otpError) throw otpError;
+      if (otpData.error) { toast.error(otpData.error); setLoading(false); return; }
+
       toast.success("Kode OTP berhasil dikirim ke WhatsApp!");
       setStep("otp");
     } catch (err: any) {
-      toast.error(err.message || "Gagal mengirim OTP");
+      toast.error(err.message || "Terjadi kesalahan");
     }
     setLoading(false);
   };
@@ -100,8 +94,7 @@ const ForgotPassword = () => {
             <h1 className="text-xl font-bold text-slate-900 dark:text-white">Lupa Password</h1>
             <p className="text-sm text-slate-500 dark:text-slate-400">
               {step === "email" && "Masukkan email akun Anda"}
-              {step === "phone" && `Halo ${userName}, masukkan nomor WhatsApp untuk menerima kode OTP`}
-              {step === "otp" && "Masukkan kode OTP yang dikirim ke WhatsApp"}
+              {step === "otp" && `Masukkan kode OTP yang dikirim ke WhatsApp (${maskedPhone})`}
               {step === "new-password" && "Buat password baru Anda"}
               {step === "done" && "Password Anda telah berhasil diubah!"}
             </p>
@@ -110,9 +103,9 @@ const ForgotPassword = () => {
           {/* Progress */}
           {step !== "done" && (
             <div className="flex items-center gap-1">
-              {["email", "phone", "otp", "new-password"].map((s, i) => (
+              {["email", "otp", "new-password"].map((s, i) => (
                 <div key={s} className={`h-1.5 flex-1 rounded-full transition-colors ${
-                  ["email", "phone", "otp", "new-password"].indexOf(step) >= i
+                  ["email", "otp", "new-password"].indexOf(step) >= i
                     ? "bg-indigo-500"
                     : "bg-slate-200 dark:bg-slate-700"
                 }`} />
@@ -132,33 +125,12 @@ const ForgotPassword = () => {
                 </div>
               </div>
               <Button type="submit" disabled={loading} className="w-full h-12 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-semibold">
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Lanjutkan"}
-              </Button>
-            </form>
-          )}
-
-          {/* Step 2: Phone */}
-          {step === "phone" && (
-            <form onSubmit={handleSendOtp} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="phone" className="text-xs font-semibold uppercase tracking-wider text-slate-500">Nomor WhatsApp</Label>
-                <div className="relative">
-                  <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                  <Input id="phone" type="tel" placeholder="08xxxxxxxxxx" value={phone} onChange={e => setPhone(e.target.value)}
-                    className="h-12 pl-10 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700" required />
-                </div>
-                <p className="text-xs text-slate-400">Kode OTP akan dikirim ke nomor ini</p>
-              </div>
-              <Button type="submit" disabled={loading} className="w-full h-12 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-semibold">
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Kirim Kode OTP"}
               </Button>
-              <Button type="button" variant="ghost" onClick={() => setStep("email")} className="w-full text-sm text-slate-500">
-                <ArrowLeft className="h-4 w-4 mr-1" /> Kembali
-              </Button>
             </form>
           )}
 
-          {/* Step 3: OTP */}
+          {/* Step 2: OTP */}
           {step === "otp" && (
             <form onSubmit={handleVerifyAndReset} className="space-y-4">
               <div className="space-y-3">
@@ -175,18 +147,18 @@ const ForgotPassword = () => {
                     </InputOTPGroup>
                   </InputOTP>
                 </div>
-                <p className="text-xs text-center text-slate-400">Cek pesan WhatsApp di nomor {phone}</p>
+                <p className="text-xs text-center text-slate-400">Cek pesan WhatsApp di nomor {maskedPhone}</p>
               </div>
               <Button type="submit" disabled={loading || otp.length !== 6} className="w-full h-12 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-semibold">
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Verifikasi OTP"}
               </Button>
-              <Button type="button" variant="ghost" onClick={() => { setStep("phone"); setOtp(""); }} className="w-full text-sm text-slate-500">
-                <ArrowLeft className="h-4 w-4 mr-1" /> Kirim ulang
+              <Button type="button" variant="ghost" onClick={() => { setStep("email"); setOtp(""); }} className="w-full text-sm text-slate-500">
+                <ArrowLeft className="h-4 w-4 mr-1" /> Kembali
               </Button>
             </form>
           )}
 
-          {/* Step 4: New Password */}
+          {/* Step 3: New Password */}
           {step === "new-password" && (
             <form onSubmit={handleVerifyAndReset} className="space-y-4">
               <div className="space-y-2">

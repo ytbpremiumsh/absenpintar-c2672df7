@@ -63,9 +63,10 @@ serve(async (req) => {
     let refCodeGenerated = 'ATS-';
     for (let i = 0; i < 6; i++) refCodeGenerated += chars.charAt(Math.floor(Math.random() * chars.length));
 
-    // Update profile with school_id and referral code
+    // Update profile with school_id, phone, and referral code
     const profileUpdate: any = { full_name, referral_code: refCodeGenerated };
     if (resolvedSchoolId) profileUpdate.school_id = resolvedSchoolId;
+    if (phone) profileUpdate.phone = phone;
 
     await supabaseAdmin
       .from('profiles')

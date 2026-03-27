@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { KeyRound, Save, User } from "lucide-react";
+import { KeyRound, Save, User, Phone } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -11,16 +11,30 @@ import { toast } from "sonner";
 const AccountSettings = () => {
   const { user, profile } = useAuth();
   const [fullName, setFullName] = useState(profile?.full_name || "");
+  const [phone, setPhone] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
 
+  useEffect(() => {
+    if (user) {
+      // Fetch phone from profile
+      supabase.from("profiles").select("phone").eq("user_id", user.id).maybeSingle().then(({ data }) => {
+        if (data?.phone) setPhone(data.phone);
+      });
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (profile?.full_name) setFullName(profile.full_name);
+  }, [profile]);
+
   const handleUpdateProfile = async () => {
     if (!user) return;
     setSavingProfile(true);
     const { error } = await supabase.from("profiles")
-      .update({ full_name: fullName })
+      .update({ full_name: fullName, phone: phone || null } as any)
       .eq("user_id", user.id);
     setSavingProfile(false);
     if (error) {
@@ -76,6 +90,19 @@ const AccountSettings = () => {
           <div className="space-y-2">
             <Label htmlFor="full-name">Nama Lengkap</Label>
             <Input id="full-name" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Nama lengkap" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="phone" className="flex items-center gap-1.5">
+              <Phone className="h-3.5 w-3.5" /> No. WhatsApp
+            </Label>
+            <Input
+              id="phone"
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+              placeholder="08xxxxxxxxxx"
+            />
+            <p className="text-[11px] text-muted-foreground">Nomor ini digunakan untuk menerima kode OTP saat reset password</p>
           </div>
           <Button onClick={handleUpdateProfile} disabled={savingProfile} className="gradient-primary hover:opacity-90">
             <Save className="h-4 w-4 mr-2" />
