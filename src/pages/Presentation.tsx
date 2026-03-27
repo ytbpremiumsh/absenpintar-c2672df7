@@ -398,15 +398,15 @@ const Presentation = () => {
 
           {/* Arrow */}
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="flex flex-col items-center mb-16">
-            <div className="h-14 w-14 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-xl shadow-amber-500/20">
+            <div className="h-14 w-14 rounded-full bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shadow-xl shadow-indigo-500/20">
               <ArrowDown className="h-6 w-6 text-white" />
             </div>
-            <p className={`mt-3 font-bold text-sm ${d ? "text-amber-400" : "text-amber-600"}`}>Solusi Kami</p>
+            <p className={`mt-3 font-bold text-sm ${d ? "text-indigo-400" : "text-indigo-600"}`}>Solusi Kami</p>
           </motion.div>
 
           {/* Solutions */}
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-14">
-            <span className={`text-xs font-bold uppercase tracking-[0.2em] ${d ? "text-amber-400" : "text-amber-600"} mb-3 block`}>Jawaban Tepat</span>
+            <span className={`text-xs font-bold uppercase tracking-[0.2em] ${d ? "text-indigo-400" : "text-indigo-600"} mb-3 block`}>Jawaban Tepat</span>
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
               ATSkolla — Absensi Digital Sekolah
             </h2>
@@ -418,16 +418,16 @@ const Presentation = () => {
               const Icon = s.icon;
               return (
                 <motion.div key={s.solution} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
-                  className={`group rounded-2xl border p-6 transition-all duration-300 ${d ? "bg-amber-500/[0.03] border-amber-500/10 hover:border-amber-500/20" : "bg-white border-amber-100 hover:border-amber-200 hover:shadow-lg"}`}>
+                  className={`group rounded-2xl border p-6 transition-all duration-300 ${d ? "bg-indigo-500/[0.03] border-indigo-500/10 hover:border-indigo-500/20" : "bg-white border-indigo-100 hover:border-indigo-200 hover:shadow-lg"}`}>
                   <div className="flex items-start gap-4">
-                    <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/15">
+                    <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shrink-0 shadow-lg shadow-indigo-500/15">
                       <Icon className="h-5 w-5 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-2 flex-wrap">
                         <span className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full ${d ? "bg-red-500/10 text-red-400" : "bg-red-50 text-red-500"}`}>{s.problem}</span>
-                        <ArrowRight className={`h-3.5 w-3.5 shrink-0 ${d ? "text-amber-400" : "text-amber-500"}`} />
-                        <span className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full ${d ? "bg-amber-500/10 text-amber-400" : "bg-amber-50 text-amber-600"}`}>{s.solution}</span>
+                        <ArrowRight className={`h-3.5 w-3.5 shrink-0 ${d ? "text-indigo-400" : "text-indigo-500"}`} />
+                        <span className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full ${d ? "bg-indigo-500/10 text-indigo-400" : "bg-indigo-50 text-indigo-600"}`}>{s.solution}</span>
                       </div>
                       <p className={`text-sm leading-relaxed ${muted}`}>{s.desc}</p>
                     </div>
