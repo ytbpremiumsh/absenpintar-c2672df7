@@ -472,7 +472,7 @@ const Presentation = () => {
                   <p className={`mt-4 text-sm leading-relaxed max-w-2xl ${d ? "text-slate-300" : "text-slate-600"}`}>{f.desc}</p>
                   <div className="w-full max-w-5xl my-8">
                     <div className={`rounded-2xl overflow-hidden border ${d ? "border-white/10" : "border-slate-200"} shadow-2xl ${d ? "shadow-black/40" : "shadow-slate-400/30"}`}>
-                      <img src={f.image} alt={f.title} className="w-full h-auto block transition-transform duration-700" style={{ transform: "scale(1.04)" }} />
+                      <img src={f.image} alt={f.title} className="w-full h-auto block transition-transform duration-700" style={{ transform: "scale(1.012)" }} />
                     </div>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-left max-w-3xl w-full">
@@ -488,7 +488,7 @@ const Presentation = () => {
                 <div className={`flex flex-col ${isEven ? "lg:flex-row" : "lg:flex-row-reverse"} gap-8 lg:gap-16 items-center`}>
                   <div className="w-full lg:w-[58%]">
                     <div className={`rounded-2xl overflow-hidden border ${d ? "border-white/10" : "border-slate-200"} shadow-2xl ${d ? "shadow-black/40" : "shadow-slate-400/30"}`}>
-                      <img src={f.image} alt={f.title} className="w-full h-auto block transition-transform duration-700" style={{ transform: "scale(1.04)" }} />
+                      <img src={f.image} alt={f.title} className="w-full h-auto block transition-transform duration-700" style={{ transform: "scale(1.012)" }} />
                     </div>
                   </div>
                   <div className="w-full lg:w-[42%]">
