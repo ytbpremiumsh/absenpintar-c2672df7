@@ -459,8 +459,12 @@ const ExportHistory = () => {
         {/* Tabs: Datang / Pulang */}
         <Tabs value={rekapTab} onValueChange={(v) => setRekapTab(v as "datang" | "pulang")}>
           <TabsList className="w-full sm:w-auto">
-            <TabsTrigger value="datang" className="flex-1 sm:flex-none text-xs sm:text-sm">📋 Rekap Kehadiran</TabsTrigger>
-            <TabsTrigger value="pulang" className="flex-1 sm:flex-none text-xs sm:text-sm">🏠 Rekap Kepulangan</TabsTrigger>
+            <TabsTrigger value="datang" className="flex-1 sm:flex-none text-xs sm:text-sm gap-1.5">
+              <ClipboardList className="h-3.5 w-3.5" /> Rekap Kehadiran
+            </TabsTrigger>
+            <TabsTrigger value="pulang" className="flex-1 sm:flex-none text-xs sm:text-sm gap-1.5">
+              <Clock className="h-3.5 w-3.5" /> Rekap Kepulangan
+            </TabsTrigger>
           </TabsList>
         </Tabs>
 
