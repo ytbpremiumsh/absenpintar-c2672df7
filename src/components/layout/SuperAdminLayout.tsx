@@ -2,7 +2,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Outlet, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
-import { LayoutGrid, School, Wallet, Receipt, LogOut, Shield, CalendarCheck, Send, Building2, Megaphone, HelpCircle, Globe, Presentation, TrendingUp, MessageSquareQuote, Clock, Gift } from "lucide-react";
+import { LayoutGrid, School, Wallet, Receipt, LogOut, Shield, CalendarCheck, Send, Building2, Megaphone, HelpCircle, Globe, Presentation, TrendingUp, MessageSquareQuote, Clock, Gift, Crown, UsersRound, MessageCircle, Eye, Palette, ChevronRight } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import {
@@ -13,30 +13,30 @@ import { NavLink } from "@/components/NavLink";
 
 const navItems = [
   { title: "Dashboard", url: "/super-admin", icon: LayoutGrid, group: "overview" },
-  { title: "Sekolah", url: "/super-admin/schools", icon: School, group: "overview" },
-  { title: "Log Login", url: "/super-admin/login-logs", icon: Clock, group: "overview" },
+  { title: "Kelola Sekolah", url: "/super-admin/schools", icon: School, group: "management" },
+  { title: "Log Login", url: "/super-admin/login-logs", icon: Clock, group: "management" },
+  { title: "Konfirmasi Bayar", url: "/super-admin/payments", icon: Crown, group: "management" },
+  { title: "Tiket Bantuan", url: "/super-admin/tickets", icon: UsersRound, group: "management" },
+  { title: "Pengumuman", url: "/super-admin/announcements", icon: Megaphone, group: "management" },
   { title: "Paket Langganan", url: "/super-admin/plans", icon: Wallet, group: "billing" },
   { title: "Langganan", url: "/super-admin/subscriptions", icon: CalendarCheck, group: "billing" },
-  { title: "Riwayat Pembayaran", url: "/super-admin/payments", icon: Receipt, group: "billing" },
-  { title: "Pengumuman", url: "/super-admin/announcements", icon: Megaphone, group: "communication" },
-  { title: "Tiket Bantuan", url: "/super-admin/tickets", icon: HelpCircle, group: "communication" },
-  { title: "WhatsApp Gateway", url: "/super-admin/whatsapp", icon: Send, group: "integration" },
-  { title: "Notif Registrasi", url: "/super-admin/registration-wa", icon: Send, group: "integration" },
-  { title: "Multi Cabang", url: "/super-admin/branches", icon: Building2, group: "integration" },
-  { title: "Landing Page", url: "/super-admin/landing", icon: Globe, group: "content" },
-  { title: "Sekolah & Testimoni", url: "/super-admin/testimonials", icon: MessageSquareQuote, group: "content" },
-  { title: "Presentasi", url: "/super-admin/presentation", icon: Presentation, group: "content" },
-  { title: "Model Bisnis", url: "/super-admin/business-model", icon: TrendingUp, group: "content" },
   { title: "Referral & Poin", url: "/super-admin/referral", icon: Gift, group: "billing" },
+  { title: "Konfigurasi Pembayaran", url: "/super-admin/business-model", icon: Receipt, group: "integration" },
+  { title: "Konfigurasi API WA", url: "/super-admin/whatsapp", icon: MessageCircle, group: "integration" },
+  { title: "Aktivasi WA Sekolah", url: "/super-admin/registration-wa", icon: Eye, group: "integration" },
+  { title: "Multi Cabang", url: "/super-admin/branches", icon: Building2, group: "integration" },
+  { title: "Branding & Landing", url: "/super-admin/landing", icon: Palette, group: "content" },
+  { title: "Testimoni & Sekolah", url: "/super-admin/testimonials", icon: School, group: "content" },
+  { title: "Presentasi", url: "/super-admin/presentation", icon: Presentation, group: "content" },
   { title: "Halaman Penawaran", url: "/super-admin/penawaran", icon: Globe, group: "content" },
 ];
 
 const groups = [
-  { key: "overview", label: "Overview" },
-  { key: "billing", label: "Billing & Langganan" },
-  { key: "communication", label: "Komunikasi" },
-  { key: "integration", label: "Integrasi" },
-  { key: "content", label: "Konten" },
+  { key: "overview", label: "SA — OVERVIEW" },
+  { key: "management", label: "SA — MANAJEMEN" },
+  { key: "billing", label: "SA — BILLING" },
+  { key: "integration", label: "SA — INTEGRASI" },
+  { key: "content", label: "SA — TAMPILAN" },
 ];
 
 function SuperAdminSidebar() {
@@ -72,7 +72,7 @@ function SuperAdminSidebar() {
           if (items.length === 0) return null;
           return (
             <SidebarGroup key={group.key}>
-              <SidebarGroupLabel className="text-sidebar-foreground/35 text-[10px] uppercase tracking-[0.15em] font-bold px-4 mb-1">
+              <SidebarGroupLabel className="text-primary/50 text-[10px] uppercase tracking-[0.18em] font-bold px-4 mb-1.5">
                 {group.label}
               </SidebarGroupLabel>
               <SidebarGroupContent>
@@ -80,9 +80,10 @@ function SuperAdminSidebar() {
                   {items.map((item) => (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild isActive={isActive(item.url)} tooltip={item.title}>
-                        <NavLink to={item.url} end={item.url === "/super-admin"} className="text-sidebar-foreground/60 hover:bg-primary/10 hover:text-primary rounded-xl px-3 py-2.5 transition-all duration-200 group/nav" activeClassName="bg-primary text-primary-foreground font-semibold shadow-md">
-                          <item.icon className="h-[17px] w-[17px] stroke-[1.8] transition-transform duration-200 group-hover/nav:scale-105" />
-                          {!collapsed && <span className="text-[13px]">{item.title}</span>}
+                        <NavLink to={item.url} end={item.url === "/super-admin"} className="text-sidebar-foreground/55 hover:bg-primary/8 hover:text-sidebar-foreground rounded-2xl px-3.5 py-3 transition-all duration-200 group/nav" activeClassName="bg-primary text-white font-semibold shadow-lg shadow-primary/25">
+                          <item.icon className="h-[18px] w-[18px] stroke-[1.6] transition-transform duration-200 group-hover/nav:scale-105" />
+                          {!collapsed && <span className="text-[13.5px] flex-1">{item.title}</span>}
+                          {!collapsed && isActive(item.url) && <ChevronRight className="h-4 w-4 stroke-[2] ml-auto" />}
                         </NavLink>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -93,15 +94,28 @@ function SuperAdminSidebar() {
           );
         })}
       </SidebarContent>
-      <SidebarFooter className="p-3">
+      <SidebarFooter className="p-4">
         {!collapsed && (
           <div className="mb-3 mx-2 h-px bg-gradient-to-r from-transparent via-sidebar-border/60 to-transparent" />
         )}
+        {!collapsed && (
+          <div className="flex items-center gap-3 px-3 mb-3">
+            <Avatar className="h-10 w-10 ring-2 ring-primary/10">
+              <AvatarFallback className="bg-primary/10 text-primary text-sm font-bold">
+                {profile?.full_name?.split(" ").map((w: string) => w[0]).join("").slice(0, 2).toUpperCase() || "SA"}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col min-w-0">
+              <span className="text-sm font-bold text-sidebar-foreground truncate">{profile?.full_name || "Super Admin"}</span>
+              <span className="text-[11px] text-muted-foreground">Super Admin</span>
+            </div>
+          </div>
+        )}
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton tooltip="Logout" className="text-destructive/60 hover:text-destructive hover:bg-destructive/8 rounded-xl px-3 py-2.5 transition-all duration-200" onClick={async () => { await signOut(); navigate("/login"); }}>
-              <LogOut className="h-[18px] w-[18px]" />
-              {!collapsed && <span className="text-[13px] font-medium">Keluar</span>}
+            <SidebarMenuButton tooltip="Logout" className="text-destructive/70 hover:text-destructive hover:bg-destructive/8 rounded-2xl px-3.5 py-3 transition-all duration-200" onClick={async () => { await signOut(); navigate("/login"); }}>
+              <LogOut className="h-[18px] w-[18px] stroke-[1.6]" />
+              {!collapsed && <span className="text-[13.5px] font-medium">Keluar</span>}
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
