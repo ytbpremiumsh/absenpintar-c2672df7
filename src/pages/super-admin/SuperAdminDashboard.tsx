@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { School, Users, CreditCard, TrendingUp, CheckCircle2, GraduationCap, UserCheck, Clock, BarChart3, Activity } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { School, Users, CreditCard, CheckCircle2, GraduationCap, UserCheck, MessageSquare, TrendingUp, Settings, LifeBuoy, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { useNavigate } from "react-router-dom";
 
 interface DashboardStats {
   totalSchools: number;
@@ -17,21 +19,24 @@ interface DashboardStats {
   recentPayments: any[];
   schools: any[];
   monthlyRevenue: number;
-  schoolUsage: { name: string; students: number; classes: number; plan: string }[];
+  paidCount: number;
+  waActiveCount: number;
+  planDistribution: { name: string; value: number; color: string }[];
 }
 
 const SuperAdminDashboard = () => {
   const [stats, setStats] = useState<DashboardStats>({
     totalSchools: 0, totalStudents: 0, totalStaff: 0, totalClasses: 0,
     activeSubscriptions: 0, pendingPayments: 0,
-    totalRevenue: 0, monthlyRevenue: 0,
-    recentPayments: [], schools: [], schoolUsage: [],
+    totalRevenue: 0, monthlyRevenue: 0, paidCount: 0, waActiveCount: 0,
+    recentPayments: [], schools: [], planDistribution: [],
   });
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchStats = async () => {
-      const [schoolsRes, studentsRes, classesRes, profilesRes, subsRes, paymentsRes, rolesRes] = await Promise.all([
+      const [schoolsRes, studentsRes, classesRes, profilesRes, subsRes, paymentsRes, rolesRes, integrationsRes] = await Promise.all([
         supabase.from("schools").select("id, name, created_at, logo, address"),
         supabase.from("students").select("id, school_id"),
         supabase.from("classes").select("id, school_id"),
@@ -39,14 +44,15 @@ const SuperAdminDashboard = () => {
         supabase.from("school_subscriptions").select("id, school_id, plan_id, status, started_at, expires_at, subscription_plans(name)"),
         supabase.from("payment_transactions").select("id, school_id, amount, status, paid_at, created_at, schools(name), subscription_plans(name)").order("created_at", { ascending: false }).limit(10),
         supabase.from("user_roles").select("id, role"),
+        supabase.from("school_integrations").select("school_id, is_active").eq("is_active", true),
       ]);
 
       const schools = schoolsRes.data || [];
       const students = studentsRes.data || [];
-      const classes = classesRes.data || [];
       const subs = subsRes.data || [];
       const payments = paymentsRes.data || [];
       const roles = rolesRes.data || [];
+      const integrations = integrationsRes.data || [];
 
       const activeSubs = subs.filter((s: any) => s.status === "active");
       const pendingPayments = payments.filter((p: any) => p.status === "pending");
@@ -60,27 +66,34 @@ const SuperAdminDashboard = () => {
         .reduce((sum: number, p: any) => sum + p.amount, 0);
 
       const staffCount = roles.filter((r: any) => r.role !== "super_admin").length;
+      const waActiveSchools = new Set(integrations.map((i: any) => i.school_id)).size;
 
-      const schoolUsage = schools.map((s: any) => {
-        const schoolStudents = students.filter((st: any) => st.school_id === s.id).length;
-        const schoolClasses = classes.filter((c: any) => c.school_id === s.id).length;
+      // Plan distribution
+      const planCounts: Record<string, number> = {};
+      schools.forEach((s: any) => {
         const sub = activeSubs.find((sub: any) => sub.school_id === s.id);
-        const planName = sub ? (sub as any).subscription_plans?.name || "Free" : "Free";
-        return { name: s.name, students: schoolStudents, classes: schoolClasses, plan: planName };
+        const planName = sub ? (sub as any).subscription_plans?.name || "Gratis" : "Gratis";
+        planCounts[planName] = (planCounts[planName] || 0) + 1;
       });
+      const PLAN_COLORS = ["hsl(220, 15%, 75%)", "hsl(217, 91%, 60%)", "hsl(262, 83%, 58%)", "hsl(142, 71%, 45%)"];
+      const planDistribution = Object.entries(planCounts).map(([name, value], i) => ({
+        name, value, color: PLAN_COLORS[i % PLAN_COLORS.length],
+      }));
 
       setStats({
         totalSchools: schools.length,
         totalStudents: students.length,
         totalStaff: staffCount,
-        totalClasses: classes.length,
+        totalClasses: (classesRes.data || []).length,
         activeSubscriptions: activeSubs.length,
         pendingPayments: pendingPayments.length,
         totalRevenue,
         monthlyRevenue,
+        paidCount: paidPayments.length,
+        waActiveCount: waActiveSchools,
         recentPayments: payments,
         schools,
-        schoolUsage,
+        planDistribution,
       });
       setLoading(false);
     };
@@ -89,41 +102,57 @@ const SuperAdminDashboard = () => {
 
   const formatRupiah = (n: number) => `Rp ${n.toLocaleString("id-ID")}`;
 
+  if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>;
+
   const statCards = [
-    { icon: School, label: "Total Sekolah", value: stats.totalSchools, gradient: "from-indigo-500 to-blue-600", textColor: "text-indigo-600 dark:text-indigo-400" },
-    { icon: GraduationCap, label: "Total Siswa", value: stats.totalStudents.toLocaleString("id-ID"), gradient: "from-blue-500 to-cyan-500", textColor: "text-blue-600 dark:text-blue-400" },
-    { icon: Activity, label: "Total Kelas", value: stats.totalClasses, gradient: "from-violet-500 to-purple-600", textColor: "text-violet-600 dark:text-violet-400" },
-    { icon: UserCheck, label: "Total Pengguna", value: stats.totalStaff, gradient: "from-teal-500 to-emerald-500", textColor: "text-teal-600 dark:text-teal-400" },
-    { icon: CheckCircle2, label: "Langganan Aktif", value: stats.activeSubscriptions, gradient: "from-emerald-500 to-green-600", textColor: "text-emerald-600 dark:text-emerald-400" },
-    { icon: Clock, label: "Pembayaran Pending", value: stats.pendingPayments, gradient: "from-amber-500 to-orange-500", textColor: "text-amber-600 dark:text-amber-400" },
-    { icon: CreditCard, label: "Total Pendapatan", value: formatRupiah(stats.totalRevenue), gradient: "from-green-500 to-emerald-600", textColor: "text-green-600 dark:text-green-400" },
-    { icon: BarChart3, label: "Pendapatan Bulan Ini", value: formatRupiah(stats.monthlyRevenue), gradient: "from-rose-500 to-pink-600", textColor: "text-rose-600 dark:text-rose-400" },
+    { label: "TOTAL SEKOLAH", value: stats.totalSchools, desc: "terdaftar di platform", icon: School, iconBg: "bg-indigo-100 dark:bg-indigo-900/40", iconColor: "text-indigo-600 dark:text-indigo-400" },
+    { label: "TOTAL SISWA", value: stats.totalStudents.toLocaleString("id-ID"), desc: "di seluruh sekolah", icon: GraduationCap, iconBg: "bg-emerald-100 dark:bg-emerald-900/40", iconColor: "text-emerald-600 dark:text-emerald-400" },
+    { label: "TOTAL PENGGUNA", value: stats.totalStaff, desc: "admin & operator", icon: UserCheck, iconBg: "bg-blue-100 dark:bg-blue-900/40", iconColor: "text-blue-600 dark:text-blue-400" },
+    { label: "WA AKTIF", value: stats.waActiveCount, desc: "sekolah pakai notif WA", icon: MessageSquare, iconBg: "bg-teal-100 dark:bg-teal-900/40", iconColor: "text-teal-600 dark:text-teal-400" },
   ];
 
-  if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>;
+  const quickActions = [
+    { label: "Kelola Sekolah", desc: "Daftar & detail sekolah", icon: School, bg: "bg-indigo-50 dark:bg-indigo-950/30", iconColor: "text-indigo-600 dark:text-indigo-400", path: "/super-admin/schools" },
+    { label: "Langganan", desc: "Konfirmasi pembayaran", icon: CreditCard, bg: "bg-amber-50 dark:bg-amber-950/30", iconColor: "text-amber-600 dark:text-amber-400", path: "/super-admin/payments" },
+    { label: "WA Integrasi", desc: "Status notif per sekolah", icon: MessageSquare, bg: "bg-teal-50 dark:bg-teal-950/30", iconColor: "text-teal-600 dark:text-teal-400", path: "/super-admin/whatsapp" },
+    { label: "Manajemen User", desc: "Akun admin sekolah", icon: Users, bg: "bg-blue-50 dark:bg-blue-950/30", iconColor: "text-blue-600 dark:text-blue-400", path: "/super-admin/schools" },
+  ];
+
+  const allPaid = stats.pendingPayments === 0;
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-rose-600 via-red-600 to-orange-600 p-5 sm:p-6 text-white">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMSIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjA4KSIvPjwvc3ZnPg==')] opacity-60" />
-        <div className="relative z-10">
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Super Admin Dashboard</h1>
-          <p className="text-white/60 text-sm mt-1">Overview platform & monitoring sekolah</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
+            <TrendingUp className="h-6 w-6 text-primary" />
+            Super Admin Dashboard
+          </h1>
+          <p className="text-sm text-muted-foreground mt-0.5">Pantau seluruh platform ATSkolla secara real-time</p>
         </div>
+        <Button onClick={() => navigate("/super-admin/schools")} className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl shadow-sm">
+          <School className="h-4 w-4 mr-2" />
+          Kelola Sekolah
+          <ChevronRight className="h-4 w-4 ml-1" />
+        </Button>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      {/* Stat Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {statCards.map((s, i) => (
-          <motion.div key={s.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-            <Card className="card-premium">
-              <CardContent className="p-4 flex items-center gap-3">
-                <div className={`h-10 w-10 rounded-xl bg-gradient-to-br ${s.gradient} flex items-center justify-center shrink-0 shadow-sm`}>
-                  <s.icon className="h-5 w-5 text-white" />
-                </div>
-                <div className="min-w-0">
-                  <p className={`text-xl font-extrabold ${s.textColor} truncate`}>{s.value}</p>
-                  <p className="text-[11px] text-muted-foreground font-medium">{s.label}</p>
+          <motion.div key={s.label} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+            <Card className="rounded-2xl border border-border/60 shadow-sm hover:shadow-md transition-shadow duration-300">
+              <CardContent className="p-4 sm:p-5">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-[10px] sm:text-xs font-semibold text-muted-foreground tracking-wider uppercase">{s.label}</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-foreground mt-1">{s.value}</p>
+                    <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">{s.desc}</p>
+                  </div>
+                  <div className={`h-10 w-10 sm:h-11 sm:w-11 rounded-xl ${s.iconBg} flex items-center justify-center shrink-0`}>
+                    <s.icon className={`h-5 w-5 sm:h-[22px] sm:w-[22px] ${s.iconColor}`} />
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -131,82 +160,116 @@ const SuperAdminDashboard = () => {
         ))}
       </div>
 
-      {/* School Usage Statistics */}
-      <Card className="card-premium">
-        <CardHeader className="bg-gradient-to-r from-muted/30 to-transparent rounded-t-2xl">
-          <CardTitle className="text-base flex items-center gap-2">
-            <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-              <TrendingUp className="h-3.5 w-3.5 text-white" />
-            </div>
-            Statistik Penggunaan per Sekolah
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {stats.schoolUsage.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">Belum ada sekolah terdaftar</p>
-          ) : (
-            <div className="space-y-4">
-              <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10 space-y-2">
-                <p className="text-sm font-bold text-foreground">Total Keseluruhan</p>
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="text-center">
-                    <p className="text-lg font-extrabold text-primary">{stats.schoolUsage.length}</p>
-                    <p className="text-[11px] text-muted-foreground">Sekolah</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-lg font-extrabold text-primary">{stats.schoolUsage.reduce((sum, s) => sum + s.classes, 0)}</p>
-                    <p className="text-[11px] text-muted-foreground">Kelas</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-lg font-extrabold text-primary">{stats.schoolUsage.reduce((sum, s) => sum + s.students, 0).toLocaleString("id-ID")}</p>
-                    <p className="text-[11px] text-muted-foreground">Siswa</p>
-                  </div>
-                </div>
+      {/* Payment + Plan Distribution */}
+      <div className="grid md:grid-cols-2 gap-4">
+        {/* Payment Status */}
+        <Card className="rounded-2xl border border-border/60 shadow-sm">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <CreditCard className="h-4 w-4 text-muted-foreground" />
+              Status Pembayaran
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {allPaid && (
+              <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 text-sm font-medium">
+                <div className="h-2 w-2 rounded-full bg-emerald-500" />
+                Semua pembayaran terkonfirmasi
               </div>
-              {stats.schoolUsage.map((s) => (
-                <div key={s.name} className="p-4 rounded-2xl bg-secondary/40 hover:bg-secondary/60 transition-colors space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2.5">
-                      <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shrink-0 shadow-sm">
-                        <School className="h-4 w-4 text-white" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">{s.name}</p>
-                        <p className="text-[11px] text-muted-foreground">Paket {s.plan}</p>
-                      </div>
-                    </div>
-                    <Badge variant="secondary" className="text-[10px] rounded-lg">{s.plan}</Badge>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs text-muted-foreground">Kelas</span>
-                        <span className="text-xs font-bold text-foreground">{s.classes}</span>
-                      </div>
-                      <Progress value={Math.min(100, s.classes * 10)} className="h-1.5" />
-                    </div>
-                    <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs text-muted-foreground">Siswa</span>
-                        <span className="text-xs font-bold text-foreground">{s.students}</span>
-                      </div>
-                      <Progress value={Math.min(100, s.students)} className="h-1.5" />
-                    </div>
-                  </div>
-                </div>
-              ))}
+            )}
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-foreground">Lunas</span>
+                <Badge className="rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400 border-0 text-xs font-bold px-2.5">{stats.paidCount}</Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-foreground">Menunggu</span>
+                <Badge className="rounded-full bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400 border-0 text-xs font-bold px-2.5">{stats.pendingPayments}</Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-foreground">Total Aktif</span>
+                <Badge variant="outline" className="rounded-full text-xs font-bold px-2.5">{stats.activeSubscriptions}</Badge>
+              </div>
             </div>
-          )}
-        </CardContent>
-      </Card>
+            <Button variant="outline" className="w-full rounded-xl mt-2 text-sm" onClick={() => navigate("/super-admin/payments")}>
+              <CreditCard className="h-4 w-4 mr-2" />
+              Kelola Pembayaran
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Plan Distribution */}
+        <Card className="rounded-2xl border border-border/60 shadow-sm">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
+              Distribusi Paket Langganan
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-4">
+              <div className="h-40 w-40 sm:h-48 sm:w-48 shrink-0">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={stats.planDistribution.length > 0 ? stats.planDistribution : [{ name: "Kosong", value: 1, color: "hsl(220, 10%, 90%)" }]}
+                      cx="50%" cy="50%"
+                      innerRadius={40} outerRadius={70}
+                      paddingAngle={2} dataKey="value"
+                    >
+                      {(stats.planDistribution.length > 0 ? stats.planDistribution : [{ name: "Kosong", value: 1, color: "hsl(220, 10%, 90%)" }]).map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value: number) => [`${value} sekolah`]} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="space-y-2 flex-1">
+                {stats.planDistribution.map((plan) => (
+                  <div key={plan.name} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: plan.color }} />
+                      <span className="text-sm text-foreground">{plan.name}</span>
+                    </div>
+                    <Badge variant="outline" className="rounded-full text-xs font-bold px-2.5">{plan.value} sekolah</Badge>
+                  </div>
+                ))}
+                {stats.planDistribution.length === 0 && (
+                  <p className="text-sm text-muted-foreground">Belum ada data</p>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Quick Actions */}
+      <div>
+        <h2 className="text-base font-bold text-foreground mb-3">Aksi Cepat</h2>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {quickActions.map((action, i) => (
+            <motion.div key={action.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + i * 0.05 }}>
+              <Card
+                className={`rounded-2xl border border-border/40 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer ${action.bg}`}
+                onClick={() => navigate(action.path)}
+              >
+                <CardContent className="p-4 sm:p-5">
+                  <action.icon className={`h-6 w-6 ${action.iconColor} mb-3`} />
+                  <p className={`text-sm font-semibold ${action.iconColor}`}>{action.label}</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">{action.desc}</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+      </div>
 
       {/* Recent Payments */}
-      <Card className="card-premium">
-        <CardHeader className="bg-gradient-to-r from-muted/30 to-transparent rounded-t-2xl">
-          <CardTitle className="text-base flex items-center gap-2">
-            <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center">
-              <CreditCard className="h-3.5 w-3.5 text-white" />
-            </div>
+      <Card className="rounded-2xl border border-border/60 shadow-sm">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-semibold flex items-center gap-2">
+            <CreditCard className="h-4 w-4 text-muted-foreground" />
             Transaksi Terbaru
           </CardTitle>
         </CardHeader>
@@ -215,15 +278,15 @@ const SuperAdminDashboard = () => {
             <p className="text-sm text-muted-foreground text-center py-8">Belum ada transaksi</p>
           ) : (
             <div className="space-y-2">
-              {stats.recentPayments.map((p: any) => (
-                <div key={p.id} className="flex items-center justify-between p-3 rounded-2xl bg-secondary/40 hover:bg-secondary/60 transition-colors">
+              {stats.recentPayments.slice(0, 5).map((p: any) => (
+                <div key={p.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-muted/50 transition-colors">
                   <div>
                     <p className="text-sm font-semibold text-foreground">{(p as any).schools?.name || "—"}</p>
                     <p className="text-xs text-muted-foreground">{(p as any).subscription_plans?.name} • {new Date(p.created_at).toLocaleDateString("id-ID")}</p>
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-bold text-foreground">{formatRupiah(p.amount)}</p>
-                    <Badge variant={p.status === "paid" ? "default" : "secondary"} className={`text-[10px] rounded-lg ${p.status === "paid" ? "bg-success/10 text-success border-success/20" : p.status === "pending" ? "bg-warning/10 text-warning border-warning/20" : ""}`}>
+                    <Badge className={`text-[10px] rounded-full border-0 px-2 ${p.status === "paid" ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400" : "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400"}`}>
                       {p.status === "paid" ? "Lunas" : p.status === "pending" ? "Pending" : p.status}
                     </Badge>
                   </div>

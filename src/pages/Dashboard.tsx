@@ -1,16 +1,16 @@
 import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, UserCheck, Clock, Calendar, GraduationCap, TrendingUp, AlertTriangle, Thermometer, FileText, X } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
-import { motion, AnimatePresence } from "framer-motion";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Dialog, DialogContent, DialogTitle, DialogDescription,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Users, UserCheck, Clock, Calendar, GraduationCap, TrendingUp, AlertTriangle, Thermometer, FileText, ChevronRight, QrCode, ClipboardList, Settings } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { motion } from "framer-motion";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { useNavigate } from "react-router-dom";
 
 const STATUS_COLORS: Record<string, string> = {
   hadir: "hsl(152, 69%, 40%)",
@@ -45,6 +45,7 @@ const Dashboard = () => {
   const [chartPeriod, setChartPeriod] = useState<"daily" | "weekly" | "monthly">("daily");
   const [periodLogs, setPeriodLogs] = useState<any[]>([]);
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const fetchData = useCallback(async () => {
     if (!profile?.school_id) { setLoading(false); return; }
@@ -101,7 +102,6 @@ const Dashboard = () => {
 
   useEffect(() => { fetchPeriodLogs(); }, [fetchPeriodLogs]);
 
-  // Count statuses
   const statusCounts = { hadir: 0, izin: 0, sakit: 0, alfa: 0 };
   todayLogs.forEach((log) => {
     const s = log.status as keyof typeof statusCounts;
@@ -109,20 +109,23 @@ const Dashboard = () => {
   });
   const totalAbsen = todayLogs.length;
   const belumAbsen = totalStudents - totalAbsen;
-
-  // Attendance percentage
   const attendancePercent = totalStudents > 0 ? Math.round((statusCounts.hadir / totalStudents) * 100) : 0;
 
-  const stats = [
-    { label: "Total Siswa", value: totalStudents, icon: Users, gradient: "from-indigo-500 to-blue-600", bgLight: "bg-indigo-50 dark:bg-indigo-950/40", textColor: "text-indigo-600 dark:text-indigo-400" },
-    { label: "Hadir", value: statusCounts.hadir, icon: UserCheck, gradient: "from-emerald-500 to-green-600", bgLight: "bg-emerald-50 dark:bg-emerald-950/40", textColor: "text-emerald-600 dark:text-emerald-400" },
-    { label: "Izin", value: statusCounts.izin, icon: FileText, gradient: "from-amber-500 to-orange-500", bgLight: "bg-amber-50 dark:bg-amber-950/40", textColor: "text-amber-600 dark:text-amber-400" },
-    { label: "Sakit", value: statusCounts.sakit, icon: Thermometer, gradient: "from-blue-500 to-cyan-500", bgLight: "bg-blue-50 dark:bg-blue-950/40", textColor: "text-blue-600 dark:text-blue-400" },
-    { label: "Alfa", value: statusCounts.alfa, icon: AlertTriangle, gradient: "from-red-500 to-rose-600", bgLight: "bg-red-50 dark:bg-red-950/40", textColor: "text-red-600 dark:text-red-400" },
-    { label: "Belum Absen", value: belumAbsen, icon: Clock, gradient: "from-slate-400 to-gray-500", bgLight: "bg-slate-50 dark:bg-slate-900/40", textColor: "text-slate-600 dark:text-slate-400" },
+  const statCards = [
+    { label: "TOTAL SISWA", value: totalStudents, desc: "terdaftar di sekolah", icon: Users, iconBg: "bg-indigo-100 dark:bg-indigo-900/40", iconColor: "text-indigo-600 dark:text-indigo-400" },
+    { label: "HADIR", value: statusCounts.hadir, desc: "hadir hari ini", icon: UserCheck, iconBg: "bg-emerald-100 dark:bg-emerald-900/40", iconColor: "text-emerald-600 dark:text-emerald-400" },
+    { label: "IZIN / SAKIT", value: statusCounts.izin + statusCounts.sakit, desc: `${statusCounts.izin} izin, ${statusCounts.sakit} sakit`, icon: FileText, iconBg: "bg-amber-100 dark:bg-amber-900/40", iconColor: "text-amber-600 dark:text-amber-400" },
+    { label: "ALFA / BELUM", value: statusCounts.alfa + belumAbsen, desc: `${statusCounts.alfa} alfa, ${belumAbsen} belum`, icon: AlertTriangle, iconBg: "bg-red-100 dark:bg-red-900/40", iconColor: "text-red-600 dark:text-red-400" },
   ];
 
-  // Build LINE chart data based on period
+  const quickActions = [
+    { label: "Scan Absensi", desc: "Scan QR / Barcode", icon: QrCode, bg: "bg-indigo-50 dark:bg-indigo-950/30", iconColor: "text-indigo-600 dark:text-indigo-400", path: "/scan" },
+    { label: "Data Siswa", desc: "Kelola daftar siswa", icon: GraduationCap, bg: "bg-emerald-50 dark:bg-emerald-950/30", iconColor: "text-emerald-600 dark:text-emerald-400", path: "/students" },
+    { label: "Rekap Absensi", desc: "Export rekap bulanan", icon: ClipboardList, bg: "bg-amber-50 dark:bg-amber-950/30", iconColor: "text-amber-600 dark:text-amber-400", path: "/export" },
+    { label: "Pengaturan", desc: "Konfigurasi sekolah", icon: Settings, bg: "bg-blue-50 dark:bg-blue-950/30", iconColor: "text-blue-600 dark:text-blue-400", path: "/school-settings" },
+  ];
+
+  // Chart data
   const chartData = (() => {
     if (chartPeriod === "daily") {
       const hourly: Record<string, { hadir: number; izin: number; sakit: number; alfa: number }> = {};
@@ -133,9 +136,7 @@ const Dashboard = () => {
         const s = log.status as keyof typeof statusCounts;
         if (hourly[label][s] !== undefined) hourly[label][s]++;
       });
-      return Object.entries(hourly)
-        .sort(([a], [b]) => a.localeCompare(b))
-        .map(([name, counts]) => ({ name, ...counts }));
+      return Object.entries(hourly).sort(([a], [b]) => a.localeCompare(b)).map(([name, counts]) => ({ name, ...counts }));
     }
 
     const grouped: Record<string, { hadir: number; izin: number; sakit: number; alfa: number }> = {};
@@ -150,7 +151,6 @@ const Dashboard = () => {
       const dayOfWeek = now.getDay();
       const monday = new Date(now);
       monday.setDate(now.getDate() - ((dayOfWeek + 6) % 7));
-
       return Array.from({ length: 7 }, (_, i) => {
         const d = new Date(monday);
         d.setDate(monday.getDate() + i);
@@ -163,25 +163,18 @@ const Dashboard = () => {
     const now = new Date();
     const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
     const result: { name: string; hadir: number; izin: number; sakit: number; alfa: number }[] = [];
-
     for (let week = 0; week < Math.ceil(daysInMonth / 7); week++) {
       const weekData = { name: `Mg ${week + 1}`, hadir: 0, izin: 0, sakit: 0, alfa: 0 };
       for (let d = week * 7 + 1; d <= Math.min((week + 1) * 7, daysInMonth); d++) {
         const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
         const counts = grouped[dateStr];
-        if (counts) {
-          weekData.hadir += counts.hadir;
-          weekData.izin += counts.izin;
-          weekData.sakit += counts.sakit;
-          weekData.alfa += counts.alfa;
-        }
+        if (counts) { weekData.hadir += counts.hadir; weekData.izin += counts.izin; weekData.sakit += counts.sakit; weekData.alfa += counts.alfa; }
       }
       result.push(weekData);
     }
     return result;
   })();
 
-  // Pie chart data
   const pieData = [
     { name: "Hadir", value: statusCounts.hadir, key: "hadir" },
     { name: "Izin", value: statusCounts.izin, key: "izin" },
@@ -211,50 +204,51 @@ const Dashboard = () => {
 
   const now = new Date();
   const periodTitle = chartPeriod === "daily" ? "Hari Ini" : chartPeriod === "weekly" ? "Minggu Ini" : "Bulan Ini";
-
   const selectedStudents = selectedStatus ? getStudentsForStatus(selectedStatus) : [];
   const selectedLabel = selectedStatus ? (selectedStatus === "belum" ? "Belum Absen" : STATUS_LABELS[selectedStatus] || selectedStatus) : "";
   const selectedColor = selectedStatus ? (selectedStatus === "belum" ? "hsl(220, 10%, 75%)" : STATUS_COLORS[selectedStatus]) : "";
 
   return (
-    <div className="space-y-5 sm:space-y-6">
-      {/* Premium Header with gradient */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-700 p-5 sm:p-6 text-white">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMSIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjA4KSIvPjwvc3ZnPg==')] opacity-60" />
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Dashboard Absensi</h1>
-            <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-white/70 mt-1">
-              <Calendar className="h-3.5 w-3.5" />
-              <span>{now.toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</span>
-              <span className="text-white/40">•</span>
-              <Clock className="h-3.5 w-3.5" />
-              <span>{now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}</span>
-            </div>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
+            <TrendingUp className="h-6 w-6 text-primary" />
+            Dashboard Absensi
+          </h1>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground mt-0.5">
+            <Calendar className="h-3.5 w-3.5" />
+            <span>{now.toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</span>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="text-right">
-              <p className="text-3xl sm:text-4xl font-extrabold">{attendancePercent}%</p>
-              <p className="text-[10px] sm:text-xs text-white/60 font-medium">Kehadiran Hari Ini</p>
-            </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="text-right">
+            <p className="text-3xl font-bold text-primary">{attendancePercent}%</p>
+            <p className="text-[11px] text-muted-foreground">Kehadiran Hari Ini</p>
           </div>
+          <Button onClick={() => navigate("/scan")} className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl shadow-sm">
+            <QrCode className="h-4 w-4 mr-2" />
+            Scan Absensi
+            <ChevronRight className="h-4 w-4 ml-1" />
+          </Button>
         </div>
       </div>
 
-      {/* Stats Cards - Premium glass style */}
-      <div className="grid grid-cols-3 gap-2 sm:gap-3">
-        {stats.map((stat, i) => (
-          <motion.div key={stat.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
-            <Card className="border-0 shadow-card hover:shadow-elevated transition-all duration-300 overflow-hidden group">
-              <CardContent className="p-2.5 sm:p-3.5 h-full relative">
-                <div className="absolute top-0 right-0 w-16 h-16 rounded-bl-[40px] bg-gradient-to-br opacity-[0.07] group-hover:opacity-[0.12] transition-opacity ${stat.gradient}" />
-                <div className="flex flex-col items-center text-center gap-1.5 sm:flex-row sm:text-left sm:items-start sm:justify-between sm:gap-0 relative z-10">
-                  <div className={`h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-gradient-to-br ${stat.gradient} flex items-center justify-center shrink-0 shadow-sm`}>
-                    <stat.icon className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
-                  </div>
+      {/* Stat Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {statCards.map((s, i) => (
+          <motion.div key={s.label} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+            <Card className="rounded-2xl border border-border/60 shadow-sm hover:shadow-md transition-shadow duration-300">
+              <CardContent className="p-4 sm:p-5">
+                <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-[9px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-wider leading-tight">{stat.label}</p>
-                    <p className={`text-xl sm:text-2xl font-extrabold mt-0.5 ${stat.textColor}`}>{loading ? "..." : stat.value}</p>
+                    <p className="text-[10px] sm:text-xs font-semibold text-muted-foreground tracking-wider uppercase">{s.label}</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-foreground mt-1">{loading ? "..." : s.value}</p>
+                    <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">{s.desc}</p>
+                  </div>
+                  <div className={`h-10 w-10 sm:h-11 sm:w-11 rounded-xl ${s.iconBg} flex items-center justify-center shrink-0`}>
+                    <s.icon className={`h-5 w-5 sm:h-[22px] sm:w-[22px] ${s.iconColor}`} />
                   </div>
                 </div>
               </CardContent>
@@ -263,35 +257,33 @@ const Dashboard = () => {
         ))}
       </div>
 
-      {/* Charts Row */}
-      <div className="grid lg:grid-cols-3 gap-4 sm:gap-6">
-        <Card className="lg:col-span-2 shadow-card border-0 overflow-hidden">
-          <CardHeader className="pb-2 px-3 sm:px-6 bg-gradient-to-r from-muted/30 to-transparent">
+      {/* Charts */}
+      <div className="grid lg:grid-cols-3 gap-4">
+        <Card className="lg:col-span-2 rounded-2xl border border-border/60 shadow-sm">
+          <CardHeader className="pb-2">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-                  <TrendingUp className="h-3.5 w-3.5 text-white" />
-                </div>
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
                 Statistik Kehadiran — {periodTitle}
               </CardTitle>
               <Tabs value={chartPeriod} onValueChange={(v) => setChartPeriod(v as any)}>
-                <TabsList className="h-8 bg-secondary/80">
-                  <TabsTrigger value="daily" className="text-xs px-2.5 h-6">Harian</TabsTrigger>
-                  <TabsTrigger value="weekly" className="text-xs px-2.5 h-6">Mingguan</TabsTrigger>
-                  <TabsTrigger value="monthly" className="text-xs px-2.5 h-6">Bulanan</TabsTrigger>
+                <TabsList className="h-8 bg-muted/60 rounded-xl">
+                  <TabsTrigger value="daily" className="text-xs px-2.5 h-6 rounded-lg">Harian</TabsTrigger>
+                  <TabsTrigger value="weekly" className="text-xs px-2.5 h-6 rounded-lg">Mingguan</TabsTrigger>
+                  <TabsTrigger value="monthly" className="text-xs px-2.5 h-6 rounded-lg">Bulanan</TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
           </CardHeader>
           <CardContent className="px-2 sm:px-6">
-            <div className="h-48 sm:h-64">
+            <div className="h-48 sm:h-56">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis dataKey="name" fontSize={10} stroke="hsl(var(--muted-foreground))" />
                   <YAxis fontSize={10} stroke="hsl(var(--muted-foreground))" />
                   <Tooltip
-                    contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "12px", fontSize: "12px", boxShadow: "0 10px 25px -5px rgba(0,0,0,0.1)" }}
+                    contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "12px", fontSize: "12px" }}
                     formatter={(value: number, name: string) => [`${value} siswa`, STATUS_LABELS[name] || name]}
                   />
                   <Line type="monotone" dataKey="hadir" stroke={STATUS_COLORS.hadir} strokeWidth={2.5} dot={{ r: 3, strokeWidth: 2 }} name="hadir" />
@@ -304,7 +296,7 @@ const Dashboard = () => {
             <div className="flex flex-wrap justify-center gap-3 mt-2">
               {Object.entries(STATUS_LABELS).map(([key, label]) => (
                 <div key={key} className="flex items-center gap-1.5 text-xs">
-                  <div className="h-2.5 w-2.5 rounded-full shadow-sm" style={{ backgroundColor: STATUS_COLORS[key] }} />
+                  <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: STATUS_COLORS[key] }} />
                   <span className="text-muted-foreground font-medium">{label}</span>
                 </div>
               ))}
@@ -312,28 +304,19 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        <Card className="shadow-card border-0 overflow-hidden">
-          <CardHeader className="pb-2 px-3 sm:px-6 bg-gradient-to-r from-muted/30 to-transparent">
+        <Card className="rounded-2xl border border-border/60 shadow-sm">
+          <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
-                <GraduationCap className="h-3.5 w-3.5 text-white" />
-              </div>
+              <GraduationCap className="h-4 w-4 text-muted-foreground" />
               Status Kehadiran
             </CardTitle>
-            <p className="text-[10px] text-muted-foreground">Klik bagian pie untuk melihat daftar siswa</p>
+            <p className="text-[10px] text-muted-foreground">Klik bagian pie untuk detail</p>
           </CardHeader>
-          <CardContent className="px-2 sm:px-6">
+          <CardContent>
             <div className="h-40 sm:h-48">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie
-                    data={pieData}
-                    cx="50%" cy="50%"
-                    innerRadius={40} outerRadius={65}
-                    paddingAngle={3} dataKey="value"
-                    onClick={handlePieClick}
-                    cursor="pointer"
-                  >
+                  <Pie data={pieData} cx="50%" cy="50%" innerRadius={40} outerRadius={65} paddingAngle={3} dataKey="value" onClick={handlePieClick} cursor="pointer">
                     {pieData.map((_, index) => (
                       <Cell key={`cell-${index}`} fill={PIE_COLORS[index]} />
                     ))}
@@ -344,12 +327,8 @@ const Dashboard = () => {
             </div>
             <div className="flex flex-wrap justify-center gap-3 mt-2">
               {Object.entries(STATUS_LABELS).map(([key, label]) => (
-                <button
-                  key={key}
-                  onClick={() => setSelectedStatus(key)}
-                  className="flex items-center gap-1.5 text-xs hover:opacity-70 transition-opacity cursor-pointer"
-                >
-                  <div className="h-2.5 w-2.5 rounded-full shadow-sm" style={{ backgroundColor: STATUS_COLORS[key] }} />
+                <button key={key} onClick={() => setSelectedStatus(key)} className="flex items-center gap-1.5 text-xs hover:opacity-70 transition-opacity cursor-pointer">
+                  <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: STATUS_COLORS[key] }} />
                   <span className="font-medium">{label} ({statusCounts[key as keyof typeof statusCounts]})</span>
                 </button>
               ))}
@@ -358,22 +337,37 @@ const Dashboard = () => {
         </Card>
       </div>
 
+      {/* Quick Actions */}
+      <div>
+        <h2 className="text-base font-bold text-foreground mb-3">Aksi Cepat</h2>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {quickActions.map((action, i) => (
+            <motion.div key={action.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + i * 0.05 }}>
+              <Card
+                className={`rounded-2xl border border-border/40 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer ${action.bg}`}
+                onClick={() => navigate(action.path)}
+              >
+                <CardContent className="p-4 sm:p-5">
+                  <action.icon className={`h-6 w-6 ${action.iconColor} mb-3`} />
+                  <p className={`text-sm font-semibold ${action.iconColor}`}>{action.label}</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">{action.desc}</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+
       {/* Student List Dialog */}
       <Dialog open={!!selectedStatus} onOpenChange={(open) => { if (!open) setSelectedStatus(null); }}>
-        <DialogContent className="max-w-[95vw] sm:max-w-md p-0 overflow-hidden">
+        <DialogContent className="max-w-[95vw] sm:max-w-md p-0 overflow-hidden rounded-2xl">
           <div className="p-4 border-b border-border" style={{ backgroundColor: `${selectedColor}15` }}>
             <div className="flex items-center justify-between">
               <div>
-                <DialogTitle className="text-base font-bold" style={{ color: selectedColor }}>
-                  {selectedLabel}
-                </DialogTitle>
-                <DialogDescription className="text-xs text-muted-foreground">
-                  {selectedStudents.length} siswa • Hari ini
-                </DialogDescription>
+                <DialogTitle className="text-base font-bold" style={{ color: selectedColor }}>{selectedLabel}</DialogTitle>
+                <DialogDescription className="text-xs text-muted-foreground">{selectedStudents.length} siswa • Hari ini</DialogDescription>
               </div>
-              <Badge className="text-sm font-bold" style={{ backgroundColor: `${selectedColor}20`, color: selectedColor }}>
-                {selectedStudents.length}
-              </Badge>
+              <Badge className="text-sm font-bold" style={{ backgroundColor: `${selectedColor}20`, color: selectedColor }}>{selectedStudents.length}</Badge>
             </div>
           </div>
           <ScrollArea className="max-h-[60vh]">
@@ -383,11 +377,8 @@ const Dashboard = () => {
               <div className="divide-y divide-border">
                 {selectedStudents.map((s) => (
                   <div key={s.id} className="flex items-center gap-3 px-4 py-3">
-                    <div className="h-9 w-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden"
-                      style={{ backgroundColor: `${selectedColor}15`, color: selectedColor }}>
-                      {s.photo_url ? (
-                        <img src={s.photo_url} alt="" className="h-full w-full rounded-full object-cover" />
-                      ) : s.name.charAt(0)}
+                    <div className="h-9 w-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden" style={{ backgroundColor: `${selectedColor}15`, color: selectedColor }}>
+                      {s.photo_url ? <img src={s.photo_url} alt="" className="h-full w-full rounded-full object-cover" /> : s.name.charAt(0)}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold truncate">{s.name}</p>
@@ -401,17 +392,15 @@ const Dashboard = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Recent Attendance - Premium style */}
-      <Card className="shadow-card border-0 overflow-hidden">
-        <CardHeader className="pb-2 px-3 sm:px-6 bg-gradient-to-r from-muted/30 to-transparent">
+      {/* Recent Attendance */}
+      <Card className="rounded-2xl border border-border/60 shadow-sm">
+        <CardHeader className="pb-2">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
-            <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
-              <Clock className="h-3.5 w-3.5 text-white" />
-            </div>
+            <Clock className="h-4 w-4 text-muted-foreground" />
             Absensi Terbaru
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-1 px-3 sm:px-6">
+        <CardContent className="space-y-1">
           {todayLogs.length === 0 && !loading && (
             <p className="text-sm text-muted-foreground text-center py-8">Belum ada absensi hari ini</p>
           )}
@@ -421,14 +410,10 @@ const Dashboard = () => {
             const status = log.status as string;
             const statusColor = STATUS_COLORS[status] || STATUS_COLORS.hadir;
             return (
-              <motion.div
-                key={log.id}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: idx * 0.03 }}
-                className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-secondary/50 transition-colors"
-              >
-                <div className="h-9 w-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold shrink-0 overflow-hidden shadow-sm">
+              <motion.div key={log.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.03 }}
+                className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-muted/50 transition-colors">
+                <div className="h-9 w-9 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 overflow-hidden shadow-sm"
+                  style={{ backgroundColor: statusColor }}>
                   {students.find(s => s.id === log.student_id)?.photo_url ? (
                     <img src={students.find(s => s.id === log.student_id)!.photo_url!} alt="" className="h-full w-full rounded-full object-cover" />
                   ) : studentName.charAt(0)}
@@ -441,7 +426,7 @@ const Dashboard = () => {
                   </p>
                 </div>
                 <div className="text-right shrink-0">
-                  <Badge variant="secondary" className="text-[10px] font-semibold border" style={{ backgroundColor: `${statusColor}15`, color: statusColor, borderColor: `${statusColor}30` }}>
+                  <Badge className="text-[10px] font-semibold border-0 rounded-full px-2" style={{ backgroundColor: `${statusColor}15`, color: statusColor }}>
                     {STATUS_LABELS[status] || status}
                   </Badge>
                   <p className="text-[10px] text-muted-foreground mt-0.5 font-mono">{log.time?.slice(0, 5)}</p>
