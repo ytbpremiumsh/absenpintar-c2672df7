@@ -87,7 +87,7 @@ const WhatsAppBroadcast = () => {
                 <SelectContent>
                   {classes.map((c) => (
                     <SelectItem key={c.name} value={c.name}>
-                      {c.name} {c.wa_group_id ? "✅" : "❌ (Belum ada grup)"}
+                      {c.name} {c.wa_group_id ? "" : "(Belum ada grup)"}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -105,7 +105,7 @@ const WhatsAppBroadcast = () => {
 
             {classes.filter(c => !c.wa_group_id).length > 0 && (
               <p className="text-[11px] text-muted-foreground bg-muted/50 rounded-lg p-2">
-                ⚠️ Beberapa kelas belum memiliki ID Grup WhatsApp. Atur di halaman <strong>Kelas</strong> → klik kelas → isi WA Group ID.
+                Beberapa kelas belum memiliki ID Grup WhatsApp. Atur di halaman <strong>Kelas</strong> → klik kelas → isi WA Group ID.
               </p>
             )}
           </CardContent>

@@ -131,7 +131,7 @@ export function AppSidebar() {
   );
 
   return (
-    <Sidebar collapsible="offcanvas" className="border-r border-sidebar-border/50 font-['Nunito',sans-serif]">
+    <Sidebar collapsible="offcanvas" className="border-r border-sidebar-border/50 font-['Inter',sans-serif]">
       <SidebarHeader className="p-4 pb-3">
         <div className="flex items-center gap-3">
           {isPremiumBrand && schoolData?.logo ? (

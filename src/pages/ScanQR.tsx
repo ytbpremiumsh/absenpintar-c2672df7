@@ -531,7 +531,7 @@ const ScanQR = () => {
         <DialogContent className="max-w-[90vw] sm:max-w-sm border-0 bg-success p-0">
           <div className="p-6 sm:p-8 text-center space-y-3">
             <CheckCircle2 className="h-14 w-14 sm:h-16 sm:w-16 text-success-foreground mx-auto" />
-            <DialogTitle className="text-lg sm:text-xl font-bold text-success-foreground">✅ Absensi Berhasil</DialogTitle>
+            <DialogTitle className="text-lg sm:text-xl font-bold text-success-foreground">Absensi Berhasil</DialogTitle>
             <DialogDescription className="text-success-foreground/90 space-y-0.5 text-sm">
               <p><strong>{scannedStudent?.name}</strong></p>
               <p>Kelas: {scannedStudent?.class} • {currentAttType === "datang" ? "Datang - Hadir" : "Pulang"}</p>

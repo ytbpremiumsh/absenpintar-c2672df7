@@ -127,7 +127,7 @@ const WhatsAppTemplates = () => {
         {!isActive && (
           <Card className="border-destructive/30 bg-destructive/5">
             <CardContent className="p-4 text-sm text-destructive">
-              ⚠️ Integrasi WhatsApp belum aktif. Hubungi administrator untuk mengaktifkan.
+              Integrasi WhatsApp belum aktif. Hubungi administrator untuk mengaktifkan.
             </CardContent>
           </Card>
         )}

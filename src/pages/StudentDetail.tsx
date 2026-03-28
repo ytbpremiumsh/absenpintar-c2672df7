@@ -459,8 +459,8 @@ const StudentDetail = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="list">📋 Daftar</SelectItem>
-                    <SelectItem value="monthly">📅 Rekap Bulanan</SelectItem>
+                    <SelectItem value="list">Daftar</SelectItem>
+                    <SelectItem value="monthly">Rekap Bulanan</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

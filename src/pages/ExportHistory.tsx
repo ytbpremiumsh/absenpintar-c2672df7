@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileSpreadsheet, FileText, ChevronLeft, ChevronRight, Crown, Lock, Printer } from "lucide-react";
+import { FileSpreadsheet, FileText, ChevronLeft, ChevronRight, Crown, Lock, Printer, ClipboardList, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
@@ -146,14 +146,6 @@ const ExportHistory = () => {
     const studentIds = new Set(students.map(s => s.id));
     const filteredLogs = logs.filter(l => studentIds.has(l.student_id));
 
-    // Determine which past days should auto-fill alfa (weekdays that have passed departure_end_time)
-    const now = new Date();
-    const year = currentMonth.getFullYear();
-    const month = currentMonth.getMonth();
-    const isCurrentMonth = now.getFullYear() === year && now.getMonth() === month;
-    const todayDate = now.getDate();
-    const currentTimeStr = now.toTimeString().slice(0, 8);
-
     return students.map(s => {
       const days: Record<number, string> = {};
       const totals = { H: 0, S: 0, I: 0, A: 0 };
@@ -168,34 +160,6 @@ const ExportHistory = () => {
           if (code in totals) totals[code as keyof typeof totals]++;
         }
       });
-
-      // Auto-fill alfa for past weekdays without any attendance record (datang mode only)
-      if (!isPulang) {
-        for (let d = 1; d <= daysInMonth; d++) {
-          if (days[d]) continue; // already has a record
-          const dateObj = new Date(year, month, d);
-          const dayOfWeek = dateObj.getDay();
-          if (dayOfWeek === 0 || dayOfWeek === 6) continue; // skip weekends
-
-          // Check if this day has already passed departure time
-          let isPastDepartureTime = false;
-          if (isCurrentMonth) {
-            if (d < todayDate) {
-              isPastDepartureTime = true;
-            } else if (d === todayDate && currentTimeStr > departureEndTime) {
-              isPastDepartureTime = true;
-            }
-          } else if (new Date(year, month + 1, 0) < now) {
-            // Past month entirely
-            isPastDepartureTime = true;
-          }
-
-          if (isPastDepartureTime) {
-            days[d] = "A";
-            totals.A++;
-          }
-        }
-      }
 
       return { id: s.id, name: s.name, student_id: s.student_id, days, totals };
     });
@@ -426,9 +390,9 @@ const ExportHistory = () => {
         {/* Controls */}
         <Card className="border-0 shadow-card">
           <CardContent className="p-4">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-              <div className="flex-1 w-full sm:w-auto">
-                <label className="text-xs font-semibold text-muted-foreground mb-1 block">Kelas</label>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-4">
+              <div className="flex-1 min-w-0">
+                <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Kelas</label>
                 <Select value={selectedClass} onValueChange={setSelectedClass}>
                   <SelectTrigger className="w-full sm:w-48"><SelectValue placeholder="Pilih Kelas" /></SelectTrigger>
                   <SelectContent>
@@ -437,19 +401,19 @@ const ExportHistory = () => {
                 </Select>
               </div>
               <div>
-                <label className="text-xs font-semibold text-muted-foreground mb-1 block">Bulan</label>
-                <div className="flex items-center gap-1">
-                  <Button variant="outline" size="icon" className="h-9 w-9" onClick={prevMonth}><ChevronLeft className="h-4 w-4" /></Button>
+                <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Bulan</label>
+                <div className="flex items-center gap-1.5">
+                  <Button variant="outline" size="icon" className="h-9 w-9 shrink-0" onClick={prevMonth}><ChevronLeft className="h-4 w-4" /></Button>
                   <span className="text-sm font-semibold text-foreground min-w-[140px] text-center">{monthLabel}</span>
-                  <Button variant="outline" size="icon" className="h-9 w-9" onClick={nextMonth}><ChevronRight className="h-4 w-4" /></Button>
+                  <Button variant="outline" size="icon" className="h-9 w-9 shrink-0" onClick={nextMonth}><ChevronRight className="h-4 w-4" /></Button>
                 </div>
               </div>
-              <div className="sm:ml-auto flex gap-2">
-                <Button variant="outline" size="sm" disabled={isPremiumFeature} onClick={exportExcel} className="text-xs">
-                  <FileSpreadsheet className="h-3.5 w-3.5 mr-1.5" /> Excel {isPremiumFeature && <Lock className="h-3 w-3 ml-1" />}
+              <div className="flex gap-2 sm:ml-auto shrink-0">
+                <Button variant="outline" size="sm" disabled={isPremiumFeature} onClick={exportExcel} className="text-xs gap-1.5">
+                  <FileSpreadsheet className="h-3.5 w-3.5" /> Excel {isPremiumFeature && <Lock className="h-3 w-3" />}
                 </Button>
-                <Button variant="outline" size="sm" disabled={isPremiumFeature} onClick={exportPDF} className="text-xs">
-                  <FileText className="h-3.5 w-3.5 mr-1.5" /> PDF {isPremiumFeature && <Lock className="h-3 w-3 ml-1" />}
+                <Button variant="outline" size="sm" disabled={isPremiumFeature} onClick={exportPDF} className="text-xs gap-1.5">
+                  <FileText className="h-3.5 w-3.5" /> PDF {isPremiumFeature && <Lock className="h-3 w-3" />}
                 </Button>
               </div>
             </div>
@@ -459,8 +423,12 @@ const ExportHistory = () => {
         {/* Tabs: Datang / Pulang */}
         <Tabs value={rekapTab} onValueChange={(v) => setRekapTab(v as "datang" | "pulang")}>
           <TabsList className="w-full sm:w-auto">
-            <TabsTrigger value="datang" className="flex-1 sm:flex-none text-xs sm:text-sm">📋 Rekap Kehadiran</TabsTrigger>
-            <TabsTrigger value="pulang" className="flex-1 sm:flex-none text-xs sm:text-sm">🏠 Rekap Kepulangan</TabsTrigger>
+            <TabsTrigger value="datang" className="flex-1 sm:flex-none text-xs sm:text-sm gap-1.5">
+              <ClipboardList className="h-3.5 w-3.5" /> Rekap Kehadiran
+            </TabsTrigger>
+            <TabsTrigger value="pulang" className="flex-1 sm:flex-none text-xs sm:text-sm gap-1.5">
+              <Clock className="h-3.5 w-3.5" /> Rekap Kepulangan
+            </TabsTrigger>
           </TabsList>
         </Tabs>
 

@@ -323,7 +323,7 @@ const SchoolSettings = () => {
 
           {features.planName === "Free" && (
             <p className="text-[10px] text-muted-foreground bg-muted/50 rounded-lg p-2">
-              ⚠️ Paket Free hanya bisa menambahkan {maxInstructions} petunjuk. <strong>Upgrade</strong> untuk petunjuk tak terbatas.
+              Paket Free hanya bisa menambahkan {maxInstructions} petunjuk. <strong>Upgrade</strong> untuk petunjuk tak terbatas.
             </p>
           )}
         </CardContent>

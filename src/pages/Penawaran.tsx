@@ -113,7 +113,7 @@ const Penawaran = () => {
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={0}>
               <Badge className="bg-indigo-500/20 text-indigo-200 border-indigo-400/30 mb-6 text-sm px-4 py-1.5">
-                🎓 Platform #1 Absensi Sekolah Digital
+                Platform #1 Absensi Sekolah Digital
               </Badge>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-6">
                 {c("hero_title", "Solusi Absensi Digital Terbaik untuk Sekolah Anda")}
