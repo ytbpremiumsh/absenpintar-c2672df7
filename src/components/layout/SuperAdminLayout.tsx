@@ -2,7 +2,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Outlet, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
-import { LayoutDashboard, School, CreditCard, Receipt, LogOut, Shield, CalendarCheck, MessageSquare, Building2, Megaphone, LifeBuoy, Globe, Presentation, TrendingUp, MessageSquareQuote, History, Gift } from "lucide-react";
+import { LayoutGrid, School, Wallet, Receipt, LogOut, Shield, CalendarCheck, Send, Building2, Megaphone, HelpCircle, Globe, Presentation, TrendingUp, MessageSquareQuote, Clock, Gift } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import {
@@ -12,16 +12,16 @@ import {
 import { NavLink } from "@/components/NavLink";
 
 const navItems = [
-  { title: "Dashboard", url: "/super-admin", icon: LayoutDashboard, group: "overview" },
+  { title: "Dashboard", url: "/super-admin", icon: LayoutGrid, group: "overview" },
   { title: "Sekolah", url: "/super-admin/schools", icon: School, group: "overview" },
-  { title: "Log Login", url: "/super-admin/login-logs", icon: History, group: "overview" },
-  { title: "Paket Langganan", url: "/super-admin/plans", icon: CreditCard, group: "billing" },
+  { title: "Log Login", url: "/super-admin/login-logs", icon: Clock, group: "overview" },
+  { title: "Paket Langganan", url: "/super-admin/plans", icon: Wallet, group: "billing" },
   { title: "Langganan", url: "/super-admin/subscriptions", icon: CalendarCheck, group: "billing" },
   { title: "Riwayat Pembayaran", url: "/super-admin/payments", icon: Receipt, group: "billing" },
   { title: "Pengumuman", url: "/super-admin/announcements", icon: Megaphone, group: "communication" },
-  { title: "Tiket Bantuan", url: "/super-admin/tickets", icon: LifeBuoy, group: "communication" },
-  { title: "WhatsApp Gateway", url: "/super-admin/whatsapp", icon: MessageSquare, group: "integration" },
-  { title: "Notif Registrasi", url: "/super-admin/registration-wa", icon: MessageSquare, group: "integration" },
+  { title: "Tiket Bantuan", url: "/super-admin/tickets", icon: HelpCircle, group: "communication" },
+  { title: "WhatsApp Gateway", url: "/super-admin/whatsapp", icon: Send, group: "integration" },
+  { title: "Notif Registrasi", url: "/super-admin/registration-wa", icon: Send, group: "integration" },
   { title: "Multi Cabang", url: "/super-admin/branches", icon: Building2, group: "integration" },
   { title: "Landing Page", url: "/super-admin/landing", icon: Globe, group: "content" },
   { title: "Sekolah & Testimoni", url: "/super-admin/testimonials", icon: MessageSquareQuote, group: "content" },
@@ -80,8 +80,8 @@ function SuperAdminSidebar() {
                   {items.map((item) => (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild isActive={isActive(item.url)} tooltip={item.title}>
-                        <NavLink to={item.url} end={item.url === "/super-admin"} className="text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground rounded-xl px-3 py-2.5 transition-all duration-200 group/nav" activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-semibold shadow-sm">
-                          <item.icon className="h-[18px] w-[18px] transition-transform duration-200 group-hover/nav:scale-110" />
+                        <NavLink to={item.url} end={item.url === "/super-admin"} className="text-sidebar-foreground/60 hover:bg-primary/10 hover:text-primary rounded-xl px-3 py-2.5 transition-all duration-200 group/nav" activeClassName="bg-primary text-primary-foreground font-semibold shadow-md">
+                          <item.icon className="h-[17px] w-[17px] stroke-[1.8] transition-transform duration-200 group-hover/nav:scale-105" />
                           {!collapsed && <span className="text-[13px]">{item.title}</span>}
                         </NavLink>
                       </SidebarMenuButton>

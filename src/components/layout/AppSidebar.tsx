@@ -1,19 +1,19 @@
 import { useEffect, useState } from "react";
 import {
-  LayoutDashboard,
+  LayoutGrid,
   Users,
   ScanLine,
-  Monitor,
-  History,
-  CreditCard,
+  Activity,
+  Clock,
+  Wallet,
   LogOut,
   GraduationCap,
   UserCheck,
-  FileBarChart,
-  LifeBuoy,
-  ClipboardCheck,
-  Users2,
-  MessageSquare,
+  BarChart3,
+  HelpCircle,
+  ClipboardList,
+  UsersRound,
+  Send,
   Gift,
 } from "lucide-react";
 import atskollaLogo from "@/assets/Logo_atskolla.png";
@@ -38,8 +38,8 @@ import {
 } from "@/components/ui/sidebar";
 
 const mainNav = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Monitoring", url: "/monitoring", icon: Monitor },
+  { title: "Dashboard", url: "/dashboard", icon: LayoutGrid },
+  { title: "Monitoring", url: "/monitoring", icon: Activity },
   { title: "Scan Absensi", url: "/scan", icon: ScanLine },
 ];
 
@@ -47,17 +47,17 @@ const dataNav = [
   { title: "Kelas", url: "/classes", icon: GraduationCap },
   { title: "Siswa", url: "/students", icon: Users },
   { title: "Wali Murid", url: "/teachers", icon: UserCheck },
-  { title: "Wali Kelas", url: "/wali-kelas", icon: ClipboardCheck },
-  { title: "Staff / Operator", url: "/staff", icon: Users2 },
+  { title: "Wali Kelas", url: "/wali-kelas", icon: ClipboardList },
+  { title: "Staff / Operator", url: "/staff", icon: UsersRound },
 ];
 
 const whatsappNav = [
-  { title: "WhatsApp", url: "/whatsapp", icon: MessageSquare },
+  { title: "WhatsApp", url: "/whatsapp", icon: Send },
 ];
 
 const settingsNav = [
-  { title: "Langganan", url: "/subscription", icon: CreditCard },
-  { title: "Bantuan", url: "/support", icon: LifeBuoy },
+  { title: "Langganan", url: "/subscription", icon: Wallet },
+  { title: "Bantuan", url: "/support", icon: HelpCircle },
 ];
 
 export function AppSidebar() {
@@ -112,10 +112,10 @@ export function AppSidebar() {
             to={item.url}
             end
             onClick={handleNavClick}
-            className="text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground rounded-xl px-3 py-2.5 transition-all duration-200 group/nav"
-            activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-semibold shadow-sm"
+            className="text-sidebar-foreground/60 hover:bg-primary/10 hover:text-primary rounded-xl px-3 py-2.5 transition-all duration-200 group/nav"
+            activeClassName="bg-primary text-primary-foreground font-semibold shadow-md"
           >
-            <item.icon className="h-[18px] w-[18px] shrink-0 transition-transform duration-200 group-hover/nav:scale-110" />
+            <item.icon className="h-[17px] w-[17px] shrink-0 stroke-[1.8] transition-transform duration-200 group-hover/nav:scale-105" />
             <span className="text-[13px] truncate">{item.title}</span>
           </NavLink>
         </SidebarMenuButton>
@@ -184,8 +184,8 @@ export function AppSidebar() {
               <SidebarGroupContent>
                 <SidebarMenu className="space-y-0.5">
                   {renderNavItems([
-                    { title: "Rekap & Export", url: "/export-history", icon: FileBarChart },
-                    { title: "Riwayat Absensi", url: "/history", icon: History },
+                    { title: "Rekap & Export", url: "/export-history", icon: BarChart3 },
+                    { title: "Riwayat Absensi", url: "/history", icon: Clock },
                   ])}
                 </SidebarMenu>
               </SidebarGroupContent>
