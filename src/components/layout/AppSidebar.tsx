@@ -15,6 +15,7 @@ import {
   UsersRound,
   Send,
   Gift,
+  ChevronRight,
 } from "lucide-react";
 import atskollaLogo from "@/assets/Logo_atskolla.png";
 import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
@@ -112,18 +113,19 @@ export function AppSidebar() {
             to={item.url}
             end
             onClick={handleNavClick}
-            className="text-sidebar-foreground/60 hover:bg-primary/10 hover:text-primary rounded-xl px-3 py-2.5 transition-all duration-200 group/nav"
-            activeClassName="bg-primary text-primary-foreground font-semibold shadow-md"
+            className="text-sidebar-foreground/55 hover:bg-primary/8 hover:text-sidebar-foreground rounded-2xl px-3.5 py-3 transition-all duration-200 group/nav"
+            activeClassName="bg-primary text-white font-semibold shadow-lg shadow-primary/25"
           >
-            <item.icon className="h-[17px] w-[17px] shrink-0 stroke-[1.8] transition-transform duration-200 group-hover/nav:scale-105" />
-            <span className="text-[13px] truncate">{item.title}</span>
+            <item.icon className="h-[18px] w-[18px] shrink-0 stroke-[1.6] transition-transform duration-200 group-hover/nav:scale-105" />
+            <span className="text-[13.5px] truncate flex-1">{item.title}</span>
+            {isActive(item.url) && <ChevronRight className="h-4 w-4 stroke-[2] ml-auto shrink-0" />}
           </NavLink>
         </SidebarMenuButton>
       </SidebarMenuItem>
     ));
 
   const renderGroupLabel = (label: string) => (
-    <SidebarGroupLabel className="text-sidebar-foreground/35 text-[10px] uppercase tracking-[0.15em] font-bold px-3 mb-1">
+    <SidebarGroupLabel className="text-primary/50 text-[10px] uppercase tracking-[0.18em] font-bold px-3 mb-1.5">
       {label}
     </SidebarGroupLabel>
   );
