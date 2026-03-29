@@ -63,15 +63,27 @@ const SchoolSettings = () => {
       toast.error("Fitur custom logo tersedia di paket School ke atas");
       return;
     }
+    if (!profile?.school_id) return;
     setUploading(true);
-    const ext = file.name.split(".").pop();
-    const path = `${profile?.school_id}/logo.${ext}`;
-    const { error } = await supabase.storage.from("school-logos").upload(path, file, { upsert: true });
-    if (error) { toast.error("Gagal upload logo: " + error.message); setUploading(false); return; }
-    const { data: urlData } = supabase.storage.from("school-logos").getPublicUrl(path);
-    setLogo(urlData.publicUrl);
-    setUploading(false);
-    toast.success("Logo berhasil diupload!");
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `${profile.school_id}/logo.${ext}`;
+      const { error: uploadErr } = await supabase.storage.from("school-logos").upload(path, file, { upsert: true });
+      if (uploadErr) { toast.error("Gagal upload logo: " + uploadErr.message); setUploading(false); return; }
+      const { data: urlData } = supabase.storage.from("school-logos").getPublicUrl(path);
+      const publicUrl = `${urlData.publicUrl}?t=${Date.now()}`;
+      
+      // Save logo URL to database immediately
+      const { error: saveErr } = await supabase.from("schools").update({ logo: publicUrl }).eq("id", profile.school_id);
+      if (saveErr) { toast.error("Logo terupload tapi gagal menyimpan ke database: " + saveErr.message); setUploading(false); return; }
+      
+      setLogo(publicUrl);
+      toast.success("Logo berhasil diupload dan disimpan!");
+    } catch (err: any) {
+      toast.error("Terjadi kesalahan: " + err.message);
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleAddInstruction = () => {
