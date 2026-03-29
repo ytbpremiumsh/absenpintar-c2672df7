@@ -360,14 +360,30 @@ const ExportHistory = () => {
     }
   };
 
+  const selectedMonth = currentMonth.getMonth();
+  const selectedYear = currentMonth.getFullYear();
+  const setMonth = (m: string) => setCurrentMonth(new Date(selectedYear, parseInt(m), 1));
+  const setYear = (y: string) => setCurrentMonth(new Date(parseInt(y), selectedMonth, 1));
+  const years = Array.from({ length: 5 }, (_, i) => selectedYear - 2 + i);
+
+  const handleShow = () => {
+    // triggers re-fetch via useEffect
+    setCurrentMonth(new Date(selectedYear, selectedMonth, 1));
+  };
+
+  const getCellBadge = (code: string) => {
+    switch (code) {
+      case "H": case "✓": return "bg-emerald-500 text-white";
+      case "S": return "bg-violet-500 text-white";
+      case "I": return "bg-amber-400 text-white";
+      case "A": return "bg-red-500 text-white";
+      default: return "";
+    }
+  };
+
   return (
     <PremiumGate featureLabel="Rekap & Export" featureKey="canExportReport" requiredPlan="Basic">
       <div className="space-y-5">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Rekap & Export Absensi</h1>
-          <p className="text-muted-foreground text-xs sm:text-sm">Format absensi bulanan nasional per kelas</p>
-        </div>
-
         {isPremiumFeature && !features.loading && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
             <Card className="border-0 shadow-card bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30">
@@ -389,40 +405,53 @@ const ExportHistory = () => {
           </motion.div>
         )}
 
-        {/* Controls */}
-        <Card className="border-0 shadow-card">
-          <CardContent className="p-4">
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-4">
-              <div className="flex-1 min-w-0">
-                <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Kelas</label>
-                <Select value={selectedClass} onValueChange={setSelectedClass}>
-                  <SelectTrigger className="w-full sm:w-48"><SelectValue placeholder="Pilih Kelas" /></SelectTrigger>
-                  <SelectContent>
-                    {classes.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Bulan</label>
-                <div className="flex items-center gap-1.5">
-                  <Button variant="outline" size="icon" className="h-9 w-9 shrink-0" onClick={prevMonth}><ChevronLeft className="h-4 w-4" /></Button>
-                  <span className="text-sm font-semibold text-foreground min-w-[140px] text-center">{monthLabel}</span>
-                  <Button variant="outline" size="icon" className="h-9 w-9 shrink-0" onClick={nextMonth}><ChevronRight className="h-4 w-4" /></Button>
-                </div>
-              </div>
-              <div className="flex gap-2 sm:ml-auto shrink-0">
-                <Button variant="outline" size="sm" disabled={isPremiumFeature} onClick={exportExcel} className="text-xs gap-1.5">
-                  <FileSpreadsheet className="h-3.5 w-3.5" /> Excel {isPremiumFeature && <Lock className="h-3 w-3" />}
-                </Button>
-                <Button variant="outline" size="sm" disabled={isPremiumFeature} onClick={exportPDF} className="text-xs gap-1.5">
-                  <FileText className="h-3.5 w-3.5" /> PDF {isPremiumFeature && <Lock className="h-3 w-3" />}
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Filter Bar */}
+        <div className="flex flex-wrap items-end gap-4">
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Bulan</label>
+            <Select value={String(selectedMonth)} onValueChange={setMonth}>
+              <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {MONTH_NAMES.map((m, i) => <SelectItem key={i} value={String(i)}>{m}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Tahun</label>
+            <Select value={String(selectedYear)} onValueChange={setYear}>
+              <SelectTrigger className="w-28"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {years.map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Kelas</label>
+            <Select value={selectedClass} onValueChange={setSelectedClass}>
+              <SelectTrigger className="w-40"><SelectValue placeholder="Pilih Kelas" /></SelectTrigger>
+              <SelectContent>
+                {classes.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button onClick={handleShow} className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm gap-2">
+            <CalendarDays className="h-4 w-4" /> Tampilkan
+          </Button>
+          <Button variant="outline" disabled={isPremiumFeature} onClick={exportExcel} className="gap-2 border-primary/30 text-primary hover:bg-primary/5">
+            <Download className="h-4 w-4" /> Export Excel {isPremiumFeature && <Lock className="h-3 w-3" />}
+          </Button>
+        </div>
 
-        {/* Tabs: Datang / Pulang */}
+        {/* Legend */}
+        <div className="flex flex-wrap items-center gap-4 text-xs">
+          <div className="flex items-center gap-1.5"><span className="inline-flex items-center justify-center h-5 w-5 rounded-md bg-emerald-500 text-white text-[10px] font-bold">H</span> Hadir</div>
+          <div className="flex items-center gap-1.5"><span className="inline-flex items-center justify-center h-5 w-5 rounded-md bg-violet-500 text-white text-[10px] font-bold">S</span> Sakit</div>
+          <div className="flex items-center gap-1.5"><span className="inline-flex items-center justify-center h-5 w-5 rounded-md bg-amber-400 text-white text-[10px] font-bold">I</span> Izin</div>
+          <div className="flex items-center gap-1.5"><span className="inline-flex items-center justify-center h-5 w-5 rounded-md bg-red-500 text-white text-[10px] font-bold">A</span> Alfa</div>
+          <div className="flex items-center gap-1.5"><span className="inline-flex items-center justify-center h-5 w-5 rounded-md bg-muted border border-border text-[10px]"></span> Tidak hadir/data kosong</div>
+        </div>
+
+        {/* Tabs */}
         <Tabs value={rekapTab} onValueChange={(v) => setRekapTab(v as "datang" | "pulang")}>
           <TabsList className="w-full sm:w-auto">
             <TabsTrigger value="datang" className="flex-1 sm:flex-none text-xs sm:text-sm gap-1.5">
@@ -434,39 +463,14 @@ const ExportHistory = () => {
           </TabsList>
         </Tabs>
 
-        {/* Summary cards */}
-        {activeRows.length > 0 && (
-          <div className={`grid ${isPulangMode ? 'grid-cols-2' : 'grid-cols-2 sm:grid-cols-4'} gap-3`}>
-            {(isPulangMode ? [
-              { label: "Total Siswa", value: activeRows.length, color: "text-primary" },
-              { label: "Sudah Pulang", value: activeRows.reduce((a, s) => a + s.totals.H, 0), color: "text-success" },
-            ] : [
-              { label: "Total Siswa", value: activeRows.length, color: "text-primary" },
-              { label: "Total Hadir", value: activeRows.reduce((a, s) => a + s.totals.H, 0), color: "text-success" },
-              { label: "Total Sakit", value: activeRows.reduce((a, s) => a + s.totals.S, 0), color: "text-blue-500" },
-              { label: "Total Alfa", value: activeRows.reduce((a, s) => a + s.totals.A, 0), color: "text-destructive" },
-            ]).map((s, i) => (
-              <motion.div key={s.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-                <Card className="border-0 shadow-card">
-                  <CardContent className="p-3 text-center">
-                    <p className={`text-xl sm:text-2xl font-extrabold ${s.color}`}>{s.value}</p>
-                    <p className="text-[10px] text-muted-foreground">{s.label}</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        )}
-
-        {/* National format attendance table */}
+        {/* Recap Table */}
         <Card className="border-0 shadow-card overflow-hidden">
           <CardContent className="p-0">
-            <div className="p-4 border-b border-border text-center">
-              <h2 className="text-base font-bold text-foreground tracking-wide">
-                {rekapTab === "datang" ? "ABSENSI SISWA" : "REKAP KEPULANGAN SISWA"}
+            <div className="px-5 py-4 border-b border-border">
+              <h2 className="text-base font-bold text-foreground">
+                Rekapitulasi — {monthLabel}{" "}
+                <span className="text-muted-foreground font-normal text-sm">({activeRows.length} siswa)</span>
               </h2>
-              <p className="text-sm text-muted-foreground font-semibold">BULAN : {monthLabel.toUpperCase()}</p>
-              <p className="text-xs text-muted-foreground">Kelas : {selectedClass || "-"}</p>
             </div>
 
             {loading ? (
@@ -479,55 +483,71 @@ const ExportHistory = () => {
               <div className="overflow-x-auto" ref={tableRef}>
                 <table className="w-full text-xs border-collapse min-w-[900px]">
                   <thead>
-                    <tr className="bg-muted/60">
-                      <th rowSpan={2} className="border border-border px-2 py-2 text-center font-bold w-10 sticky left-0 bg-muted/60 z-10">NO</th>
-                      <th rowSpan={2} className="border border-border px-2 py-2 text-center font-bold w-20">NIS</th>
-                      <th rowSpan={2} className="border border-border px-2 py-2 text-left font-bold min-w-[140px]">NAMA SISWA</th>
-                      <th colSpan={daysInMonth} className="border border-border px-1 py-1.5 text-center font-bold">TANGGAL</th>
+                    <tr className="border-b border-border">
+                      <th rowSpan={2} className="px-3 py-2.5 text-left font-semibold text-muted-foreground w-10 sticky left-0 bg-card z-10">No</th>
+                      <th rowSpan={2} className="px-3 py-2.5 text-left font-semibold text-muted-foreground min-w-[180px]">Nama Siswa</th>
+                      <th colSpan={daysInMonth} className="px-1 py-2 text-center font-bold text-primary uppercase text-[10px] tracking-wider">Tanggal</th>
                       {isPulangMode ? (
-                        <th className="border border-border px-1 py-1.5 text-center font-bold">KET</th>
+                        <th className="px-1 py-2 text-center font-bold text-primary uppercase text-[10px] tracking-wider">Keterangan</th>
                       ) : (
-                        <th colSpan={4} className="border border-border px-1 py-1.5 text-center font-bold">KET</th>
+                        <th colSpan={4} className="px-1 py-2 text-center font-bold text-primary uppercase text-[10px] tracking-wider">Keterangan</th>
                       )}
                     </tr>
-                    <tr className="bg-muted/40">
+                    <tr className="border-b border-border bg-muted/30">
                       {Array.from({ length: daysInMonth }, (_, i) => (
-                        <th key={i} className="border border-border px-0.5 py-1 text-center font-semibold w-7 text-[10px]">{i + 1}</th>
+                        <th key={i} className="px-0.5 py-1.5 text-center font-medium text-muted-foreground w-7 text-[10px]">{i + 1}</th>
                       ))}
                       {isPulangMode ? (
-                        <th className="border border-border px-1 py-1 text-center font-bold text-success w-7">✓</th>
+                        <th className="px-1 py-1.5 text-center font-bold text-success w-7 text-[10px]">✓</th>
                       ) : (
                         <>
-                          <th className="border border-border px-1 py-1 text-center font-bold text-success w-7">H</th>
-                          <th className="border border-border px-1 py-1 text-center font-bold text-blue-500 w-7">S</th>
-                          <th className="border border-border px-1 py-1 text-center font-bold text-warning w-7">I</th>
-                          <th className="border border-border px-1 py-1 text-center font-bold text-destructive w-7">A</th>
+                          <th className="px-1 py-1.5 text-center font-bold text-emerald-600 w-7 text-[10px]">H</th>
+                          <th className="px-1 py-1.5 text-center font-bold text-violet-600 w-7 text-[10px]">S</th>
+                          <th className="px-1 py-1.5 text-center font-bold text-amber-600 w-7 text-[10px]">I</th>
+                          <th className="px-1 py-1.5 text-center font-bold text-red-600 w-7 text-[10px]">A</th>
                         </>
                       )}
                     </tr>
                   </thead>
                   <tbody>
                     {activeRows.map((s, i) => (
-                      <tr key={s.id} className="hover:bg-muted/20 transition-colors">
-                        <td className="border border-border px-1 py-1.5 text-center font-medium sticky left-0 bg-card z-10">{i + 1}</td>
-                        <td className="border border-border px-2 py-1.5 text-center font-mono text-[10px]">{s.student_id}</td>
-                        <td className="border border-border px-2 py-1.5 text-left font-medium truncate max-w-[160px]">{s.name}</td>
+                      <tr key={s.id} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
+                        <td className="px-3 py-3 text-center font-medium text-muted-foreground sticky left-0 bg-card z-10">{i + 1}</td>
+                        <td className="px-3 py-3">
+                          <div className="flex items-center gap-2.5">
+                            <Avatar className="h-8 w-8 shrink-0">
+                              {s.photo_url && <AvatarImage src={s.photo_url} alt={s.name} />}
+                              <AvatarFallback className="text-[10px] font-bold bg-primary/10 text-primary">{s.name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <div className="min-w-0">
+                              <p className="text-[12px] font-semibold text-foreground truncate">{s.name}</p>
+                              <p className="text-[10px] text-muted-foreground">{s.student_id}</p>
+                            </div>
+                          </div>
+                        </td>
                         {Array.from({ length: daysInMonth }, (_, d) => {
                           const code = s.days[d + 1] || "";
+                          const badgeClass = getCellBadge(code);
                           return (
-                            <td key={d} className={`border border-border px-0 py-1 text-center text-[10px] font-bold ${getCellColor(code)}`}>
-                              {code}
+                            <td key={d} className="px-0 py-2 text-center">
+                              {code ? (
+                                <span className={`inline-flex items-center justify-center h-6 w-6 rounded-md text-[10px] font-bold ${badgeClass}`}>
+                                  {code === "✓" ? "H" : code}
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-muted/40 border border-border/30" />
+                              )}
                             </td>
                           );
                         })}
                         {isPulangMode ? (
-                          <td className="border border-border px-1 py-1 text-center font-bold text-success">{s.totals.H || ""}</td>
+                          <td className="px-1 py-2 text-center font-bold text-emerald-600">{s.totals.H || 0}</td>
                         ) : (
                           <>
-                            <td className="border border-border px-1 py-1 text-center font-bold text-success">{s.totals.H || ""}</td>
-                            <td className="border border-border px-1 py-1 text-center font-bold text-blue-500">{s.totals.S || ""}</td>
-                            <td className="border border-border px-1 py-1 text-center font-bold text-warning">{s.totals.I || ""}</td>
-                            <td className="border border-border px-1 py-1 text-center font-bold text-destructive">{s.totals.A || ""}</td>
+                            <td className="px-1 py-2 text-center font-bold text-emerald-600">{s.totals.H || 0}</td>
+                            <td className="px-1 py-2 text-center font-bold text-violet-600">{s.totals.S || 0}</td>
+                            <td className="px-1 py-2 text-center font-bold text-amber-600">{s.totals.I || 0}</td>
+                            <td className="px-1 py-2 text-center font-bold text-red-600">{s.totals.A || 0}</td>
                           </>
                         )}
                       </tr>
