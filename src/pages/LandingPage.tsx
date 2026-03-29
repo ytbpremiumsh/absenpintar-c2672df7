@@ -357,6 +357,34 @@ const LandingPage = () => {
         </div>
       </section>
 
+      {/* ─── Hero Stats Banner ─── */}
+      <section className="relative bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-700 py-14 sm:py-16 overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-1/4 w-[300px] h-[300px] bg-white/5 rounded-full blur-[80px]" />
+          <div className="absolute bottom-0 right-1/4 w-[250px] h-[250px] bg-indigo-400/10 rounded-full blur-[60px]" />
+        </div>
+        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-12">
+            {heroStats.map((stat, i) => (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1, duration: 0.5 }}
+                className="text-center"
+              >
+                <div className="flex justify-center mb-3">
+                  <stat.icon className="h-8 w-8 sm:h-9 sm:w-9 text-white/70" strokeWidth={1.5} />
+                </div>
+                <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight">{stat.value}</p>
+                <p className="mt-1.5 text-sm sm:text-base text-indigo-100/80 font-medium">{stat.label}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ─── Problems ─── */}
       <section className="py-20 sm:py-28 bg-slate-50/80 dark:bg-slate-900/50 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-red-500/3 rounded-full blur-[120px] pointer-events-none" />
