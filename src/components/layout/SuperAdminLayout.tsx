@@ -80,10 +80,12 @@ function SuperAdminSidebar() {
                   {items.map((item) => (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild isActive={isActive(item.url)} tooltip={item.title}>
-                        <NavLink to={item.url} end={item.url === "/super-admin"} className="text-sidebar-foreground/55 hover:bg-primary/8 hover:text-primary rounded-full px-3.5 py-3 transition-all duration-200 group/nav" activeClassName="bg-primary text-primary-foreground font-semibold shadow-[0_4px_12px_rgba(91,108,249,0.3)]">
-                          <item.icon className="h-5 w-5 stroke-[1.6] transition-transform duration-200 group-hover/nav:scale-105" />
-                          {!collapsed && <span className="text-[14.5px] flex-1">{item.title}</span>}
-                          {!collapsed && isActive(item.url) && <ChevronRight className="h-4 w-4 stroke-[2] ml-auto" />}
+                        <NavLink to={item.url} end={item.url === "/super-admin"} className="text-sidebar-foreground/60 hover:bg-primary/10 hover:text-primary rounded-xl px-3 py-2.5 transition-all duration-200 group/nav gap-3" activeClassName="bg-primary text-primary-foreground font-semibold shadow-md shadow-primary/25 rounded-xl">
+                          <div className="flex items-center justify-center h-8 w-8 rounded-lg shrink-0">
+                            <item.icon className="h-[18px] w-[18px] stroke-[1.7]" />
+                          </div>
+                          {!collapsed && <span className="text-[13.5px] flex-1">{item.title}</span>}
+                          {!collapsed && isActive(item.url) && <ChevronRight className="h-4 w-4 stroke-[2.5] ml-auto opacity-80" />}
                         </NavLink>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
