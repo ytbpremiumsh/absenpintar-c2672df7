@@ -230,6 +230,21 @@ const LandingPage = () => {
         const sMap = Object.fromEntries(settingsRes.data.map((d: any) => [d.key, d.value]));
         if (sMap.header_logo_url) setHeaderLogo(sMap.header_logo_url);
       }
+      // Build hero stats from content if available
+      const ICON_MAP: Record<string, any> = { School, Users, Shield, Globe };
+      const statsKeys = ["hero_stat_1", "hero_stat_2", "hero_stat_3", "hero_stat_4"];
+      const loadedStats = statsKeys.map((k, i) => {
+        const val = map[`${k}_value`];
+        const label = map[`${k}_label`];
+        const iconName = map[`${k}_icon`] || DEFAULT_HERO_STATS[i]?.icon?.name || "Shield";
+        return {
+          value: val || DEFAULT_HERO_STATS[i]?.value || "",
+          label: label || DEFAULT_HERO_STATS[i]?.label || "",
+          icon: ICON_MAP[iconName] || DEFAULT_HERO_STATS[i]?.icon || Shield,
+        };
+      }).filter(s => s.value && s.label);
+      if (loadedStats.length > 0) setHeroStats(loadedStats);
+
       const allPlans = (plansRes.data || []) as any[];
       const landingPlans = allPlans.filter((p: any) => p.show_on_landing !== false);
       setPlans(landingPlans as PlanRow[]);
