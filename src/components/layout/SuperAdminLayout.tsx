@@ -21,9 +21,9 @@ const navItems = [
   { title: "Paket Langganan", url: "/super-admin/plans", icon: Wallet, group: "billing" },
   { title: "Langganan", url: "/super-admin/subscriptions", icon: CalendarCheck, group: "billing" },
   { title: "Referral & Poin", url: "/super-admin/referral", icon: Gift, group: "billing" },
-  { title: "Konfigurasi Pembayaran", url: "/super-admin/business-model", icon: Receipt, group: "integration" },
-  { title: "Konfigurasi API WA", url: "/super-admin/whatsapp", icon: MessageCircle, group: "integration" },
-  { title: "Aktivasi WA Sekolah", url: "/super-admin/registration-wa", icon: Eye, group: "integration" },
+  { title: "Model Bisnis", url: "/super-admin/business-model", icon: Receipt, group: "integration" },
+  { title: "Aktivasi WA Sekolah", url: "/super-admin/whatsapp", icon: Eye, group: "integration" },
+  { title: "Konfigurasi API WA", url: "/super-admin/registration-wa", icon: MessageCircle, group: "integration" },
   { title: "Multi Cabang", url: "/super-admin/branches", icon: Building2, group: "integration" },
   { title: "Branding & Landing", url: "/super-admin/landing", icon: Palette, group: "content" },
   { title: "Testimoni & Sekolah", url: "/super-admin/testimonials", icon: School, group: "content" },
@@ -80,9 +80,9 @@ function SuperAdminSidebar() {
                   {items.map((item) => (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild isActive={isActive(item.url)} tooltip={item.title}>
-                        <NavLink to={item.url} end={item.url === "/super-admin"} className="text-sidebar-foreground/55 hover:bg-primary/8 hover:text-sidebar-foreground rounded-full px-3.5 py-3 transition-all duration-200 group/nav" activeClassName="bg-gradient-to-r from-[#5B6CF9] to-[#7A5AF8] text-white font-semibold shadow-[0_4px_12px_rgba(91,108,249,0.3)]">
-                          <item.icon className="h-[18px] w-[18px] stroke-[1.6] transition-transform duration-200 group-hover/nav:scale-105" />
-                          {!collapsed && <span className="text-[13.5px] flex-1">{item.title}</span>}
+                        <NavLink to={item.url} end={item.url === "/super-admin"} className="text-sidebar-foreground/55 hover:bg-[#5B6CF9]/8 hover:text-sidebar-foreground rounded-full px-3.5 py-3 transition-all duration-200 group/nav" activeClassName="bg-[#5B6CF9] text-white font-semibold shadow-[0_4px_12px_rgba(91,108,249,0.3)]">
+                          <item.icon className="h-5 w-5 stroke-[1.6] transition-transform duration-200 group-hover/nav:scale-105" />
+                          {!collapsed && <span className="text-[14.5px] flex-1">{item.title}</span>}
                           {!collapsed && isActive(item.url) && <ChevronRight className="h-4 w-4 stroke-[2] ml-auto" />}
                         </NavLink>
                       </SidebarMenuButton>

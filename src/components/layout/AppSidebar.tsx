@@ -113,11 +113,11 @@ export function AppSidebar() {
             to={item.url}
             end
             onClick={handleNavClick}
-            className="text-sidebar-foreground/55 hover:bg-primary/8 hover:text-sidebar-foreground rounded-full px-3.5 py-3 transition-all duration-200 group/nav"
-            activeClassName="bg-gradient-to-r from-[#5B6CF9] to-[#7A5AF8] text-white font-semibold shadow-[0_4px_12px_rgba(91,108,249,0.3)]"
+            className="text-sidebar-foreground/55 hover:bg-[#5B6CF9]/8 hover:text-sidebar-foreground rounded-full px-3.5 py-3 transition-all duration-200 group/nav"
+            activeClassName="bg-[#5B6CF9] text-white font-semibold shadow-[0_4px_12px_rgba(91,108,249,0.3)]"
           >
-            <item.icon className="h-[18px] w-[18px] shrink-0 stroke-[1.6] transition-transform duration-200 group-hover/nav:scale-105" />
-            <span className="text-[13.5px] truncate flex-1">{item.title}</span>
+            <item.icon className="h-5 w-5 shrink-0 stroke-[1.6] transition-transform duration-200 group-hover/nav:scale-105" />
+            <span className="text-[14.5px] truncate flex-1">{item.title}</span>
             {isActive(item.url) && <ChevronRight className="h-4 w-4 stroke-[2] ml-auto shrink-0" />}
           </NavLink>
         </SidebarMenuButton>
