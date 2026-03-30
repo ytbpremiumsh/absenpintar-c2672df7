@@ -127,7 +127,7 @@ export function AppSidebar() {
               }`}>
                 <item.icon className="h-[15px] w-[15px] stroke-[2]" />
               </div>
-              <span className="text-[13px] truncate flex-1">{item.title}</span>
+              <span className={`text-[13px] truncate flex-1 ${active ? "text-white" : ""}`}>{item.title}</span>
               {active && <ChevronRight className="h-3.5 w-3.5 stroke-[2.5] ml-auto shrink-0 opacity-70" />}
             </NavLink>
           </SidebarMenuButton>
