@@ -39,26 +39,26 @@ import {
 } from "@/components/ui/sidebar";
 
 const mainNav = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutGrid },
-  { title: "Monitoring", url: "/monitoring", icon: Activity },
-  { title: "Scan Absensi", url: "/scan", icon: ScanLine },
+  { title: "Dashboard", url: "/dashboard", icon: LayoutGrid, accent: "from-indigo-500 to-blue-600" },
+  { title: "Monitoring", url: "/monitoring", icon: Activity, accent: "from-emerald-500 to-teal-600" },
+  { title: "Scan Absensi", url: "/scan", icon: ScanLine, accent: "from-violet-500 to-purple-600" },
 ];
 
 const dataNav = [
-  { title: "Kelas", url: "/classes", icon: GraduationCap },
-  { title: "Siswa", url: "/students", icon: Users },
-  { title: "Wali Murid", url: "/teachers", icon: UserCheck },
-  { title: "Wali Kelas", url: "/wali-kelas", icon: ClipboardList },
-  { title: "Staff / Operator", url: "/staff", icon: UsersRound },
+  { title: "Kelas", url: "/classes", icon: GraduationCap, accent: "from-amber-500 to-orange-600" },
+  { title: "Siswa", url: "/students", icon: Users, accent: "from-blue-500 to-cyan-600" },
+  { title: "Wali Murid", url: "/teachers", icon: UserCheck, accent: "from-pink-500 to-rose-600" },
+  { title: "Wali Kelas", url: "/wali-kelas", icon: ClipboardList, accent: "from-teal-500 to-emerald-600" },
+  { title: "Staff / Operator", url: "/staff", icon: UsersRound, accent: "from-slate-500 to-gray-600" },
 ];
 
 const whatsappNav = [
-  { title: "WhatsApp", url: "/whatsapp", icon: Send },
+  { title: "WhatsApp", url: "/whatsapp", icon: Send, accent: "from-green-500 to-emerald-600" },
 ];
 
 const settingsNav = [
-  { title: "Langganan", url: "/subscription", icon: Wallet },
-  { title: "Bantuan", url: "/support", icon: HelpCircle },
+  { title: "Langganan", url: "/subscription", icon: Wallet, accent: "from-amber-500 to-yellow-600" },
+  { title: "Bantuan", url: "/support", icon: HelpCircle, accent: "from-sky-500 to-blue-600" },
 ];
 
 export function AppSidebar() {
@@ -88,9 +88,9 @@ export function AppSidebar() {
   }, [profile?.school_id]);
 
   const planColors: Record<string, string> = {
-    Free: "bg-muted-foreground/80 text-white",
-    Basic: "bg-blue-500/90 text-white",
-    School: "bg-amber-500/90 text-white",
+    Free: "bg-slate-500/80 text-white",
+    Basic: "bg-gradient-to-r from-blue-500 to-cyan-500 text-white",
+    School: "bg-gradient-to-r from-amber-500 to-orange-500 text-white",
     Premium: "bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white",
   };
 
@@ -106,32 +106,43 @@ export function AppSidebar() {
   };
 
   const renderNavItems = (items: typeof mainNav) =>
-    items.map((item) => (
-      <SidebarMenuItem key={item.title}>
-        <SidebarMenuButton asChild isActive={isActive(item.url)} tooltip={item.title}>
-          <NavLink
-            to={item.url}
-            end
-            onClick={handleNavClick}
-            className="text-muted-foreground hover:bg-muted/50 hover:text-foreground rounded-xl px-3.5 py-2.5 transition-all duration-200 group/nav gap-3"
-            activeClassName="bg-[#5B6CF9] hover:bg-[#5065E8] text-white font-semibold rounded-xl"
-          >
-            <item.icon className="h-[18px] w-[18px] shrink-0 stroke-[2]" />
-            <span className="text-[13.5px] truncate flex-1">{item.title}</span>
-            {isActive(item.url) && <ChevronRight className="h-4 w-4 stroke-[2.5] ml-auto shrink-0" />}
-          </NavLink>
-        </SidebarMenuButton>
-      </SidebarMenuItem>
-    ));
+    items.map((item) => {
+      const active = isActive(item.url);
+      return (
+        <SidebarMenuItem key={item.title}>
+          <SidebarMenuButton asChild isActive={active} tooltip={item.title}>
+            <NavLink
+              to={item.url}
+              end
+              onClick={handleNavClick}
+              className={`relative rounded-xl px-3 py-2.5 transition-all duration-200 group/nav gap-3 ${
+                active
+                  ? "bg-gradient-to-r " + item.accent + " text-white font-semibold shadow-lg shadow-indigo-500/15"
+                  : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+              }`}
+              activeClassName=""
+            >
+              <div className={`h-7 w-7 rounded-lg flex items-center justify-center shrink-0 ${
+                active ? "bg-white/20" : "bg-muted/80"
+              }`}>
+                <item.icon className="h-[15px] w-[15px] stroke-[2]" />
+              </div>
+              <span className="text-[13px] truncate flex-1">{item.title}</span>
+              {active && <ChevronRight className="h-3.5 w-3.5 stroke-[2.5] ml-auto shrink-0 opacity-70" />}
+            </NavLink>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      );
+    });
 
   const renderGroupLabel = (label: string) => (
-    <SidebarGroupLabel className="text-primary/50 text-[10px] uppercase tracking-[0.18em] font-bold px-3 mb-1.5">
+    <SidebarGroupLabel className="text-[10px] uppercase tracking-[0.18em] font-bold px-3 mb-1.5 text-muted-foreground/60">
       {label}
     </SidebarGroupLabel>
   );
 
   return (
-    <Sidebar collapsible="offcanvas" className="border-r border-sidebar-border/50 font-['Inter',sans-serif]">
+    <Sidebar collapsible="offcanvas" className="border-r border-sidebar-border/30 font-['Inter',sans-serif]">
       <SidebarHeader className="p-4 pb-3">
         <div className="flex items-center gap-3">
           {isPremiumBrand && schoolData?.logo ? (
@@ -158,9 +169,9 @@ export function AppSidebar() {
           <SidebarGroup>
             {renderGroupLabel("Wali Kelas")}
             <SidebarGroupContent>
-              <SidebarMenu className="space-y-0.5">
+              <SidebarMenu className="space-y-1">
                 {renderNavItems([
-                  { title: "Dashboard Kelas", url: "/wali-kelas-dashboard", icon: LayoutGrid },
+                  { title: "Dashboard Kelas", url: "/wali-kelas-dashboard", icon: LayoutGrid, accent: "from-indigo-500 to-blue-600" },
                 ])}
               </SidebarMenu>
             </SidebarGroupContent>
@@ -170,24 +181,24 @@ export function AppSidebar() {
             <SidebarGroup>
               {renderGroupLabel("Menu Utama")}
               <SidebarGroupContent>
-                <SidebarMenu className="space-y-0.5">{renderNavItems(mainNav)}</SidebarMenu>
+                <SidebarMenu className="space-y-1">{renderNavItems(mainNav)}</SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
 
             <SidebarGroup>
               {renderGroupLabel("Data Sekolah")}
               <SidebarGroupContent>
-                <SidebarMenu className="space-y-0.5">{renderNavItems(dataNav)}</SidebarMenu>
+                <SidebarMenu className="space-y-1">{renderNavItems(dataNav)}</SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
 
             <SidebarGroup>
               {renderGroupLabel("Laporan")}
               <SidebarGroupContent>
-                <SidebarMenu className="space-y-0.5">
+                <SidebarMenu className="space-y-1">
                   {renderNavItems([
-                    { title: "Rekap & Export", url: "/export-history", icon: BarChart3 },
-                    { title: "Riwayat Absensi", url: "/history", icon: Clock },
+                    { title: "Rekap & Export", url: "/export-history", icon: BarChart3, accent: "from-orange-500 to-red-500" },
+                    { title: "Riwayat Absensi", url: "/history", icon: Clock, accent: "from-cyan-500 to-blue-600" },
                   ])}
                 </SidebarMenu>
               </SidebarGroupContent>
@@ -196,14 +207,14 @@ export function AppSidebar() {
             <SidebarGroup>
               {renderGroupLabel("WhatsApp")}
               <SidebarGroupContent>
-                <SidebarMenu className="space-y-0.5">{renderNavItems(whatsappNav)}</SidebarMenu>
+                <SidebarMenu className="space-y-1">{renderNavItems(whatsappNav)}</SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
 
             <SidebarGroup>
               {renderGroupLabel("Pengaturan")}
               <SidebarGroupContent>
-                <SidebarMenu className="space-y-0.5">{renderNavItems(settingsNav)}</SidebarMenu>
+                <SidebarMenu className="space-y-1">{renderNavItems(settingsNav)}</SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
           </>
@@ -216,10 +227,12 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton
               tooltip="Logout"
-              className="text-destructive/60 hover:text-destructive hover:bg-destructive/8 rounded-xl px-3 py-2.5 transition-all duration-200"
+              className="text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-xl px-3 py-2.5 transition-all duration-200"
               onClick={handleLogout}
             >
-              <LogOut className="h-[18px] w-[18px] shrink-0" />
+              <div className="h-7 w-7 rounded-lg bg-destructive/10 flex items-center justify-center shrink-0">
+                <LogOut className="h-[15px] w-[15px] shrink-0" />
+              </div>
               <span className="text-[13px] font-medium">Keluar</span>
             </SidebarMenuButton>
           </SidebarMenuItem>

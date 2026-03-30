@@ -167,9 +167,17 @@ const LABELS: Record<string, string> = {
   cta_banner_text: "Teks Banner CTA",
   cta_banner_desc: "Deskripsi Banner CTA",
   footer_logo: "Logo Footer",
+  footer_brand_name: "Nama Brand Footer (cth: ATSkolla)",
+  footer_brand_tagline: "Tagline Brand (cth: Absensi Digital Sekolah)",
+  footer_description: "Deskripsi Singkat Footer",
   footer_address: "Alamat",
   footer_email: "Email",
   footer_phone: "Telepon",
+  footer_link_faq: "Link FAQ (URL)",
+  footer_link_docs: "Link Dokumentasi (URL)",
+  footer_link_privacy: "Link Kebijakan Privasi (URL)",
+  footer_link_terms: "Link Syarat & Ketentuan (URL)",
+  footer_social_text: "Teks Sosial Media",
   cta_text: "Teks Tombol CTA",
   show_pricing: "Tampilkan Section Harga di Landing Page (pindah ke Manajemen Paket)",
 };
@@ -185,7 +193,9 @@ const SECTIONS = [
   { title: "Fitur 6", keys: ["feature_6_title", "feature_6_desc", "feature_6_icon"] },
   { title: "Kenapa Harus Kami", keys: ["why_title", "why_desc", "why_item_1_title", "why_item_1_desc", "why_item_2_title", "why_item_2_desc", "why_item_3_title", "why_item_3_desc", "why_item_4_title", "why_item_4_desc"] },
   { title: "Banner CTA", keys: ["cta_banner_text", "cta_banner_desc"] },
-  { title: "Footer", keys: ["footer_logo", "footer_address", "footer_email", "footer_phone"] },
+  { title: "Footer — Identitas", keys: ["footer_logo", "footer_brand_name", "footer_brand_tagline", "footer_description"] },
+  { title: "Footer — Kontak", keys: ["footer_address", "footer_email", "footer_phone", "footer_social_text"] },
+  { title: "Footer — Halaman & Link", keys: ["footer_link_faq", "footer_link_docs", "footer_link_privacy", "footer_link_terms"] },
 ];
 
 

@@ -121,7 +121,7 @@ const Dashboard = () => {
   const quickActions = [
     { label: "Scan Absensi", desc: "Scan QR / Barcode", icon: QrCode, bg: "bg-indigo-50 dark:bg-indigo-950/30", iconColor: "text-indigo-600 dark:text-indigo-400", path: "/scan" },
     { label: "Data Siswa", desc: "Kelola daftar siswa", icon: GraduationCap, bg: "bg-emerald-50 dark:bg-emerald-950/30", iconColor: "text-emerald-600 dark:text-emerald-400", path: "/students" },
-    { label: "Rekap Absensi", desc: "Export rekap bulanan", icon: ClipboardList, bg: "bg-amber-50 dark:bg-amber-950/30", iconColor: "text-amber-600 dark:text-amber-400", path: "/export" },
+    { label: "Rekap Absensi", desc: "Export rekap bulanan", icon: ClipboardList, bg: "bg-amber-50 dark:bg-amber-950/30", iconColor: "text-amber-600 dark:text-amber-400", path: "/export-history" },
     { label: "Pengaturan", desc: "Konfigurasi sekolah", icon: Settings, bg: "bg-blue-50 dark:bg-blue-950/30", iconColor: "text-blue-600 dark:text-blue-400", path: "/school-settings" },
   ];
 
