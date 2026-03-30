@@ -39,26 +39,26 @@ import {
 } from "@/components/ui/sidebar";
 
 const mainNav = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutGrid },
-  { title: "Monitoring", url: "/monitoring", icon: Activity },
-  { title: "Scan Absensi", url: "/scan", icon: ScanLine },
+  { title: "Dashboard", url: "/dashboard", icon: LayoutGrid, accent: "from-[#5B6CF9] to-indigo-700" },
+  { title: "Monitoring", url: "/monitoring", icon: Activity, accent: "from-[#5B6CF9] to-emerald-600" },
+  { title: "Scan Absensi", url: "/scan", icon: ScanLine, accent: "from-[#5B6CF9] to-violet-700" },
 ];
 
 const dataNav = [
-  { title: "Kelas", url: "/classes", icon: GraduationCap },
-  { title: "Siswa", url: "/students", icon: Users },
-  { title: "Wali Murid", url: "/teachers", icon: UserCheck },
-  { title: "Wali Kelas", url: "/wali-kelas", icon: ClipboardList },
-  { title: "Staff / Operator", url: "/staff", icon: UsersRound },
+  { title: "Kelas", url: "/classes", icon: GraduationCap, accent: "from-[#5B6CF9] to-amber-600" },
+  { title: "Siswa", url: "/students", icon: Users, accent: "from-[#5B6CF9] to-cyan-600" },
+  { title: "Wali Murid", url: "/teachers", icon: UserCheck, accent: "from-[#5B6CF9] to-pink-600" },
+  { title: "Wali Kelas", url: "/wali-kelas", icon: ClipboardList, accent: "from-[#5B6CF9] to-teal-600" },
+  { title: "Staff / Operator", url: "/staff", icon: UsersRound, accent: "from-[#5B6CF9] to-slate-600" },
 ];
 
 const whatsappNav = [
-  { title: "WhatsApp", url: "/whatsapp", icon: Send },
+  { title: "WhatsApp", url: "/whatsapp", icon: Send, accent: "from-[#5B6CF9] to-green-600" },
 ];
 
 const settingsNav = [
-  { title: "Langganan", url: "/subscription", icon: Wallet },
-  { title: "Bantuan", url: "/support", icon: HelpCircle },
+  { title: "Langganan", url: "/subscription", icon: Wallet, accent: "from-[#5B6CF9] to-amber-600" },
+  { title: "Bantuan", url: "/support", icon: HelpCircle, accent: "from-[#5B6CF9] to-sky-600" },
 ];
 
 export function AppSidebar() {
