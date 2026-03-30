@@ -527,34 +527,54 @@ const StudentDetail = () => {
                   </div>
                 </div>
 
-                {/* Monthly grid */}
+                {/* Legend */}
+                <div className="flex flex-wrap items-center gap-4 text-xs">
+                  <div className="flex items-center gap-1.5"><span className="inline-flex items-center justify-center h-5 w-5 rounded-md bg-emerald-500 text-white text-[10px] font-bold">H</span> Hadir</div>
+                  <div className="flex items-center gap-1.5"><span className="inline-flex items-center justify-center h-5 w-5 rounded-md bg-violet-500 text-white text-[10px] font-bold">S</span> Sakit</div>
+                  <div className="flex items-center gap-1.5"><span className="inline-flex items-center justify-center h-5 w-5 rounded-md bg-amber-400 text-white text-[10px] font-bold">I</span> Izin</div>
+                  <div className="flex items-center gap-1.5"><span className="inline-flex items-center justify-center h-5 w-5 rounded-md bg-red-500 text-white text-[10px] font-bold">A</span> Alfa</div>
+                  <div className="flex items-center gap-1.5"><span className="inline-flex items-center justify-center h-5 w-5 rounded-md bg-muted border border-border text-[10px]"></span> Tidak ada data</div>
+                </div>
+
+                {/* Monthly grid - matching ExportHistory style */}
                 <div className="overflow-x-auto">
-                  <table className="w-full text-xs border-collapse">
+                  <table className="w-full text-xs border-collapse min-w-[700px]">
                     <thead>
-                      <tr className="bg-muted/60">
+                      <tr className="border-b border-border">
+                        <th colSpan={daysInMonth} className="px-1 py-2 text-center font-bold text-primary uppercase text-[10px] tracking-wider">Tanggal</th>
+                        <th colSpan={4} className="px-1 py-2 text-center font-bold text-primary uppercase text-[10px] tracking-wider">Keterangan</th>
+                      </tr>
+                      <tr className="border-b border-border bg-muted/30">
                         {Array.from({ length: daysInMonth }, (_, i) => (
-                          <th key={i} className="border border-border px-1 py-1.5 text-center font-semibold text-[10px] min-w-[28px]">{i + 1}</th>
+                          <th key={i} className="px-0.5 py-1.5 text-center font-medium text-muted-foreground w-7 text-[10px]">{i + 1}</th>
                         ))}
-                        <th className="border border-border px-1.5 py-1.5 text-center font-bold text-success">H</th>
-                        <th className="border border-border px-1.5 py-1.5 text-center font-bold text-blue-500">S</th>
-                        <th className="border border-border px-1.5 py-1.5 text-center font-bold text-warning">I</th>
-                        <th className="border border-border px-1.5 py-1.5 text-center font-bold text-destructive">A</th>
+                        <th className="px-1 py-1.5 text-center font-bold text-emerald-600 w-7 text-[10px]">H</th>
+                        <th className="px-1 py-1.5 text-center font-bold text-violet-600 w-7 text-[10px]">S</th>
+                        <th className="px-1 py-1.5 text-center font-bold text-amber-600 w-7 text-[10px]">I</th>
+                        <th className="px-1 py-1.5 text-center font-bold text-red-600 w-7 text-[10px]">A</th>
                       </tr>
                     </thead>
                     <tbody>
-                      <tr>
+                      <tr className="border-b border-border/50 hover:bg-muted/20 transition-colors">
                         {Array.from({ length: daysInMonth }, (_, d) => {
                           const code = monthlyData.days[d + 1] || "";
+                          const badgeClass = getCellBadge(code);
                           return (
-                            <td key={d} className={`border border-border px-0.5 py-1.5 text-center text-[10px] font-bold ${getCellColor(code)}`}>
-                              {code}
+                            <td key={d} className="px-0 py-2 text-center">
+                              {code ? (
+                                <span className={`inline-flex items-center justify-center h-6 w-6 rounded-md text-[10px] font-bold ${badgeClass}`}>
+                                  {code}
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center justify-center h-6 w-6 rounded-md bg-muted/40 border border-border/30" />
+                              )}
                             </td>
                           );
                         })}
-                        <td className="border border-border px-1 py-1.5 text-center font-bold text-success">{monthlyData.totals.H}</td>
-                        <td className="border border-border px-1 py-1.5 text-center font-bold text-blue-500">{monthlyData.totals.S}</td>
-                        <td className="border border-border px-1 py-1.5 text-center font-bold text-warning">{monthlyData.totals.I}</td>
-                        <td className="border border-border px-1 py-1.5 text-center font-bold text-destructive">{monthlyData.totals.A}</td>
+                        <td className="px-1 py-2 text-center font-bold text-emerald-600">{monthlyData.totals.H}</td>
+                        <td className="px-1 py-2 text-center font-bold text-violet-600">{monthlyData.totals.S}</td>
+                        <td className="px-1 py-2 text-center font-bold text-amber-600">{monthlyData.totals.I}</td>
+                        <td className="px-1 py-2 text-center font-bold text-red-600">{monthlyData.totals.A}</td>
                       </tr>
                     </tbody>
                   </table>
@@ -565,8 +585,8 @@ const StudentDetail = () => {
                   <div className="text-center text-xs text-muted-foreground space-y-1">
                     <p>{school?.address || school?.name || ""}, ........................ {recapMonth.getFullYear()}</p>
                     <p className="font-semibold text-foreground">WALI KELAS {student.class}</p>
-                    <div className="h-14" />
-                    <p className="font-semibold text-foreground border-b border-foreground inline-block min-w-[160px]">
+                    <div className="h-16" />
+                    <p className="font-semibold text-foreground border-b border-foreground inline-block min-w-[180px]">
                       {waliKelasName ? `( ${waliKelasName} )` : "(.................................)"}
                     </p>
                   </div>
