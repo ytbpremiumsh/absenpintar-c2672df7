@@ -16,6 +16,7 @@ import {
   Send,
   Gift,
   ChevronRight,
+  Crown,
 } from "lucide-react";
 import atskollaLogo from "@/assets/Logo_atskolla.png";
 import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
@@ -23,7 +24,7 @@ import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { Badge } from "@/components/ui/badge";
+
 import {
   Sidebar,
   SidebarContent,
@@ -87,12 +88,6 @@ export function AppSidebar() {
     });
   }, [profile?.school_id]);
 
-  const planColors: Record<string, string> = {
-    Free: "bg-slate-500/80 text-white",
-    Basic: "bg-gradient-to-r from-blue-500 to-cyan-500 text-white",
-    School: "bg-gradient-to-r from-amber-500 to-orange-500 text-white",
-    Premium: "bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white",
-  };
 
   const isTeacherOnly = roles.includes("teacher") && !roles.includes("school_admin") && !roles.includes("staff");
 
@@ -143,25 +138,33 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="offcanvas" className="border-r border-sidebar-border/30 font-['Inter',sans-serif]">
-      <SidebarHeader className="p-4 pb-3">
-        <div className="flex items-center gap-3">
-          {isPremiumBrand && schoolData?.logo ? (
-            <img src={schoolData.logo} alt={schoolData.name} className="h-10 w-10 object-contain shrink-0" />
-          ) : platformLogo ? (
-            <img src={platformLogo} alt="ATSkolla" className="h-10 w-10 object-contain shrink-0" />
-          ) : (
-            <img src={atskollaLogo} alt="ATSkolla" className="h-10 w-10 object-contain shrink-0" />
-          )}
-          <div className="flex flex-col min-w-0">
-            <span className="text-sm font-extrabold text-sidebar-foreground tracking-tight truncate">
-              {isPremiumBrand && schoolData ? schoolData.name : "ATSkolla"}
-            </span>
-            <Badge className={`w-fit text-[9px] font-bold border-0 px-2 py-0 h-[18px] rounded-md ${planColors[features.planName] || planColors.Free}`}>
-              {features.planName === "Free" ? "Free" : `Paket ${features.planName}`}
-            </Badge>
+      <SidebarHeader className="p-3 pb-2">
+        <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-[#5B6CF9] to-[#4c5ded] p-3 shadow-lg shadow-[#5B6CF9]/15">
+          <div className="absolute -top-4 -right-4 h-16 w-16 rounded-full bg-white/10 blur-xl" />
+          <div className="absolute -bottom-3 -left-3 h-12 w-12 rounded-full bg-white/5 blur-lg" />
+          <div className="relative z-10 flex items-center gap-2.5">
+            <div className="h-10 w-10 rounded-lg bg-white/15 backdrop-blur-sm border border-white/20 flex items-center justify-center shrink-0 overflow-hidden">
+              {isPremiumBrand && schoolData?.logo ? (
+                <img src={schoolData.logo} alt={schoolData.name} className="h-8 w-8 object-contain" />
+              ) : platformLogo ? (
+                <img src={platformLogo} alt="ATSkolla" className="h-8 w-8 object-contain" />
+              ) : (
+                <img src={atskollaLogo} alt="ATSkolla" className="h-8 w-8 object-contain" />
+              )}
+            </div>
+            <div className="flex flex-col min-w-0">
+              <span className="text-[13px] font-extrabold text-white tracking-tight truncate leading-tight">
+                {isPremiumBrand && schoolData ? schoolData.name : "ATSkolla"}
+              </span>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="inline-flex items-center gap-1 text-[9px] font-bold text-white/90 bg-white/20 backdrop-blur-sm px-1.5 py-[1px] rounded-md border border-white/15">
+                  <Crown className="h-2.5 w-2.5" />
+                  {features.planName === "Free" ? "Free Plan" : `${features.planName}`}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
-        <div className="mt-3 h-px bg-gradient-to-r from-transparent via-sidebar-border/60 to-transparent" />
       </SidebarHeader>
 
       <SidebarContent className="px-2 overflow-y-auto overflow-x-hidden">
@@ -198,7 +201,7 @@ export function AppSidebar() {
                 <SidebarMenu className="space-y-1">
                   {renderNavItems([
                     { title: "Rekap & Export", url: "/export-history", icon: BarChart3, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
-                    { title: "Riwayat Absensi", url: "/history", icon: Clock, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
+                    { title: "Analytic Kelas", url: "/history", icon: Clock, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
                   ])}
                 </SidebarMenu>
               </SidebarGroupContent>
