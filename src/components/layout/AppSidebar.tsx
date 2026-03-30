@@ -125,7 +125,7 @@ export function AppSidebar() {
               <div className={`h-7 w-7 rounded-lg flex items-center justify-center shrink-0 ${
                 active ? "bg-white/20" : "bg-muted/80"
               }`}>
-                <item.icon className="h-[15px] w-[15px] stroke-[2]" />
+                <item.icon className={`h-[15px] w-[15px] stroke-[2] ${active ? "text-white" : ""}`} />
               </div>
               <span className={`text-[13px] truncate flex-1 ${active ? "text-white" : ""}`}>{item.title}</span>
               {active && <ChevronRight className="h-3.5 w-3.5 stroke-[2.5] ml-auto shrink-0 opacity-70" />}
