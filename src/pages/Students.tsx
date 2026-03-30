@@ -682,15 +682,12 @@ const Students = () => {
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
                     {classStudents.map((student: any) => (
                       <Card key={student.id} className="border border-border/50 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
-                        <CardContent className="p-4 text-center space-y-2.5">
+                        <CardContent className="p-4 flex flex-col items-center text-center space-y-2.5">
                           <GenderAvatar student={student} size={56} />
                           <div>
                             <p className="font-semibold text-sm truncate">{student.name}</p>
                             <p className="text-[10px] text-muted-foreground font-mono">{student.student_id}</p>
                           </div>
-                          <Badge variant="outline" className="text-[10px]">
-                            {student.gender === "P" ? "♀ Perempuan" : "♂ Laki-laki"}
-                          </Badge>
                           <div className="flex items-center justify-center gap-1 pt-1">
                             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => navigate(`/students/${student.id}`)}><Eye className="h-3.5 w-3.5 text-primary" /></Button>
                             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setSelectedStudent(student); setQrDialogOpen(true); }}><QrCode className="h-3.5 w-3.5 text-primary" /></Button>

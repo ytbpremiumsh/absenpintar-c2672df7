@@ -42,7 +42,7 @@ const StudentDetail = () => {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [editing, setEditing] = useState(false);
-  const [editForm, setEditForm] = useState({ name: "", class: "", student_id: "", parent_name: "", parent_phone: "" });
+  const [editForm, setEditForm] = useState({ name: "", class: "", student_id: "", parent_name: "", parent_phone: "", gender: "L" });
   const [saving, setSaving] = useState(false);
   const [qrInstructions, setQrInstructions] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<"list" | "monthly">("list");
