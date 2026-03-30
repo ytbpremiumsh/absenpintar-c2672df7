@@ -363,102 +363,167 @@ const ScanQR = () => {
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6 max-w-lg mx-auto px-1">
-      <div className="text-center">
-        <h1 className="text-xl sm:text-2xl font-bold">Scan Absensi</h1>
-        <p className="text-muted-foreground text-xs sm:text-sm">Scan barcode atau wajah siswa untuk mencatat kehadiran</p>
-      </div>
-
-      {/* Time status */}
-      <div className="flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-primary/10">
-        <Clock className="h-4 w-4 text-primary" />
-        <span className="text-sm font-semibold text-primary">
-          {new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
-        </span>
-        <span className="text-xs text-muted-foreground">
-          {new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "short" })}
-        </span>
+    <div className="space-y-5 max-w-lg mx-auto px-1">
+      {/* Premium Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#5B6CF9] to-[#4c5ded] p-5 text-white shadow-xl">
+        <div className="absolute -top-8 -right-8 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
+        <div className="absolute -bottom-6 -left-6 h-24 w-24 rounded-full bg-white/5 blur-xl" />
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="h-11 w-11 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center border border-white/20">
+              <ScanLine className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold">Scan Absensi</h1>
+              <p className="text-white/70 text-xs">Deteksi barcode & wajah otomatis</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 mt-3">
+            <div className="flex items-center gap-1.5 bg-white/15 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-white/20">
+              <Clock className="h-3.5 w-3.5" />
+              <span className="text-sm font-semibold">
+                {new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 bg-white/15 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-white/20">
+              <span className="text-xs">
+                {new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "short", year: "numeric" })}
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <canvas ref={canvasRef} className="hidden" />
 
-      {/* Unified Camera */}
-      <Card className="shadow-card border-0 overflow-hidden">
+      {/* Scanner Card - Premium */}
+      <Card className="border-0 shadow-xl overflow-hidden rounded-2xl">
         <CardContent className="p-0">
           {cameraActive ? (
             <>
-              <div className="relative bg-black" style={{ minHeight: 280 }}>
+              <div className="relative bg-black" style={{ minHeight: 320 }}>
                 <video ref={videoRef} className="w-full h-full object-cover" autoPlay playsInline muted
-                  style={{ minHeight: 280, WebkitTransform: "scaleX(1)" }} />
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className={`w-44 h-44 border-2 rounded-lg transition-colors ${scanPaused.current ? "border-success opacity-100" : "border-primary opacity-70"}`} />
+                  style={{ minHeight: 320, WebkitTransform: "scaleX(1)" }} />
+                
+                {/* Scanner Overlay */}
+                <div className="absolute inset-0 pointer-events-none">
+                  {/* Corner brackets */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="relative w-48 h-48">
+                      {/* Top-left */}
+                      <div className="absolute top-0 left-0 w-8 h-8 border-t-[3px] border-l-[3px] border-[#5B6CF9] rounded-tl-lg" />
+                      {/* Top-right */}
+                      <div className="absolute top-0 right-0 w-8 h-8 border-t-[3px] border-r-[3px] border-[#5B6CF9] rounded-tr-lg" />
+                      {/* Bottom-left */}
+                      <div className="absolute bottom-0 left-0 w-8 h-8 border-b-[3px] border-l-[3px] border-[#5B6CF9] rounded-bl-lg" />
+                      {/* Bottom-right */}
+                      <div className="absolute bottom-0 right-0 w-8 h-8 border-b-[3px] border-r-[3px] border-[#5B6CF9] rounded-br-lg" />
+                      {/* Animated scan line */}
+                      {!scanPaused.current && (
+                        <div className="absolute left-2 right-2 h-0.5 bg-gradient-to-r from-transparent via-[#5B6CF9] to-transparent animate-pulse top-1/2" />
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Dark overlay outside scan area */}
+                  <div className="absolute inset-0 bg-black/30" style={{
+                    maskImage: "radial-gradient(ellipse 120px 120px at center, transparent 80%, black 100%)",
+                    WebkitMaskImage: "radial-gradient(ellipse 120px 120px at center, transparent 80%, black 100%)"
+                  }} />
                 </div>
-                <div className="absolute bottom-2 left-0 right-0 text-center">
-                  <span className="text-xs text-white/80 bg-black/50 px-2 py-1 rounded">
-                    {scanPaused.current ? "✓ Terdeteksi" : "Arahkan ke Barcode / Wajah..."}
-                  </span>
+
+                {/* Status badge top */}
+                <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 bg-black/50 backdrop-blur-sm px-2.5 py-1 rounded-lg">
+                    {faceScanning ? (
+                      <><Loader2 className="h-3 w-3 animate-spin text-[#5B6CF9]" /><span className="text-[11px] text-white font-medium">Mengenali wajah...</span></>
+                    ) : scanPaused.current ? (
+                      <><CheckCircle2 className="h-3 w-3 text-emerald-400" /><span className="text-[11px] text-white font-medium">Terdeteksi!</span></>
+                    ) : (
+                      <><div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" /><span className="text-[11px] text-white/80">Memindai...</span></>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1 bg-black/50 backdrop-blur-sm px-2 py-1 rounded-lg">
+                    <ScanLine className="h-3 w-3 text-white/70" />
+                    {canFace && <UserCheck className="h-3 w-3 text-white/70 ml-0.5" />}
+                  </div>
+                </div>
+
+                {/* Bottom status bar */}
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3 pt-8">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-[11px] text-white/80">
+                      <ScanLine className="h-3.5 w-3.5" /> Barcode
+                      {canFace ? (
+                        <><span className="text-white/40">•</span><UserCheck className="h-3.5 w-3.5" /> Face</>
+                      ) : (
+                        <><span className="text-white/40">•</span><Lock className="h-3 w-3 opacity-50" /><span className="opacity-50">Face</span><span className="text-[9px] text-amber-400 font-bold ml-1">PREMIUM</span></>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="p-2 flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground pl-2">
-                  {faceScanning ? (
-                    <><Loader2 className="h-3.5 w-3.5 animate-spin text-primary" /><span className="text-primary font-medium">Mengenali wajah...</span></>
-                  ) : (
-                    <>
-                      <div className="h-2 w-2 rounded-full bg-success animate-pulse" />
-                      <span>
-                        <ScanLine className="h-3 w-3 inline mr-0.5" />Barcode
-                        {canFace ? (
-                          <> + <UserCheck className="h-3 w-3 inline mx-0.5" />Face</>
-                        ) : (
-                          <> + <Lock className="h-3 w-3 inline mx-0.5 opacity-50" /><span className="opacity-50">Face</span> <span className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold">(Premium)</span></>
-                        )}
-                      </span>
-                    </>
-                  )}
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <Button variant="outline" size="sm" onClick={switchCamera} title={facingMode === "user" ? "Ganti ke Kamera Belakang" : "Ganti ke Kamera Depan"}>
-                    <SwitchCamera className="h-4 w-4 mr-1" /> {facingMode === "user" ? "Belakang" : "Depan"}
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={stopCamera}>
-                    <X className="h-4 w-4 mr-1" /> Tutup
+
+              {/* Camera controls */}
+              <div className="p-3 flex items-center justify-between bg-card border-t border-border/50">
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={switchCamera} className="h-9 rounded-xl gap-1.5 text-xs border-border/50">
+                    <SwitchCamera className="h-3.5 w-3.5" /> {facingMode === "user" ? "Belakang" : "Depan"}
                   </Button>
                 </div>
+                <Button variant="outline" size="sm" onClick={stopCamera} className="h-9 rounded-xl gap-1.5 text-xs text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/10">
+                  <X className="h-3.5 w-3.5" /> Tutup Kamera
+                </Button>
               </div>
             </>
           ) : (
-            <div className="aspect-video bg-foreground/5 flex flex-col items-center justify-center gap-3 p-4">
-              <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-2xl gradient-primary flex items-center justify-center">
-                <Camera className="h-7 w-7 sm:h-8 sm:w-8 text-primary-foreground" />
+            <div className="flex flex-col items-center justify-center gap-4 p-8 bg-gradient-to-b from-muted/30 to-background" style={{ minHeight: 280 }}>
+              <div className="relative">
+                <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-[#5B6CF9] to-[#4c5ded] flex items-center justify-center shadow-lg shadow-[#5B6CF9]/25">
+                  <Camera className="h-9 w-9 text-white" />
+                </div>
+                <div className="absolute -top-1 -right-1 h-6 w-6 rounded-full bg-emerald-500 flex items-center justify-center shadow-md">
+                  <ScanLine className="h-3 w-3 text-white" />
+                </div>
               </div>
-              {cameraError && <p className="text-destructive text-xs sm:text-sm text-center px-4">{cameraError}</p>}
-              <Button onClick={() => startCamera()} className="gradient-primary hover:opacity-90">
-                <Camera className="h-4 w-4 mr-2" /> Aktifkan Kamera
+              {cameraError && <p className="text-destructive text-xs text-center px-4 max-w-xs">{cameraError}</p>}
+              <Button onClick={() => startCamera()} className="h-11 px-6 rounded-xl bg-gradient-to-r from-[#5B6CF9] to-[#4c5ded] hover:opacity-90 text-white font-semibold shadow-lg shadow-[#5B6CF9]/25 gap-2">
+                <Camera className="h-4 w-4" /> Aktifkan Kamera
               </Button>
-              <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-muted-foreground">
-                <ScanLine className="h-3.5 w-3.5" /> Barcode
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1 bg-muted/50 px-2.5 py-1 rounded-lg">
+                  <ScanLine className="h-3.5 w-3.5 text-[#5B6CF9]" /> Barcode
+                </div>
                 {canFace ? (
-                  <><span className="text-muted-foreground/50">+</span><UserCheck className="h-3.5 w-3.5" /> Face Recognition</>
+                  <div className="flex items-center gap-1 bg-muted/50 px-2.5 py-1 rounded-lg">
+                    <UserCheck className="h-3.5 w-3.5 text-[#5B6CF9]" /> Face Recognition
+                  </div>
                 ) : (
-                  <><span className="text-muted-foreground/50">+</span><Lock className="h-3 w-3" /> <span className="opacity-60">Face Recognition</span> <span className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold">(Premium)</span></>
+                  <div className="flex items-center gap-1 bg-muted/50 px-2.5 py-1 rounded-lg opacity-60">
+                    <Lock className="h-3 w-3" /> Face <span className="text-[9px] text-amber-600 dark:text-amber-400 font-bold ml-1">PREMIUM</span>
+                  </div>
                 )}
               </div>
-              <p className="text-[11px] sm:text-xs text-muted-foreground">Atau gunakan input NIS manual di bawah</p>
+              <p className="text-[11px] text-muted-foreground/60">Atau gunakan input NIS manual di bawah</p>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Manual NIS input */}
-      <Card className="shadow-card border-0">
-        <CardContent className="p-3 sm:p-4">
-          <p className="text-sm font-semibold mb-2">Input NIS Manual</p>
+      {/* Manual NIS input - Premium */}
+      <Card className="border-0 shadow-lg rounded-2xl">
+        <CardContent className="p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="h-7 w-7 rounded-lg bg-[#5B6CF9]/10 flex items-center justify-center">
+              <Search className="h-3.5 w-3.5 text-[#5B6CF9]" />
+            </div>
+            <p className="text-sm font-semibold text-foreground">Input NIS Manual</p>
+          </div>
           <div className="flex gap-2">
             <Input placeholder="Masukkan NIS (cth: NIS-001)" value={manualCode}
               onChange={(e) => setManualCode(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()} className="h-10 sm:h-11 text-sm" />
-            <Button onClick={handleSearch} className="h-10 sm:h-11 gradient-primary hover:opacity-90 px-4">
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()} className="h-11 text-sm rounded-xl border-border/50" />
+            <Button onClick={handleSearch} className="h-11 px-5 rounded-xl bg-gradient-to-r from-[#5B6CF9] to-[#4c5ded] hover:opacity-90 text-white">
               <Search className="h-4 w-4" />
             </Button>
           </div>
@@ -466,9 +531,11 @@ const ScanQR = () => {
       </Card>
 
       {!scannedStudent && !cameraActive && (
-        <div className="text-center py-6 sm:py-8">
-          <ScanLine className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground/30 mx-auto mb-2" />
-          <p className="text-xs sm:text-sm text-muted-foreground">Arahkan kamera ke barcode / wajah atau masukkan NIS manual</p>
+        <div className="text-center py-8">
+          <div className="h-16 w-16 rounded-2xl bg-muted/50 flex items-center justify-center mx-auto mb-3">
+            <ScanLine className="h-8 w-8 text-muted-foreground/30" />
+          </div>
+          <p className="text-xs text-muted-foreground/60">Arahkan kamera ke barcode / wajah atau masukkan NIS manual</p>
         </div>
       )}
 
