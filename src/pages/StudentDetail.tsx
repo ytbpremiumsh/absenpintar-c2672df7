@@ -42,7 +42,7 @@ const StudentDetail = () => {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [editing, setEditing] = useState(false);
-  const [editForm, setEditForm] = useState({ name: "", class: "", student_id: "", parent_name: "", parent_phone: "" });
+  const [editForm, setEditForm] = useState({ name: "", class: "", student_id: "", parent_name: "", parent_phone: "", gender: "L" });
   const [saving, setSaving] = useState(false);
   const [qrInstructions, setQrInstructions] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<"list" | "monthly">("list");
@@ -66,6 +66,7 @@ const StudentDetail = () => {
       setEditForm({
         name: studentRes.data.name, class: studentRes.data.class, student_id: studentRes.data.student_id,
         parent_name: studentRes.data.parent_name, parent_phone: studentRes.data.parent_phone,
+        gender: studentRes.data.gender || "L",
       });
     }
     setLoading(false);
@@ -137,7 +138,7 @@ const StudentDetail = () => {
     setSaving(true);
     const { error } = await supabase.from("students").update({
       name: editForm.name, class: editForm.class, student_id: editForm.student_id,
-      parent_name: editForm.parent_name, parent_phone: editForm.parent_phone,
+      parent_name: editForm.parent_name, parent_phone: editForm.parent_phone, gender: editForm.gender,
     }).eq("id", student.id);
     setSaving(false);
     if (error) { toast.error("Gagal menyimpan: " + error.message); return; }
@@ -395,6 +396,16 @@ const StudentDetail = () => {
                 <div className="space-y-2"><Label>NIS</Label><Input value={editForm.student_id} onChange={(e) => setEditForm({ ...editForm, student_id: e.target.value })} /></div>
                 <div className="space-y-2"><Label>Nama Wali</Label><Input value={editForm.parent_name} onChange={(e) => setEditForm({ ...editForm, parent_name: e.target.value })} /></div>
                 <div className="space-y-2"><Label>No. HP Wali</Label><Input value={editForm.parent_phone} onChange={(e) => setEditForm({ ...editForm, parent_phone: e.target.value })} /></div>
+                <div className="space-y-2">
+                  <Label>Jenis Kelamin</Label>
+                  <Select value={editForm.gender} onValueChange={(val) => setEditForm({ ...editForm, gender: val })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="L">Laki-laki</SelectItem>
+                      <SelectItem value="P">Perempuan</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <div className="flex gap-2">
                 <Button onClick={handleSaveEdit} disabled={saving} className="gradient-primary hover:opacity-90">
