@@ -24,7 +24,7 @@ import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { Badge } from "@/components/ui/badge";
+
 import {
   Sidebar,
   SidebarContent,
@@ -88,12 +88,6 @@ export function AppSidebar() {
     });
   }, [profile?.school_id]);
 
-  const planColors: Record<string, string> = {
-    Free: "bg-slate-500/80 text-white",
-    Basic: "bg-gradient-to-r from-blue-500 to-cyan-500 text-white",
-    School: "bg-gradient-to-r from-amber-500 to-orange-500 text-white",
-    Premium: "bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white",
-  };
 
   const isTeacherOnly = roles.includes("teacher") && !roles.includes("school_admin") && !roles.includes("staff");
 
