@@ -117,7 +117,7 @@ export function AppSidebar() {
               onClick={handleNavClick}
               className={`relative rounded-xl px-3 py-2.5 transition-all duration-200 group/nav gap-3 ${
                 active
-                  ? "bg-gradient-to-r " + item.accent + " text-white font-semibold shadow-lg shadow-indigo-500/15"
+                  ? "bg-[#5B6CF9] text-white font-semibold shadow-lg shadow-[#5B6CF9]/20"
                   : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
               }`}
               activeClassName=""
@@ -171,7 +171,7 @@ export function AppSidebar() {
             <SidebarGroupContent>
               <SidebarMenu className="space-y-1">
                 {renderNavItems([
-                  { title: "Dashboard Kelas", url: "/wali-kelas-dashboard", icon: LayoutGrid, accent: "from-indigo-500 to-blue-600" },
+                  { title: "Dashboard Kelas", url: "/wali-kelas-dashboard", icon: LayoutGrid },
                 ])}
               </SidebarMenu>
             </SidebarGroupContent>
@@ -197,8 +197,8 @@ export function AppSidebar() {
               <SidebarGroupContent>
                 <SidebarMenu className="space-y-1">
                   {renderNavItems([
-                    { title: "Rekap & Export", url: "/export-history", icon: BarChart3, accent: "from-orange-500 to-red-500" },
-                    { title: "Riwayat Absensi", url: "/history", icon: Clock, accent: "from-cyan-500 to-blue-600" },
+                    { title: "Rekap & Export", url: "/export-history", icon: BarChart3 },
+                    { title: "Riwayat Absensi", url: "/history", icon: Clock },
                   ])}
                 </SidebarMenu>
               </SidebarGroupContent>
