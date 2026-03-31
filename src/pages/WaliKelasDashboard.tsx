@@ -3,15 +3,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   Users, UserCheck, Clock, GraduationCap, Search,
-  AlertTriangle, Thermometer, FileText, Activity, BarChart3, Award,
+  AlertTriangle, Thermometer, FileText, Activity, Trophy, Medal, Flame, TrendingUp,
 } from "lucide-react";
 import {
-  PieChart, Pie, Cell, BarChart, Bar,
-  XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid,
+  BarChart, Bar,
+  XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
 } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
