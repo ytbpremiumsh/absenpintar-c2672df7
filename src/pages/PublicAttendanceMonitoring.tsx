@@ -3,10 +3,11 @@ import { useParams } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import {
   UserCheck, Clock, Users, GraduationCap, Activity, AlertTriangle,
-  Thermometer, FileText, Scan, RefreshCw, School, LogIn, LogOut, CreditCard,
-  Maximize, Minimize,
+  Thermometer, FileText, School, LogIn, LogOut,
+  Maximize, Minimize, Camera, CameraOff, Volume2, VolumeX,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
@@ -21,8 +22,6 @@ const STATUS_BG: Record<string, string> = {
   alfa: "bg-destructive/10 text-destructive border-destructive/20",
   belum: "bg-muted text-muted-foreground border-border",
 };
-const METHOD_LABELS: Record<string, string> = { barcode: "Barcode", face_recognition: "Face Recognition", rfid: "Kartu RFID", manual: "Manual" };
-const TYPE_LABELS: Record<string, string> = { datang: "Datang", pulang: "Pulang" };
 
 interface LiveEntry {
   id: string; student_name: string; student_class: string; student_id: string;
@@ -55,6 +54,8 @@ const PublicAttendanceMonitoring = () => {
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [newEntryId, setNewEntryId] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [cameraVisible, setCameraVisible] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
   const prevLogIds = useRef<Set<string>>(new Set());
   const initialLoad = useRef(true);
@@ -70,9 +71,7 @@ const PublicAttendanceMonitoring = () => {
   }, []);
 
   useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
-    };
+    const handleFullscreenChange = () => setIsFullscreen(!!document.fullscreenElement);
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, []);
@@ -85,20 +84,19 @@ const PublicAttendanceMonitoring = () => {
       const json = await res.json();
       if (json.error) return;
 
-      // Detect new entries for animation
       if (!initialLoad.current && json.liveFeed?.length > 0) {
         const newEntry = json.liveFeed.find((e: LiveEntry) => !prevLogIds.current.has(e.id));
         if (newEntry) {
           setNewEntryId(newEntry.id);
           setTimeout(() => setNewEntryId(null), 4000);
-          // Announce with sound + speech
-          const type = (newEntry as any).attendance_type === "pulang" ? "pulang" : "datang";
-          announceAttendance(newEntry.student_name, newEntry.student_class, type);
+          if (soundEnabled) {
+            const type = (newEntry as any).attendance_type === "pulang" ? "pulang" : "datang";
+            announceAttendance(newEntry.student_name, newEntry.student_class, type);
+          }
         }
       }
       initialLoad.current = false;
       prevLogIds.current = new Set(json.liveFeed?.map((e: LiveEntry) => e.id) || []);
-
       setData(json);
       setLastUpdated(new Date());
     } catch (err) {
@@ -110,7 +108,7 @@ const PublicAttendanceMonitoring = () => {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 8000);
+    const interval = setInterval(fetchData, 5000);
     const channel = supabase
       .channel("public-attendance-rt")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "attendance_logs" }, () => fetchData())
@@ -120,13 +118,13 @@ const PublicAttendanceMonitoring = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 flex items-center justify-center">
         <div className="text-center space-y-4">
           <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
-            className="h-20 w-20 rounded-2xl gradient-primary flex items-center justify-center mx-auto">
-            <School className="h-10 w-10 text-primary-foreground" />
+            className="h-20 w-20 rounded-2xl bg-gradient-to-br from-[#5B6CF9] to-[#4c5ded] flex items-center justify-center mx-auto shadow-2xl shadow-indigo-500/30">
+            <School className="h-10 w-10 text-white" />
           </motion.div>
-          <p className="text-lg text-muted-foreground font-medium">Memuat monitoring absensi...</p>
+          <p className="text-lg text-slate-400 font-medium">Memuat monitoring absensi...</p>
         </div>
       </div>
     );
@@ -134,8 +132,8 @@ const PublicAttendanceMonitoring = () => {
 
   if (!data) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground text-lg">Sekolah tidak ditemukan</p>
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 flex items-center justify-center">
+        <p className="text-slate-400 text-lg">Sekolah tidak ditemukan</p>
       </div>
     );
   }
@@ -147,167 +145,194 @@ const PublicAttendanceMonitoring = () => {
   const currentDate = new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-background">
-      {/* Header - Smartboard optimized */}
-      <header className="gradient-hero text-primary-foreground sticky top-0 z-50 shadow-elevated">
-        <div className="max-w-[1920px] mx-auto px-6 py-4">
+    <div ref={containerRef} className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-white">
+      {/* Premium Header */}
+      <header className="sticky top-0 z-50 backdrop-blur-xl bg-slate-900/80 border-b border-white/5">
+        <div className="max-w-[1920px] mx-auto px-4 sm:px-6 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 sm:gap-4">
               {data.school.logo ? (
-                <img src={data.school.logo} alt="" className="h-14 w-14 rounded-xl object-cover bg-white/20" />
+                <img src={data.school.logo} alt="" className="h-11 w-11 sm:h-14 sm:w-14 rounded-xl object-cover ring-2 ring-white/10" />
               ) : (
-                <div className="h-14 w-14 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center">
-                  <School className="h-7 w-7" />
+                <div className="h-11 w-11 sm:h-14 sm:w-14 rounded-xl bg-gradient-to-br from-[#5B6CF9] to-[#4c5ded] flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                  <School className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
                 </div>
               )}
               <div>
-                <h1 className="text-xl lg:text-2xl font-bold">{data.school.name}</h1>
-                <div className="flex items-center gap-3 text-sm opacity-80">
+                <h1 className="text-base sm:text-xl lg:text-2xl font-bold text-white truncate max-w-[200px] sm:max-w-none">{data.school.name}</h1>
+                <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-slate-400">
                   <LiveDot />
-                  <span>Live Monitoring Absensi</span>
-                  <span>•</span>
-                  <span>{currentDate}</span>
-                  <span>•</span>
-                  <Badge className={`text-xs ${data.currentMode === "pulang" ? "bg-warning/20 text-warning border-warning/30" : "bg-success/20 text-success border-success/30"}`}>
-                    {data.currentMode === "pulang" ? <LogOut className="h-3 w-3 mr-1" /> : <LogIn className="h-3 w-3 mr-1" />}
-                    Mode: {data.currentMode === "pulang" ? "Pulang" : "Datang"}
+                  <span className="hidden sm:inline">Live Monitoring</span>
+                  <span className="sm:hidden">Live</span>
+                  <span className="hidden md:inline">•</span>
+                  <span className="hidden md:inline">{currentDate}</span>
+                  <Badge className={`text-[9px] sm:text-[10px] border-0 ${data.currentMode === "pulang" ? "bg-amber-500/20 text-amber-400" : "bg-emerald-500/20 text-emerald-400"}`}>
+                    {data.currentMode === "pulang" ? <LogOut className="h-2.5 w-2.5 mr-0.5" /> : <LogIn className="h-2.5 w-2.5 mr-0.5" />}
+                    {data.currentMode === "pulang" ? "Pulang" : "Datang"}
                   </Badge>
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={toggleFullscreen}
-                className="h-10 w-10 rounded-xl bg-white/10 hover:bg-white/20 text-primary-foreground"
-              >
-                {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
+            <div className="flex items-center gap-2 sm:gap-3">
+              {/* Sound toggle */}
+              <Button variant="ghost" size="icon" onClick={() => setSoundEnabled(!soundEnabled)}
+                className="h-8 w-8 sm:h-10 sm:w-10 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white">
+                {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
               </Button>
-              <div className="text-right">
-                <p className="text-3xl lg:text-4xl font-mono font-bold">{currentTime}</p>
-                <p className="text-xs opacity-70">Auto-refresh aktif</p>
+              {/* Camera toggle */}
+              <Button variant="ghost" size="icon" onClick={() => setCameraVisible(!cameraVisible)}
+                className={`h-8 w-8 sm:h-10 sm:w-10 rounded-xl ${cameraVisible ? "bg-indigo-500/20 text-indigo-400" : "bg-white/5 text-slate-400"} hover:bg-white/10 hover:text-white`}>
+                {cameraVisible ? <Camera className="h-4 w-4" /> : <CameraOff className="h-4 w-4" />}
+              </Button>
+              {/* Fullscreen */}
+              <Button variant="ghost" size="icon" onClick={toggleFullscreen}
+                className="h-8 w-8 sm:h-10 sm:w-10 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white">
+                {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+              </Button>
+              <div className="text-right hidden sm:block">
+                <p className="text-2xl lg:text-3xl font-mono font-bold text-white tabular-nums">{currentTime}</p>
+                <div className="flex items-center justify-end gap-1">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="text-[9px] text-slate-500">Auto-refresh 5s</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </header>
 
-      <div className="max-w-[1920px] mx-auto px-6 py-5 space-y-5">
-        {/* Stats Row - Compact */}
-        <div className="grid grid-cols-6 gap-3">
+      <div className="max-w-[1920px] mx-auto px-4 sm:px-6 py-4 sm:py-5 space-y-4 sm:space-y-5">
+        {/* Stats Row */}
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-3">
           {[
-            { icon: Users, value: stats.total, label: "Total", color: "text-primary", bg: "bg-primary/10" },
-            { icon: UserCheck, value: stats.hadir, label: "Hadir", color: "text-success", bg: "bg-success/10" },
-            { icon: FileText, value: stats.izin, label: "Izin", color: "text-warning", bg: "bg-warning/10" },
-            { icon: Thermometer, value: stats.sakit, label: "Sakit", color: "text-blue-500", bg: "bg-blue-50" },
-            { icon: AlertTriangle, value: stats.alfa, label: "Alfa", color: "text-destructive", bg: "bg-destructive/10" },
-            { icon: Clock, value: stats.belum, label: "Belum", color: "text-muted-foreground", bg: "bg-muted" },
+            { icon: Users, value: stats.total, label: "Total", color: "text-indigo-400", bg: "bg-indigo-500/10", ring: "ring-indigo-500/20" },
+            { icon: UserCheck, value: stats.hadir, label: "Hadir", color: "text-emerald-400", bg: "bg-emerald-500/10", ring: "ring-emerald-500/20" },
+            { icon: FileText, value: stats.izin, label: "Izin", color: "text-amber-400", bg: "bg-amber-500/10", ring: "ring-amber-500/20" },
+            { icon: Thermometer, value: stats.sakit, label: "Sakit", color: "text-sky-400", bg: "bg-sky-500/10", ring: "ring-sky-500/20" },
+            { icon: AlertTriangle, value: stats.alfa, label: "Alfa", color: "text-red-400", bg: "bg-red-500/10", ring: "ring-red-500/20" },
+            { icon: Clock, value: stats.belum, label: "Belum", color: "text-slate-400", bg: "bg-slate-500/10", ring: "ring-slate-500/20" },
           ].map((stat, i) => (
             <motion.div key={stat.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
-              <Card className="border-0 shadow-card">
-                <CardContent className="p-3 flex items-center gap-3">
-                  <div className={`h-9 w-9 rounded-lg ${stat.bg} flex items-center justify-center shrink-0`}>
-                    <stat.icon className={`h-4.5 w-4.5 ${stat.color}`} />
+              <div className={`rounded-xl ${stat.bg} ring-1 ${stat.ring} p-3 sm:p-4`}>
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className={`h-8 w-8 sm:h-9 sm:w-9 rounded-lg ${stat.bg} flex items-center justify-center`}>
+                    <stat.icon className={`h-4 w-4 ${stat.color}`} />
                   </div>
                   <div>
-                    <p className={`text-xl font-extrabold leading-tight ${stat.color}`}>{stat.value}</p>
-                    <p className="text-[10px] text-muted-foreground font-medium">{stat.label}</p>
+                    <p className={`text-lg sm:text-2xl font-extrabold leading-tight ${stat.color}`}>{stat.value}</p>
+                    <p className="text-[9px] sm:text-[10px] text-slate-500 font-medium uppercase tracking-wider">{stat.label}</p>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </motion.div>
           ))}
         </div>
 
-        {/* Progress Bar - Compact */}
-        <Card className="border-0 shadow-card">
-          <CardContent className="px-4 py-2">
-            <div className="flex items-center gap-3">
-              <Activity className="h-4 w-4 text-primary shrink-0" />
-              <span className="text-xs font-semibold text-foreground whitespace-nowrap">Progress Absensi</span>
-              <div className="flex-1 h-3 rounded-full bg-secondary overflow-hidden">
-                <motion.div className="h-full rounded-full bg-gradient-to-r from-primary via-primary/80 to-success"
-                  initial={{ width: 0 }} animate={{ width: `${percentage}%` }} transition={{ duration: 1.2 }} />
-              </div>
-              <span className="text-sm font-extrabold text-primary whitespace-nowrap">{percentage}%</span>
-              <span className="text-[10px] text-muted-foreground whitespace-nowrap">{stats.total - stats.belum}/{stats.total}</span>
+        {/* Progress Bar */}
+        <div className="rounded-xl bg-white/5 ring-1 ring-white/10 px-4 py-2.5">
+          <div className="flex items-center gap-3">
+            <Activity className="h-4 w-4 text-indigo-400 shrink-0" />
+            <span className="text-xs font-semibold text-slate-300 whitespace-nowrap">Progress</span>
+            <div className="flex-1 h-3 rounded-full bg-slate-800 overflow-hidden">
+              <motion.div
+                className="h-full rounded-full bg-gradient-to-r from-indigo-500 via-violet-500 to-emerald-500"
+                initial={{ width: 0 }} animate={{ width: `${percentage}%` }} transition={{ duration: 1.2 }}
+              />
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Two-column: Scanner 40% (left) | Live Feed 60% (right) */}
-        <div className="grid lg:grid-cols-5 gap-4">
-          {/* Left: Scanner - 40% */}
-          <div className="lg:col-span-2">
-            {schoolId && (
-              <PublicAttendanceScanner schoolId={schoolId} onAttendanceRecorded={fetchData} currentMode={data?.currentMode || "datang"} canFaceRecognition={data?.canFaceRecognition ?? false} />
-            )}
+            <span className="text-base font-extrabold text-white whitespace-nowrap tabular-nums">{percentage}%</span>
+            <span className="text-[10px] text-slate-500 whitespace-nowrap tabular-nums">{stats.total - stats.belum}/{stats.total}</span>
           </div>
+        </div>
 
-          {/* Right: Live Feed - 60% */}
-          <div className="lg:col-span-3">
-            <Card className="border-0 shadow-card overflow-hidden h-full">
-              <div className="px-3 py-2 border-b border-border flex items-center gap-2">
-                <div className="h-7 w-7 rounded-md bg-success/10 flex items-center justify-center">
-                  <Activity className="h-3.5 w-3.5 text-success" />
+        {/* Main Content: Camera (toggle) + Live Feed */}
+        <div className={`grid ${cameraVisible ? "lg:grid-cols-5" : ""} gap-4`}>
+          {/* Camera Scanner */}
+          <AnimatePresence>
+            {cameraVisible && (
+              <motion.div
+                className="lg:col-span-2"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+              >
+                {schoolId && (
+                  <PublicAttendanceScanner schoolId={schoolId} onAttendanceRecorded={fetchData} currentMode={data?.currentMode || "datang"} canFaceRecognition={data?.canFaceRecognition ?? false} />
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Live Feed */}
+          <div className={cameraVisible ? "lg:col-span-3" : ""}>
+            <div className="rounded-xl bg-white/5 ring-1 ring-white/10 overflow-hidden h-full">
+              <div className="px-4 py-3 border-b border-white/5 flex items-center gap-2">
+                <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                  <Activity className="h-4 w-4 text-emerald-400" />
                 </div>
                 <div className="flex-1">
-                  <h2 className="text-sm font-bold text-foreground leading-tight">Live Feed</h2>
-                  <p className="text-[9px] text-muted-foreground">15 absensi terbaru</p>
+                  <h2 className="text-sm font-bold text-white">Live Feed</h2>
+                  <p className="text-[9px] text-slate-500">20 absensi terbaru • realtime</p>
                 </div>
                 <LiveDot />
               </div>
-              <div className="overflow-y-auto">
+              <div className="overflow-y-auto max-h-[400px] lg:max-h-[500px]">
                 {data.liveFeed.length === 0 ? (
-                  <div className="p-8 text-center">
-                    <Clock className="h-10 w-10 text-muted-foreground/20 mx-auto mb-2" />
-                    <p className="text-xs text-muted-foreground">Belum ada absensi hari ini</p>
+                  <div className="p-10 text-center">
+                    <Clock className="h-10 w-10 text-slate-700 mx-auto mb-2" />
+                    <p className="text-sm text-slate-500">Belum ada absensi hari ini</p>
                   </div>
                 ) : (
-                  <div className="divide-y divide-border">
+                  <div className="divide-y divide-white/5">
                     <AnimatePresence initial={false}>
-                      {data.liveFeed.slice(0, 15).map((entry) => {
+                      {data.liveFeed.slice(0, 20).map((entry) => {
                         const isNew = entry.id === newEntryId;
                         return (
                           <motion.div
                             key={entry.id}
-                            initial={{ opacity: 0, x: -20, backgroundColor: "hsl(var(--success) / 0.2)" }}
-                            animate={{ opacity: 1, x: 0, backgroundColor: "hsl(0 0% 100% / 0)" }}
-                            transition={{ duration: 0.4, backgroundColor: { duration: 3 } }}
-                            className={`flex items-center gap-3 px-3 py-2.5 ${isNew ? "ring-2 ring-success/40 bg-success/10" : ""}`}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.4 }}
+                            className={`flex items-center gap-3 px-4 py-3 transition-colors ${isNew ? "bg-emerald-500/10 ring-1 ring-inset ring-emerald-500/20" : "hover:bg-white/5"}`}
                           >
-                            <div className={`h-9 w-9 rounded-full flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden ${
-                              entry.status === "hadir" ? "bg-success/15 text-success" :
-                              entry.status === "izin" ? "bg-warning/15 text-warning" :
-                              entry.status === "sakit" ? "bg-blue-50 text-blue-500" :
-                              "bg-destructive/15 text-destructive"
+                            <div className={`h-10 w-10 rounded-full flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden ring-2 ${
+                              entry.status === "hadir" ? "ring-emerald-500/30 bg-emerald-500/10 text-emerald-400" :
+                              entry.status === "izin" ? "ring-amber-500/30 bg-amber-500/10 text-amber-400" :
+                              entry.status === "sakit" ? "ring-sky-500/30 bg-sky-500/10 text-sky-400" :
+                              "ring-red-500/30 bg-red-500/10 text-red-400"
                             }`}>
                               {entry.photo_url ? (
                                 <img src={entry.photo_url} alt="" className="h-full w-full rounded-full object-cover" />
                               ) : entry.student_name.charAt(0)}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-1">
-                                <p className="font-semibold text-xs text-foreground truncate">{entry.student_name}</p>
-                                {isNew && <Badge className="bg-success text-success-foreground text-[7px] px-1 py-0 animate-pulse">BARU</Badge>}
+                              <div className="flex items-center gap-1.5">
+                                <p className="font-semibold text-sm text-white truncate">{entry.student_name}</p>
+                                {isNew && (
+                                  <Badge className="bg-emerald-500 text-white text-[7px] px-1.5 py-0 animate-pulse shadow-lg shadow-emerald-500/30">BARU</Badge>
+                                )}
                               </div>
-                              <p className="text-[9px] text-muted-foreground">{entry.student_class} • {entry.student_id}</p>
+                              <p className="text-[10px] text-slate-500">{entry.student_class} • {entry.student_id}</p>
                             </div>
-                            <div className="flex items-center gap-1.5 shrink-0">
+                            <div className="flex items-center gap-2 shrink-0">
                               <div className="flex flex-col items-end gap-0.5">
-                                <Badge variant="secondary" className={`text-[8px] px-1.5 py-0 ${STATUS_BG[entry.status] || ""}`}>
+                                <Badge variant="secondary" className={`text-[9px] px-2 py-0.5 border-0 ${
+                                  entry.status === "hadir" ? "bg-emerald-500/15 text-emerald-400" :
+                                  entry.status === "izin" ? "bg-amber-500/15 text-amber-400" :
+                                  entry.status === "sakit" ? "bg-sky-500/15 text-sky-400" :
+                                  "bg-red-500/15 text-red-400"
+                                }`}>
                                   {STATUS_LABELS[entry.status] || entry.status}
                                 </Badge>
                                 {entry.status === "hadir" && (
-                                  <Badge variant="outline" className={`text-[7px] px-1.5 py-0 ${
-                                    (entry as any).attendance_type === "pulang" ? "border-warning/30 text-warning bg-warning/5" : "border-success/30 text-success bg-success/5"
+                                  <Badge variant="outline" className={`text-[7px] px-1.5 py-0 border-0 ${
+                                    entry.attendance_type === "pulang" ? "bg-amber-500/10 text-amber-400" : "bg-emerald-500/10 text-emerald-400"
                                   }`}>
-                                    {(entry as any).attendance_type === "pulang" ? "↗ Pulang" : "↙ Datang"}
+                                    {entry.attendance_type === "pulang" ? "↗ Pulang" : "↙ Datang"}
                                   </Badge>
                                 )}
                               </div>
-                              <span className="text-[9px] font-mono text-muted-foreground font-semibold min-w-[32px] text-right">{entry.time?.slice(0, 5)}</span>
+                              <span className="text-xs font-mono text-slate-500 font-semibold min-w-[36px] text-right tabular-nums">{entry.time?.slice(0, 5)}</span>
                             </div>
                           </motion.div>
                         );
@@ -316,66 +341,68 @@ const PublicAttendanceMonitoring = () => {
                   </div>
                 )}
               </div>
-            </Card>
+            </div>
           </div>
         </div>
 
         {/* Per Class Summary */}
         <div>
-            <div className="flex items-center gap-2 mb-3">
-              <GraduationCap className="h-5 w-5 text-primary" />
-              <h2 className="text-base lg:text-lg font-bold text-foreground">Ringkasan Per Kelas</h2>
-              <Badge variant="secondary" className="text-xs">{classNames.length} kelas</Badge>
-            </div>
-            <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-3">
-              {classNames.map((cls) => {
-                const classStudents = data.classes[cls];
-                const hadir = classStudents.filter((s) => s.status === "hadir").length;
-                const belum = classStudents.filter((s) => s.status === "belum").length;
-                const recorded = classStudents.length - belum;
-                const pct = classStudents.length ? Math.round((recorded / classStudents.length) * 100) : 0;
-                const allDone = belum === 0;
+          <div className="flex items-center gap-2 mb-3">
+            <GraduationCap className="h-5 w-5 text-indigo-400" />
+            <h2 className="text-base lg:text-lg font-bold text-white">Ringkasan Per Kelas</h2>
+            <Badge variant="secondary" className="text-[10px] bg-white/5 text-slate-400 border-0">{classNames.length} kelas</Badge>
+          </div>
+          <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-3">
+            {classNames.map((cls) => {
+              const classStudents = data.classes[cls];
+              const hadir = classStudents.filter((s) => s.status === "hadir").length;
+              const belum = classStudents.filter((s) => s.status === "belum").length;
+              const recorded = classStudents.length - belum;
+              const pct = classStudents.length ? Math.round((recorded / classStudents.length) * 100) : 0;
+              const allDone = belum === 0;
 
-                return (
-                  <motion.div key={cls} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                    <Card className={`border transition-all ${allDone ? "border-success/30 shadow-[0_0_15px_-3px_hsl(var(--success)/0.15)]" : "border-border shadow-card"}`}>
-                      <CardContent className="p-3 lg:p-4">
-                        <div className="flex items-center gap-3 mb-2">
-                          <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${
-                            allDone ? "bg-success/15 text-success" : "gradient-primary text-primary-foreground"
-                          }`}>
-                            <GraduationCap className="h-5 w-5" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              <h3 className="font-bold text-sm text-foreground">{cls}</h3>
-                              {allDone && <Badge className="bg-success/10 text-success border-success/20 text-[8px]">✓</Badge>}
-                            </div>
-                            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                              <span className="flex items-center gap-0.5"><Users className="h-2.5 w-2.5" /> {classStudents.length}</span>
-                              <span className="flex items-center gap-0.5 text-success"><UserCheck className="h-2.5 w-2.5" /> {hadir}</span>
-                              <span className="flex items-center gap-0.5"><Clock className="h-2.5 w-2.5" /> {belum}</span>
-                            </div>
-                          </div>
-                          <p className={`text-xl font-extrabold ${allDone ? "text-success" : "text-primary"}`}>{pct}%</p>
+              return (
+                <motion.div key={cls} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                  <div className={`rounded-xl ring-1 p-4 transition-all ${
+                    allDone
+                      ? "bg-emerald-500/5 ring-emerald-500/20 shadow-lg shadow-emerald-500/5"
+                      : "bg-white/5 ring-white/10"
+                  }`}>
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${
+                        allDone ? "bg-emerald-500/15 text-emerald-400" : "bg-indigo-500/15 text-indigo-400"
+                      }`}>
+                        <GraduationCap className="h-5 w-5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <h3 className="font-bold text-sm text-white">{cls}</h3>
+                          {allDone && <Badge className="bg-emerald-500/15 text-emerald-400 border-0 text-[8px]">✓ Lengkap</Badge>}
                         </div>
-                        <div className="h-2 rounded-full bg-secondary overflow-hidden">
-                          <motion.div className={`h-full rounded-full ${allDone ? "bg-success" : "bg-gradient-to-r from-primary to-primary/70"}`}
-                            initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8 }} />
+                        <div className="flex items-center gap-2 text-[10px] text-slate-500">
+                          <span className="flex items-center gap-0.5"><Users className="h-2.5 w-2.5" /> {classStudents.length}</span>
+                          <span className="flex items-center gap-0.5 text-emerald-400"><UserCheck className="h-2.5 w-2.5" /> {hadir}</span>
+                          <span className="flex items-center gap-0.5"><Clock className="h-2.5 w-2.5" /> {belum}</span>
                         </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                );
-              })}
-            </div>
+                      </div>
+                      <p className={`text-xl font-extrabold tabular-nums ${allDone ? "text-emerald-400" : "text-indigo-400"}`}>{pct}%</p>
+                    </div>
+                    <div className="h-2 rounded-full bg-slate-800 overflow-hidden">
+                      <motion.div className={`h-full rounded-full ${allDone ? "bg-emerald-500" : "bg-gradient-to-r from-indigo-500 to-violet-500"}`}
+                        initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8 }} />
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
         </div>
 
         {/* Footer */}
-        <div className="text-center py-4 border-t border-border">
-          <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+        <div className="text-center py-4 border-t border-white/5">
+          <div className="flex items-center justify-center gap-2 text-xs text-slate-500">
             <LiveDot />
-            <span>ATSkolla — Absensi Digital Sekolah • Data diperbarui otomatis setiap 8 detik</span>
+            <span>ATSkolla — Absensi Digital Sekolah • Auto-refresh setiap 5 detik</span>
           </div>
         </div>
       </div>
