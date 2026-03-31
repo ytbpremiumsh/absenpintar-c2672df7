@@ -32,90 +32,112 @@ const navItems = [
 ];
 
 const groups = [
-  { key: "overview", label: "SA — OVERVIEW" },
-  { key: "management", label: "SA — MANAJEMEN" },
-  { key: "billing", label: "SA — BILLING" },
-  { key: "integration", label: "SA — INTEGRASI" },
-  { key: "content", label: "SA — TAMPILAN" },
+  { key: "overview", label: "OVERVIEW" },
+  { key: "management", label: "MANAJEMEN" },
+  { key: "billing", label: "BILLING" },
+  { key: "integration", label: "INTEGRASI" },
+  { key: "content", label: "TAMPILAN" },
 ];
 
 function SuperAdminSidebar() {
-  const { state } = useSidebar();
-  const collapsed = state === "collapsed";
+  const { isMobile, setOpenMobile } = useSidebar();
   const location = useLocation();
   const navigate = useNavigate();
   const { signOut, profile } = useAuth();
 
   const isActive = (path: string) => path === "/super-admin" ? location.pathname === "/super-admin" : location.pathname.startsWith(path);
 
+  const handleNavClick = () => {
+    if (isMobile) setOpenMobile(false);
+  };
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/login");
+  };
+
   return (
-    <Sidebar collapsible="icon" className="border-r border-sidebar-border/50 font-['Inter',sans-serif]">
-      <SidebarHeader className="p-5 pb-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-red-500 to-rose-600 shrink-0 shadow-md">
-            <Shield className="h-5 w-5 text-white" />
-          </div>
-          {!collapsed && (
-            <div className="flex flex-col">
-              <span className="text-[15px] font-extrabold text-sidebar-foreground tracking-tight">Super Admin</span>
-              <span className="text-[11px] text-sidebar-foreground/40 font-medium">Platform Control</span>
+    <Sidebar collapsible="offcanvas" className="border-r border-sidebar-border/30 font-['Inter',sans-serif]">
+      <SidebarHeader className="p-3 pb-2">
+        <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-red-500 to-rose-600 p-3 shadow-lg shadow-red-500/15">
+          <div className="absolute -top-4 -right-4 h-16 w-16 rounded-full bg-white/10 blur-xl" />
+          <div className="absolute -bottom-3 -left-3 h-12 w-12 rounded-full bg-white/5 blur-lg" />
+          <div className="relative z-10 flex items-center gap-2.5">
+            <div className="h-10 w-10 rounded-lg bg-white/15 backdrop-blur-sm border border-white/20 flex items-center justify-center shrink-0">
+              <Shield className="h-5 w-5 text-white" />
             </div>
-          )}
+            <div className="flex flex-col min-w-0">
+              <span className="text-[13px] font-extrabold text-white tracking-tight truncate leading-tight">Super Admin</span>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="inline-flex items-center gap-1 text-[9px] font-bold text-white/90 bg-white/20 backdrop-blur-sm px-1.5 py-[1px] rounded-md border border-white/15">
+                  <Crown className="h-2.5 w-2.5" />
+                  Platform Control
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
-        {!collapsed && (
-          <div className="mt-4 h-px bg-gradient-to-r from-transparent via-sidebar-border/60 to-transparent" />
-        )}
       </SidebarHeader>
-      <SidebarContent className="px-2">
+
+      <SidebarContent className="px-2 overflow-y-auto overflow-x-hidden">
         {groups.map((group) => {
           const items = navItems.filter((n) => n.group === group.key);
           if (items.length === 0) return null;
           return (
             <SidebarGroup key={group.key}>
-              <SidebarGroupLabel className="text-primary/50 text-[10px] uppercase tracking-[0.18em] font-bold px-4 mb-1.5">
+              <SidebarGroupLabel className="text-[10px] uppercase tracking-[0.18em] font-bold px-3 mb-1.5 text-muted-foreground/60">
                 {group.label}
               </SidebarGroupLabel>
               <SidebarGroupContent>
-                <SidebarMenu className="space-y-0.5">
-                  {items.map((item) => (
-                    <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton asChild isActive={isActive(item.url)} tooltip={item.title}>
-                        <NavLink to={item.url} end={item.url === "/super-admin"} className="text-muted-foreground hover:bg-muted/50 hover:text-foreground rounded-xl px-3.5 py-2.5 transition-all duration-200 group/nav gap-3" activeClassName="bg-[#5B6CF9] hover:bg-[#5065E8] text-white font-semibold rounded-xl">
-                          <item.icon className="h-[18px] w-[18px] stroke-[2]" />
-                          {!collapsed && <span className="text-[13.5px] flex-1">{item.title}</span>}
-                          {!collapsed && isActive(item.url) && <ChevronRight className="h-4 w-4 stroke-[2.5] ml-auto" />}
-                        </NavLink>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
+                <SidebarMenu className="space-y-1">
+                  {items.map((item) => {
+                    const active = isActive(item.url);
+                    return (
+                      <SidebarMenuItem key={item.title}>
+                        <SidebarMenuButton asChild isActive={active} tooltip={item.title}>
+                          <NavLink
+                            to={item.url}
+                            end={item.url === "/super-admin"}
+                            onClick={handleNavClick}
+                            className={`relative rounded-xl px-3 py-2.5 transition-all duration-200 group/nav gap-3 ${
+                              active
+                                ? "bg-gradient-to-r from-red-500/85 to-rose-600 text-white font-semibold shadow-lg shadow-red-500/20"
+                                : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                            }`}
+                            activeClassName=""
+                          >
+                            <div className={`h-7 w-7 rounded-lg flex items-center justify-center shrink-0 ${
+                              active ? "bg-white/20" : "bg-muted/80"
+                            }`}>
+                              <item.icon className={`h-[15px] w-[15px] stroke-[2] ${active ? "text-white" : ""}`} />
+                            </div>
+                            <span className={`text-[13px] truncate flex-1 ${active ? "text-white" : ""}`}>{item.title}</span>
+                            {active && <ChevronRight className="h-3.5 w-3.5 stroke-[2.5] ml-auto shrink-0 opacity-70 text-white" />}
+                          </NavLink>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
           );
         })}
       </SidebarContent>
-      <SidebarFooter className="p-4">
-        {!collapsed && (
-          <div className="mb-3 mx-2 h-px bg-gradient-to-r from-transparent via-sidebar-border/60 to-transparent" />
-        )}
-        {!collapsed && (
-          <div className="flex items-center gap-3 px-3 mb-3">
-            <Avatar className="h-10 w-10 ring-2 ring-primary/10">
-              <AvatarFallback className="bg-primary/10 text-primary text-sm font-bold">
-                {profile?.full_name?.split(" ").map((w: string) => w[0]).join("").slice(0, 2).toUpperCase() || "SA"}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex flex-col min-w-0">
-              <span className="text-sm font-bold text-sidebar-foreground truncate">{profile?.full_name || "Super Admin"}</span>
-              <span className="text-[11px] text-muted-foreground">Super Admin</span>
-            </div>
-          </div>
-        )}
+
+      <SidebarFooter className="p-3">
+        <div className="mb-2 mx-2 h-px bg-gradient-to-r from-transparent via-sidebar-border/60 to-transparent" />
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton tooltip="Logout" className="text-destructive/70 hover:text-destructive hover:bg-destructive/8 rounded-2xl px-3.5 py-3 transition-all duration-200" onClick={async () => { await signOut(); navigate("/login"); }}>
-              <LogOut className="h-[18px] w-[18px] stroke-[1.6]" />
-              {!collapsed && <span className="text-[13.5px] font-medium">Keluar</span>}
+            <SidebarMenuButton
+              tooltip="Logout"
+              className="text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-xl px-3 py-2.5 transition-all duration-200"
+              onClick={handleLogout}
+            >
+              <div className="h-7 w-7 rounded-lg bg-destructive/10 flex items-center justify-center shrink-0">
+                <LogOut className="h-[15px] w-[15px] shrink-0" />
+              </div>
+              <span className="text-[13px] font-medium">Keluar</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

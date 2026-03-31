@@ -2,13 +2,21 @@ import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Search, Users, Phone, User, GraduationCap, ChevronRight, Mail } from "lucide-react";
+import { Search, Users, Phone, User, GraduationCap, ChevronRight, Mail, CalendarDays, CheckCircle2, XCircle, FileText, Thermometer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { motion } from "framer-motion";
+import { PageHeader } from "@/components/PageHeader";
+
+const STATUS_ICONS: Record<string, { icon: typeof CheckCircle2; color: string }> = {
+  hadir: { icon: CheckCircle2, color: "text-success" },
+  izin: { icon: FileText, color: "text-warning" },
+  sakit: { icon: Thermometer, color: "text-blue-500" },
+  alfa: { icon: XCircle, color: "text-destructive" },
+};
 
 interface Student {
   id: string;
@@ -19,6 +27,14 @@ interface Student {
   photo_url: string | null;
   parent_name: string;
   parent_phone: string;
+}
+
+interface AttendanceLog {
+  id: string;
+  date: string;
+  time: string;
+  status: string;
+  method: string;
 }
 
 const WaliKelasStudents = () => {
@@ -52,7 +68,6 @@ const WaliKelasStudents = () => {
 
       setStudents(studentData || []);
 
-      // Fetch 30-day attendance summary
       if (studentData && studentData.length > 0) {
         const ids = studentData.map(s => s.id);
         const thirtyAgo = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
@@ -89,7 +104,7 @@ const WaliKelasStudents = () => {
   if (assignments.length === 0) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold">Siswa Kelas Saya</h1>
+        <PageHeader icon={Users} title="Siswa Kelas Saya" subtitle="Data siswa dan wali murid kelas yang Anda ampu" />
         <Card className="border-0 shadow-card">
           <CardContent className="p-10 text-center">
             <GraduationCap className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
@@ -108,10 +123,7 @@ const WaliKelasStudents = () => {
 
   return (
     <div className="space-y-5">
-      <div>
-        <h1 className="text-2xl font-bold">Siswa Kelas Saya</h1>
-        <p className="text-muted-foreground text-sm">Data siswa dan wali murid kelas yang Anda ampu</p>
-      </div>
+      <PageHeader icon={Users} title="Siswa Kelas Saya" subtitle="Data siswa dan wali murid kelas yang Anda ampu" />
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
@@ -220,12 +232,16 @@ const WaliKelasStudents = () => {
 
       {/* Student Detail Dialog */}
       <Dialog open={!!selectedStudent} onOpenChange={() => setSelectedStudent(null)}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Detail Siswa</DialogTitle>
           </DialogHeader>
           {selectedStudent && (
-            <StudentDetailContent student={selectedStudent} summary={attendanceSummary[selectedStudent.id]} />
+            <StudentDetailContent
+              student={selectedStudent}
+              summary={attendanceSummary[selectedStudent.id]}
+              schoolId={assignments[0]?.school_id}
+            />
           )}
         </DialogContent>
       </Dialog>
@@ -233,8 +249,59 @@ const WaliKelasStudents = () => {
   );
 };
 
-const StudentDetailContent = ({ student, summary }: { student: Student; summary?: { hadir: number; izin: number; sakit: number; alfa: number; total: number } }) => {
+const StudentDetailContent = ({
+  student,
+  summary,
+  schoolId,
+}: {
+  student: Student;
+  summary?: { hadir: number; izin: number; sakit: number; alfa: number; total: number };
+  schoolId?: string;
+}) => {
   const rate = summary && summary.total > 0 ? Math.round((summary.hadir / summary.total) * 100) : null;
+  const [logs, setLogs] = useState<AttendanceLog[]>([]);
+  const [loadingLogs, setLoadingLogs] = useState(false);
+
+  // Date range state
+  const now = new Date();
+  const [startDate, setStartDate] = useState(() => {
+    const d = new Date(now.getFullYear(), now.getMonth(), 1);
+    return d.toISOString().slice(0, 10);
+  });
+  const [endDate, setEndDate] = useState(now.toISOString().slice(0, 10));
+
+  useEffect(() => {
+    if (!schoolId) return;
+    const fetchLogs = async () => {
+      setLoadingLogs(true);
+      const { data } = await supabase
+        .from("attendance_logs")
+        .select("id, date, time, status, method")
+        .eq("school_id", schoolId)
+        .eq("student_id", student.id)
+        .gte("date", startDate)
+        .lte("date", endDate)
+        .order("date", { ascending: false });
+      setLogs(data || []);
+      setLoadingLogs(false);
+    };
+    fetchLogs();
+  }, [schoolId, student.id, startDate, endDate]);
+
+  const statusLabel = (s: string) => {
+    const map: Record<string, string> = { hadir: "Hadir", izin: "Izin", sakit: "Sakit", alfa: "Alfa" };
+    return map[s] || s;
+  };
+
+  const statusBadgeClass = (s: string) => {
+    const map: Record<string, string> = {
+      hadir: "bg-success/10 text-success border-success/30",
+      izin: "bg-warning/10 text-warning border-warning/30",
+      sakit: "bg-blue-100 text-blue-600 border-blue-300 dark:bg-blue-900/30 dark:text-blue-400",
+      alfa: "bg-destructive/10 text-destructive border-destructive/30",
+    };
+    return map[s] || "";
+  };
 
   return (
     <div className="space-y-5">
@@ -281,7 +348,7 @@ const StudentDetailContent = ({ student, summary }: { student: Student; summary?
         <Card className="border border-border">
           <CardContent className="p-4 space-y-3">
             <div className="flex items-center justify-between">
-              <h4 className="text-sm font-bold text-foreground">Kehadiran 30 Hari</h4>
+              <h4 className="text-sm font-bold text-foreground">Ringkasan 30 Hari</h4>
               {rate !== null && (
                 <span className={`text-lg font-extrabold ${rate >= 85 ? "text-success" : rate >= 70 ? "text-warning" : "text-destructive"}`}>
                   {rate}%
@@ -308,6 +375,65 @@ const StudentDetailContent = ({ student, summary }: { student: Student; summary?
           </CardContent>
         </Card>
       )}
+
+      {/* Attendance Detail Table with Date Range */}
+      <Card className="border border-border">
+        <CardContent className="p-4 space-y-3">
+          <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
+            <CalendarDays className="h-4 w-4 text-primary" /> Riwayat Absensi
+          </h4>
+          <div className="flex flex-wrap gap-2 items-end">
+            <div>
+              <label className="text-[10px] font-semibold text-muted-foreground block mb-1">Dari</label>
+              <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="h-8 text-xs w-36" />
+            </div>
+            <div>
+              <label className="text-[10px] font-semibold text-muted-foreground block mb-1">Sampai</label>
+              <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="h-8 text-xs w-36" />
+            </div>
+            <Badge variant="secondary" className="text-[10px] h-8 flex items-center">{logs.length} data</Badge>
+          </div>
+          {loadingLogs ? (
+            <div className="text-center py-4 text-muted-foreground text-sm">Memuat...</div>
+          ) : logs.length === 0 ? (
+            <div className="text-center py-4 text-muted-foreground text-sm">Tidak ada data absensi</div>
+          ) : (
+            <div className="overflow-x-auto max-h-[300px] overflow-y-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/20">
+                    <TableHead className="text-xs font-semibold">Tanggal</TableHead>
+                    <TableHead className="text-xs font-semibold">Hari</TableHead>
+                    <TableHead className="text-xs font-semibold">Jam</TableHead>
+                    <TableHead className="text-xs font-semibold">Status</TableHead>
+                    <TableHead className="text-xs font-semibold">Metode</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {logs.map(l => {
+                    const d = new Date(l.date);
+                    const dayName = d.toLocaleDateString("id-ID", { weekday: "short" });
+                    const dateStr = d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+                    return (
+                      <TableRow key={l.id} className="hover:bg-muted/20">
+                        <TableCell className="text-xs">{dateStr}</TableCell>
+                        <TableCell className="text-xs">{dayName}</TableCell>
+                        <TableCell className="text-xs font-mono">{l.time?.slice(0, 5)}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={`text-[10px] ${statusBadgeClass(l.status)}`}>
+                            {statusLabel(l.status)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground capitalize">{l.method}</TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };
