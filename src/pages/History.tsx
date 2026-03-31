@@ -119,7 +119,7 @@ const History = () => {
     const byDay: Record<number, Record<string, number>> = {};
     const studentAlfa: Record<string, { name: string; class: string; count: number }> = {};
     // Per-student stats
-    const studentStats: Record<string, { name: string; class: string; student_id: string; hadir: number; izin: number; sakit: number; alfa: number; total: number }> = {};
+    const studentStats: Record<string, { id: string; name: string; class: string; student_id: string; hadir: number; izin: number; sakit: number; alfa: number; total: number }> = {};
 
     for (const l of logs) {
       byStatus[l.status] = (byStatus[l.status] || 0) + 1;
