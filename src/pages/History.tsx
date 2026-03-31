@@ -727,6 +727,60 @@ const History = () => {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Student Attendance Detail Dialog */}
+      <Dialog open={!!selectedStudentId} onOpenChange={(open) => { if (!open) setSelectedStudentId(null); }}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              Riwayat Absensi — {filteredStudentStats.find(s => s.id === selectedStudentId)?.name || ""}
+            </DialogTitle>
+          </DialogHeader>
+          {loadingStudentLogs ? (
+            <div className="text-center py-8 text-muted-foreground text-sm">Memuat data...</div>
+          ) : studentAttLogs.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground text-sm">Tidak ada data absensi</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/20">
+                    <TableHead className="text-xs font-semibold">Tanggal</TableHead>
+                    <TableHead className="text-xs font-semibold">Hari</TableHead>
+                    <TableHead className="text-xs font-semibold">Jam</TableHead>
+                    <TableHead className="text-xs font-semibold">Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {studentAttLogs.map((l: any) => {
+                    const d = new Date(l.date);
+                    const dayName = d.toLocaleDateString("id-ID", { weekday: "short" });
+                    const dateStr = d.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+                    const statusColors: Record<string, string> = {
+                      hadir: "bg-success/10 text-success border-success/30",
+                      izin: "bg-warning/10 text-warning border-warning/30",
+                      sakit: "bg-blue-100 text-blue-600 border-blue-300 dark:bg-blue-900/30 dark:text-blue-400",
+                      alfa: "bg-destructive/10 text-destructive border-destructive/30",
+                    };
+                    return (
+                      <TableRow key={l.id} className="hover:bg-muted/20">
+                        <TableCell className="text-xs">{dateStr}</TableCell>
+                        <TableCell className="text-xs">{dayName}</TableCell>
+                        <TableCell className="text-xs font-mono">{l.time?.slice(0, 5)}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={`text-[10px] ${statusColors[l.status] || ""}`}>
+                            {STATUS_LABELS[l.status] || l.status}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
