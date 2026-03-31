@@ -215,33 +215,19 @@ const Monitoring = () => {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Monitoring Absensi</h1>
-          <div className="flex items-center gap-2 mt-1">
-            <LiveDot />
-            <p className="text-muted-foreground text-xs sm:text-sm">
-              Realtime • {lastUpdated.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
-            </p>
-          </div>
-        </div>
-        {profile?.school_id && (
-          <button
-            onClick={() => window.open(`/attendance/${profile.school_id}`, "_blank")}
-            className="group relative inline-flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary via-primary/90 to-success text-primary-foreground font-semibold text-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 overflow-hidden"
-          >
-            <span className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            <span className="relative flex h-7 w-7 items-center justify-center rounded-lg bg-white/20 backdrop-blur-sm">
-              <ExternalLink className="h-4 w-4" />
-            </span>
-            <span className="relative">Buka Live Monitor Publik</span>
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
-            </span>
-          </button>
-        )}
-      </div>
+      <PageHeader
+        icon={Activity}
+        title="Monitoring Absensi"
+        subtitle={`Realtime • ${lastUpdated.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}`}
+        actions={
+          profile?.school_id ? (
+            <Button onClick={() => window.open(`/attendance/${profile.school_id}`, "_blank")} className="bg-white/20 hover:bg-white/30 text-white border border-white/20 rounded-xl text-xs">
+              <ExternalLink className="h-4 w-4 mr-1.5" />
+              Live Monitor Publik
+            </Button>
+          ) : undefined
+        }
+      />
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
