@@ -30,13 +30,16 @@ const STATUS_LABELS: Record<string, string> = {
 const DAY_NAMES = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
 
 const History = () => {
-  const { profile } = useAuth();
+  const { profile, user, roles } = useAuth();
   const features = useSubscriptionFeatures();
   const [logs, setLogs] = useState<any[]>([]);
   const [allStudents, setAllStudents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
   const [selectedClass, setSelectedClass] = useState<string>("all");
+  const [teacherClasses, setTeacherClasses] = useState<string[] | null>(null);
+
+  const isTeacherOnly = roles.includes("teacher") && !roles.includes("school_admin") && !roles.includes("staff");
 
   const today = new Date().toISOString().slice(0, 10);
   const thirtyAgo = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
@@ -50,26 +53,52 @@ const History = () => {
     setEndDate(today);
   };
 
+  // Fetch teacher class assignments if teacher-only
+  useEffect(() => {
+    if (!isTeacherOnly || !user) { setTeacherClasses(null); return; }
+    supabase.from("class_teachers").select("class_name").eq("user_id", user.id)
+      .then(({ data }) => {
+        setTeacherClasses(data?.map(d => d.class_name) || []);
+      });
+  }, [isTeacherOnly, user]);
+
   useEffect(() => {
     if (!profile?.school_id) { setLoading(false); return; }
-    const fetch = async () => {
+    // Wait for teacher classes to load if teacher-only
+    if (isTeacherOnly && teacherClasses === null) return;
+
+    const fetchData = async () => {
       setLoading(true);
-      const [logsRes, studentsRes] = await Promise.all([
-        supabase.from("attendance_logs")
-          .select("*, students(name, class, student_id)")
-          .eq("school_id", profile.school_id)
-          .gte("date", startDate).lte("date", endDate)
-          .order("date", { ascending: false })
-          .limit(5000),
-        supabase.from("students").select("id, name, class, student_id")
-          .eq("school_id", profile.school_id),
-      ]);
-      setLogs(logsRes.data || []);
+
+      let logsQuery = supabase.from("attendance_logs")
+        .select("*, students(name, class, student_id)")
+        .eq("school_id", profile.school_id)
+        .gte("date", startDate).lte("date", endDate)
+        .order("date", { ascending: false })
+        .limit(5000);
+
+      let studentsQuery = supabase.from("students").select("id, name, class, student_id")
+        .eq("school_id", profile.school_id);
+
+      // Filter by teacher's assigned classes
+      if (isTeacherOnly && teacherClasses && teacherClasses.length > 0) {
+        studentsQuery = studentsQuery.in("class", teacherClasses);
+      }
+
+      const [logsRes, studentsRes] = await Promise.all([logsQuery, studentsQuery]);
+
+      let filteredLogs = logsRes.data || [];
+      // Filter logs to only assigned classes for teacher
+      if (isTeacherOnly && teacherClasses && teacherClasses.length > 0) {
+        filteredLogs = filteredLogs.filter((l: any) => teacherClasses.includes(l.students?.class));
+      }
+
+      setLogs(filteredLogs);
       setAllStudents(studentsRes.data || []);
       setLoading(false);
     };
-    fetch();
-  }, [profile?.school_id, startDate, endDate]);
+    fetchData();
+  }, [profile?.school_id, startDate, endDate, isTeacherOnly, teacherClasses]);
 
   // All unique class names
   const classNames = useMemo(() => {
