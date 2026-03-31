@@ -52,6 +52,15 @@ const Dashboard = () => {
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const navigate = useNavigate();
 
+  // Past attendance editing states
+  const [editHistoryOpen, setEditHistoryOpen] = useState(false);
+  const [editDate, setEditDate] = useState(new Date().toISOString().slice(0, 10));
+  const [editClassFilter, setEditClassFilter] = useState("all");
+  const [historyLogs, setHistoryLogs] = useState<any[]>([]);
+  const [editChanges, setEditChanges] = useState<Record<string, string>>({});
+  const [savingHistory, setSavingHistory] = useState(false);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+
   const fetchData = useCallback(async () => {
     if (!profile?.school_id) { setLoading(false); return; }
     const schoolId = profile.school_id;
