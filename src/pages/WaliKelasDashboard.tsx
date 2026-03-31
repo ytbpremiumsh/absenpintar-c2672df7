@@ -23,9 +23,6 @@ const STATUS_BG: Record<string, string> = {
   alfa: "bg-destructive/10 text-destructive border-destructive/20",
   belum: "bg-muted text-muted-foreground border-border",
 };
-const COLORS: Record<string, string> = {
-  hadir: "#22c55e", izin: "#f59e0b", sakit: "#6366f1", alfa: "#ef4444",
-};
 
 interface StudentWithAttendance {
   id: string;
@@ -38,16 +35,20 @@ interface StudentWithAttendance {
   method: string | null;
 }
 
+const RANK_STYLES = [
+  { icon: Trophy, bg: "bg-yellow-100 dark:bg-yellow-900/30", color: "text-yellow-600 dark:text-yellow-400", border: "border-yellow-300 dark:border-yellow-700", badge: "bg-gradient-to-r from-yellow-400 to-amber-500 text-white" },
+  { icon: Medal, bg: "bg-slate-100 dark:bg-slate-800/50", color: "text-slate-500 dark:text-slate-300", border: "border-slate-300 dark:border-slate-600", badge: "bg-gradient-to-r from-slate-400 to-slate-500 text-white" },
+  { icon: Medal, bg: "bg-orange-50 dark:bg-orange-900/20", color: "text-orange-600 dark:text-orange-400", border: "border-orange-300 dark:border-orange-700", badge: "bg-gradient-to-r from-orange-400 to-orange-600 text-white" },
+];
+
 const WaliKelasDashboard = () => {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const [assignments, setAssignments] = useState<{ class_name: string; school_id: string }[]>([]);
   const [students, setStudents] = useState<StudentWithAttendance[]>([]);
-  const [allStudentsList, setAllStudentsList] = useState<any[]>([]);
-  const [historicalLogs, setHistoricalLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [selectedAnalyticsClass, setSelectedAnalyticsClass] = useState<string>("all");
+  const [classRanking, setClassRanking] = useState<{ name: string; rate: number; hadir: number; total: number; students: number }[]>([]);
   const today = new Date().toISOString().split("T")[0];
 
   useEffect(() => {
@@ -74,12 +75,10 @@ const WaliKelasDashboard = () => {
 
       if (!studentData || studentData.length === 0) {
         setStudents([]);
-        setAllStudentsList([]);
         setLoading(false);
         return;
       }
 
-      setAllStudentsList(studentData);
       const studentIds = studentData.map((s) => s.id);
 
       // Today's attendance
@@ -98,17 +97,45 @@ const WaliKelasDashboard = () => {
       });
       setStudents(merged);
 
-      // Historical logs (30 days)
+      // Fetch ALL school classes for ranking (30 days)
       const thirtyAgo = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
-      const { data: histLogs } = await supabase
-        .from("attendance_logs")
-        .select("student_id, status, date, students(name, class, student_id)")
-        .eq("school_id", schoolId)
-        .in("student_id", studentIds)
-        .gte("date", thirtyAgo)
-        .lte("date", today);
-      setHistoricalLogs(histLogs || []);
+      const [allStudentsRes, allLogsRes] = await Promise.all([
+        supabase.from("students").select("id, class").eq("school_id", schoolId),
+        supabase.from("attendance_logs")
+          .select("student_id, status, students(class)")
+          .eq("school_id", schoolId)
+          .gte("date", thirtyAgo)
+          .lte("date", today)
+          .limit(5000),
+      ]);
 
+      const allSchoolStudents = allStudentsRes.data || [];
+      const allLogs = allLogsRes.data || [];
+
+      // Count students per class
+      const classStudentCount: Record<string, number> = {};
+      allSchoolStudents.forEach((s: any) => {
+        classStudentCount[s.class] = (classStudentCount[s.class] || 0) + 1;
+      });
+
+      // Calculate ranking
+      const byClass: Record<string, { hadir: number; total: number }> = {};
+      allLogs.forEach((l: any) => {
+        const cls = (l.students as any)?.class || "?";
+        if (!byClass[cls]) byClass[cls] = { hadir: 0, total: 0 };
+        byClass[cls].total++;
+        if (l.status === "hadir") byClass[cls].hadir++;
+      });
+
+      const ranking = Object.entries(byClass).map(([cls, d]) => ({
+        name: cls,
+        rate: d.total > 0 ? Math.round((d.hadir / d.total) * 100) : 0,
+        hadir: d.hadir,
+        total: d.total,
+        students: classStudentCount[cls] || 0,
+      })).sort((a, b) => b.rate - a.rate);
+
+      setClassRanking(ranking);
       setLoading(false);
     };
     fetchData();
@@ -132,68 +159,13 @@ const WaliKelasDashboard = () => {
     );
   }, [students, search]);
 
-  // Analytics computations
-  const analytics = useMemo(() => {
-    if (historicalLogs.length === 0) return null;
-
-    const classNames = assignments.map((a) => a.class_name);
-    const filteredLogs = selectedAnalyticsClass === "all"
-      ? historicalLogs
-      : historicalLogs.filter((l: any) => l.students?.class === selectedAnalyticsClass);
-
-    // Distribution
-    const dist: Record<string, number> = { hadir: 0, izin: 0, sakit: 0, alfa: 0 };
-    filteredLogs.forEach((l: any) => { if (dist[l.status] !== undefined) dist[l.status]++; });
-    const totalLogs = Object.values(dist).reduce((a, b) => a + b, 0);
-    const pieData = Object.entries(dist).map(([key, val]) => ({
-      name: STATUS_LABELS[key], value: val, color: COLORS[key],
-    })).filter((d) => d.value > 0);
-
-    const attendanceRate = totalLogs > 0 ? Math.round((dist.hadir / totalLogs) * 100) : 0;
-
-    // Per-class comparison
-    const byClass: Record<string, { hadir: number; total: number }> = {};
-    historicalLogs.forEach((l: any) => {
-      const cls = l.students?.class || "?";
-      if (!byClass[cls]) byClass[cls] = { hadir: 0, total: 0 };
-      byClass[cls].total++;
-      if (l.status === "hadir") byClass[cls].hadir++;
-    });
-    const classData = Object.entries(byClass).map(([cls, d]) => ({
-      name: cls,
-      rate: d.total > 0 ? Math.round((d.hadir / d.total) * 100) : 0,
-      hadir: d.hadir,
-      total: d.total,
-    })).sort((a, b) => b.rate - a.rate);
-
-    const bestClass = classData.length > 0 ? classData[0] : null;
-
-    // Per-student
-    const relevantStudents = selectedAnalyticsClass === "all"
-      ? allStudentsList
-      : allStudentsList.filter((s) => s.class === selectedAnalyticsClass);
-
-    const byStudent: Record<string, { hadir: number; izin: number; sakit: number; alfa: number; total: number }> = {};
-    filteredLogs.forEach((l: any) => {
-      const sid = l.student_id;
-      if (!byStudent[sid]) byStudent[sid] = { hadir: 0, izin: 0, sakit: 0, alfa: 0, total: 0 };
-      byStudent[sid].total++;
-      if (byStudent[sid][l.status as keyof typeof byStudent[typeof sid]] !== undefined) {
-        (byStudent[sid] as any)[l.status]++;
-      }
-    });
-
-    const studentAnalytics = relevantStudents.map((s: any) => {
-      const data = byStudent[s.id] || { hadir: 0, izin: 0, sakit: 0, alfa: 0, total: 0 };
-      const rate = data.total > 0 ? Math.round((data.hadir / data.total) * 100) : 0;
-      return { ...s, ...data, rate };
-    }).sort((a: any, b: any) => b.rate - a.rate);
-
-    return { pieData, attendanceRate, classData, bestClass, studentAnalytics, totalLogs, classNames };
-  }, [historicalLogs, selectedAnalyticsClass, allStudentsList, assignments]);
-
   const percentage = stats.total ? Math.round(((stats.total - stats.belum) / stats.total) * 100) : 0;
   const classNames = assignments.map((a) => a.class_name);
+
+  // Find my class rank
+  const myClassRanks = classRanking
+    .map((c, i) => ({ ...c, rank: i + 1 }))
+    .filter((c) => classNames.includes(c.name));
 
   if (loading) {
     return <div className="flex items-center justify-center py-20 text-muted-foreground">Memuat data...</div>;
@@ -220,21 +192,13 @@ const WaliKelasDashboard = () => {
     return "text-destructive";
   };
 
-  const getRateProgressColor = (rate: number) => {
-    if (rate >= 85) return "bg-success";
-    if (rate >= 70) return "bg-warning";
-    return "bg-destructive";
-  };
-
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">Dashboard Wali Kelas</h1>
-          <p className="text-muted-foreground text-sm">
-            Kelas: {classNames.join(", ")} • {new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
-          </p>
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold">Dashboard Wali Kelas</h1>
+        <p className="text-muted-foreground text-sm">
+          Kelas: {classNames.join(", ")} • {new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+        </p>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -242,8 +206,8 @@ const WaliKelasDashboard = () => {
           <TabsTrigger value="dashboard" className="flex-1 sm:flex-none gap-1.5">
             <Activity className="h-4 w-4" /> Dashboard
           </TabsTrigger>
-          <TabsTrigger value="analytics" className="flex-1 sm:flex-none gap-1.5">
-            <BarChart3 className="h-4 w-4" /> Analitik Kelas
+          <TabsTrigger value="ranking" className="flex-1 sm:flex-none gap-1.5">
+            <Trophy className="h-4 w-4" /> Peringkat Kelas
           </TabsTrigger>
         </TabsList>
 
@@ -350,161 +314,157 @@ const WaliKelasDashboard = () => {
           </Card>
         </TabsContent>
 
-        {/* ===== ANALYTICS TAB ===== */}
-        <TabsContent value="analytics" className="space-y-6 mt-4">
-          {!analytics || analytics.totalLogs === 0 ? (
+        {/* ===== RANKING TAB ===== */}
+        <TabsContent value="ranking" className="space-y-6 mt-4">
+          {classRanking.length === 0 ? (
             <Card className="border-0 shadow-card">
               <CardContent className="p-10 text-center">
-                <BarChart3 className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
-                <p className="text-muted-foreground">Belum ada data absensi dalam 30 hari terakhir.</p>
+                <Trophy className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
+                <p className="text-muted-foreground">Belum ada data untuk peringkat kelas.</p>
               </CardContent>
             </Card>
           ) : (
             <>
-              {/* Filter & Summary Cards */}
-              <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-                <Select value={selectedAnalyticsClass} onValueChange={setSelectedAnalyticsClass}>
-                  <SelectTrigger className="w-full sm:w-[200px]">
-                    <SelectValue placeholder="Pilih Kelas" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Semua Kelas</SelectItem>
-                    {classNames.map((c) => (
-                      <SelectItem key={c} value={c}>{c}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">Data 30 hari terakhir</p>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <Card className="border-0 shadow-card">
-                  <CardContent className="p-4 flex items-center gap-3">
-                    <div className="h-11 w-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                      <Users className="h-5 w-5 text-primary" />
+              {/* My Class Position */}
+              {myClassRanks.length > 0 && (
+                <Card className="border-0 shadow-card bg-gradient-to-br from-primary/5 via-background to-primary/5">
+                  <CardContent className="p-5">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Flame className="h-5 w-5 text-primary" />
+                      <h3 className="text-sm font-bold text-foreground">Posisi Kelas Anda</h3>
                     </div>
-                    <div>
-                      <p className="text-2xl font-extrabold text-foreground">{analytics.totalLogs}</p>
-                      <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Total Data</p>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card className="border-0 shadow-card">
-                  <CardContent className="p-4 flex items-center gap-3">
-                    <div className="h-11 w-11 rounded-xl bg-success/10 flex items-center justify-center shrink-0">
-                      <UserCheck className="h-5 w-5 text-success" />
-                    </div>
-                    <div>
-                      <p className={`text-2xl font-extrabold ${getRateColor(analytics.attendanceRate)}`}>{analytics.attendanceRate}%</p>
-                      <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Kehadiran</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {myClassRanks.map((mc) => (
+                        <div key={mc.name} className="flex items-center gap-3 bg-background rounded-xl p-3 border border-primary/20 shadow-sm">
+                          <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                            <span className="text-xl font-black text-primary">#{mc.rank}</span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-bold text-sm text-foreground truncate">{mc.name}</p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className={`text-lg font-extrabold ${getRateColor(mc.rate)}`}>{mc.rate}%</span>
+                              <span className="text-[10px] text-muted-foreground">dari {classRanking.length} kelas</span>
+                            </div>
+                          </div>
+                          {mc.rank <= 3 && (
+                            <div className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${RANK_STYLES[mc.rank - 1]?.badge || ""}`}>
+                              {mc.rank === 1 ? "🥇" : mc.rank === 2 ? "🥈" : "🥉"}
+                            </div>
+                          )}
+                        </div>
+                      ))}
                     </div>
                   </CardContent>
                 </Card>
-                <Card className="border-0 shadow-card">
-                  <CardContent className="p-4 flex items-center gap-3">
-                    <div className="h-11 w-11 rounded-xl bg-warning/10 flex items-center justify-center shrink-0">
-                      <Award className="h-5 w-5 text-warning" />
-                    </div>
-                    <div>
-                      <p className="text-2xl font-extrabold text-foreground">{analytics.bestClass?.name || "-"}</p>
-                      <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Kelas Terbaik</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+              )}
 
-              {/* Charts Row */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {/* Pie Chart */}
-                <Card className="border-0 shadow-card">
-                  <CardContent className="p-4">
-                    <h3 className="text-sm font-bold text-foreground mb-3">Distribusi Status</h3>
-                    <div className="h-[220px]">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie data={analytics.pieData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={3} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
-                            {analytics.pieData.map((entry: any, i: number) => (
-                              <Cell key={i} fill={entry.color} />
-                            ))}
-                          </Pie>
-                          <Tooltip />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </CardContent>
-                </Card>
+              {/* Bar Chart */}
+              <Card className="border-0 shadow-card">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <TrendingUp className="h-5 w-5 text-primary" />
+                    <h3 className="text-sm font-bold text-foreground">Perbandingan Kehadiran Semua Kelas</h3>
+                  </div>
+                  <p className="text-xs text-muted-foreground mb-3">Data 30 hari terakhir • Kelas Anda ditandai warna berbeda</p>
+                  <div className="h-[280px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={classRanking} layout="vertical" margin={{ left: 10 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
+                        <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11 }} tickFormatter={(v) => `${v}%`} />
+                        <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={80} />
+                        <Tooltip formatter={(val: number) => `${val}%`} />
+                        <Bar
+                          dataKey="rate"
+                          name="Kehadiran %"
+                          radius={[0, 6, 6, 0]}
+                          fill="hsl(var(--muted-foreground))"
+                          shape={(props: any) => {
+                            const isMyClass = classNames.includes(props.name);
+                            const fill = isMyClass ? "hsl(var(--primary))" : "hsl(var(--muted-foreground) / 0.3)";
+                            return (
+                              <rect
+                                x={props.x} y={props.y}
+                                width={props.width} height={props.height}
+                                fill={fill}
+                                rx={6} ry={6}
+                              />
+                            );
+                          }}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
 
-                {/* Bar Chart - Class Comparison */}
-                {analytics.classData.length > 1 && (
-                  <Card className="border-0 shadow-card">
-                    <CardContent className="p-4">
-                      <h3 className="text-sm font-bold text-foreground mb-3">Perbandingan Kelas</h3>
-                      <div className="h-[220px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <BarChart data={analytics.classData}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                            <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                            <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} />
-                            <Tooltip formatter={(val: number) => `${val}%`} />
-                            <Bar dataKey="rate" name="Kehadiran %" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
-                          </BarChart>
-                        </ResponsiveContainer>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
-
-              {/* Per-Student Table */}
+              {/* Full Ranking List */}
               <Card className="border-0 shadow-card overflow-hidden">
                 <div className="p-4 border-b border-border">
-                  <h3 className="font-bold text-sm text-foreground">Kehadiran Per Siswa (30 Hari)</h3>
+                  <div className="flex items-center gap-2">
+                    <Medal className="h-5 w-5 text-primary" />
+                    <h3 className="font-bold text-sm text-foreground">Papan Peringkat Kelas</h3>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">Peringkat berdasarkan persentase kehadiran 30 hari terakhir</p>
                 </div>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-10">#</TableHead>
-                        <TableHead>Nama</TableHead>
-                        <TableHead className="hidden sm:table-cell">Kelas</TableHead>
-                        <TableHead className="text-center">Hadir</TableHead>
-                        <TableHead className="text-center">Izin</TableHead>
-                        <TableHead className="text-center">Sakit</TableHead>
-                        <TableHead className="text-center">Alfa</TableHead>
-                        <TableHead className="w-[140px]">% Kehadiran</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {analytics.studentAnalytics.length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={8} className="text-center text-muted-foreground py-8">Tidak ada data</TableCell>
-                        </TableRow>
-                      ) : (
-                        analytics.studentAnalytics.map((s: any, i: number) => (
-                          <TableRow key={s.id}>
-                            <TableCell className="text-muted-foreground text-xs">{i + 1}</TableCell>
-                            <TableCell>
-                              <div className="font-medium text-sm">{s.name}</div>
-                              <div className="text-[10px] text-muted-foreground">NIS: {s.student_id}</div>
-                            </TableCell>
-                            <TableCell className="hidden sm:table-cell text-sm">{s.class}</TableCell>
-                            <TableCell className="text-center text-sm font-semibold text-success">{s.hadir}</TableCell>
-                            <TableCell className="text-center text-sm font-semibold text-warning">{s.izin}</TableCell>
-                            <TableCell className="text-center text-sm font-semibold text-blue-500">{s.sakit}</TableCell>
-                            <TableCell className="text-center text-sm font-semibold text-destructive">{s.alfa}</TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <div className="flex-1 h-2 rounded-full bg-secondary overflow-hidden">
-                                  <div className={`h-full rounded-full ${getRateProgressColor(s.rate)}`} style={{ width: `${s.rate}%` }} />
-                                </div>
-                                <span className={`text-xs font-bold min-w-[32px] text-right ${getRateColor(s.rate)}`}>{s.rate}%</span>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
+                <div className="divide-y divide-border">
+                  {classRanking.map((cls, i) => {
+                    const isMyClass = classNames.includes(cls.name);
+                    const style = i < 3 ? RANK_STYLES[i] : null;
+                    return (
+                      <motion.div
+                        key={cls.name}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.04 }}
+                        className={`flex items-center gap-3 p-3.5 transition-colors ${
+                          isMyClass ? "bg-primary/5 border-l-4 border-l-primary" : "hover:bg-secondary/30"
+                        }`}
+                      >
+                        {/* Rank */}
+                        <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 font-black text-sm ${
+                          style ? `${style.bg} ${style.color}` : "bg-muted text-muted-foreground"
+                        }`}>
+                          {i < 3 ? (
+                            <span className="text-lg">{i === 0 ? "🥇" : i === 1 ? "🥈" : "🥉"}</span>
+                          ) : (
+                            <span>#{i + 1}</span>
+                          )}
+                        </div>
+
+                        {/* Class Info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className={`font-bold text-sm truncate ${isMyClass ? "text-primary" : "text-foreground"}`}>{cls.name}</p>
+                            {isMyClass && (
+                              <Badge variant="secondary" className="text-[9px] bg-primary/10 text-primary border-primary/20 px-1.5 py-0">
+                                Kelas Anda
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-[10px] text-muted-foreground">{cls.students} siswa • {cls.hadir}/{cls.total} hadir</p>
+                        </div>
+
+                        {/* Rate */}
+                        <div className="flex items-center gap-3 shrink-0">
+                          <div className="w-24 hidden sm:block">
+                            <div className="h-2.5 rounded-full bg-secondary overflow-hidden">
+                              <motion.div
+                                className={`h-full rounded-full ${
+                                  cls.rate >= 85 ? "bg-success" : cls.rate >= 70 ? "bg-warning" : "bg-destructive"
+                                }`}
+                                initial={{ width: 0 }}
+                                animate={{ width: `${cls.rate}%` }}
+                                transition={{ duration: 0.8, delay: i * 0.05 }}
+                              />
+                            </div>
+                          </div>
+                          <span className={`text-lg font-extrabold min-w-[48px] text-right ${getRateColor(cls.rate)}`}>
+                            {cls.rate}%
+                          </span>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
                 </div>
               </Card>
             </>
