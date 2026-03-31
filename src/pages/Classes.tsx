@@ -166,7 +166,7 @@ const Classes = () => {
             </div>
           </DialogContent>
         </Dialog>
-      </div>
+      } />
 
       {/* Rename Dialog */}
       <Dialog open={renameDialogOpen} onOpenChange={setRenameDialogOpen}>
