@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/PageHeader";
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -183,15 +184,11 @@ const ManageWaliKelas = () => {
   return (
     <PremiumGate featureLabel="Kelola Wali Kelas" requiredPlan="School">
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Kelola Wali Kelas</h1>
-          <p className="text-muted-foreground text-sm">Tambah dan kelola wali kelas untuk setiap kelas</p>
-        </div>
-        <Button onClick={() => setShowDialog(true)} className="gradient-primary hover:opacity-90">
+      <PageHeader icon={GraduationCap} title="Kelola Wali Kelas" subtitle="Tambah dan kelola wali kelas untuk setiap kelas" actions={
+        <Button onClick={() => setShowDialog(true)} className="bg-white/20 hover:bg-white/30 text-white border border-white/20 rounded-xl text-xs">
           <Plus className="h-4 w-4 mr-2" /> Tambah Wali Kelas
         </Button>
-      </div>
+      } />
 
       {loading ? (
         <div className="text-center py-12 text-muted-foreground">Memuat data...</div>

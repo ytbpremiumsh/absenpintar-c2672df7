@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/PageHeader";
 import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -144,14 +145,10 @@ const Classes = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">Daftar Kelas</h1>
-          <p className="text-muted-foreground text-sm">Kelola kelas dan lihat statistik kehadiran</p>
-        </div>
+      <PageHeader icon={GraduationCap} title="Daftar Kelas" subtitle="Kelola kelas dan lihat statistik kehadiran" actions={
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="gradient-primary hover:opacity-90 h-10">
+            <Button className="bg-white/20 hover:bg-white/30 text-white border border-white/20 rounded-xl text-xs">
               <Plus className="h-4 w-4 mr-2" /> Tambah Kelas
             </Button>
           </DialogTrigger>
@@ -169,7 +166,7 @@ const Classes = () => {
             </div>
           </DialogContent>
         </Dialog>
-      </div>
+      } />
 
       {/* Rename Dialog */}
       <Dialog open={renameDialogOpen} onOpenChange={setRenameDialogOpen}>

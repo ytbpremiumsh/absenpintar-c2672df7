@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/PageHeader";
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -228,18 +229,7 @@ const WhatsAppSettings = () => {
   return (
     <PremiumGate featureLabel="WhatsApp Gateway" featureKey="canWhatsApp" requiredPlan="School">
       <div className="mx-auto max-w-4xl space-y-6">
-        {/* Header */}
-        <div className="flex items-center gap-3">
-          <div className="h-11 w-11 rounded-xl gradient-primary flex items-center justify-center shadow-md">
-            <MessageSquare className="h-5 w-5 text-primary-foreground" />
-          </div>
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-foreground">WhatsApp</h1>
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              Template pesan, broadcast group, dan riwayat pengiriman
-            </p>
-          </div>
-        </div>
+        <PageHeader icon={MessageSquare} title="WhatsApp" subtitle="Template pesan, broadcast group, dan riwayat pengiriman" />
 
         {/* Status Card */}
         <Card className="border-0 shadow-card overflow-hidden">

@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/PageHeader";
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -117,14 +118,10 @@ const SupportTickets = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Bantuan & Tiket</h1>
-          <p className="text-muted-foreground text-xs sm:text-sm">Laporkan kendala atau ajukan pertanyaan</p>
-        </div>
+      <PageHeader icon={MessageSquare} title="Bantuan & Tiket" subtitle="Laporkan kendala atau ajukan pertanyaan" actions={
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="gradient-primary text-primary-foreground">
+            <Button className="bg-white/20 hover:bg-white/30 text-white border border-white/20 rounded-xl text-xs">
               <TicketPlus className="h-4 w-4 mr-2" /> Buat Tiket Baru
             </Button>
           </DialogTrigger>
@@ -158,7 +155,7 @@ const SupportTickets = () => {
             </div>
           </DialogContent>
         </Dialog>
-      </div>
+      } />
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3">

@@ -5,12 +5,17 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Users, UserCheck, Clock, Calendar, GraduationCap, TrendingUp, AlertTriangle, Thermometer, FileText, ChevronRight, QrCode, ClipboardList, Settings } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Users, UserCheck, Clock, Calendar, GraduationCap, TrendingUp, AlertTriangle, Thermometer, FileText, ChevronRight, QrCode, ClipboardList, Settings, History, Pencil, Save, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { motion } from "framer-motion";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { useNavigate } from "react-router-dom";
+import { PageHeader } from "@/components/PageHeader";
+import { toast } from "sonner";
 
 const STATUS_COLORS: Record<string, string> = {
   hadir: "hsl(152, 69%, 40%)",
@@ -46,6 +51,15 @@ const Dashboard = () => {
   const [periodLogs, setPeriodLogs] = useState<any[]>([]);
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  // Past attendance editing states
+  const [editHistoryOpen, setEditHistoryOpen] = useState(false);
+  const [editDate, setEditDate] = useState(new Date().toISOString().slice(0, 10));
+  const [editClassFilter, setEditClassFilter] = useState("all");
+  const [historyLogs, setHistoryLogs] = useState<any[]>([]);
+  const [editChanges, setEditChanges] = useState<Record<string, string>>({});
+  const [savingHistory, setSavingHistory] = useState(false);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   const fetchData = useCallback(async () => {
     if (!profile?.school_id) { setLoading(false); return; }
@@ -90,6 +104,43 @@ const Dashboard = () => {
 
     setPeriodLogs(data || []);
   }, [profile?.school_id, chartPeriod]);
+
+  const fetchHistoryLogs = useCallback(async () => {
+    if (!profile?.school_id || !editDate) return;
+    setLoadingHistory(true);
+    const { data } = await supabase
+      .from("attendance_logs")
+      .select("*")
+      .eq("school_id", profile.school_id)
+      .eq("date", editDate)
+      .eq("attendance_type", "datang")
+      .order("created_at", { ascending: true });
+    setHistoryLogs(data || []);
+    setEditChanges({});
+    setLoadingHistory(false);
+  }, [profile?.school_id, editDate]);
+
+  useEffect(() => {
+    if (editHistoryOpen) fetchHistoryLogs();
+  }, [editHistoryOpen, fetchHistoryLogs]);
+
+  const saveHistoryChanges = async () => {
+    if (Object.keys(editChanges).length === 0) return;
+    setSavingHistory(true);
+    try {
+      for (const [logId, newStatus] of Object.entries(editChanges)) {
+        await supabase.from("attendance_logs").update({ status: newStatus }).eq("id", logId);
+      }
+      toast.success(`${Object.keys(editChanges).length} status berhasil diperbarui`);
+      setEditChanges({});
+      fetchHistoryLogs();
+      fetchData();
+      fetchPeriodLogs();
+    } catch {
+      toast.error("Gagal menyimpan perubahan");
+    }
+    setSavingHistory(false);
+  };
 
   useEffect(() => {
     fetchData();
@@ -208,32 +259,39 @@ const Dashboard = () => {
   const selectedLabel = selectedStatus ? (selectedStatus === "belum" ? "Belum Absen" : STATUS_LABELS[selectedStatus] || selectedStatus) : "";
   const selectedColor = selectedStatus ? (selectedStatus === "belum" ? "hsl(220, 10%, 75%)" : STATUS_COLORS[selectedStatus]) : "";
 
+  const uniqueClasses = [...new Set(students.map(s => s.class))].sort();
+  const filteredHistoryLogs = editClassFilter === "all"
+    ? historyLogs
+    : historyLogs.filter(l => {
+        const st = students.find(s => s.id === l.student_id);
+        return st?.class === editClassFilter;
+      });
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
-            <TrendingUp className="h-6 w-6 text-primary" />
-            Dashboard Absensi
-          </h1>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mt-0.5">
-            <Calendar className="h-3.5 w-3.5" />
-            <span>{now.toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</span>
+      <PageHeader
+        icon={TrendingUp}
+        title="Dashboard Absensi"
+        subtitle={now.toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+        actions={
+          <div className="flex items-center gap-3">
+            <Button onClick={() => setEditHistoryOpen(true)} variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20 rounded-xl text-xs">
+              <History className="h-4 w-4 mr-1.5" />
+              Edit Riwayat
+            </Button>
+            <div className="text-right hidden sm:block">
+              <p className="text-2xl font-bold">{attendancePercent}%</p>
+              <p className="text-[11px] text-white/70">Kehadiran</p>
+            </div>
+            <Button onClick={() => navigate("/scan")} className="bg-white/20 hover:bg-white/30 text-white rounded-xl shadow-sm border border-white/20">
+              <QrCode className="h-4 w-4 mr-2" />
+              Scan
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
           </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="text-right">
-            <p className="text-3xl font-bold text-primary">{attendancePercent}%</p>
-            <p className="text-[11px] text-muted-foreground">Kehadiran Hari Ini</p>
-          </div>
-          <Button onClick={() => navigate("/scan")} className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl shadow-sm">
-            <QrCode className="h-4 w-4 mr-2" />
-            Scan Absensi
-            <ChevronRight className="h-4 w-4 ml-1" />
-          </Button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -436,6 +494,98 @@ const Dashboard = () => {
           })}
         </CardContent>
       </Card>
+
+      {/* Edit History Dialog */}
+      <Dialog open={editHistoryOpen} onOpenChange={setEditHistoryOpen}>
+        <DialogContent className="max-w-[95vw] sm:max-w-3xl p-0 overflow-hidden rounded-2xl max-h-[85vh]">
+          <div className="p-4 border-b border-border bg-gradient-to-r from-primary/10 to-primary/5">
+            <DialogTitle className="text-base font-bold flex items-center gap-2">
+              <Pencil className="h-4 w-4 text-primary" />
+              Edit Riwayat Absensi
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground mt-1">Pilih tanggal dan ubah status kehadiran siswa</DialogDescription>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 mt-3">
+              <Input type="date" value={editDate} onChange={(e) => setEditDate(e.target.value)} className="w-auto text-sm h-9 rounded-lg" />
+              <Select value={editClassFilter} onValueChange={setEditClassFilter}>
+                <SelectTrigger className="w-[140px] h-9 rounded-lg text-sm">
+                  <SelectValue placeholder="Semua Kelas" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Semua Kelas</SelectItem>
+                  {uniqueClasses.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              {Object.keys(editChanges).length > 0 && (
+                <Button onClick={saveHistoryChanges} disabled={savingHistory} size="sm" className="rounded-lg">
+                  {savingHistory ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Save className="h-3.5 w-3.5 mr-1" />}
+                  Simpan ({Object.keys(editChanges).length})
+                </Button>
+              )}
+            </div>
+          </div>
+          <ScrollArea className="max-h-[60vh]">
+            {loadingHistory ? (
+              <div className="p-8 text-center"><Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" /></div>
+            ) : filteredHistoryLogs.length === 0 ? (
+              <div className="p-8 text-center text-sm text-muted-foreground">Tidak ada data absensi pada tanggal ini</div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-xs">Siswa</TableHead>
+                    <TableHead className="text-xs">Kelas</TableHead>
+                    <TableHead className="text-xs">Waktu</TableHead>
+                    <TableHead className="text-xs">Status</TableHead>
+                    <TableHead className="text-xs">Ubah</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredHistoryLogs.map((log) => {
+                    const student = students.find(s => s.id === log.student_id);
+                    const currentStatus = editChanges[log.id] || log.status;
+                    const statusColor = STATUS_COLORS[currentStatus] || STATUS_COLORS.hadir;
+                    const isChanged = editChanges[log.id] && editChanges[log.id] !== log.status;
+                    return (
+                      <TableRow key={log.id} className={isChanged ? "bg-primary/5" : ""}>
+                        <TableCell className="text-sm font-medium py-2">{student?.name || "—"}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground py-2">{student?.class || "—"}</TableCell>
+                        <TableCell className="text-xs font-mono py-2">{log.time?.slice(0, 5)}</TableCell>
+                        <TableCell className="py-2">
+                          <Badge className="text-[10px] font-semibold border-0 rounded-full px-2" style={{ backgroundColor: `${statusColor}15`, color: statusColor }}>
+                            {STATUS_LABELS[currentStatus] || currentStatus}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="py-2">
+                          <div className="flex gap-1">
+                            {["hadir", "izin", "sakit", "alfa"].map(s => (
+                              <button key={s} onClick={() => {
+                                setEditChanges(prev => {
+                                  const next = { ...prev };
+                                  if (s === log.status) { delete next[log.id]; } else { next[log.id] = s; }
+                                  return next;
+                                });
+                              }}
+                                className={`text-[10px] font-bold px-2 py-1 rounded-md transition-all ${
+                                  currentStatus === s
+                                    ? "text-white shadow-sm"
+                                    : "text-muted-foreground hover:bg-muted"
+                                }`}
+                                style={currentStatus === s ? { backgroundColor: STATUS_COLORS[s] } : {}}
+                              >
+                                {s === "hadir" ? "H" : s === "izin" ? "I" : s === "sakit" ? "S" : "A"}
+                              </button>
+                            ))}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            )}
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
