@@ -148,7 +148,6 @@ function SuperAdminSidebar() {
 
 export function SuperAdminLayout() {
   const { user, roles, loading, profile } = useAuth();
-  const navigate = useNavigate();
 
   if (loading) return <div className="min-h-screen flex items-center justify-center"><Skeleton className="h-8 w-32" /></div>;
   if (!user) return <Navigate to="/login" replace />;
