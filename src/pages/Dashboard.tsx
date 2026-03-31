@@ -259,32 +259,39 @@ const Dashboard = () => {
   const selectedLabel = selectedStatus ? (selectedStatus === "belum" ? "Belum Absen" : STATUS_LABELS[selectedStatus] || selectedStatus) : "";
   const selectedColor = selectedStatus ? (selectedStatus === "belum" ? "hsl(220, 10%, 75%)" : STATUS_COLORS[selectedStatus]) : "";
 
+  const uniqueClasses = [...new Set(students.map(s => s.class))].sort();
+  const filteredHistoryLogs = editClassFilter === "all"
+    ? historyLogs
+    : historyLogs.filter(l => {
+        const st = students.find(s => s.id === l.student_id);
+        return st?.class === editClassFilter;
+      });
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
-            <TrendingUp className="h-6 w-6 text-primary" />
-            Dashboard Absensi
-          </h1>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mt-0.5">
-            <Calendar className="h-3.5 w-3.5" />
-            <span>{now.toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</span>
+      <PageHeader
+        icon={TrendingUp}
+        title="Dashboard Absensi"
+        subtitle={now.toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+        actions={
+          <div className="flex items-center gap-3">
+            <Button onClick={() => setEditHistoryOpen(true)} variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20 rounded-xl text-xs">
+              <History className="h-4 w-4 mr-1.5" />
+              Edit Riwayat
+            </Button>
+            <div className="text-right hidden sm:block">
+              <p className="text-2xl font-bold">{attendancePercent}%</p>
+              <p className="text-[11px] text-white/70">Kehadiran</p>
+            </div>
+            <Button onClick={() => navigate("/scan")} className="bg-white/20 hover:bg-white/30 text-white rounded-xl shadow-sm border border-white/20">
+              <QrCode className="h-4 w-4 mr-2" />
+              Scan
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
           </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="text-right">
-            <p className="text-3xl font-bold text-primary">{attendancePercent}%</p>
-            <p className="text-[11px] text-muted-foreground">Kehadiran Hari Ini</p>
-          </div>
-          <Button onClick={() => navigate("/scan")} className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl shadow-sm">
-            <QrCode className="h-4 w-4 mr-2" />
-            Scan Absensi
-            <ChevronRight className="h-4 w-4 ml-1" />
-          </Button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
