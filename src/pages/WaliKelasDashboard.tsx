@@ -134,9 +134,7 @@ const WaliKelasDashboard = () => {
             Kelas: {classNames.join(", ")} • {new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => navigate("/export-history")} className="shrink-0">
-          <FileSpreadsheet className="h-4 w-4 mr-1.5" /> Rekap & Export
-        </Button>
+        {/* Rekap Absensi moved to sidebar */}
       </div>
 
       {/* Stats */}
