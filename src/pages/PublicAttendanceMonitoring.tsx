@@ -172,8 +172,8 @@ const PublicAttendanceMonitoring = () => {
   const { stats } = data;
   const percentage = stats.total ? Math.round(((stats.total - stats.belum) / stats.total) * 100) : 0;
   const classNames = Object.keys(data.classes).sort();
-  const currentTime = lastUpdated.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-  const currentDate = new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  const currentTime = realtimeClock.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  const currentDate = realtimeClock.toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 
   const statItems = [
     { icon: Users, value: stats.total, label: "Total", color: "text-[#5B6CF9]", bg: "bg-[#5B6CF9]/10", ring: "ring-[#5B6CF9]/20" },
