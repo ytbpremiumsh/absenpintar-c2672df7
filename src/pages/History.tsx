@@ -20,7 +20,7 @@ import {
 import {
   Users, CheckCircle2, XCircle, FileSpreadsheet,
   BarChart3, CalendarDays, Award, Lightbulb, Loader2, GraduationCap, UserCheck,
-  LogIn, LogOut, Pencil, Save,
+  LogIn, LogOut, FileSpreadsheet,
 } from "lucide-react";
 
 const COLORS: Record<string, string> = {
