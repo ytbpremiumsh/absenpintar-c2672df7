@@ -336,8 +336,8 @@ const EditAttendance = () => {
                       <TableCell className="text-xs font-mono py-2.5">{log.time?.slice(0, 5)}</TableCell>
                       <TableCell className="py-2.5">
                         <Badge
-                          className="text-[10px] font-bold border-0 rounded-full px-2.5"
-                          style={{ backgroundColor: `${statusColor}18`, color: statusColor }}
+                          className="text-[10px] font-bold border-0 rounded-full px-2.5 text-white"
+                          style={{ backgroundColor: statusColor }}
                         >
                           {STATUS_LABELS[currentStatus] || currentStatus}
                         </Badge>
