@@ -127,7 +127,7 @@ const EditAttendance = () => {
     <div className="space-y-6">
       <PageHeader
         icon={Pencil}
-        title="Edit Riwayat"
+        title="Riwayat Absensi"
         subtitle="Kelola dan perbarui data absensi harian per kelas"
       />
 
