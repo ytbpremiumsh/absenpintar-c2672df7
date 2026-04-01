@@ -516,7 +516,7 @@ const Students = () => {
             </DialogContent>
           </Dialog>
 
-          <Button variant="outline" size="sm" onClick={handleDownloadTemplate} className="shrink-0 text-xs px-2 sm:px-3">
+          <Button variant="outline" size="sm" onClick={handleDownloadTemplate} className="shrink-0 text-xs px-2 sm:px-3 border-border text-foreground">
             <Download className="h-3.5 w-3.5 sm:mr-1" /> <span className="hidden sm:inline">Template</span>
           </Button>
 
