@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
@@ -20,6 +21,7 @@ import {
 import {
   Users, CheckCircle2, XCircle, FileSpreadsheet,
   BarChart3, CalendarDays, Award, Lightbulb, Loader2, GraduationCap, UserCheck,
+  LogIn, LogOut, Pencil, Save,
 } from "lucide-react";
 
 const COLORS: Record<string, string> = {
@@ -27,6 +29,12 @@ const COLORS: Record<string, string> = {
 };
 const STATUS_LABELS: Record<string, string> = {
   hadir: "Hadir", izin: "Izin", sakit: "Sakit", alfa: "Alfa",
+};
+const STATUS_COLORS: Record<string, string> = {
+  hadir: "hsl(152, 69%, 40%)",
+  izin: "hsl(38, 92%, 50%)",
+  sakit: "hsl(210, 70%, 50%)",
+  alfa: "hsl(0, 72%, 51%)",
 };
 const DAY_NAMES = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
 
@@ -37,11 +45,21 @@ const History = () => {
   const [allStudents, setAllStudents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
+  const [attendanceTypeTab, setAttendanceTypeTab] = useState("datang");
   const [selectedClass, setSelectedClass] = useState<string>("all");
   const [teacherClasses, setTeacherClasses] = useState<string[] | null>(null);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [studentAttLogs, setStudentAttLogs] = useState<any[]>([]);
   const [loadingStudentLogs, setLoadingStudentLogs] = useState(false);
+
+  // Edit history states
+  const [editHistoryOpen, setEditHistoryOpen] = useState(false);
+  const [editDate, setEditDate] = useState(new Date().toISOString().slice(0, 10));
+  const [editClassFilter, setEditClassFilter] = useState("all");
+  const [historyLogs, setHistoryLogs] = useState<any[]>([]);
+  const [editChanges, setEditChanges] = useState<Record<string, string>>({});
+  const [savingHistory, setSavingHistory] = useState(false);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   const isTeacherOnly = roles.includes("teacher") && !roles.includes("school_admin") && !roles.includes("staff");
 
@@ -57,7 +75,6 @@ const History = () => {
     setEndDate(today);
   };
 
-  // Fetch teacher class assignments if teacher-only
   useEffect(() => {
     if (!isTeacherOnly || !user) { setTeacherClasses(null); return; }
     supabase.from("class_teachers").select("class_name").eq("user_id", user.id)
@@ -66,45 +83,78 @@ const History = () => {
       });
   }, [isTeacherOnly, user]);
 
-  useEffect(() => {
+  const fetchData = useCallback(async () => {
     if (!profile?.school_id) { setLoading(false); return; }
-    // Wait for teacher classes to load if teacher-only
     if (isTeacherOnly && teacherClasses === null) return;
 
-    const fetchData = async () => {
-      setLoading(true);
+    setLoading(true);
 
-      let logsQuery = supabase.from("attendance_logs")
-        .select("*, students(name, class, student_id)")
-        .eq("school_id", profile.school_id)
-        .gte("date", startDate).lte("date", endDate)
-        .order("date", { ascending: false })
-        .limit(5000);
+    let logsQuery = supabase.from("attendance_logs")
+      .select("*, students(name, class, student_id)")
+      .eq("school_id", profile.school_id)
+      .eq("attendance_type", attendanceTypeTab)
+      .gte("date", startDate).lte("date", endDate)
+      .order("date", { ascending: false })
+      .limit(5000);
 
-      let studentsQuery = supabase.from("students").select("id, name, class, student_id")
-        .eq("school_id", profile.school_id);
+    let studentsQuery = supabase.from("students").select("id, name, class, student_id")
+      .eq("school_id", profile.school_id);
 
-      // Filter by teacher's assigned classes
-      if (isTeacherOnly && teacherClasses && teacherClasses.length > 0) {
-        studentsQuery = studentsQuery.in("class", teacherClasses);
+    if (isTeacherOnly && teacherClasses && teacherClasses.length > 0) {
+      studentsQuery = studentsQuery.in("class", teacherClasses);
+    }
+
+    const [logsRes, studentsRes] = await Promise.all([logsQuery, studentsQuery]);
+
+    let filteredLogs = logsRes.data || [];
+    if (isTeacherOnly && teacherClasses && teacherClasses.length > 0) {
+      filteredLogs = filteredLogs.filter((l: any) => teacherClasses.includes(l.students?.class));
+    }
+
+    setLogs(filteredLogs);
+    setAllStudents(studentsRes.data || []);
+    setLoading(false);
+  }, [profile?.school_id, startDate, endDate, isTeacherOnly, teacherClasses, attendanceTypeTab]);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
+
+  // Edit history fetch
+  const fetchHistoryLogs = useCallback(async () => {
+    if (!profile?.school_id || !editDate) return;
+    setLoadingHistory(true);
+    const { data } = await supabase
+      .from("attendance_logs")
+      .select("*")
+      .eq("school_id", profile.school_id)
+      .eq("date", editDate)
+      .eq("attendance_type", attendanceTypeTab)
+      .order("created_at", { ascending: true });
+    setHistoryLogs(data || []);
+    setEditChanges({});
+    setLoadingHistory(false);
+  }, [profile?.school_id, editDate, attendanceTypeTab]);
+
+  useEffect(() => {
+    if (editHistoryOpen) fetchHistoryLogs();
+  }, [editHistoryOpen, fetchHistoryLogs]);
+
+  const saveHistoryChanges = async () => {
+    if (Object.keys(editChanges).length === 0) return;
+    setSavingHistory(true);
+    try {
+      for (const [logId, newStatus] of Object.entries(editChanges)) {
+        await supabase.from("attendance_logs").update({ status: newStatus }).eq("id", logId);
       }
+      toast.success(`${Object.keys(editChanges).length} status berhasil diperbarui`);
+      setEditChanges({});
+      fetchHistoryLogs();
+      fetchData();
+    } catch {
+      toast.error("Gagal menyimpan perubahan");
+    }
+    setSavingHistory(false);
+  };
 
-      const [logsRes, studentsRes] = await Promise.all([logsQuery, studentsQuery]);
-
-      let filteredLogs = logsRes.data || [];
-      // Filter logs to only assigned classes for teacher
-      if (isTeacherOnly && teacherClasses && teacherClasses.length > 0) {
-        filteredLogs = filteredLogs.filter((l: any) => teacherClasses.includes(l.students?.class));
-      }
-
-      setLogs(filteredLogs);
-      setAllStudents(studentsRes.data || []);
-      setLoading(false);
-    };
-    fetchData();
-  }, [profile?.school_id, startDate, endDate, isTeacherOnly, teacherClasses]);
-
-  // All unique class names
   const classNames = useMemo(() => {
     const set = new Set<string>();
     allStudents.forEach(s => set.add(s.class));
@@ -118,7 +168,6 @@ const History = () => {
     const byDate: Record<string, { total: number; hadir: number; alfa: number }> = {};
     const byDay: Record<number, Record<string, number>> = {};
     const studentAlfa: Record<string, { name: string; class: string; count: number }> = {};
-    // Per-student stats
     const studentStats: Record<string, { id: string; name: string; class: string; student_id: string; hadir: number; izin: number; sakit: number; alfa: number; total: number }> = {};
 
     for (const l of logs) {
@@ -146,7 +195,6 @@ const History = () => {
         studentAlfa[sid].count++;
       }
 
-      // Per student
       const sid = l.student_id;
       if (!studentStats[sid]) studentStats[sid] = {
         id: sid, name: l.students?.name || "?", class: l.students?.class || "?",
@@ -179,11 +227,7 @@ const History = () => {
     const classData = Object.entries(byClass).map(([cls, d]) => ({
       name: cls,
       rate: d.total > 0 ? Math.round((d.hadir / d.total) * 100) : 0,
-      total: d.total,
-      hadir: d.hadir,
-      alfa: d.alfa,
-      izin: d.izin,
-      sakit: d.sakit,
+      total: d.total, hadir: d.hadir, alfa: d.alfa, izin: d.izin, sakit: d.sakit,
     })).sort((a, b) => b.rate - a.rate);
 
     const dowData = [1, 2, 3, 4, 5, 6].map(d => ({
@@ -214,17 +258,14 @@ const History = () => {
     return { total, byStatus, attendanceRate, bestClass, pieData, trendData, classData, dowData, topAbsentees, insights, allStudentStats };
   }, [logs]);
 
-  // Filtered student stats by class
   const filteredStudentStats = useMemo(() => {
     if (selectedClass === "all") return analytics.allStudentStats;
     return analytics.allStudentStats.filter(s => s.class === selectedClass);
   }, [analytics.allStudentStats, selectedClass]);
 
-  // Per-class pie data for selected class
   const classPieData = useMemo(() => {
     const cls = analytics.classData.find(c => c.name === selectedClass);
     if (!cls || selectedClass === "all") {
-      // Aggregate all
       return [
         { name: "Hadir", value: analytics.byStatus.hadir, color: COLORS.hadir },
         { name: "Izin", value: analytics.byStatus.izin, color: COLORS.izin },
@@ -242,6 +283,7 @@ const History = () => {
 
   const exportExcel = () => {
     if (!features.canExportReport) { toast.error("Fitur export tersedia di paket Basic ke atas"); return; }
+    const typeLabel = attendanceTypeTab === "pulang" ? "Kepulangan" : "Kehadiran";
     const data = logs.map((l, i) => ({
       "No": i + 1,
       "Nama Siswa": l.students?.name || "-",
@@ -252,10 +294,18 @@ const History = () => {
     }));
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Analytic Kelas");
-    XLSX.writeFile(wb, `analytic-kelas-${startDate}-${endDate}.xlsx`);
+    XLSX.utils.book_append_sheet(wb, ws, `Rekap ${typeLabel}`);
+    XLSX.writeFile(wb, `rekap-${attendanceTypeTab}-${startDate}-${endDate}.xlsx`);
     toast.success("Data berhasil diexport!");
   };
+
+  const uniqueClasses = classNames;
+  const filteredHistoryLogs = editClassFilter === "all"
+    ? historyLogs
+    : historyLogs.filter(l => {
+        const st = allStudents.find((s: any) => s.id === l.student_id);
+        return st?.class === editClassFilter;
+      });
 
   if (loading) {
     return (
@@ -264,6 +314,8 @@ const History = () => {
       </div>
     );
   }
+
+  const typeLabel = attendanceTypeTab === "pulang" ? "Kepulangan" : "Kehadiran";
 
   return (
     <div className="space-y-6">
@@ -277,15 +329,32 @@ const History = () => {
               <BarChart3 className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold">Analytic Kelas</h1>
-              <p className="text-white/70 text-xs sm:text-sm">Dashboard analitik & performa kehadiran siswa</p>
+              <h1 className="text-xl sm:text-2xl font-bold">Rekap Absensi</h1>
+              <p className="text-white/70 text-xs sm:text-sm">Analitik & rekap kehadiran dan kepulangan siswa</p>
             </div>
           </div>
-          <Button onClick={exportExcel} className="bg-white/15 hover:bg-white/25 text-white border border-white/20 backdrop-blur-sm gap-1.5 text-xs font-semibold shrink-0 h-9 rounded-lg">
-            <FileSpreadsheet className="h-3.5 w-3.5" /> Export Excel
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button onClick={() => setEditHistoryOpen(true)} className="bg-white/15 hover:bg-white/25 text-white border border-white/20 backdrop-blur-sm gap-1.5 text-xs font-semibold h-9 rounded-lg">
+              <Pencil className="h-3.5 w-3.5" /> Edit Riwayat
+            </Button>
+            <Button onClick={exportExcel} className="bg-white/15 hover:bg-white/25 text-white border border-white/20 backdrop-blur-sm gap-1.5 text-xs font-semibold h-9 rounded-lg">
+              <FileSpreadsheet className="h-3.5 w-3.5" /> Export Excel
+            </Button>
+          </div>
         </div>
       </div>
+
+      {/* Attendance Type Tabs (Kehadiran / Kepulangan) */}
+      <Tabs value={attendanceTypeTab} onValueChange={setAttendanceTypeTab}>
+        <TabsList className="bg-muted/50 rounded-xl p-1">
+          <TabsTrigger value="datang" className="rounded-lg text-xs font-semibold gap-1.5 data-[state=active]:bg-[#5B6CF9] data-[state=active]:text-white">
+            <LogIn className="h-3.5 w-3.5" /> Rekap Kehadiran
+          </TabsTrigger>
+          <TabsTrigger value="pulang" className="rounded-lg text-xs font-semibold gap-1.5 data-[state=active]:bg-[#5B6CF9] data-[state=active]:text-white">
+            <LogOut className="h-3.5 w-3.5" /> Rekap Kepulangan
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
 
       {/* Date Range Picker */}
       <Card className="border-0 shadow-lg rounded-2xl">
@@ -318,11 +387,11 @@ const History = () => {
         </CardContent>
       </Card>
 
-      {/* Tabs */}
+      {/* Analysis Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="bg-muted/50 rounded-xl p-1">
           <TabsTrigger value="overview" className="rounded-lg text-xs font-semibold gap-1.5 data-[state=active]:bg-[#5B6CF9] data-[state=active]:text-white">
-            <BarChart3 className="h-3.5 w-3.5" /> Overview
+            <BarChart3 className="h-3.5 w-3.5" /> Overview {typeLabel}
           </TabsTrigger>
           <TabsTrigger value="class-analysis" className="rounded-lg text-xs font-semibold gap-1.5 data-[state=active]:bg-[#5B6CF9] data-[state=active]:text-white">
             <GraduationCap className="h-3.5 w-3.5" /> Analisa Kelas
@@ -331,11 +400,10 @@ const History = () => {
 
         {/* ===== TAB: OVERVIEW ===== */}
         <TabsContent value="overview" className="space-y-6 mt-4">
-          {/* KPI Cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {[
               { icon: Users, label: "Total Data", value: analytics.total.toLocaleString(), color: "text-foreground", bg: "bg-secondary" },
-              { icon: CheckCircle2, label: "Tingkat Kehadiran", value: `${analytics.attendanceRate.toFixed(1)}%`, color: "text-success", bg: "bg-success/10" },
+              { icon: CheckCircle2, label: `Tingkat ${typeLabel}`, value: `${analytics.attendanceRate.toFixed(1)}%`, color: "text-success", bg: "bg-success/10" },
               { icon: XCircle, label: "Total Alfa", value: analytics.byStatus.alfa.toLocaleString(), color: "text-destructive", bg: "bg-destructive/10" },
               { icon: Award, label: "Kelas Terbaik", value: analytics.bestClass?.[0] || "-", color: "text-[#5B6CF9]", bg: "bg-[#5B6CF9]/10" },
             ].map(kpi => (
@@ -353,11 +421,11 @@ const History = () => {
             ))}
           </div>
 
-          {/* Charts Row 1: Donut + Trend */}
+          {/* Charts Row 1 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <Card className="border-0 shadow-lg rounded-2xl">
               <CardContent className="p-5">
-                <h3 className="text-sm font-bold text-foreground mb-4">Distribusi Status</h3>
+                <h3 className="text-sm font-bold text-foreground mb-4">Distribusi Status — {typeLabel}</h3>
                 <div className="flex flex-col sm:flex-row items-center gap-6">
                   <ResponsiveContainer width={180} height={180}>
                     <PieChart>
@@ -387,7 +455,7 @@ const History = () => {
 
             <Card className="border-0 shadow-lg rounded-2xl">
               <CardContent className="p-5">
-                <h3 className="text-sm font-bold text-foreground mb-4">Tren Harian</h3>
+                <h3 className="text-sm font-bold text-foreground mb-4">Tren Harian — {typeLabel}</h3>
                 <ResponsiveContainer width="100%" height={200}>
                   <LineChart data={analytics.trendData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -404,7 +472,7 @@ const History = () => {
             </Card>
           </div>
 
-          {/* Charts Row 2: Class Comparison + Day of Week */}
+          {/* Charts Row 2 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <Card className="border-0 shadow-lg rounded-2xl">
               <CardContent className="p-5">
@@ -444,7 +512,7 @@ const History = () => {
           {/* Class Summary Table */}
           <Card className="border-0 shadow-lg rounded-2xl overflow-hidden">
             <div className="px-5 py-4 border-b border-border">
-              <h3 className="text-sm font-bold text-foreground">Ringkasan Per Kelas</h3>
+              <h3 className="text-sm font-bold text-foreground">Ringkasan Per Kelas — {typeLabel}</h3>
             </div>
             <CardContent className="p-0">
               <div className="overflow-x-auto">
@@ -523,7 +591,7 @@ const History = () => {
             </Card>
           )}
 
-          {/* Insights Banner */}
+          {/* Insights */}
           {analytics.insights.length > 0 && (
             <Card className="border-0 shadow-lg rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
               <CardContent className="p-5">
@@ -547,7 +615,6 @@ const History = () => {
 
         {/* ===== TAB: ANALISA KELAS ===== */}
         <TabsContent value="class-analysis" className="space-y-6 mt-4">
-          {/* Class Selector */}
           <Card className="border-0 shadow-lg rounded-2xl">
             <CardContent className="p-4">
               <div className="flex flex-col sm:flex-row sm:items-center gap-3">
@@ -574,7 +641,6 @@ const History = () => {
 
           {/* Class KPI + Pie */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {/* Stat cards */}
             <div className="lg:col-span-1 grid grid-cols-2 lg:grid-cols-1 gap-3">
               {(() => {
                 const filtered = selectedClass === "all" ? analytics.allStudentStats : analytics.allStudentStats.filter(s => s.class === selectedClass);
@@ -586,7 +652,7 @@ const History = () => {
                 return [
                   { label: "Jumlah Siswa", value: totalStudents.toString(), icon: Users, color: "text-[#5B6CF9]", bg: "bg-[#5B6CF9]/10" },
                   { label: "Total Record", value: totalRecords.toLocaleString(), icon: BarChart3, color: "text-foreground", bg: "bg-secondary" },
-                  { label: "% Kehadiran", value: `${rate.toFixed(1)}%`, icon: CheckCircle2, color: "text-success", bg: "bg-success/10" },
+                  { label: `% ${typeLabel}`, value: `${rate.toFixed(1)}%`, icon: CheckCircle2, color: "text-success", bg: "bg-success/10" },
                   { label: "Total Alfa", value: totalAlfa.toLocaleString(), icon: XCircle, color: "text-destructive", bg: "bg-destructive/10" },
                 ].map(kpi => (
                   <Card key={kpi.label} className="border-0 shadow-md rounded-xl">
@@ -604,11 +670,10 @@ const History = () => {
               })()}
             </div>
 
-            {/* Pie Chart for selected class */}
             <Card className="border-0 shadow-lg rounded-2xl lg:col-span-2">
               <CardContent className="p-5">
                 <h3 className="text-sm font-bold text-foreground mb-4">
-                  Distribusi Status {selectedClass !== "all" ? `— ${selectedClass}` : "— Semua Kelas"}
+                  Distribusi Status {selectedClass !== "all" ? `— ${selectedClass}` : "— Semua Kelas"} ({typeLabel})
                 </h3>
                 <div className="flex flex-col sm:flex-row items-center gap-6">
                   <ResponsiveContainer width={180} height={180}>
@@ -638,13 +703,13 @@ const History = () => {
             </Card>
           </div>
 
-          {/* Per-Student Attendance Table */}
+          {/* Per-Student Table */}
           <Card className="border-0 shadow-lg rounded-2xl overflow-hidden">
             <div className="px-5 py-4 border-b border-border flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <UserCheck className="h-4 w-4 text-[#5B6CF9]" />
                 <h3 className="text-sm font-bold text-foreground">
-                  Persentase Kehadiran Per Siswa {selectedClass !== "all" ? `— ${selectedClass}` : ""}
+                  Persentase {typeLabel} Per Siswa {selectedClass !== "all" ? `— ${selectedClass}` : ""}
                 </h3>
               </div>
               <Badge variant="secondary" className="text-[10px]">{filteredStudentStats.length} siswa</Badge>
@@ -661,7 +726,7 @@ const History = () => {
                       <TableHead className="font-semibold text-center">Izin</TableHead>
                       <TableHead className="font-semibold text-center">Sakit</TableHead>
                       <TableHead className="font-semibold text-center">Alfa</TableHead>
-                      <TableHead className="font-semibold">% Kehadiran</TableHead>
+                      <TableHead className="font-semibold">% {typeLabel}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -671,8 +736,9 @@ const History = () => {
                         <TableRow key={i} className="hover:bg-muted/20 cursor-pointer" onClick={() => {
                           setSelectedStudentId(s.id);
                           setLoadingStudentLogs(true);
-                          supabase.from("attendance_logs").select("id, date, time, status, method")
-                            .eq("student_id", s.id).gte("date", startDate).lte("date", endDate)
+                          supabase.from("attendance_logs").select("id, date, time, status, method, attendance_type")
+                            .eq("student_id", s.id).eq("attendance_type", attendanceTypeTab)
+                            .gte("date", startDate).lte("date", endDate)
                             .order("date", { ascending: false })
                             .then(({ data }) => { setStudentAttLogs(data || []); setLoadingStudentLogs(false); });
                         }}>
@@ -698,7 +764,7 @@ const History = () => {
                     {filteredStudentStats.length === 0 && (
                       <TableRow>
                         <TableCell colSpan={8} className="text-center py-8 text-muted-foreground text-sm">
-                          Tidak ada data kehadiran untuk filter ini
+                          Tidak ada data untuk filter ini
                         </TableCell>
                       </TableRow>
                     )}
@@ -708,11 +774,11 @@ const History = () => {
             </CardContent>
           </Card>
 
-          {/* Class Ranking Bar */}
+          {/* Class Ranking */}
           {selectedClass === "all" && analytics.classData.length > 0 && (
             <Card className="border-0 shadow-lg rounded-2xl">
               <CardContent className="p-5">
-                <h3 className="text-sm font-bold text-foreground mb-4">Peringkat Kelas berdasarkan Kehadiran</h3>
+                <h3 className="text-sm font-bold text-foreground mb-4">Peringkat Kelas berdasarkan {typeLabel}</h3>
                 <ResponsiveContainer width="100%" height={Math.max(200, analytics.classData.length * 40)}>
                   <BarChart data={analytics.classData} layout="vertical" margin={{ left: 10 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -733,7 +799,7 @@ const History = () => {
         <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              Riwayat Absensi — {filteredStudentStats.find(s => s.id === selectedStudentId)?.name || ""}
+              Riwayat {typeLabel} — {filteredStudentStats.find(s => s.id === selectedStudentId)?.name || ""}
             </DialogTitle>
           </DialogHeader>
           {loadingStudentLogs ? (
@@ -779,6 +845,98 @@ const History = () => {
               </Table>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit History Dialog */}
+      <Dialog open={editHistoryOpen} onOpenChange={setEditHistoryOpen}>
+        <DialogContent className="max-w-[95vw] sm:max-w-3xl p-0 overflow-hidden rounded-2xl max-h-[85vh]">
+          <div className="p-4 border-b border-border bg-gradient-to-r from-primary/10 to-primary/5">
+            <DialogTitle className="text-base font-bold flex items-center gap-2">
+              <Pencil className="h-4 w-4 text-primary" />
+              Edit Riwayat {typeLabel}
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground mt-1">Pilih tanggal dan ubah status {typeLabel.toLowerCase()} siswa</DialogDescription>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 mt-3">
+              <Input type="date" value={editDate} onChange={(e) => setEditDate(e.target.value)} className="w-auto text-sm h-9 rounded-lg" />
+              <Select value={editClassFilter} onValueChange={setEditClassFilter}>
+                <SelectTrigger className="w-[140px] h-9 rounded-lg text-sm">
+                  <SelectValue placeholder="Semua Kelas" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Semua Kelas</SelectItem>
+                  {uniqueClasses.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              {Object.keys(editChanges).length > 0 && (
+                <Button onClick={saveHistoryChanges} disabled={savingHistory} size="sm" className="rounded-lg">
+                  {savingHistory ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Save className="h-3.5 w-3.5 mr-1" />}
+                  Simpan ({Object.keys(editChanges).length})
+                </Button>
+              )}
+            </div>
+          </div>
+          <ScrollArea className="max-h-[60vh]">
+            {loadingHistory ? (
+              <div className="p-8 text-center"><Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" /></div>
+            ) : filteredHistoryLogs.length === 0 ? (
+              <div className="p-8 text-center text-sm text-muted-foreground">Tidak ada data absensi pada tanggal ini</div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-xs">Siswa</TableHead>
+                    <TableHead className="text-xs">Kelas</TableHead>
+                    <TableHead className="text-xs">Waktu</TableHead>
+                    <TableHead className="text-xs">Status</TableHead>
+                    <TableHead className="text-xs">Ubah</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredHistoryLogs.map((log) => {
+                    const student = allStudents.find((s: any) => s.id === log.student_id);
+                    const currentStatus = editChanges[log.id] || log.status;
+                    const statusColor = STATUS_COLORS[currentStatus] || STATUS_COLORS.hadir;
+                    const isChanged = editChanges[log.id] && editChanges[log.id] !== log.status;
+                    return (
+                      <TableRow key={log.id} className={isChanged ? "bg-primary/5" : ""}>
+                        <TableCell className="text-sm font-medium py-2">{student?.name || "—"}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground py-2">{student?.class || "—"}</TableCell>
+                        <TableCell className="text-xs font-mono py-2">{log.time?.slice(0, 5)}</TableCell>
+                        <TableCell className="py-2">
+                          <Badge className="text-[10px] font-semibold border-0 rounded-full px-2" style={{ backgroundColor: `${statusColor}15`, color: statusColor }}>
+                            {STATUS_LABELS[currentStatus] || currentStatus}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="py-2">
+                          <div className="flex gap-1">
+                            {["hadir", "izin", "sakit", "alfa"].map(s => (
+                              <button key={s} onClick={() => {
+                                setEditChanges(prev => {
+                                  const next = { ...prev };
+                                  if (s === log.status) { delete next[log.id]; } else { next[log.id] = s; }
+                                  return next;
+                                });
+                              }}
+                                className={`text-[10px] font-bold px-2 py-1 rounded-md transition-all ${
+                                  currentStatus === s
+                                    ? "text-white shadow-sm"
+                                    : "text-muted-foreground hover:bg-muted"
+                                }`}
+                                style={currentStatus === s ? { backgroundColor: STATUS_COLORS[s] } : {}}
+                              >
+                                {s === "hadir" ? "H" : s === "izin" ? "I" : s === "sakit" ? "S" : "A"}
+                              </button>
+                            ))}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            )}
+          </ScrollArea>
         </DialogContent>
       </Dialog>
     </div>
