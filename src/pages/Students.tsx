@@ -748,7 +748,7 @@ const Students = () => {
                                   <TableCell className="hidden lg:table-cell">
                                     <div className="flex items-center gap-1 text-xs text-muted-foreground"><Phone className="h-3 w-3" />{student.parent_phone}</div>
                                   </TableCell>
-                                  <TableCell className="text-right">
+                                  <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                                     <div className="flex items-center justify-end gap-1">
                                       <div className="relative">
                                         {features.canUploadPhoto ? (
