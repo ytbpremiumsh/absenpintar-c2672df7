@@ -241,6 +241,44 @@ const SchoolSettings = () => {
       </Card>
 
 
+      {/* Zona Waktu */}
+      <Card className="border-0 shadow-card">
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Globe className="h-4 w-4 text-primary" />
+            Zona Waktu Sekolah
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-xs text-muted-foreground">
+            Pilih zona waktu sekolah agar waktu absensi datang dan pulang sesuai dengan wilayah sekolah Anda.
+          </p>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Zona Waktu</Label>
+              <Select value={timezone} onValueChange={setTimezone}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih zona waktu" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Asia/Jakarta">WIB — Waktu Indonesia Barat (UTC+7)</SelectItem>
+                  <SelectItem value="Asia/Makassar">WITA — Waktu Indonesia Tengah (UTC+8)</SelectItem>
+                  <SelectItem value="Asia/Jayapura">WIT — Waktu Indonesia Timur (UTC+9)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-end">
+              <div className="bg-secondary/50 rounded-lg p-3 text-xs text-muted-foreground w-full">
+                <p className="font-semibold text-foreground mb-1">
+                  {timezone === "Asia/Jakarta" ? "WIB (UTC+7)" : timezone === "Asia/Makassar" ? "WITA (UTC+8)" : "WIT (UTC+9)"}
+                </p>
+                <p>Waktu saat ini: {new Date().toLocaleTimeString("id-ID", { timeZone: timezone, hour: "2-digit", minute: "2-digit", second: "2-digit" })}</p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Waktu Absensi Datang & Pulang */}
       <Card className="border-0 shadow-card">
         <CardHeader>
