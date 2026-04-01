@@ -392,7 +392,15 @@ const StudentDetail = () => {
             <CardContent className="space-y-4">
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2"><Label>Nama Lengkap</Label><Input value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} /></div>
-                <div className="space-y-2"><Label>Kelas</Label><Input value={editForm.class} onChange={(e) => setEditForm({ ...editForm, class: e.target.value })} /></div>
+                <div className="space-y-2">
+                  <Label>Kelas</Label>
+                  <Select value={editForm.class} onValueChange={(val) => setEditForm({ ...editForm, class: val })}>
+                    <SelectTrigger><SelectValue placeholder="Pilih Kelas" /></SelectTrigger>
+                    <SelectContent>
+                      {availableClasses.map((cls) => (<SelectItem key={cls} value={cls}>{cls}</SelectItem>))}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div className="space-y-2"><Label>NIS</Label><Input value={editForm.student_id} onChange={(e) => setEditForm({ ...editForm, student_id: e.target.value })} /></div>
                 <div className="space-y-2"><Label>Nama Wali</Label><Input value={editForm.parent_name} onChange={(e) => setEditForm({ ...editForm, parent_name: e.target.value })} /></div>
                 <div className="space-y-2"><Label>No. HP Wali</Label><Input value={editForm.parent_phone} onChange={(e) => setEditForm({ ...editForm, parent_phone: e.target.value })} /></div>
