@@ -211,13 +211,6 @@ const Dashboard = () => {
   const selectedLabel = selectedStatus ? (selectedStatus === "belum" ? "Belum Absen" : STATUS_LABELS[selectedStatus] || selectedStatus) : "";
   const selectedColor = selectedStatus ? (selectedStatus === "belum" ? "hsl(220, 10%, 75%)" : STATUS_COLORS[selectedStatus]) : "";
 
-  const uniqueClasses = [...new Set(students.map(s => s.class))].sort();
-  const filteredHistoryLogs = editClassFilter === "all"
-    ? historyLogs
-    : historyLogs.filter(l => {
-        const st = students.find(s => s.id === l.student_id);
-        return st?.class === editClassFilter;
-      });
 
   return (
     <div className="space-y-6">
