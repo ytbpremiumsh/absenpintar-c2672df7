@@ -41,7 +41,8 @@ function playChime(type: "datang" | "pulang") {
 export function announceAttendance(
   studentName: string,
   className: string,
-  attendanceType: "datang" | "pulang" = "datang"
+  attendanceType: "datang" | "pulang" = "datang",
+  status?: string
 ) {
   if (!("speechSynthesis" in window)) {
     playChime(attendanceType);
