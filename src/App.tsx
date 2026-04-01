@@ -37,6 +37,7 @@ import SuperAdminSubscriptions from "./pages/super-admin/SuperAdminSubscriptions
 import SuperAdminWhatsApp from "./pages/super-admin/SuperAdminWhatsApp";
 import SuperAdminBranches from "./pages/super-admin/SuperAdminBranches";
 import ExportHistory from "./pages/ExportHistory";
+import EditAttendance from "./pages/EditAttendance";
 import SupportTickets from "./pages/SupportTickets";
 import WhatsAppSettings from "./pages/WhatsAppSettings";
 import SuperAdminAnnouncements from "./pages/super-admin/SuperAdminAnnouncements";
