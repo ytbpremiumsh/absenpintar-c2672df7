@@ -125,7 +125,7 @@ const PublicAttendanceMonitoring = () => {
     progressBg: "bg-slate-800",
     footerBorder: "border-slate-800",
   } : {
-    bg: "bg-gradient-to-br from-slate-50 via-white to-indigo-50/30",
+    bg: "bg-white",
     headerBg: "bg-white/90 border-border/60 shadow-sm",
     cardBg: "bg-white ring-border/40 shadow-sm",
     text: "text-foreground",
