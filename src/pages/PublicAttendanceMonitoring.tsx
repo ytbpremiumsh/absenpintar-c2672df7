@@ -442,10 +442,15 @@ const PublicAttendanceMonitoring = () => {
 
         {/* Per Class Summary */}
         <div>
-          <div className="flex items-center gap-2 mb-3">
-            <GraduationCap className="h-5 w-5 text-[#5B6CF9]" />
-            <h2 className={`text-base lg:text-lg font-bold ${theme.text}`}>Ringkasan Per Kelas</h2>
-            <Badge variant="secondary" className={`text-[10px] border-0 ${darkMode ? "bg-white/5 text-slate-400" : "bg-muted text-muted-foreground"}`}>{classNames.length} kelas</Badge>
+          <div className={`flex items-center gap-3 mb-4 p-4 rounded-xl ring-1 ${darkMode ? "bg-slate-900/60 ring-slate-800" : "bg-white ring-border/40 shadow-sm"}`}>
+            <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${darkMode ? "bg-indigo-500/15" : "bg-gradient-to-br from-[#5B6CF9] to-[#4c5ded]"}`}>
+              <GraduationCap className={`h-5 w-5 ${darkMode ? "text-indigo-400" : "text-white"}`} />
+            </div>
+            <div className="flex-1">
+              <h2 className={`text-base font-bold ${theme.text}`}>Ringkasan Per Kelas</h2>
+              <p className={`text-[10px] ${theme.textMuted}`}>Status kehadiran seluruh kelas hari ini</p>
+            </div>
+            <Badge className={`text-[10px] border-0 font-bold ${darkMode ? "bg-indigo-500/15 text-indigo-400" : "bg-[#5B6CF9]/10 text-[#5B6CF9]"}`}>{classNames.length} kelas</Badge>
           </div>
           <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-3">
             {classNames.map((cls) => {
