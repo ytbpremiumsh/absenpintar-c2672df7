@@ -672,11 +672,11 @@ const Students = () => {
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
                     {classStudents.map((student: any) => (
-                      <Card key={student.id} className="border border-border/50 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+                      <Card key={student.id} className="border border-border/50 shadow-sm hover:shadow-md transition-shadow overflow-hidden cursor-pointer" onClick={() => navigate(`/students/${student.id}`)}>
                         <CardContent className="p-4 flex flex-col items-center text-center space-y-2.5">
                           <GenderAvatar student={student} size={56} />
                           <div>
-                            <p className="font-semibold text-sm truncate">{student.name}</p>
+                            <p className="font-semibold text-sm truncate text-primary hover:underline">{student.name}</p>
                             <p className="text-[10px] text-muted-foreground font-mono">{student.student_id}</p>
                           </div>
                           <div className="flex items-center justify-center gap-1 pt-1">
