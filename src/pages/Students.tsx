@@ -464,7 +464,7 @@ const Students = () => {
         <div className="flex items-center gap-1.5 sm:gap-2 flex-nowrap overflow-x-auto">
           <Dialog open={promoteDialogOpen} onOpenChange={setPromoteDialogOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" size="sm" className="shrink-0 text-xs px-2 sm:px-3">
+              <Button variant="outline" size="sm" className="shrink-0 text-xs px-2 sm:px-3 border-border text-foreground">
                 <ArrowRightLeft className="h-3.5 w-3.5 sm:mr-1" /> <span className="hidden sm:inline">Naik Kelas</span>
               </Button>
             </DialogTrigger>
