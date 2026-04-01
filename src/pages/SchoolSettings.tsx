@@ -40,7 +40,7 @@ const SchoolSettings = () => {
   useEffect(() => {
     if (!profile?.school_id) return;
     Promise.all([
-      supabase.from("schools").select("name, address, logo").eq("id", profile.school_id).single(),
+      supabase.from("schools").select("name, address, logo, npsn, city, province, timezone").eq("id", profile.school_id).single(),
       supabase.from("pickup_settings").select("school_start_time, school_end_time, attendance_start_time, attendance_end_time, departure_start_time, departure_end_time").eq("school_id", profile.school_id).maybeSingle(),
       supabase.from("qr_instructions").select("id, instruction_text, sort_order").eq("school_id", profile.school_id).order("sort_order"),
     ]).then(([schoolRes, settingsRes, instrRes]) => {
