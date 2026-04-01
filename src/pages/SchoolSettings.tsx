@@ -141,7 +141,10 @@ const SchoolSettings = () => {
     if (!profile?.school_id) return;
     setSaving(true);
 
-    const { error: schoolErr } = await supabase.from("schools").update({ name, address, logo: logo || null }).eq("id", profile.school_id);
+    const { error: schoolErr } = await supabase.from("schools").update({
+      name, address, logo: logo || null,
+      npsn: npsn || null, city: city || null, province: province || null, timezone,
+    } as any).eq("id", profile.school_id);
 
     const settingsPayload = {
       school_start_time: startTime + ":00",

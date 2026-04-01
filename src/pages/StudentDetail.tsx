@@ -53,12 +53,19 @@ const StudentDetail = () => {
 
   const fetchData = async () => {
     if (!id || !profile?.school_id) return;
-    const [studentRes, logsRes, schoolRes, instrRes] = await Promise.all([
+    const [studentRes, logsRes, schoolRes, instrRes, classesRes, studentsRes] = await Promise.all([
       supabase.from("students").select("*").eq("id", id).eq("school_id", profile.school_id).single(),
       supabase.from("attendance_logs").select("*").eq("student_id", id).eq("school_id", profile.school_id).order("date", { ascending: false }).order("time", { ascending: false }).limit(30),
       supabase.from("schools").select("name, logo, address").eq("id", profile.school_id).single(),
       supabase.from("qr_instructions").select("instruction_text").eq("school_id", profile.school_id).order("sort_order"),
+      supabase.from("classes").select("name").eq("school_id", profile.school_id).order("name"),
+      supabase.from("students").select("class").eq("school_id", profile.school_id),
     ]);
+    // Build available classes from both tables
+    const classSet = new Set<string>();
+    (classesRes.data || []).forEach((c: any) => classSet.add(c.name));
+    (studentsRes.data || []).forEach((s: any) => classSet.add(s.class));
+    setAvailableClasses(Array.from(classSet).sort());
     setStudent(studentRes.data);
     setAttendanceHistory(logsRes.data || []);
     setSchool(schoolRes.data);

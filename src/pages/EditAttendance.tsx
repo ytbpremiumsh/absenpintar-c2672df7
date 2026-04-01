@@ -93,33 +93,41 @@ const EditAttendance = () => {
     return Array.from(set).sort();
   }, [students]);
 
-  const filteredLogs = useMemo(() => {
-    let filtered = logs;
+  // Merge students with logs - show ALL students, not just those with logs
+  const mergedData = useMemo(() => {
+    let filteredStudents = students;
     if (selectedClass !== "all") {
-      filtered = filtered.filter(l => {
-        const st = students.find(s => s.id === l.student_id);
-        return st?.class === selectedClass;
-      });
+      filteredStudents = filteredStudents.filter(s => s.class === selectedClass);
     }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      filtered = filtered.filter(l => {
-        const st = students.find(s => s.id === l.student_id);
-        return st?.name?.toLowerCase().includes(q) || st?.student_id?.toLowerCase().includes(q);
-      });
+      filteredStudents = filteredStudents.filter(s =>
+        s.name?.toLowerCase().includes(q) || s.student_id?.toLowerCase().includes(q)
+      );
     }
-    return filtered;
-  }, [logs, selectedClass, searchQuery, students]);
+
+    // Sort by class then name
+    filteredStudents = [...filteredStudents].sort((a, b) => {
+      const classCompare = a.class.localeCompare(b.class);
+      return classCompare !== 0 ? classCompare : a.name.localeCompare(b.name);
+    });
+
+    return filteredStudents.map(student => {
+      const log = logs.find(l => l.student_id === student.id);
+      return { student, log };
+    });
+  }, [students, logs, selectedClass, searchQuery]);
 
   // Stats for selected class/date
   const stats = useMemo(() => {
-    const s = { total: filteredLogs.length, hadir: 0, izin: 0, sakit: 0, alfa: 0 };
-    filteredLogs.forEach(l => {
-      const status = editChanges[l.id] || l.status;
+    const s = { total: mergedData.length, hadir: 0, izin: 0, sakit: 0, alfa: 0, belum: 0 };
+    mergedData.forEach(({ log }) => {
+      if (!log) { s.belum++; return; }
+      const status = editChanges[log.id] || log.status;
       if (status in s) s[status as keyof typeof s]++;
     });
     return s;
-  }, [filteredLogs, editChanges]);
+  }, [mergedData, editChanges]);
 
   const typeLabel = attendanceType === "pulang" ? "Kepulangan" : "Kehadiran";
 
@@ -190,13 +198,14 @@ const EditAttendance = () => {
       </Card>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-6 gap-3">
         {[
           { label: "Total", value: stats.total, icon: Users, color: "text-foreground", bg: "bg-secondary" },
           { label: "Hadir", value: stats.hadir, icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-500/10" },
           { label: "Izin", value: stats.izin, icon: AlertTriangle, color: "text-amber-600", bg: "bg-amber-50 dark:bg-amber-500/10" },
           { label: "Sakit", value: stats.sakit, icon: XCircle, color: "text-sky-600", bg: "bg-sky-50 dark:bg-sky-500/10" },
           { label: "Alfa", value: stats.alfa, icon: XCircle, color: "text-red-600", bg: "bg-red-50 dark:bg-red-500/10" },
+          { label: "Belum", value: stats.belum, icon: Users, color: "text-slate-500", bg: "bg-slate-50 dark:bg-slate-500/10" },
         ].map(s => (
           <Card key={s.label} className="border-0 shadow-lg rounded-2xl">
             <CardContent className="p-3 sm:p-4 flex items-center gap-3">
@@ -216,15 +225,17 @@ const EditAttendance = () => {
       {selectedClass === "all" && (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {classNames.map(cls => {
+            const classStudents = students.filter(s => s.class === cls);
             const classLogs = logs.filter(l => {
               const st = students.find(s => s.id === l.student_id);
               return st?.class === cls;
             });
-            const classStats = { total: classLogs.length, hadir: 0, izin: 0, sakit: 0, alfa: 0 };
+            const classStats = { total: classStudents.length, hadir: 0, izin: 0, sakit: 0, alfa: 0, belum: 0 };
             classLogs.forEach(l => {
               const status = editChanges[l.id] || l.status;
               if (status in classStats) classStats[status as keyof typeof classStats]++;
             });
+            classStats.belum = classStats.total - classLogs.length;
             const rate = classStats.total > 0 ? Math.round((classStats.hadir / classStats.total) * 100) : 0;
 
             return (
@@ -240,7 +251,7 @@ const EditAttendance = () => {
                     </div>
                     <div>
                       <p className="text-sm font-bold text-foreground">{cls}</p>
-                      <p className="text-[10px] text-muted-foreground">{classStats.total} data</p>
+                      <p className="text-[10px] text-muted-foreground">{classStats.total} siswa</p>
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -293,18 +304,18 @@ const EditAttendance = () => {
             <Pencil className="h-4 w-4 text-[#5B6CF9]" />
             Data {typeLabel} — {new Date(selectedDate).toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
           </h3>
-          <span className="text-xs text-muted-foreground">{filteredLogs.length} data</span>
+          <span className="text-xs text-muted-foreground">{mergedData.length} siswa</span>
         </div>
         <ScrollArea className="max-h-[60vh]">
           {loading ? (
             <div className="p-12 text-center"><Loader2 className="h-8 w-8 animate-spin mx-auto text-[#5B6CF9]" /></div>
-          ) : filteredLogs.length === 0 ? (
+          ) : mergedData.length === 0 ? (
             <div className="p-12 text-center">
               <div className="h-16 w-16 rounded-2xl bg-muted/50 flex items-center justify-center mx-auto mb-3">
                 <CalendarDays className="h-8 w-8 text-muted-foreground/50" />
               </div>
-              <p className="text-sm font-semibold text-muted-foreground">Tidak ada data absensi</p>
-              <p className="text-xs text-muted-foreground/70 mt-1">Pilih tanggal atau kelas lain</p>
+              <p className="text-sm font-semibold text-muted-foreground">Tidak ada siswa</p>
+              <p className="text-xs text-muted-foreground/70 mt-1">Pilih kelas lain</p>
             </div>
           ) : (
             <Table>
@@ -320,51 +331,60 @@ const EditAttendance = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredLogs.map((log, idx) => {
-                  const student = students.find(s => s.id === log.student_id);
-                  const currentStatus = editChanges[log.id] || log.status;
-                  const statusColor = STATUS_COLORS[currentStatus] || STATUS_COLORS.hadir;
-                  const isChanged = editChanges[log.id] && editChanges[log.id] !== log.status;
+                {mergedData.map(({ student, log }, idx) => {
+                  const currentStatus = log ? (editChanges[log.id] || log.status) : null;
+                  const statusColor = currentStatus ? STATUS_COLORS[currentStatus] || STATUS_COLORS.hadir : "";
+                  const isChanged = log && editChanges[log.id] && editChanges[log.id] !== log.status;
                   return (
-                    <TableRow key={log.id} className={`${isChanged ? "bg-[#5B6CF9]/5" : ""} hover:bg-muted/20 transition-colors`}>
+                    <TableRow key={student.id} className={`${isChanged ? "bg-[#5B6CF9]/5" : ""} hover:bg-muted/20 transition-colors`}>
                       <TableCell className="text-xs text-muted-foreground py-2.5 w-10">{idx + 1}</TableCell>
-                      <TableCell className="text-sm font-semibold py-2.5">{student?.name || "—"}</TableCell>
-                      <TableCell className="text-xs text-muted-foreground font-mono py-2.5">{student?.student_id || "—"}</TableCell>
+                      <TableCell className="text-sm font-semibold py-2.5">{student.name}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground font-mono py-2.5">{student.student_id}</TableCell>
                       <TableCell className="py-2.5">
-                        <Badge variant="outline" className="text-[10px] font-semibold rounded-md">{student?.class || "—"}</Badge>
+                        <Badge variant="outline" className="text-[10px] font-semibold rounded-md">{student.class}</Badge>
                       </TableCell>
-                      <TableCell className="text-xs font-mono py-2.5">{log.time?.slice(0, 5)}</TableCell>
+                      <TableCell className="text-xs font-mono py-2.5">{log?.time?.slice(0, 5) || "—"}</TableCell>
                       <TableCell className="py-2.5">
-                        <Badge
-                          className="text-[10px] font-bold border-0 rounded-full px-2.5 text-white"
-                          style={{ backgroundColor: statusColor }}
-                        >
-                          {STATUS_LABELS[currentStatus] || currentStatus}
-                        </Badge>
+                        {currentStatus ? (
+                          <Badge
+                            className="text-[10px] font-bold border-0 rounded-full px-2.5 text-white"
+                            style={{ backgroundColor: statusColor }}
+                          >
+                            {STATUS_LABELS[currentStatus] || currentStatus}
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary" className="text-[10px] font-semibold rounded-full px-2.5">
+                            Belum
+                          </Badge>
+                        )}
                       </TableCell>
                       <TableCell className="py-2.5">
-                        <div className="flex gap-1">
-                          {["hadir", "izin", "sakit", "alfa"].map(s => (
-                            <button
-                              key={s}
-                              onClick={() => {
-                                setEditChanges(prev => {
-                                  const next = { ...prev };
-                                  if (s === log.status) { delete next[log.id]; } else { next[log.id] = s; }
-                                  return next;
-                                });
-                              }}
-                              className={`text-[10px] font-bold px-2.5 py-1.5 rounded-lg transition-all ${
-                                currentStatus === s
-                                  ? "text-white shadow-sm scale-105"
-                                  : "text-muted-foreground hover:bg-muted"
-                              }`}
-                              style={currentStatus === s ? { backgroundColor: STATUS_COLORS[s] } : {}}
-                            >
-                              {s === "hadir" ? "H" : s === "izin" ? "I" : s === "sakit" ? "S" : "A"}
-                            </button>
-                          ))}
-                        </div>
+                        {log ? (
+                          <div className="flex gap-1">
+                            {["hadir", "izin", "sakit", "alfa"].map(s => (
+                              <button
+                                key={s}
+                                onClick={() => {
+                                  setEditChanges(prev => {
+                                    const next = { ...prev };
+                                    if (s === log.status) { delete next[log.id]; } else { next[log.id] = s; }
+                                    return next;
+                                  });
+                                }}
+                                className={`text-[10px] font-bold px-2.5 py-1.5 rounded-lg transition-all ${
+                                  currentStatus === s
+                                    ? "text-white shadow-sm scale-105"
+                                    : "text-muted-foreground hover:bg-muted"
+                                }`}
+                                style={currentStatus === s ? { backgroundColor: STATUS_COLORS[s] } : {}}
+                              >
+                                {s === "hadir" ? "H" : s === "izin" ? "I" : s === "sakit" ? "S" : "A"}
+                              </button>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-[10px] text-muted-foreground italic">Belum scan</span>
+                        )}
                       </TableCell>
                     </TableRow>
                   );
