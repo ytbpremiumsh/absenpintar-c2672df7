@@ -37,6 +37,7 @@ import SuperAdminSubscriptions from "./pages/super-admin/SuperAdminSubscriptions
 import SuperAdminWhatsApp from "./pages/super-admin/SuperAdminWhatsApp";
 import SuperAdminBranches from "./pages/super-admin/SuperAdminBranches";
 import ExportHistory from "./pages/ExportHistory";
+import EditAttendance from "./pages/EditAttendance";
 import SupportTickets from "./pages/SupportTickets";
 import WhatsAppSettings from "./pages/WhatsAppSettings";
 import SuperAdminAnnouncements from "./pages/super-admin/SuperAdminAnnouncements";
@@ -115,6 +116,7 @@ const App = () => (
               <Route path="/wali-kelas-students" element={<WaliKelasStudents />} />
               <Route path="/history" element={<History />} />
               <Route path="/export-history" element={<ExportHistory />} />
+              <Route path="/edit-attendance" element={<EditAttendance />} />
               <Route path="/subscription" element={<Subscription />} />
               <Route path="/school-settings" element={<SchoolSettings />} />
               <Route path="/account-settings" element={<AccountSettings />} />

@@ -7,8 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
@@ -21,7 +20,7 @@ import {
 import {
   Users, CheckCircle2, XCircle, FileSpreadsheet,
   BarChart3, CalendarDays, Award, Lightbulb, Loader2, GraduationCap, UserCheck,
-  LogIn, LogOut, Pencil, Save,
+  LogIn, LogOut,
 } from "lucide-react";
 
 const COLORS: Record<string, string> = {
@@ -29,12 +28,6 @@ const COLORS: Record<string, string> = {
 };
 const STATUS_LABELS: Record<string, string> = {
   hadir: "Hadir", izin: "Izin", sakit: "Sakit", alfa: "Alfa",
-};
-const STATUS_COLORS: Record<string, string> = {
-  hadir: "hsl(152, 69%, 40%)",
-  izin: "hsl(38, 92%, 50%)",
-  sakit: "hsl(210, 70%, 50%)",
-  alfa: "hsl(0, 72%, 51%)",
 };
 const DAY_NAMES = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
 
@@ -52,14 +45,6 @@ const History = () => {
   const [studentAttLogs, setStudentAttLogs] = useState<any[]>([]);
   const [loadingStudentLogs, setLoadingStudentLogs] = useState(false);
 
-  // Edit history states
-  const [editHistoryOpen, setEditHistoryOpen] = useState(false);
-  const [editDate, setEditDate] = useState(new Date().toISOString().slice(0, 10));
-  const [editClassFilter, setEditClassFilter] = useState("all");
-  const [historyLogs, setHistoryLogs] = useState<any[]>([]);
-  const [editChanges, setEditChanges] = useState<Record<string, string>>({});
-  const [savingHistory, setSavingHistory] = useState(false);
-  const [loadingHistory, setLoadingHistory] = useState(false);
 
   const isTeacherOnly = roles.includes("teacher") && !roles.includes("school_admin") && !roles.includes("staff");
 
@@ -118,42 +103,6 @@ const History = () => {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  // Edit history fetch
-  const fetchHistoryLogs = useCallback(async () => {
-    if (!profile?.school_id || !editDate) return;
-    setLoadingHistory(true);
-    const { data } = await supabase
-      .from("attendance_logs")
-      .select("*")
-      .eq("school_id", profile.school_id)
-      .eq("date", editDate)
-      .eq("attendance_type", attendanceTypeTab)
-      .order("created_at", { ascending: true });
-    setHistoryLogs(data || []);
-    setEditChanges({});
-    setLoadingHistory(false);
-  }, [profile?.school_id, editDate, attendanceTypeTab]);
-
-  useEffect(() => {
-    if (editHistoryOpen) fetchHistoryLogs();
-  }, [editHistoryOpen, fetchHistoryLogs]);
-
-  const saveHistoryChanges = async () => {
-    if (Object.keys(editChanges).length === 0) return;
-    setSavingHistory(true);
-    try {
-      for (const [logId, newStatus] of Object.entries(editChanges)) {
-        await supabase.from("attendance_logs").update({ status: newStatus }).eq("id", logId);
-      }
-      toast.success(`${Object.keys(editChanges).length} status berhasil diperbarui`);
-      setEditChanges({});
-      fetchHistoryLogs();
-      fetchData();
-    } catch {
-      toast.error("Gagal menyimpan perubahan");
-    }
-    setSavingHistory(false);
-  };
 
   const classNames = useMemo(() => {
     const set = new Set<string>();
@@ -299,13 +248,6 @@ const History = () => {
     toast.success("Data berhasil diexport!");
   };
 
-  const uniqueClasses = classNames;
-  const filteredHistoryLogs = editClassFilter === "all"
-    ? historyLogs
-    : historyLogs.filter(l => {
-        const st = allStudents.find((s: any) => s.id === l.student_id);
-        return st?.class === editClassFilter;
-      });
 
   if (loading) {
     return (
@@ -329,14 +271,11 @@ const History = () => {
               <BarChart3 className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold">Rekap Absensi</h1>
+              <h1 className="text-xl sm:text-2xl font-bold">Analytic Kelas</h1>
               <p className="text-white/70 text-xs sm:text-sm">Analitik & rekap kehadiran dan kepulangan siswa</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button onClick={() => setEditHistoryOpen(true)} className="bg-white/15 hover:bg-white/25 text-white border border-white/20 backdrop-blur-sm gap-1.5 text-xs font-semibold h-9 rounded-lg">
-              <Pencil className="h-3.5 w-3.5" /> Edit Riwayat
-            </Button>
             <Button onClick={exportExcel} className="bg-white/15 hover:bg-white/25 text-white border border-white/20 backdrop-blur-sm gap-1.5 text-xs font-semibold h-9 rounded-lg">
               <FileSpreadsheet className="h-3.5 w-3.5" /> Export Excel
             </Button>
@@ -848,97 +787,6 @@ const History = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Edit History Dialog */}
-      <Dialog open={editHistoryOpen} onOpenChange={setEditHistoryOpen}>
-        <DialogContent className="max-w-[95vw] sm:max-w-3xl p-0 overflow-hidden rounded-2xl max-h-[85vh]">
-          <div className="p-4 border-b border-border bg-gradient-to-r from-primary/10 to-primary/5">
-            <DialogTitle className="text-base font-bold flex items-center gap-2">
-              <Pencil className="h-4 w-4 text-primary" />
-              Edit Riwayat {typeLabel}
-            </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground mt-1">Pilih tanggal dan ubah status {typeLabel.toLowerCase()} siswa</DialogDescription>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 mt-3">
-              <Input type="date" value={editDate} onChange={(e) => setEditDate(e.target.value)} className="w-auto text-sm h-9 rounded-lg" />
-              <Select value={editClassFilter} onValueChange={setEditClassFilter}>
-                <SelectTrigger className="w-[140px] h-9 rounded-lg text-sm">
-                  <SelectValue placeholder="Semua Kelas" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Semua Kelas</SelectItem>
-                  {uniqueClasses.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                </SelectContent>
-              </Select>
-              {Object.keys(editChanges).length > 0 && (
-                <Button onClick={saveHistoryChanges} disabled={savingHistory} size="sm" className="rounded-lg">
-                  {savingHistory ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Save className="h-3.5 w-3.5 mr-1" />}
-                  Simpan ({Object.keys(editChanges).length})
-                </Button>
-              )}
-            </div>
-          </div>
-          <ScrollArea className="max-h-[60vh]">
-            {loadingHistory ? (
-              <div className="p-8 text-center"><Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" /></div>
-            ) : filteredHistoryLogs.length === 0 ? (
-              <div className="p-8 text-center text-sm text-muted-foreground">Tidak ada data absensi pada tanggal ini</div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="text-xs">Siswa</TableHead>
-                    <TableHead className="text-xs">Kelas</TableHead>
-                    <TableHead className="text-xs">Waktu</TableHead>
-                    <TableHead className="text-xs">Status</TableHead>
-                    <TableHead className="text-xs">Ubah</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredHistoryLogs.map((log) => {
-                    const student = allStudents.find((s: any) => s.id === log.student_id);
-                    const currentStatus = editChanges[log.id] || log.status;
-                    const statusColor = STATUS_COLORS[currentStatus] || STATUS_COLORS.hadir;
-                    const isChanged = editChanges[log.id] && editChanges[log.id] !== log.status;
-                    return (
-                      <TableRow key={log.id} className={isChanged ? "bg-primary/5" : ""}>
-                        <TableCell className="text-sm font-medium py-2">{student?.name || "—"}</TableCell>
-                        <TableCell className="text-xs text-muted-foreground py-2">{student?.class || "—"}</TableCell>
-                        <TableCell className="text-xs font-mono py-2">{log.time?.slice(0, 5)}</TableCell>
-                        <TableCell className="py-2">
-                          <Badge className="text-[10px] font-semibold border-0 rounded-full px-2" style={{ backgroundColor: `${statusColor}15`, color: statusColor }}>
-                            {STATUS_LABELS[currentStatus] || currentStatus}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="py-2">
-                          <div className="flex gap-1">
-                            {["hadir", "izin", "sakit", "alfa"].map(s => (
-                              <button key={s} onClick={() => {
-                                setEditChanges(prev => {
-                                  const next = { ...prev };
-                                  if (s === log.status) { delete next[log.id]; } else { next[log.id] = s; }
-                                  return next;
-                                });
-                              }}
-                                className={`text-[10px] font-bold px-2 py-1 rounded-md transition-all ${
-                                  currentStatus === s
-                                    ? "text-white shadow-sm"
-                                    : "text-muted-foreground hover:bg-muted"
-                                }`}
-                                style={currentStatus === s ? { backgroundColor: STATUS_COLORS[s] } : {}}
-                              >
-                                {s === "hadir" ? "H" : s === "izin" ? "I" : s === "sakit" ? "S" : "A"}
-                              </button>
-                            ))}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            )}
-          </ScrollArea>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
