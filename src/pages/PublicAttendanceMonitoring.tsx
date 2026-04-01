@@ -442,62 +442,90 @@ const PublicAttendanceMonitoring = () => {
 
         {/* Per Class Summary */}
         <div>
-          <div className={`flex items-center gap-3 mb-4 p-4 rounded-xl ring-1 ${darkMode ? "bg-slate-900/60 ring-slate-800" : "bg-white ring-border/40 shadow-sm"}`}>
-            <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${darkMode ? "bg-indigo-500/15" : "bg-gradient-to-br from-[#5B6CF9] to-[#4c5ded]"}`}>
-              <GraduationCap className={`h-5 w-5 ${darkMode ? "text-indigo-400" : "text-white"}`} />
+          <div className={`relative overflow-hidden rounded-2xl p-5 mb-5 ${darkMode ? "bg-gradient-to-br from-indigo-950 via-slate-900 to-slate-900" : "bg-gradient-to-br from-[#5B6CF9] to-[#4c5ded]"} text-white shadow-xl`}>
+            <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-3xl" />
+            <div className="absolute -left-10 -bottom-10 h-32 w-32 rounded-full bg-white/5 blur-2xl" />
+            <div className="relative z-10 flex items-center gap-3">
+              <div className="h-12 w-12 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center border border-white/20 shadow-lg">
+                <GraduationCap className="h-6 w-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-lg sm:text-xl font-bold">Ringkasan Per Kelas</h2>
+                <p className="text-white/60 text-xs">Status kehadiran seluruh kelas hari ini</p>
+              </div>
+              <Badge className="text-[10px] border-0 font-bold bg-white/15 text-white backdrop-blur-sm">{classNames.length} Kelas</Badge>
             </div>
-            <div className="flex-1">
-              <h2 className={`text-base font-bold ${theme.text}`}>Ringkasan Per Kelas</h2>
-              <p className={`text-[10px] ${theme.textMuted}`}>Status kehadiran seluruh kelas hari ini</p>
-            </div>
-            <Badge className={`text-[10px] border-0 font-bold ${darkMode ? "bg-indigo-500/15 text-indigo-400" : "bg-[#5B6CF9]/10 text-[#5B6CF9]"}`}>{classNames.length} kelas</Badge>
           </div>
-          <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-3">
-            {classNames.map((cls) => {
+          <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
+            {classNames.map((cls, i) => {
               const classStudents = data.classes[cls];
               const hadir = classStudents.filter((s) => s.status === "hadir").length;
+              const izin = classStudents.filter((s) => s.status === "izin").length;
+              const sakit = classStudents.filter((s) => s.status === "sakit").length;
+              const alfa = classStudents.filter((s) => s.status === "alfa").length;
               const belum = classStudents.filter((s) => s.status === "belum").length;
               const recorded = classStudents.length - belum;
               const pct = classStudents.length ? Math.round((recorded / classStudents.length) * 100) : 0;
               const allDone = belum === 0;
 
               return (
-                <motion.div key={cls} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-              <div className={`rounded-xl ring-1 p-4 transition-all hover:shadow-lg hover:scale-[1.01] ${allDone ? theme.classDoneBg : theme.classBg}`}>
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className={`h-11 w-11 rounded-xl flex items-center justify-center shrink-0 border ${
-                        allDone
-                          ? darkMode ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/20" : "bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-emerald-600/20"
-                          : darkMode ? "bg-indigo-500/15 text-indigo-400 border-indigo-500/20" : "bg-gradient-to-br from-[#5B6CF9] to-[#4c5ded] text-white border-[#5B6CF9]/20"
-                      }`}>
-                        <GraduationCap className="h-5 w-5" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <h3 className={`font-bold text-sm ${theme.text}`}>{cls}</h3>
-                          {allDone && (
-                            <Badge className={`border-0 text-[8px] ${darkMode ? "bg-emerald-500/15 text-emerald-400" : "bg-emerald-100 text-emerald-700"}`}>
-                              <CheckCircle2 className="h-2.5 w-2.5 mr-0.5" /> Lengkap
-                            </Badge>
-                          )}
+                <motion.div key={cls} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
+                  <div className={`relative overflow-hidden rounded-2xl ring-1 p-5 transition-all hover:shadow-xl hover:scale-[1.02] ${
+                    allDone
+                      ? darkMode ? "bg-gradient-to-br from-emerald-950/60 to-slate-900 ring-emerald-500/30" : "bg-gradient-to-br from-emerald-50 to-white ring-emerald-200 shadow-emerald-100"
+                      : darkMode ? "bg-slate-900/80 ring-slate-700/50" : "bg-white ring-border/50 shadow-sm"
+                  }`}>
+                    {allDone && <div className={`absolute top-0 right-0 h-20 w-20 rounded-bl-[3rem] ${darkMode ? "bg-emerald-500/10" : "bg-emerald-100/60"}`} />}
+                    <div className="relative z-10">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className={`h-12 w-12 rounded-xl flex items-center justify-center shrink-0 shadow-lg ${
+                          allDone
+                            ? darkMode ? "bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/30" : "bg-gradient-to-br from-emerald-500 to-emerald-600 text-white"
+                            : darkMode ? "bg-indigo-500/20 text-indigo-400 ring-1 ring-indigo-500/30" : "bg-gradient-to-br from-[#5B6CF9] to-[#4c5ded] text-white"
+                        }`}>
+                          <GraduationCap className="h-6 w-6" />
                         </div>
-                        <div className={`flex items-center gap-2 text-[10px] ${theme.textMuted}`}>
-                          <span className="flex items-center gap-0.5"><Users className="h-2.5 w-2.5" /> {classStudents.length}</span>
-                          <span className={`flex items-center gap-0.5 ${darkMode ? "text-emerald-400" : "text-emerald-600"}`}><UserCheck className="h-2.5 w-2.5" /> {hadir}</span>
-                          <span className="flex items-center gap-0.5"><Clock className="h-2.5 w-2.5" /> {belum}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <h3 className={`font-bold text-base ${theme.text}`}>{cls}</h3>
+                            {allDone && (
+                              <Badge className={`border-0 text-[8px] shadow-sm ${darkMode ? "bg-emerald-500/20 text-emerald-400" : "bg-emerald-500 text-white"}`}>
+                                <CheckCircle2 className="h-2.5 w-2.5 mr-0.5" /> Lengkap
+                              </Badge>
+                            )}
+                          </div>
+                          <p className={`text-[10px] ${theme.textMuted} flex items-center gap-1`}><Users className="h-2.5 w-2.5" />{classStudents.length} siswa</p>
+                        </div>
+                        <div className="text-right">
+                          <p className={`text-2xl font-extrabold tabular-nums ${
+                            allDone ? (darkMode ? "text-emerald-400" : "text-emerald-600") : "text-[#5B6CF9]"
+                          }`}>{pct}%</p>
                         </div>
                       </div>
-                      <p className={`text-xl font-extrabold tabular-nums ${
-                        allDone ? (darkMode ? "text-emerald-400" : "text-emerald-600") : "text-[#5B6CF9]"
-                      }`}>{pct}%</p>
-                    </div>
-                    <div className={`h-2 rounded-full ${theme.progressBg} overflow-hidden`}>
-                      <motion.div className={`h-full rounded-full ${
-                        allDone
-                          ? "bg-emerald-500"
-                          : "bg-gradient-to-r from-[#5B6CF9] to-[#7c8afc]"
-                      }`}
-                        initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8 }} />
+
+                      {/* Status breakdown mini badges */}
+                      <div className="flex items-center gap-1.5 mb-3">
+                        {[
+                          { label: "H", count: hadir, light: "bg-emerald-100 text-emerald-700", dark: "bg-emerald-500/15 text-emerald-400" },
+                          { label: "I", count: izin, light: "bg-amber-100 text-amber-700", dark: "bg-amber-500/15 text-amber-400" },
+                          { label: "S", count: sakit, light: "bg-sky-100 text-sky-700", dark: "bg-sky-500/15 text-sky-400" },
+                          { label: "A", count: alfa, light: "bg-red-100 text-red-700", dark: "bg-red-500/15 text-red-400" },
+                          { label: "B", count: belum, light: "bg-slate-100 text-slate-600", dark: "bg-slate-500/15 text-slate-400" },
+                        ].map(item => (
+                          <span key={item.label} className={`inline-flex items-center gap-0.5 text-[9px] font-bold px-2 py-1 rounded-md ${darkMode ? item.dark : item.light}`}>
+                            {item.label}: {item.count}
+                          </span>
+                        ))}
+                      </div>
+
+                      <div className={`h-2.5 rounded-full overflow-hidden ${darkMode ? "bg-slate-800" : "bg-slate-100"}`}>
+                        <motion.div className={`h-full rounded-full ${
+                          allDone
+                            ? "bg-gradient-to-r from-emerald-500 to-emerald-400"
+                            : "bg-gradient-to-r from-[#5B6CF9] via-[#7c8afc] to-[#5B6CF9]"
+                        }`}
+                          initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 1, delay: i * 0.05 }} />
+                      </div>
                     </div>
                   </div>
                 </motion.div>
