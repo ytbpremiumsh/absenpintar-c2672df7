@@ -672,14 +672,14 @@ const Students = () => {
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
                     {classStudents.map((student: any) => (
-                      <Card key={student.id} className="border border-border/50 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+                      <Card key={student.id} className="border border-border/50 shadow-sm hover:shadow-md transition-shadow overflow-hidden cursor-pointer" onClick={() => navigate(`/students/${student.id}`)}>
                         <CardContent className="p-4 flex flex-col items-center text-center space-y-2.5">
                           <GenderAvatar student={student} size={56} />
                           <div>
-                            <p className="font-semibold text-sm truncate">{student.name}</p>
+                            <p className="font-semibold text-sm truncate text-primary hover:underline">{student.name}</p>
                             <p className="text-[10px] text-muted-foreground font-mono">{student.student_id}</p>
                           </div>
-                          <div className="flex items-center justify-center gap-1 pt-1">
+                          <div className="flex items-center justify-center gap-1 pt-1" onClick={(e) => e.stopPropagation()}>
                             <Button variant="outline" size="icon" className="h-7 w-7 border-border/60" onClick={() => navigate(`/students/${student.id}`)}><Eye className="h-3.5 w-3.5 text-[#5B6CF9]" /></Button>
                             <Button variant="outline" size="icon" className="h-7 w-7 border-border/60" onClick={() => { setSelectedStudent(student); setQrDialogOpen(true); }}><QrCode className="h-3.5 w-3.5 text-[#5B6CF9]" /></Button>
                             <Button variant="outline" size="icon" className="h-7 w-7 border-border/60" onClick={() => handleDelete(student.id)}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button>
@@ -725,13 +725,13 @@ const Students = () => {
                             </TableHeader>
                             <TableBody>
                               {classStudents.map((student: any, i: number) => (
-                                <TableRow key={student.id} className="hover:bg-secondary/20">
+                                <TableRow key={student.id} className="hover:bg-secondary/20 cursor-pointer" onClick={() => navigate(`/students/${student.id}`)}>
                                   <TableCell className="font-medium text-muted-foreground text-xs">{i + 1}</TableCell>
                                   <TableCell>
                                     <div className="flex items-center gap-3">
                                       <GenderAvatar student={student} size={36} />
                                       <div>
-                                        <p className="font-medium text-sm">{student.name}</p>
+                                        <p className="font-medium text-sm text-primary hover:underline">{student.name}</p>
                                         <p className="text-xs text-muted-foreground sm:hidden">{student.student_id}</p>
                                       </div>
                                     </div>
@@ -748,7 +748,7 @@ const Students = () => {
                                   <TableCell className="hidden lg:table-cell">
                                     <div className="flex items-center gap-1 text-xs text-muted-foreground"><Phone className="h-3 w-3" />{student.parent_phone}</div>
                                   </TableCell>
-                                  <TableCell className="text-right">
+                                  <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                                     <div className="flex items-center justify-end gap-1">
                                       <div className="relative">
                                         {features.canUploadPhoto ? (

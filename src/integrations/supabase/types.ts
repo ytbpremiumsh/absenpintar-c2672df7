@@ -898,27 +898,39 @@ export type Database = {
       schools: {
         Row: {
           address: string | null
+          city: string | null
           created_at: string
           group_id: string | null
           id: string
           logo: string | null
           name: string
+          npsn: string | null
+          province: string | null
+          timezone: string | null
         }
         Insert: {
           address?: string | null
+          city?: string | null
           created_at?: string
           group_id?: string | null
           id?: string
           logo?: string | null
           name: string
+          npsn?: string | null
+          province?: string | null
+          timezone?: string | null
         }
         Update: {
           address?: string | null
+          city?: string | null
           created_at?: string
           group_id?: string | null
           id?: string
           logo?: string | null
           name?: string
+          npsn?: string | null
+          province?: string | null
+          timezone?: string | null
         }
         Relationships: [
           {

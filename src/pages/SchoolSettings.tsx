@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { School, Save, Upload, Lock, Loader2, Image, Clock, Plus, Trash2, FileText, GripVertical } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { School, Save, Upload, Lock, Loader2, Image, Clock, Plus, Trash2, FileText, GripVertical, Globe } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
@@ -17,6 +18,10 @@ const SchoolSettings = () => {
   const features = useSubscriptionFeatures();
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
+  const [npsn, setNpsn] = useState("");
+  const [city, setCity] = useState("");
+  const [province, setProvince] = useState("");
+  const [timezone, setTimezone] = useState("Asia/Jakarta");
   const [logo, setLogo] = useState("");
   const [startTime, setStartTime] = useState("07:00");
   const [endTime, setEndTime] = useState("14:00");
@@ -35,7 +40,7 @@ const SchoolSettings = () => {
   useEffect(() => {
     if (!profile?.school_id) return;
     Promise.all([
-      supabase.from("schools").select("name, address, logo").eq("id", profile.school_id).single(),
+      supabase.from("schools").select("name, address, logo, npsn, city, province, timezone").eq("id", profile.school_id).single(),
       supabase.from("pickup_settings").select("school_start_time, school_end_time, attendance_start_time, attendance_end_time, departure_start_time, departure_end_time").eq("school_id", profile.school_id).maybeSingle(),
       supabase.from("qr_instructions").select("id, instruction_text, sort_order").eq("school_id", profile.school_id).order("sort_order"),
     ]).then(([schoolRes, settingsRes, instrRes]) => {
@@ -43,6 +48,10 @@ const SchoolSettings = () => {
         setName(schoolRes.data.name || "");
         setAddress(schoolRes.data.address || "");
         setLogo(schoolRes.data.logo || "");
+        setNpsn((schoolRes.data as any).npsn || "");
+        setCity((schoolRes.data as any).city || "");
+        setProvince((schoolRes.data as any).province || "");
+        setTimezone((schoolRes.data as any).timezone || "Asia/Jakarta");
       }
       if (settingsRes.data) {
         setStartTime(settingsRes.data.school_start_time?.slice(0, 5) || "07:00");
@@ -132,7 +141,10 @@ const SchoolSettings = () => {
     if (!profile?.school_id) return;
     setSaving(true);
 
-    const { error: schoolErr } = await supabase.from("schools").update({ name, address, logo: logo || null }).eq("id", profile.school_id);
+    const { error: schoolErr } = await supabase.from("schools").update({
+      name, address, logo: logo || null,
+      npsn: npsn || null, city: city || null, province: province || null, timezone,
+    } as any).eq("id", profile.school_id);
 
     const settingsPayload = {
       school_start_time: startTime + ":00",
@@ -167,13 +179,29 @@ const SchoolSettings = () => {
       <Card className="border-0 shadow-card">
         <CardHeader><CardTitle className="text-base">Informasi Sekolah</CardTitle></CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="school-name">Nama Sekolah</Label>
-            <Input id="school-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Nama sekolah" />
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="school-name">Nama Sekolah</Label>
+              <Input id="school-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Nama sekolah" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="school-npsn">NPSN</Label>
+              <Input id="school-npsn" value={npsn} onChange={(e) => setNpsn(e.target.value)} placeholder="Nomor Pokok Sekolah Nasional" />
+            </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="school-address">Alamat</Label>
-            <Textarea id="school-address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Alamat lengkap sekolah" rows={3} />
+            <Label htmlFor="school-address">Alamat Lengkap</Label>
+            <Textarea id="school-address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Jl. Contoh No. 123, Kelurahan, Kecamatan" rows={3} />
+          </div>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="school-city">Kota / Kabupaten</Label>
+              <Input id="school-city" value={city} onChange={(e) => setCity(e.target.value)} placeholder="Contoh: Jakarta Selatan" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="school-province">Provinsi</Label>
+              <Input id="school-province" value={province} onChange={(e) => setProvince(e.target.value)} placeholder="Contoh: DKI Jakarta" />
+            </div>
           </div>
 
           {/* Logo */}
@@ -212,6 +240,44 @@ const SchoolSettings = () => {
         </CardContent>
       </Card>
 
+
+      {/* Zona Waktu */}
+      <Card className="border-0 shadow-card">
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Globe className="h-4 w-4 text-primary" />
+            Zona Waktu Sekolah
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-xs text-muted-foreground">
+            Pilih zona waktu sekolah agar waktu absensi datang dan pulang sesuai dengan wilayah sekolah Anda.
+          </p>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Zona Waktu</Label>
+              <Select value={timezone} onValueChange={setTimezone}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih zona waktu" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Asia/Jakarta">WIB — Waktu Indonesia Barat (UTC+7)</SelectItem>
+                  <SelectItem value="Asia/Makassar">WITA — Waktu Indonesia Tengah (UTC+8)</SelectItem>
+                  <SelectItem value="Asia/Jayapura">WIT — Waktu Indonesia Timur (UTC+9)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-end">
+              <div className="bg-secondary/50 rounded-lg p-3 text-xs text-muted-foreground w-full">
+                <p className="font-semibold text-foreground mb-1">
+                  {timezone === "Asia/Jakarta" ? "WIB (UTC+7)" : timezone === "Asia/Makassar" ? "WITA (UTC+8)" : "WIT (UTC+9)"}
+                </p>
+                <p>Waktu saat ini: {new Date().toLocaleTimeString("id-ID", { timeZone: timezone, hour: "2-digit", minute: "2-digit", second: "2-digit" })}</p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Waktu Absensi Datang & Pulang */}
       <Card className="border-0 shadow-card">

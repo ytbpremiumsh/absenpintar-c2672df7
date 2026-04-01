@@ -49,15 +49,23 @@ const StudentDetail = () => {
   const [recapMonth, setRecapMonth] = useState(new Date());
   const [monthlyLogs, setMonthlyLogs] = useState<any[]>([]);
   const [waliKelasName, setWaliKelasName] = useState("");
+  const [availableClasses, setAvailableClasses] = useState<string[]>([]);
 
   const fetchData = async () => {
     if (!id || !profile?.school_id) return;
-    const [studentRes, logsRes, schoolRes, instrRes] = await Promise.all([
+    const [studentRes, logsRes, schoolRes, instrRes, classesRes, studentsRes] = await Promise.all([
       supabase.from("students").select("*").eq("id", id).eq("school_id", profile.school_id).single(),
       supabase.from("attendance_logs").select("*").eq("student_id", id).eq("school_id", profile.school_id).order("date", { ascending: false }).order("time", { ascending: false }).limit(30),
       supabase.from("schools").select("name, logo, address").eq("id", profile.school_id).single(),
       supabase.from("qr_instructions").select("instruction_text").eq("school_id", profile.school_id).order("sort_order"),
+      supabase.from("classes").select("name").eq("school_id", profile.school_id).order("name"),
+      supabase.from("students").select("class").eq("school_id", profile.school_id),
     ]);
+    // Build available classes from both tables
+    const classSet = new Set<string>();
+    (classesRes.data || []).forEach((c: any) => classSet.add(c.name));
+    (studentsRes.data || []).forEach((s: any) => classSet.add(s.class));
+    setAvailableClasses(Array.from(classSet).sort());
     setStudent(studentRes.data);
     setAttendanceHistory(logsRes.data || []);
     setSchool(schoolRes.data);
@@ -392,7 +400,15 @@ const StudentDetail = () => {
             <CardContent className="space-y-4">
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2"><Label>Nama Lengkap</Label><Input value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} /></div>
-                <div className="space-y-2"><Label>Kelas</Label><Input value={editForm.class} onChange={(e) => setEditForm({ ...editForm, class: e.target.value })} /></div>
+                <div className="space-y-2">
+                  <Label>Kelas</Label>
+                  <Select value={editForm.class} onValueChange={(val) => setEditForm({ ...editForm, class: val })}>
+                    <SelectTrigger><SelectValue placeholder="Pilih Kelas" /></SelectTrigger>
+                    <SelectContent>
+                      {availableClasses.map((cls) => (<SelectItem key={cls} value={cls}>{cls}</SelectItem>))}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div className="space-y-2"><Label>NIS</Label><Input value={editForm.student_id} onChange={(e) => setEditForm({ ...editForm, student_id: e.target.value })} /></div>
                 <div className="space-y-2"><Label>Nama Wali</Label><Input value={editForm.parent_name} onChange={(e) => setEditForm({ ...editForm, parent_name: e.target.value })} /></div>
                 <div className="space-y-2"><Label>No. HP Wali</Label><Input value={editForm.parent_phone} onChange={(e) => setEditForm({ ...editForm, parent_phone: e.target.value })} /></div>
