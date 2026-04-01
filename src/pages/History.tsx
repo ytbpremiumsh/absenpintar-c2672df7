@@ -45,14 +45,6 @@ const History = () => {
   const [studentAttLogs, setStudentAttLogs] = useState<any[]>([]);
   const [loadingStudentLogs, setLoadingStudentLogs] = useState(false);
 
-  // Edit history states
-  const [editHistoryOpen, setEditHistoryOpen] = useState(false);
-  const [editDate, setEditDate] = useState(new Date().toISOString().slice(0, 10));
-  const [editClassFilter, setEditClassFilter] = useState("all");
-  const [historyLogs, setHistoryLogs] = useState<any[]>([]);
-  const [editChanges, setEditChanges] = useState<Record<string, string>>({});
-  const [savingHistory, setSavingHistory] = useState(false);
-  const [loadingHistory, setLoadingHistory] = useState(false);
 
   const isTeacherOnly = roles.includes("teacher") && !roles.includes("school_admin") && !roles.includes("staff");
 
