@@ -17,6 +17,10 @@ const SchoolSettings = () => {
   const features = useSubscriptionFeatures();
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
+  const [npsn, setNpsn] = useState("");
+  const [city, setCity] = useState("");
+  const [province, setProvince] = useState("");
+  const [timezone, setTimezone] = useState("Asia/Jakarta");
   const [logo, setLogo] = useState("");
   const [startTime, setStartTime] = useState("07:00");
   const [endTime, setEndTime] = useState("14:00");
