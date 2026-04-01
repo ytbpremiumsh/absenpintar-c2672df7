@@ -463,12 +463,12 @@ const PublicAttendanceMonitoring = () => {
 
               return (
                 <motion.div key={cls} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                  <div className={`rounded-xl ring-1 p-4 transition-all ${allDone ? theme.classDoneBg : theme.classBg}`}>
+              <div className={`rounded-xl ring-1 p-4 transition-all hover:shadow-lg hover:scale-[1.01] ${allDone ? theme.classDoneBg : theme.classBg}`}>
                     <div className="flex items-center gap-3 mb-3">
-                      <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${
+                      <div className={`h-11 w-11 rounded-xl flex items-center justify-center shrink-0 border ${
                         allDone
-                          ? darkMode ? "bg-emerald-500/15 text-emerald-400" : "bg-emerald-100 text-emerald-600"
-                          : "bg-[#5B6CF9]/10 text-[#5B6CF9]"
+                          ? darkMode ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/20" : "bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-emerald-600/20"
+                          : darkMode ? "bg-indigo-500/15 text-indigo-400 border-indigo-500/20" : "bg-gradient-to-br from-[#5B6CF9] to-[#4c5ded] text-white border-[#5B6CF9]/20"
                       }`}>
                         <GraduationCap className="h-5 w-5" />
                       </div>

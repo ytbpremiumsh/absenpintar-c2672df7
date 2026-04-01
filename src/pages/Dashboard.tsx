@@ -425,7 +425,13 @@ const Dashboard = () => {
                   </p>
                 </div>
                 <div className="text-right shrink-0">
-                  <Badge className="text-[10px] font-semibold border-0 rounded-full px-2" style={{ backgroundColor: `${statusColor}15`, color: statusColor }}>
+                  <Badge className={`text-[10px] font-semibold border-0 rounded-full px-2.5 py-0.5 ${
+                    status === "hadir" ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400" :
+                    status === "izin" ? "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400" :
+                    status === "sakit" ? "bg-sky-100 text-sky-700 dark:bg-sky-500/20 dark:text-sky-400" :
+                    status === "alfa" ? "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400" :
+                    "bg-muted text-muted-foreground"
+                  }`}>
                     {STATUS_LABELS[status] || status}
                   </Badge>
                   <p className="text-[10px] text-muted-foreground mt-0.5 font-mono">{log.time?.slice(0, 5)}</p>
