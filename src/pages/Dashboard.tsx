@@ -232,10 +232,6 @@ const Dashboard = () => {
         subtitle={now.toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
         actions={
           <div className="flex items-center gap-3">
-            <Button onClick={() => setEditHistoryOpen(true)} variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20 rounded-xl text-xs">
-              <History className="h-4 w-4 mr-1.5" />
-              Edit Riwayat
-            </Button>
             <div className="text-right hidden sm:block">
               <p className="text-2xl font-bold">{attendancePercent}%</p>
               <p className="text-[11px] text-white/70">Kehadiran</p>
