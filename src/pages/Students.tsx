@@ -526,7 +526,7 @@ const Students = () => {
             )}
             <Button variant="outline" size="sm"
               onClick={() => { if (!features.canImportExport) toast.error("Fitur Import tersedia di paket Basic ke atas"); }}
-              className={`text-xs px-2 sm:px-3 ${!features.canImportExport ? "opacity-60 cursor-not-allowed" : ""}`}>
+              className={`text-xs px-2 sm:px-3 border-border text-foreground ${!features.canImportExport ? "opacity-60 cursor-not-allowed" : ""}`}>
               <Upload className="h-3.5 w-3.5 sm:mr-1" /> <span className="hidden sm:inline">Import</span>
               {!features.canImportExport && <Lock className="h-3 w-3 ml-1 text-warning" />}
             </Button>
