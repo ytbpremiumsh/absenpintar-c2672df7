@@ -711,16 +711,16 @@ const Students = () => {
                     {expandedClasses.has(cls) && (
                       <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
                         <div className="overflow-x-auto">
-                          <Table>
+                          <Table className="table-fixed">
                             <TableHeader>
                               <TableRow className="bg-secondary/30">
                                 <TableHead className="w-12">#</TableHead>
-                                <TableHead>Nama Siswa</TableHead>
-                                <TableHead className="hidden sm:table-cell">NIS</TableHead>
-                                <TableHead className="hidden md:table-cell">J/K</TableHead>
-                                <TableHead className="hidden md:table-cell">Wali</TableHead>
-                                <TableHead className="hidden lg:table-cell">No. HP</TableHead>
-                                <TableHead className="text-right">Aksi</TableHead>
+                                <TableHead className="min-w-[180px]">Nama Siswa</TableHead>
+                                <TableHead className="hidden sm:table-cell w-[100px]">NIS</TableHead>
+                                <TableHead className="hidden md:table-cell w-[60px]">J/K</TableHead>
+                                <TableHead className="hidden md:table-cell w-[140px]">Wali</TableHead>
+                                <TableHead className="hidden lg:table-cell w-[130px]">No. HP</TableHead>
+                                <TableHead className="text-right w-[160px]">Aksi</TableHead>
                               </TableRow>
                             </TableHeader>
                             <TableBody>
