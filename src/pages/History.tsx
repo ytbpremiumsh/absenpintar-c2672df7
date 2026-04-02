@@ -170,6 +170,7 @@ const History = () => {
       date: date.slice(5),
       "% Hadir": d.total > 0 ? Math.round((d.hadir / d.total) * 100) : 0,
       Hadir: d.hadir,
+      Izin: byDate[Object.keys(byDate).find(k => k === Object.entries(byDate).sort(([a2], [b2]) => a2.localeCompare(b2)).find(([dd]) => dd === Object.entries(byDate).sort(([a3], [b3]) => a3.localeCompare(b3)).map(([k2]) => k2).find(k3 => k3.slice(5) === date.slice(5)))![0])!]?.total || 0,
       Alfa: d.alfa,
     }));
 
