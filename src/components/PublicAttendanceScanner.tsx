@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
   Camera, X, Search, ScanLine, UserCheck, CheckCircle2,
-  ShieldCheck, Loader2, AlertTriangle, CreditCard, LogIn, LogOut, Lock, Crown,
+  Loader2, AlertTriangle, CreditCard, LogIn, LogOut, Lock,
   SwitchCamera,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -341,61 +341,108 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
         <CardContent className="p-0">
           {cameraActive ? (
             <>
-              <div className="relative bg-black aspect-[4/3]">
-                <video ref={videoRef} className="w-full h-full object-contain" autoPlay playsInline muted />
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className={`w-28 h-28 border-2 rounded-lg transition-colors ${scanPaused.current ? "border-success" : "border-primary opacity-70"}`} />
+              <div className="relative bg-black" style={{ minHeight: 320 }}>
+                <video ref={videoRef} className="w-full h-full object-cover" autoPlay playsInline muted
+                  style={{ minHeight: 320, WebkitTransform: "scaleX(1)" }} />
+                
+                {/* Scanner Overlay - Premium viewfinder */}
+                <div className="absolute inset-0 pointer-events-none">
+                  {/* Corner brackets */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="relative w-48 h-48">
+                      <div className="absolute top-0 left-0 w-8 h-8 border-t-[3px] border-l-[3px] border-[#5B6CF9] rounded-tl-lg" />
+                      <div className="absolute top-0 right-0 w-8 h-8 border-t-[3px] border-r-[3px] border-[#5B6CF9] rounded-tr-lg" />
+                      <div className="absolute bottom-0 left-0 w-8 h-8 border-b-[3px] border-l-[3px] border-[#5B6CF9] rounded-bl-lg" />
+                      <div className="absolute bottom-0 right-0 w-8 h-8 border-b-[3px] border-r-[3px] border-[#5B6CF9] rounded-br-lg" />
+                      {!scanPaused.current && (
+                        <div className="absolute left-2 right-2 h-0.5 bg-gradient-to-r from-transparent via-[#5B6CF9] to-transparent animate-pulse top-1/2" />
+                      )}
+                    </div>
+                  </div>
+                  {/* Dark overlay outside scan area */}
+                  <div className="absolute inset-0 bg-black/30" style={{
+                    maskImage: "radial-gradient(ellipse 120px 120px at center, transparent 80%, black 100%)",
+                    WebkitMaskImage: "radial-gradient(ellipse 120px 120px at center, transparent 80%, black 100%)"
+                  }} />
                 </div>
-                <div className="absolute bottom-1 left-0 right-0 text-center">
-                  <span className="text-[10px] text-white/80 bg-black/50 px-2 py-0.5 rounded">
-                    {scanPaused.current ? "✓ Terdeteksi" : canFaceRecognition ? "Arahkan ke Barcode / Wajah..." : "Arahkan ke Barcode..."}
-                  </span>
+
+                {/* Status badge top */}
+                <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 bg-black/50 backdrop-blur-sm px-2.5 py-1 rounded-lg">
+                    {faceScanning ? (
+                      <><Loader2 className="h-3 w-3 animate-spin text-[#5B6CF9]" /><span className="text-[11px] text-white font-medium">Mengenali wajah...</span></>
+                    ) : scanPaused.current ? (
+                      <><CheckCircle2 className="h-3 w-3 text-emerald-400" /><span className="text-[11px] text-white font-medium">Terdeteksi!</span></>
+                    ) : (
+                      <><div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" /><span className="text-[11px] text-white/80">Memindai...</span></>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1 bg-black/50 backdrop-blur-sm px-2 py-1 rounded-lg">
+                    <ScanLine className="h-3 w-3 text-white/70" />
+                    {canFaceRecognition && <UserCheck className="h-3 w-3 text-white/70 ml-0.5" />}
+                    {canFaceRecognition && <CreditCard className="h-3 w-3 text-white/70 ml-0.5" />}
+                  </div>
+                </div>
+
+                {/* Bottom status bar */}
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3 pt-8">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-[11px] text-white/80">
+                      <ScanLine className="h-3.5 w-3.5" /> Barcode
+                      {canFaceRecognition ? (
+                        <><span className="text-white/40">•</span><UserCheck className="h-3.5 w-3.5" /> Face<span className="text-white/40">•</span><CreditCard className="h-3.5 w-3.5" /> RFID</>
+                      ) : (
+                        <><span className="text-white/40">•</span><Lock className="h-3 w-3 opacity-50" /><span className="opacity-50">Face</span><span className="text-[9px] text-amber-400 font-bold ml-1">PREMIUM</span></>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="p-2 flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground pl-2">
-                  {faceScanning ? (
-                    <><Loader2 className="h-3 w-3 animate-spin text-primary" /><span className="text-primary font-medium text-[10px]">Mengenali wajah...</span></>
-                  ) : (
-                    <>
-                      <div className="h-2 w-2 rounded-full bg-success animate-pulse" />
-                      <span className="text-[10px]">
-                        <ScanLine className="h-2.5 w-2.5 inline mr-0.5" />QR
-                        {canFaceRecognition ? (
-                          <>{" + "}<UserCheck className="h-2.5 w-2.5 inline mx-0.5" />Face + <CreditCard className="h-2.5 w-2.5 inline mx-0.5" />RFID</>
-                        ) : (
-                          <>{" + "}<UserCheck className="h-2.5 w-2.5 inline mx-0.5" />Face</>
-                        )}
-                      </span>
-                    </>
-                  )}
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <Button variant="outline" size="sm" onClick={switchCamera} className="h-7 text-xs px-2" title={facingMode === "user" ? "Ganti ke Kamera Belakang" : "Ganti ke Kamera Depan"}>
-                    <SwitchCamera className="h-3 w-3 mr-1" /> {facingMode === "user" ? "Belakang" : "Depan"}
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={stopCamera} className="h-7 text-xs px-2">
-                    <X className="h-3 w-3 mr-1" /> Tutup
-                  </Button>
-                </div>
+
+              {/* Camera controls */}
+              <div className="p-3 flex items-center justify-between bg-card border-t border-border/50">
+                <Button variant="outline" size="sm" onClick={switchCamera} className="h-9 rounded-xl gap-1.5 text-xs border-border/50">
+                  <SwitchCamera className="h-3.5 w-3.5" /> {facingMode === "user" ? "Belakang" : "Depan"}
+                </Button>
+                <Button variant="outline" size="sm" onClick={stopCamera} className="h-9 rounded-xl gap-1.5 text-xs text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/10">
+                  <X className="h-3.5 w-3.5" /> Tutup Kamera
+                </Button>
               </div>
             </>
           ) : (
-            <div className="p-4 flex flex-col items-center gap-2">
-              <div className="h-12 w-12 rounded-xl gradient-primary flex items-center justify-center">
-                <Camera className="h-6 w-6 text-primary-foreground" />
+            <div className="flex flex-col items-center justify-center gap-4 p-8 bg-gradient-to-b from-muted/30 to-background" style={{ minHeight: 280 }}>
+              <div className="relative">
+                <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-[#5B6CF9] to-[#4c5ded] flex items-center justify-center shadow-lg shadow-[#5B6CF9]/25">
+                  <Camera className="h-9 w-9 text-white" />
+                </div>
+                <div className="absolute -top-1 -right-1 h-6 w-6 rounded-full bg-emerald-500 flex items-center justify-center shadow-md">
+                  <ScanLine className="h-3 w-3 text-white" />
+                </div>
               </div>
-              {cameraError && <p className="text-destructive text-xs text-center">{cameraError}</p>}
-              <Button onClick={() => startCamera()} size="sm" className="gradient-primary hover:opacity-90">
-                <Camera className="h-4 w-4 mr-2" /> Aktifkan Kamera
+              {cameraError && <p className="text-destructive text-xs text-center px-4 max-w-xs">{cameraError}</p>}
+              <Button onClick={() => startCamera()} className="h-11 px-6 rounded-xl bg-gradient-to-r from-[#5B6CF9] to-[#4c5ded] hover:opacity-90 text-white font-semibold shadow-lg shadow-[#5B6CF9]/25 gap-2">
+                <Camera className="h-4 w-4" /> Aktifkan Kamera
               </Button>
-              {canFaceRecognition ? (
-                <p className="text-[10px] text-muted-foreground">Barcode + Face Recognition + RFID</p>
-              ) : (
-                <p className="text-[10px] text-muted-foreground">
-                  Barcode Only • <span className="text-amber-600 font-semibold"><Crown className="h-3 w-3 inline mr-0.5" />Face Recognition khusus Premium</span>
-                </p>
-              )}
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1 bg-muted/50 px-2.5 py-1 rounded-lg">
+                  <ScanLine className="h-3.5 w-3.5 text-[#5B6CF9]" /> Barcode
+                </div>
+                {canFaceRecognition ? (
+                  <>
+                    <div className="flex items-center gap-1 bg-muted/50 px-2.5 py-1 rounded-lg">
+                      <UserCheck className="h-3.5 w-3.5 text-[#5B6CF9]" /> Face
+                    </div>
+                    <div className="flex items-center gap-1 bg-muted/50 px-2.5 py-1 rounded-lg">
+                      <CreditCard className="h-3.5 w-3.5 text-[#5B6CF9]" /> RFID
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex items-center gap-1 bg-muted/50 px-2.5 py-1 rounded-lg opacity-60">
+                    <Lock className="h-3 w-3" /> Face <span className="text-[9px] text-amber-600 dark:text-amber-400 font-bold ml-1">PREMIUM</span>
+                  </div>
+                )}
+              </div>
+              <p className="text-[11px] text-muted-foreground/60">Atau gunakan input NIS manual di bawah</p>
             </div>
           )}
 
@@ -410,14 +457,20 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
           )}
         </CardContent>
 
-        {/* Manual input */}
-        <div className="p-3 border-t border-border">
+        {/* Manual NIS input - Premium style */}
+        <div className="p-4 border-t border-border">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="h-7 w-7 rounded-lg bg-[#5B6CF9]/10 flex items-center justify-center">
+              <Search className="h-3.5 w-3.5 text-[#5B6CF9]" />
+            </div>
+            <p className="text-sm font-semibold text-foreground">Input NIS Manual</p>
+          </div>
           <div className="flex gap-2">
-            <Input placeholder="NIS / Kode Kartu manual" value={manualCode}
+            <Input placeholder="Masukkan NIS (cth: NIS-001)" value={manualCode}
               onChange={(e) => setManualCode(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()} className="h-8 text-xs" />
-            <Button onClick={handleSearch} className="h-8 gradient-primary hover:opacity-90 px-3">
-              <Search className="h-3.5 w-3.5" />
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()} className="h-11 text-sm rounded-xl border-border/50" />
+            <Button onClick={handleSearch} className="h-11 px-5 rounded-xl bg-gradient-to-r from-[#5B6CF9] to-[#4c5ded] hover:opacity-90 text-white">
+              <Search className="h-4 w-4" />
             </Button>
           </div>
         </div>
