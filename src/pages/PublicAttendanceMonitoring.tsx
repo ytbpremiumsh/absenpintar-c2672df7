@@ -76,7 +76,7 @@ const PublicAttendanceMonitoring = () => {
     return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, []);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!schoolId) return;
     try {
       const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/public-attendance?school_id=${schoolId}`;
@@ -104,8 +104,7 @@ const PublicAttendanceMonitoring = () => {
     } finally {
       setLoading(false);
     }
-  };
-
+  }, [schoolId, soundEnabled]);
   useEffect(() => {
     fetchData();
     const interval = setInterval(fetchData, 5000);
@@ -114,7 +113,7 @@ const PublicAttendanceMonitoring = () => {
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "attendance_logs" }, () => fetchData())
       .subscribe();
     return () => { clearInterval(interval); supabase.removeChannel(channel); };
-  }, [schoolId]);
+  }, [schoolId, fetchData]);
 
   // Theme classes
   const theme = darkMode ? {
@@ -360,17 +359,11 @@ const PublicAttendanceMonitoring = () => {
 
         {/* Main Content */}
         <div className={`grid ${cameraVisible ? "lg:grid-cols-5" : ""} gap-4`}>
-          <AnimatePresence>
-            {cameraVisible && (
-              <motion.div className="lg:col-span-2"
-                initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.3 }}>
-                {schoolId && (
-                  <PublicAttendanceScanner schoolId={schoolId} onAttendanceRecorded={fetchData} currentMode={data?.currentMode || "datang"} canFaceRecognition={data?.canFaceRecognition ?? false} />
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {schoolId && (
+            <div className={`lg:col-span-2 ${cameraVisible ? "" : "hidden"}`}>
+              <PublicAttendanceScanner schoolId={schoolId} onAttendanceRecorded={fetchData} currentMode={data?.currentMode || "datang"} canFaceRecognition={data?.canFaceRecognition ?? false} />
+            </div>
+          )}
 
           {/* Live Feed */}
           <div className={cameraVisible ? "lg:col-span-3" : ""}>

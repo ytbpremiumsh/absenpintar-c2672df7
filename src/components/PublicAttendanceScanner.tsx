@@ -47,9 +47,9 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
   const streamRef = useRef<MediaStream | null>(null);
   const scanIntervalRef = useRef<number | null>(null);
   const faceIntervalRef = useRef<number | null>(null);
-  const faceTimeoutRef = useRef<number | null>(null);
   const isLookingUp = useRef(false);
   const scanPaused = useRef(false);
+  const mounted = useRef(true);
 
   // RFID keyboard emulation buffer
   const rfidBuffer = useRef("");
@@ -161,8 +161,13 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
     }, 300);
   }, [lookupAndRecord]);
 
-  // Face recognition - with busy guard to prevent overlapping calls
+  // Stable ref for the latest lookupAndRecord so intervals don't need to restart
+  const lookupRef = useRef(lookupAndRecord);
+  useEffect(() => { lookupRef.current = lookupAndRecord; }, [lookupAndRecord]);
+
   const faceBusy = useRef(false);
+
+  // Face recognition - stable function that reads from refs
   const captureAndRecognize = useCallback(async () => {
     if (faceBusy.current || !videoRef.current || scanPaused.current || isLookingUp.current) return;
     const video = videoRef.current;
@@ -194,7 +199,7 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
 
       if (data.match && data.student) {
         toast.success(`Wajah dikenali: ${data.student.name}`);
-        await lookupAndRecord("", "face_recognition", data.student.id);
+        await lookupRef.current("", "face_recognition", data.student.id);
       }
     } catch (err: any) {
       if (err.name !== "AbortError") console.log("Face recognition error:", err.message);
@@ -202,32 +207,36 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
       faceBusy.current = false;
       setFaceScanning(false);
     }
-  }, [schoolId, SUPABASE_URL, SUPABASE_KEY, lookupAndRecord]);
+  }, [schoolId, SUPABASE_URL, SUPABASE_KEY]); // No lookupAndRecord dependency!
 
   const startFaceScanning = useCallback(() => {
     if (faceIntervalRef.current) return;
-    // Use a dedicated interval for face capture (every 10s) completely independent of clock
-    faceTimeoutRef.current = window.setTimeout(() => captureAndRecognize(), 4000);
+    // Initial delay then every 10s
+    const initialTimeout = window.setTimeout(() => captureAndRecognize(), 4000);
     faceIntervalRef.current = window.setInterval(() => {
       if (!scanPaused.current) captureAndRecognize();
     }, 10000);
+    // Store initial timeout id in interval ref won't work, use a cleanup approach
+    return initialTimeout;
   }, [captureAndRecognize]);
 
   const stopFaceScanning = useCallback(() => {
-    if (faceTimeoutRef.current) { clearTimeout(faceTimeoutRef.current); faceTimeoutRef.current = null; }
     if (faceIntervalRef.current) { clearInterval(faceIntervalRef.current); faceIntervalRef.current = null; }
   }, []);
 
-  // Camera start/stop
+  // Camera pipeline setup - only runs when camera stream is acquired, stable deps
   useEffect(() => {
     if (!cameraActive || !videoRef.current || !streamRef.current) return;
     const video = videoRef.current;
     video.srcObject = streamRef.current;
 
+    let initialFaceTimeout: number | undefined;
+
     const startPipelines = () => {
       startBarcodeScanning();
-      if (canFaceRecognition) startFaceScanning();
-      else stopFaceScanning();
+      if (canFaceRecognition) {
+        initialFaceTimeout = startFaceScanning();
+      }
     };
 
     if (video.readyState >= HTMLMediaElement.HAVE_METADATA) {
@@ -240,6 +249,7 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
 
     return () => {
       video.onloadedmetadata = null;
+      if (initialFaceTimeout) clearTimeout(initialFaceTimeout);
       stopFaceScanning();
     };
   }, [cameraActive, startBarcodeScanning, startFaceScanning, stopFaceScanning, canFaceRecognition]);
