@@ -57,6 +57,10 @@ import NotFound from "./pages/NotFound";
 import Penawaran from "./pages/Penawaran";
 import SuperAdminPenawaran from "./pages/super-admin/SuperAdminPenawaran";
 import ForgotPassword from "./pages/ForgotPassword";
+import AffiliateRegister from "./pages/AffiliateRegister";
+import AffiliateLogin from "./pages/AffiliateLogin";
+import AffiliateDashboard from "./pages/AffiliateDashboard";
+import SuperAdminAffiliate from "./pages/super-admin/SuperAdminAffiliate";
 
 const queryClient = new QueryClient();
 
