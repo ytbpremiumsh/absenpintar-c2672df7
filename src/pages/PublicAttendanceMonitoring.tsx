@@ -359,17 +359,11 @@ const PublicAttendanceMonitoring = () => {
 
         {/* Main Content */}
         <div className={`grid ${cameraVisible ? "lg:grid-cols-5" : ""} gap-4`}>
-          <AnimatePresence>
-            {cameraVisible && (
-              <motion.div className="lg:col-span-2"
-                initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.3 }}>
-                {schoolId && (
-                  <PublicAttendanceScanner schoolId={schoolId} onAttendanceRecorded={fetchData} currentMode={data?.currentMode || "datang"} canFaceRecognition={data?.canFaceRecognition ?? false} />
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {schoolId && (
+            <div className={`lg:col-span-2 ${cameraVisible ? "" : "hidden"}`}>
+              <PublicAttendanceScanner schoolId={schoolId} onAttendanceRecorded={fetchData} currentMode={data?.currentMode || "datang"} canFaceRecognition={data?.canFaceRecognition ?? false} />
+            </div>
+          )}
 
           {/* Live Feed */}
           <div className={cameraVisible ? "lg:col-span-3" : ""}>
