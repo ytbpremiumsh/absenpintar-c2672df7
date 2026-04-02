@@ -499,16 +499,29 @@ const LandingPage = () => {
           </motion.div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {FEATURES.map((f, i) => (
-              <motion.div key={f.title} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
-                className="group bg-white dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 rounded-2xl p-6 sm:p-7 hover:border-indigo-200 dark:hover:border-indigo-500/20 hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-300 hover:-translate-y-1">
-                <div className={`h-12 w-12 rounded-2xl bg-gradient-to-br ${f.color} flex items-center justify-center shadow-lg mb-5 group-hover:scale-110 transition-transform duration-300`}>
-                  <f.icon className="h-6 w-6 text-white" />
-                </div>
-                <h3 className="font-bold text-slate-900 dark:text-white text-base mb-2">{f.title}</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{f.desc}</p>
-              </motion.div>
-            ))}
+            {(() => {
+              const ICON_FEAT_MAP: Record<string, any> = { scan: QrCode, monitor: Monitor, message: Bell, chart: FileBarChart, face: UserCheck, school: GraduationCap };
+              const COLORS = ["from-blue-500 to-indigo-600", "from-violet-500 to-purple-600", "from-emerald-500 to-teal-600", "from-amber-500 to-orange-600", "from-pink-500 to-rose-600", "from-cyan-500 to-blue-600"];
+              const features = Array.from({ length: 6 }, (_, i) => {
+                const n = i + 1;
+                const title = get(`feature_${n}_title`) || DEFAULT_FEATURES[i]?.title || "";
+                const desc = get(`feature_${n}_desc`) || DEFAULT_FEATURES[i]?.desc || "";
+                const iconKey = get(`feature_${n}_icon`) || "";
+                const icon = ICON_FEAT_MAP[iconKey] || DEFAULT_FEATURES[i]?.icon || QrCode;
+                const color = DEFAULT_FEATURES[i]?.color || COLORS[i % COLORS.length];
+                return { title, desc, icon, color };
+              }).filter(f => f.title);
+              return features.map((f, i) => (
+                <motion.div key={f.title} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
+                  className="group bg-white dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 rounded-2xl p-6 sm:p-7 hover:border-indigo-200 dark:hover:border-indigo-500/20 hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-300 hover:-translate-y-1">
+                  <div className={`h-12 w-12 rounded-2xl bg-gradient-to-br ${f.color} flex items-center justify-center shadow-lg mb-5 group-hover:scale-110 transition-transform duration-300`}>
+                    <f.icon className="h-6 w-6 text-white" />
+                  </div>
+                  <h3 className="font-bold text-slate-900 dark:text-white text-base mb-2">{f.title}</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{f.desc}</p>
+                </motion.div>
+              ));
+            })()}
           </div>
         </div>
       </section>
