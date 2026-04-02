@@ -349,11 +349,6 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
                 <Lock className="h-2.5 w-2.5 mr-0.5" />Face
               </Badge>
             )}
-            {canFaceRecognition && (
-              <Badge variant="outline" className="text-[8px] px-1.5 py-0">
-                <CreditCard className="h-2.5 w-2.5 mr-0.5" />RFID
-              </Badge>
-            )}
           </div>
         </div>
 
