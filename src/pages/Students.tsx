@@ -676,7 +676,7 @@ const Students = () => {
                         <CardContent className="p-4 flex flex-col items-center text-center space-y-2.5">
                           <GenderAvatar student={student} size={56} />
                           <div>
-                            <p className="font-semibold text-sm truncate text-primary hover:underline">{student.name}</p>
+                            <p className="font-semibold text-sm truncate text-foreground hover:underline">{student.name}</p>
                             <p className="text-[10px] text-muted-foreground font-mono">{student.student_id}</p>
                           </div>
                           <div className="flex items-center justify-center gap-1 pt-1" onClick={(e) => e.stopPropagation()}>
@@ -711,16 +711,16 @@ const Students = () => {
                     {expandedClasses.has(cls) && (
                       <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
                         <div className="overflow-x-auto">
-                          <Table>
+                          <Table className="table-fixed">
                             <TableHeader>
                               <TableRow className="bg-secondary/30">
                                 <TableHead className="w-12">#</TableHead>
-                                <TableHead>Nama Siswa</TableHead>
-                                <TableHead className="hidden sm:table-cell">NIS</TableHead>
-                                <TableHead className="hidden md:table-cell">J/K</TableHead>
-                                <TableHead className="hidden md:table-cell">Wali</TableHead>
-                                <TableHead className="hidden lg:table-cell">No. HP</TableHead>
-                                <TableHead className="text-right">Aksi</TableHead>
+                                <TableHead className="min-w-[180px]">Nama Siswa</TableHead>
+                                <TableHead className="hidden sm:table-cell w-[100px]">NIS</TableHead>
+                                <TableHead className="hidden md:table-cell w-[60px]">J/K</TableHead>
+                                <TableHead className="hidden md:table-cell w-[140px]">Wali</TableHead>
+                                <TableHead className="hidden lg:table-cell w-[130px]">No. HP</TableHead>
+                                <TableHead className="text-right w-[160px]">Aksi</TableHead>
                               </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -731,7 +731,7 @@ const Students = () => {
                                     <div className="flex items-center gap-3">
                                       <GenderAvatar student={student} size={36} />
                                       <div>
-                                        <p className="font-medium text-sm text-primary hover:underline">{student.name}</p>
+                                        <p className="font-medium text-sm text-foreground hover:underline">{student.name}</p>
                                         <p className="text-xs text-muted-foreground sm:hidden">{student.student_id}</p>
                                       </div>
                                     </div>
