@@ -76,7 +76,7 @@ const PublicAttendanceMonitoring = () => {
     return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, []);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!schoolId) return;
     try {
       const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/public-attendance?school_id=${schoolId}`;
@@ -104,8 +104,7 @@ const PublicAttendanceMonitoring = () => {
     } finally {
       setLoading(false);
     }
-  };
-
+  }, [schoolId, soundEnabled]);
   useEffect(() => {
     fetchData();
     const interval = setInterval(fetchData, 5000);
