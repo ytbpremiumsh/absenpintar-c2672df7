@@ -564,7 +564,8 @@ const LandingPage = () => {
                   <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-1">{item.title}</h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{item.desc}</p>
                 </motion.div>
-              ))}
+                ));
+              })()}
             </div>
           </div>
         </div>
