@@ -114,7 +114,7 @@ const History = () => {
     const total = logs.length;
     const byStatus: Record<string, number> = { hadir: 0, izin: 0, sakit: 0, alfa: 0 };
     const byClass: Record<string, { total: number; hadir: number; alfa: number; izin: number; sakit: number }> = {};
-    const byDate: Record<string, { total: number; hadir: number; alfa: number }> = {};
+    const byDate: Record<string, { total: number; hadir: number; izin: number; sakit: number; alfa: number }> = {};
     const byDay: Record<number, Record<string, number>> = {};
     const studentAlfa: Record<string, { name: string; class: string; count: number }> = {};
     const studentStats: Record<string, { id: string; name: string; class: string; student_id: string; hadir: number; izin: number; sakit: number; alfa: number; total: number }> = {};
