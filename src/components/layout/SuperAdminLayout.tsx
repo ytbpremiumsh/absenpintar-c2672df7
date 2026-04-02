@@ -21,6 +21,7 @@ const navItems = [
   { title: "Paket Langganan", url: "/super-admin/plans", icon: Wallet, group: "billing" },
   { title: "Langganan", url: "/super-admin/subscriptions", icon: CalendarCheck, group: "billing" },
   { title: "Referral & Poin", url: "/super-admin/referral", icon: Gift, group: "billing" },
+  { title: "Affiliate", url: "/super-admin/affiliate", icon: Handshake, group: "billing" },
   { title: "Model Bisnis", url: "/super-admin/business-model", icon: Receipt, group: "integration" },
   { title: "Aktivasi WA Sekolah", url: "/super-admin/whatsapp", icon: Eye, group: "integration" },
   { title: "Konfigurasi API WA", url: "/super-admin/registration-wa", icon: MessageCircle, group: "integration" },

@@ -106,6 +106,7 @@ const App = () => (
               <Route path="/super-admin/login-logs" element={<SuperAdminLoginLogs />} />
               <Route path="/super-admin/referral" element={<SuperAdminReferral />} />
               <Route path="/super-admin/penawaran" element={<SuperAdminPenawaran />} />
+              <Route path="/super-admin/affiliate" element={<SuperAdminAffiliate />} />
             </Route>
             {/* School Admin / Staff */}
             <Route element={<AppLayout />}>
