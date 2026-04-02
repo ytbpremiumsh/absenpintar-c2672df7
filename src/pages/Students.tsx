@@ -735,13 +735,8 @@ const Students = () => {
                                       </div>
                                     </div>
                                   </TableCell>
-                                  <TableCell className="hidden sm:table-cell">
+                                  <TableCell className="hidden sm:table-cell whitespace-nowrap">
                                     <span className="font-mono text-xs bg-secondary px-2 py-0.5 rounded">{student.student_id}</span>
-                                  </TableCell>
-                                  <TableCell className="hidden md:table-cell">
-                                    <Badge variant="outline" className="text-[10px]">
-                                      {student.gender === "P" ? "♀ P" : "♂ L"}
-                                    </Badge>
                                   </TableCell>
                                   <TableCell className="hidden md:table-cell"><p className="text-sm">{student.parent_name}</p></TableCell>
                                   <TableCell className="hidden lg:table-cell">

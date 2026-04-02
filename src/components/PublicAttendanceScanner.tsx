@@ -161,12 +161,14 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
     }, 300);
   }, [lookupAndRecord]);
 
-  // Face recognition
+  // Face recognition - with busy guard to prevent overlapping calls
+  const faceBusy = useRef(false);
   const captureAndRecognize = useCallback(async () => {
-    if (!videoRef.current || scanPaused.current) return;
+    if (faceBusy.current || !videoRef.current || scanPaused.current || isLookingUp.current) return;
     const video = videoRef.current;
-    if (video.readyState !== video.HAVE_ENOUGH_DATA) return;
+    if (video.readyState < video.HAVE_ENOUGH_DATA) return;
 
+    faceBusy.current = true;
     setFaceScanning(true);
     try {
       const canvas = document.createElement("canvas");
@@ -174,13 +176,18 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
       canvas.height = video.videoHeight;
       const ctx = canvas.getContext("2d")!;
       ctx.drawImage(video, 0, 0);
-      const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
+
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000);
 
       const res = await fetch(`${SUPABASE_URL}/functions/v1/face-recognition`, {
         method: "POST",
         headers: { "Content-Type": "application/json", apikey: SUPABASE_KEY },
         body: JSON.stringify({ captured_image: dataUrl, school_id: schoolId }),
+        signal: controller.signal,
       });
+      clearTimeout(timeout);
 
       const data = await res.json();
       if (!res.ok) return;
@@ -190,8 +197,9 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
         await lookupAndRecord("", "face_recognition", data.student.id);
       }
     } catch (err: any) {
-      console.log("Face recognition error:", err.message);
+      if (err.name !== "AbortError") console.log("Face recognition error:", err.message);
     } finally {
+      faceBusy.current = false;
       setFaceScanning(false);
     }
   }, [schoolId, SUPABASE_URL, SUPABASE_KEY, lookupAndRecord]);
