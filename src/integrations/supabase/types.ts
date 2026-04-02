@@ -14,6 +14,155 @@ export type Database = {
   }
   public: {
     Tables: {
+      affiliate_commissions: {
+        Row: {
+          affiliate_id: string
+          commission_amount: number
+          commission_rate: number
+          created_at: string
+          id: string
+          paid_at: string | null
+          plan_name: string
+          plan_price: number
+          school_id: string | null
+          status: string
+        }
+        Insert: {
+          affiliate_id: string
+          commission_amount: number
+          commission_rate: number
+          created_at?: string
+          id?: string
+          paid_at?: string | null
+          plan_name: string
+          plan_price: number
+          school_id?: string | null
+          status?: string
+        }
+        Update: {
+          affiliate_id?: string
+          commission_amount?: number
+          commission_rate?: number
+          created_at?: string
+          id?: string
+          paid_at?: string | null
+          plan_name?: string
+          plan_price?: number
+          school_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_commissions_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "affiliate_commissions_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      affiliate_withdrawals: {
+        Row: {
+          account_holder: string
+          account_number: string
+          admin_notes: string | null
+          affiliate_id: string
+          amount: number
+          bank_name: string
+          created_at: string
+          id: string
+          processed_at: string | null
+          status: string
+        }
+        Insert: {
+          account_holder: string
+          account_number: string
+          admin_notes?: string | null
+          affiliate_id: string
+          amount: number
+          bank_name: string
+          created_at?: string
+          id?: string
+          processed_at?: string | null
+          status?: string
+        }
+        Update: {
+          account_holder?: string
+          account_number?: string
+          admin_notes?: string | null
+          affiliate_id?: string
+          amount?: number
+          bank_name?: string
+          created_at?: string
+          id?: string
+          processed_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_withdrawals_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      affiliates: {
+        Row: {
+          affiliate_code: string
+          commission_rate: number
+          created_at: string
+          current_balance: number
+          email: string
+          full_name: string
+          id: string
+          password_hash: string
+          phone: string | null
+          status: string
+          total_earned: number
+          total_withdrawn: number
+          updated_at: string
+        }
+        Insert: {
+          affiliate_code: string
+          commission_rate?: number
+          created_at?: string
+          current_balance?: number
+          email: string
+          full_name: string
+          id?: string
+          password_hash: string
+          phone?: string | null
+          status?: string
+          total_earned?: number
+          total_withdrawn?: number
+          updated_at?: string
+        }
+        Update: {
+          affiliate_code?: string
+          commission_rate?: number
+          created_at?: string
+          current_balance?: number
+          email?: string
+          full_name?: string
+          id?: string
+          password_hash?: string
+          phone?: string | null
+          status?: string
+          total_earned?: number
+          total_withdrawn?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       attendance_logs: {
         Row: {
           attendance_type: string
