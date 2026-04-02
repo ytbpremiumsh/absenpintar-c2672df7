@@ -546,7 +546,16 @@ const LandingPage = () => {
             </motion.div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {WHY_ITEMS.map((item, i) => (
+              {(() => {
+                const whyItems = Array.from({ length: 4 }, (_, i) => {
+                  const n = i + 1;
+                  return {
+                    title: get(`why_item_${n}_title`) || WHY_ITEMS[i]?.title || "",
+                    desc: get(`why_item_${n}_desc`) || WHY_ITEMS[i]?.desc || "",
+                    icon: WHY_ITEMS[i]?.icon || Lock,
+                  };
+                }).filter(w => w.title);
+                return whyItems.map((item, i) => (
                 <motion.div key={item.title} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
                   className="bg-white dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 rounded-2xl p-5 hover:border-indigo-200 dark:hover:border-indigo-500/20 hover:shadow-lg transition-all duration-300">
                   <div className="h-10 w-10 rounded-xl bg-indigo-500/10 flex items-center justify-center mb-3">
