@@ -57,6 +57,10 @@ import NotFound from "./pages/NotFound";
 import Penawaran from "./pages/Penawaran";
 import SuperAdminPenawaran from "./pages/super-admin/SuperAdminPenawaran";
 import ForgotPassword from "./pages/ForgotPassword";
+import AffiliateRegister from "./pages/AffiliateRegister";
+import AffiliateLogin from "./pages/AffiliateLogin";
+import AffiliateDashboard from "./pages/AffiliateDashboard";
+import SuperAdminAffiliate from "./pages/super-admin/SuperAdminAffiliate";
 
 const queryClient = new QueryClient();
 
@@ -80,6 +84,9 @@ const App = () => (
             <Route path="/presentation" element={<Presentation />} />
             <Route path="/business-model" element={<BusinessModel />} />
             <Route path="/penawaran" element={<Penawaran />} />
+            <Route path="/affiliate/register" element={<AffiliateRegister />} />
+            <Route path="/affiliate/login" element={<AffiliateLogin />} />
+            <Route path="/affiliate/dashboard" element={<AffiliateDashboard />} />
             {/* Super Admin */}
             <Route element={<SuperAdminLayout />}>
               <Route path="/super-admin" element={<SuperAdminDashboard />} />
@@ -99,6 +106,7 @@ const App = () => (
               <Route path="/super-admin/login-logs" element={<SuperAdminLoginLogs />} />
               <Route path="/super-admin/referral" element={<SuperAdminReferral />} />
               <Route path="/super-admin/penawaran" element={<SuperAdminPenawaran />} />
+              <Route path="/super-admin/affiliate" element={<SuperAdminAffiliate />} />
             </Route>
             {/* School Admin / Staff */}
             <Route element={<AppLayout />}>
