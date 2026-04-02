@@ -360,13 +360,13 @@ const Dashboard = () => {
       {/* Student List Dialog */}
       <Dialog open={!!selectedStatus} onOpenChange={(open) => { if (!open) setSelectedStatus(null); }}>
         <DialogContent className="max-w-[95vw] sm:max-w-md p-0 overflow-hidden rounded-2xl">
-          <div className="p-4 border-b border-border" style={{ backgroundColor: `${selectedColor}15` }}>
-            <div className="flex items-center justify-between">
-              <div>
-                <DialogTitle className="text-base font-bold" style={{ color: selectedColor }}>{selectedLabel}</DialogTitle>
+          <div className="p-4 pb-3 border-b border-border" style={{ backgroundColor: `${selectedColor}15` }}>
+            <div className="flex items-center gap-3 pr-8">
+              <Badge className="text-lg font-bold shrink-0 h-9 w-9 rounded-full flex items-center justify-center p-0" style={{ backgroundColor: `${selectedColor}20`, color: selectedColor }}>{selectedStudents.length}</Badge>
+              <div className="min-w-0">
+                <DialogTitle className="text-base font-bold truncate" style={{ color: selectedColor }}>{selectedLabel}</DialogTitle>
                 <DialogDescription className="text-xs text-muted-foreground">{selectedStudents.length} siswa • Hari ini</DialogDescription>
               </div>
-              <Badge className="text-sm font-bold" style={{ backgroundColor: `${selectedColor}20`, color: selectedColor }}>{selectedStudents.length}</Badge>
             </div>
           </div>
           <ScrollArea className="max-h-[60vh]">

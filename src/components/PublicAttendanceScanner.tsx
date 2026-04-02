@@ -349,11 +349,6 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
                 <Lock className="h-2.5 w-2.5 mr-0.5" />Face
               </Badge>
             )}
-            {canFaceRecognition && (
-              <Badge variant="outline" className="text-[8px] px-1.5 py-0">
-                <CreditCard className="h-2.5 w-2.5 mr-0.5" />RFID
-              </Badge>
-            )}
           </div>
         </div>
 
@@ -399,7 +394,7 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
                   <div className="flex items-center gap-1 bg-black/50 backdrop-blur-sm px-2 py-1 rounded-lg">
                     <ScanLine className="h-3 w-3 text-white/70" />
                     {canFaceRecognition && <UserCheck className="h-3 w-3 text-white/70 ml-0.5" />}
-                    {canFaceRecognition && <CreditCard className="h-3 w-3 text-white/70 ml-0.5" />}
+                    
                   </div>
                 </div>
 
@@ -409,7 +404,7 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
                     <div className="flex items-center gap-2 text-[11px] text-white/80">
                       <ScanLine className="h-3.5 w-3.5" /> Barcode
                       {canFaceRecognition ? (
-                        <><span className="text-white/40">•</span><UserCheck className="h-3.5 w-3.5" /> Face<span className="text-white/40">•</span><CreditCard className="h-3.5 w-3.5" /> RFID</>
+                        <><span className="text-white/40">•</span><UserCheck className="h-3.5 w-3.5" /> Face</>
                       ) : (
                         <><span className="text-white/40">•</span><Lock className="h-3 w-3 opacity-50" /><span className="opacity-50">Face</span><span className="text-[9px] text-amber-400 font-bold ml-1">PREMIUM</span></>
                       )}
@@ -447,14 +442,9 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
                   <ScanLine className="h-3.5 w-3.5 text-[#5B6CF9]" /> Barcode
                 </div>
                 {canFaceRecognition ? (
-                  <>
-                    <div className="flex items-center gap-1 bg-muted/50 px-2.5 py-1 rounded-lg">
-                      <UserCheck className="h-3.5 w-3.5 text-[#5B6CF9]" /> Face
-                    </div>
-                    <div className="flex items-center gap-1 bg-muted/50 px-2.5 py-1 rounded-lg">
-                      <CreditCard className="h-3.5 w-3.5 text-[#5B6CF9]" /> RFID
-                    </div>
-                  </>
+                  <div className="flex items-center gap-1 bg-muted/50 px-2.5 py-1 rounded-lg">
+                    <UserCheck className="h-3.5 w-3.5 text-[#5B6CF9]" /> Face
+                  </div>
                 ) : (
                   <div className="flex items-center gap-1 bg-muted/50 px-2.5 py-1 rounded-lg opacity-60">
                     <Lock className="h-3 w-3" /> Face <span className="text-[9px] text-amber-600 dark:text-amber-400 font-bold ml-1">PREMIUM</span>
@@ -465,15 +455,6 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
             </div>
           )}
 
-          {/* RFID hint - only show when premium */}
-          {canFaceRecognition && (
-            <div className="px-3 py-2 bg-muted/50 border-t border-border flex items-center gap-2">
-              <CreditCard className="h-3.5 w-3.5 text-primary shrink-0" />
-              <p className="text-[10px] text-muted-foreground">
-                <strong className="text-foreground">Kartu RFID:</strong> Tap kartu siswa ke reader kapan saja (tanpa kamera)
-              </p>
-            </div>
-          )}
         </CardContent>
 
         {/* Manual NIS input - Premium style */}

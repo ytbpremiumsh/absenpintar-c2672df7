@@ -90,10 +90,10 @@ const ExportHistory = () => {
     if (!profile?.school_id) return;
     const fetchSchool = async () => {
       const [schoolRes, settingsRes] = await Promise.all([
-        supabase.from("schools").select("name, address").eq("id", profile.school_id).maybeSingle(),
+        supabase.from("schools").select("name, address, city").eq("id", profile.school_id).maybeSingle(),
         supabase.from("pickup_settings").select("departure_end_time").eq("school_id", profile.school_id).maybeSingle(),
       ]);
-      if (schoolRes.data) { setSchoolName(schoolRes.data.name); setSchoolAddress(schoolRes.data.address || ""); }
+      if (schoolRes.data) { setSchoolName(schoolRes.data.name); setSchoolAddress((schoolRes.data as any).city || schoolRes.data.address || ""); }
       if (settingsRes.data?.departure_end_time) { setDepartureEndTime(settingsRes.data.departure_end_time); }
     };
     fetchSchool();

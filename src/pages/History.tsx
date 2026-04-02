@@ -37,7 +37,7 @@ const History = () => {
   const [logs, setLogs] = useState<any[]>([]);
   const [allStudents, setAllStudents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState("class-analysis");
   const [attendanceTypeTab, setAttendanceTypeTab] = useState("datang");
   const [selectedClass, setSelectedClass] = useState<string>("all");
   const [teacherClasses, setTeacherClasses] = useState<string[] | null>(null);
@@ -114,7 +114,7 @@ const History = () => {
     const total = logs.length;
     const byStatus: Record<string, number> = { hadir: 0, izin: 0, sakit: 0, alfa: 0 };
     const byClass: Record<string, { total: number; hadir: number; alfa: number; izin: number; sakit: number }> = {};
-    const byDate: Record<string, { total: number; hadir: number; alfa: number }> = {};
+    const byDate: Record<string, { total: number; hadir: number; izin: number; sakit: number; alfa: number }> = {};
     const byDay: Record<number, Record<string, number>> = {};
     const studentAlfa: Record<string, { name: string; class: string; count: number }> = {};
     const studentStats: Record<string, { id: string; name: string; class: string; student_id: string; hadir: number; izin: number; sakit: number; alfa: number; total: number }> = {};
@@ -129,9 +129,11 @@ const History = () => {
       if (l.status === "izin") byClass[cls].izin++;
       if (l.status === "sakit") byClass[cls].sakit++;
 
-      if (!byDate[l.date]) byDate[l.date] = { total: 0, hadir: 0, alfa: 0 };
+      if (!byDate[l.date]) byDate[l.date] = { total: 0, hadir: 0, izin: 0, sakit: 0, alfa: 0 };
       byDate[l.date].total++;
       if (l.status === "hadir") byDate[l.date].hadir++;
+      if (l.status === "izin") byDate[l.date].izin++;
+      if (l.status === "sakit") byDate[l.date].sakit++;
       if (l.status === "alfa") byDate[l.date].alfa++;
 
       const dow = new Date(l.date).getDay();
@@ -170,6 +172,8 @@ const History = () => {
       date: date.slice(5),
       "% Hadir": d.total > 0 ? Math.round((d.hadir / d.total) * 100) : 0,
       Hadir: d.hadir,
+      Izin: d.izin,
+      Sakit: d.sakit,
       Alfa: d.alfa,
     }));
 
@@ -329,11 +333,11 @@ const History = () => {
       {/* Analysis Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="bg-muted/50 rounded-xl p-1">
-          <TabsTrigger value="overview" className="rounded-lg text-xs font-semibold gap-1.5 data-[state=active]:bg-[#5B6CF9] data-[state=active]:text-white">
-            <BarChart3 className="h-3.5 w-3.5" /> Overview {typeLabel}
-          </TabsTrigger>
           <TabsTrigger value="class-analysis" className="rounded-lg text-xs font-semibold gap-1.5 data-[state=active]:bg-[#5B6CF9] data-[state=active]:text-white">
             <GraduationCap className="h-3.5 w-3.5" /> Analisa Kelas
+          </TabsTrigger>
+          <TabsTrigger value="overview" className="rounded-lg text-xs font-semibold gap-1.5 data-[state=active]:bg-[#5B6CF9] data-[state=active]:text-white">
+            <BarChart3 className="h-3.5 w-3.5" /> Overview {typeLabel}
           </TabsTrigger>
         </TabsList>
 
@@ -404,6 +408,8 @@ const History = () => {
                     <Legend iconSize={10} wrapperStyle={{ fontSize: 11 }} />
                     <Line type="monotone" dataKey="% Hadir" stroke="#22c55e" strokeWidth={2} dot={false} />
                     <Line type="monotone" dataKey="Hadir" stroke="#6366f1" strokeWidth={1.5} dot={false} />
+                    <Line type="monotone" dataKey="Izin" stroke="#f59e0b" strokeWidth={1.5} dot={false} />
+                    <Line type="monotone" dataKey="Sakit" stroke="#3b82f6" strokeWidth={1.5} dot={false} />
                     <Line type="monotone" dataKey="Alfa" stroke="#ef4444" strokeWidth={1.5} dot={false} />
                   </LineChart>
                 </ResponsiveContainer>
