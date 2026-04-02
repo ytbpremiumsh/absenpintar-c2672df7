@@ -534,10 +534,10 @@ const LandingPage = () => {
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
               <span className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-400 mb-3 block">Kenapa Kami</span>
               <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
-                Solusi Absensi Digital yang <span className="text-indigo-600 dark:text-indigo-400">Terpercaya</span>
+                {get("why_title") || <>Solusi Absensi Digital yang <span className="text-indigo-600 dark:text-indigo-400">Terpercaya</span></>}
               </h2>
               <p className="mt-4 text-slate-500 dark:text-slate-400 leading-relaxed">
-                Kami menyediakan solusi menyeluruh untuk membantu sekolah Anda mengelola kehadiran siswa dengan teknologi terkini.
+                {get("why_desc", "Kami menyediakan solusi menyeluruh untuk membantu sekolah Anda mengelola kehadiran siswa dengan teknologi terkini.")}
               </p>
               <button onClick={() => navigate("/register")}
                 className="mt-8 inline-flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-6 py-3 rounded-xl font-semibold text-sm shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 transition-all hover:scale-[1.02]">
