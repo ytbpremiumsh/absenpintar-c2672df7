@@ -24,7 +24,7 @@ const stagger = {
   visible: { transition: { staggerChildren: 0.1 } },
 };
 
-const FEATURES = [
+const DEFAULT_FEATURES = [
   { icon: QrCode, title: "Scan Barcode", desc: "Absensi instan kurang dari 1 detik dengan scan barcode siswa.", color: "from-blue-500 to-indigo-600" },
   { icon: UserCheck, title: "Face Recognition", desc: "Pengenalan wajah berbasis AI. Tanpa kartu, tanpa sentuhan.", color: "from-violet-500 to-purple-600" },
   { icon: Monitor, title: "Dashboard Real-Time", desc: "Pantau statistik kehadiran secara live dengan grafik interaktif.", color: "from-emerald-500 to-teal-600" },
@@ -317,19 +317,19 @@ const LandingPage = () => {
 
             <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.7 }}
               className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-extrabold tracking-tight leading-tight">
-              <TypingEffect texts={["ATSkolla — Absensi Digital Sekolah", "Cepat, Aman & Mudah Digunakan", "Solusi Absensi Modern untuk Sekolah"]} speed={60} className="bg-gradient-to-r from-slate-900 via-indigo-800 to-blue-700 dark:from-white dark:via-indigo-200 dark:to-blue-300 bg-clip-text text-transparent" />
+              <TypingEffect texts={get("hero_title") ? [get("hero_title"), "Cepat, Aman & Mudah Digunakan", "Solusi Absensi Modern untuk Sekolah"] : ["ATSkolla — Absensi Digital Sekolah", "Cepat, Aman & Mudah Digunakan", "Solusi Absensi Modern untuk Sekolah"]} speed={60} className="bg-gradient-to-r from-slate-900 via-indigo-800 to-blue-700 dark:from-white dark:via-indigo-200 dark:to-blue-300 bg-clip-text text-transparent" />
             </motion.h1>
 
             <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.6 }}
               className="mt-5 text-base sm:text-lg text-slate-500 dark:text-slate-400 max-w-xl mx-auto leading-relaxed">
-              Platform absensi modern dengan barcode scan & face recognition AI. Dirancang khusus untuk sekolah Indonesia — cepat, aman, dan mudah digunakan.
+              {get("hero_subtitle", "Platform absensi modern dengan barcode scan & face recognition AI. Dirancang khusus untuk sekolah Indonesia — cepat, aman, dan mudah digunakan.")}
             </motion.p>
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }}
               className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
               <button onClick={() => navigate("/register")}
                 className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-7 py-3.5 rounded-2xl font-bold transition-all shadow-xl shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:scale-[1.02] active:scale-[0.98] text-sm">
-                <Zap className="h-4 w-4" /> Coba Gratis Sekarang
+                <Zap className="h-4 w-4" /> {get("cta_text", "Coba Gratis Sekarang")}
               </button>
               <a href="#how-it-works"
                 className="inline-flex items-center justify-center gap-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-7 py-3.5 rounded-2xl font-semibold transition-all text-sm border border-slate-200 dark:border-slate-700 shadow-sm">
@@ -339,7 +339,7 @@ const LandingPage = () => {
 
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}
               className="mt-5 text-xs text-slate-400 dark:text-slate-500">
-              ✓ Penggunaan mudah &nbsp;•&nbsp; ✓ Pembayaran instan &nbsp;•&nbsp; ✓ Siap pakai dalam hitungan menit
+              {get("hero_caption", "✓ Penggunaan mudah \u00a0•\u00a0 ✓ Pembayaran instan \u00a0•\u00a0 ✓ Siap pakai dalam hitungan menit")}
             </motion.p>
           </div>
 
@@ -349,7 +349,7 @@ const LandingPage = () => {
             <div className="absolute -inset-6 bg-gradient-to-br from-indigo-500/15 via-blue-500/8 to-teal-500/5 rounded-[2.5rem] blur-3xl animate-pulse" />
             <div className="absolute -inset-2 bg-gradient-to-br from-indigo-500/8 to-blue-500/5 rounded-3xl" />
             <motion.img
-              src={heroDashboard}
+              src={get("hero_image") || heroDashboard}
               alt="Dashboard ATSkolla"
               className="relative w-full h-auto rounded-2xl border border-slate-200/50 dark:border-slate-700/50 shadow-[0_30px_80px_-15px_rgba(0,0,0,0.25),0_0_50px_-10px_rgba(99,102,241,0.15)]"
               whileHover={{ scale: 1.01, y: -4 }}
@@ -499,16 +499,29 @@ const LandingPage = () => {
           </motion.div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {FEATURES.map((f, i) => (
-              <motion.div key={f.title} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
-                className="group bg-white dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 rounded-2xl p-6 sm:p-7 hover:border-indigo-200 dark:hover:border-indigo-500/20 hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-300 hover:-translate-y-1">
-                <div className={`h-12 w-12 rounded-2xl bg-gradient-to-br ${f.color} flex items-center justify-center shadow-lg mb-5 group-hover:scale-110 transition-transform duration-300`}>
-                  <f.icon className="h-6 w-6 text-white" />
-                </div>
-                <h3 className="font-bold text-slate-900 dark:text-white text-base mb-2">{f.title}</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{f.desc}</p>
-              </motion.div>
-            ))}
+            {(() => {
+              const ICON_FEAT_MAP: Record<string, any> = { scan: QrCode, monitor: Monitor, message: Bell, chart: FileBarChart, face: UserCheck, school: GraduationCap };
+              const COLORS = ["from-blue-500 to-indigo-600", "from-violet-500 to-purple-600", "from-emerald-500 to-teal-600", "from-amber-500 to-orange-600", "from-pink-500 to-rose-600", "from-cyan-500 to-blue-600"];
+              const features = Array.from({ length: 6 }, (_, i) => {
+                const n = i + 1;
+                const title = get(`feature_${n}_title`) || DEFAULT_FEATURES[i]?.title || "";
+                const desc = get(`feature_${n}_desc`) || DEFAULT_FEATURES[i]?.desc || "";
+                const iconKey = get(`feature_${n}_icon`) || "";
+                const icon = ICON_FEAT_MAP[iconKey] || DEFAULT_FEATURES[i]?.icon || QrCode;
+                const color = DEFAULT_FEATURES[i]?.color || COLORS[i % COLORS.length];
+                return { title, desc, icon, color };
+              }).filter(f => f.title);
+              return features.map((f, i) => (
+                <motion.div key={f.title} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
+                  className="group bg-white dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 rounded-2xl p-6 sm:p-7 hover:border-indigo-200 dark:hover:border-indigo-500/20 hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-300 hover:-translate-y-1">
+                  <div className={`h-12 w-12 rounded-2xl bg-gradient-to-br ${f.color} flex items-center justify-center shadow-lg mb-5 group-hover:scale-110 transition-transform duration-300`}>
+                    <f.icon className="h-6 w-6 text-white" />
+                  </div>
+                  <h3 className="font-bold text-slate-900 dark:text-white text-base mb-2">{f.title}</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{f.desc}</p>
+                </motion.div>
+              ));
+            })()}
           </div>
         </div>
       </section>
@@ -521,10 +534,10 @@ const LandingPage = () => {
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
               <span className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-400 mb-3 block">Kenapa Kami</span>
               <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
-                Solusi Absensi Digital yang <span className="text-indigo-600 dark:text-indigo-400">Terpercaya</span>
+                {get("why_title") || <>Solusi Absensi Digital yang <span className="text-indigo-600 dark:text-indigo-400">Terpercaya</span></>}
               </h2>
               <p className="mt-4 text-slate-500 dark:text-slate-400 leading-relaxed">
-                Kami menyediakan solusi menyeluruh untuk membantu sekolah Anda mengelola kehadiran siswa dengan teknologi terkini.
+                {get("why_desc", "Kami menyediakan solusi menyeluruh untuk membantu sekolah Anda mengelola kehadiran siswa dengan teknologi terkini.")}
               </p>
               <button onClick={() => navigate("/register")}
                 className="mt-8 inline-flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-6 py-3 rounded-xl font-semibold text-sm shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 transition-all hover:scale-[1.02]">
@@ -533,7 +546,16 @@ const LandingPage = () => {
             </motion.div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {WHY_ITEMS.map((item, i) => (
+              {(() => {
+                const whyItems = Array.from({ length: 4 }, (_, i) => {
+                  const n = i + 1;
+                  return {
+                    title: get(`why_item_${n}_title`) || WHY_ITEMS[i]?.title || "",
+                    desc: get(`why_item_${n}_desc`) || WHY_ITEMS[i]?.desc || "",
+                    icon: WHY_ITEMS[i]?.icon || Lock,
+                  };
+                }).filter(w => w.title);
+                return whyItems.map((item, i) => (
                 <motion.div key={item.title} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
                   className="bg-white dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 rounded-2xl p-5 hover:border-indigo-200 dark:hover:border-indigo-500/20 hover:shadow-lg transition-all duration-300">
                   <div className="h-10 w-10 rounded-xl bg-indigo-500/10 flex items-center justify-center mb-3">
@@ -542,7 +564,8 @@ const LandingPage = () => {
                   <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-1">{item.title}</h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{item.desc}</p>
                 </motion.div>
-              ))}
+                ));
+              })()}
             </div>
           </div>
         </div>
@@ -672,10 +695,10 @@ const LandingPage = () => {
                 <GraduationCap className="h-7 w-7 text-white" />
               </div>
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight mb-4">
-                Siap Tingkatkan Absensi Sekolah?
+                {get("cta_banner_text", "Siap Tingkatkan Absensi Sekolah?")}
               </h2>
               <p className="text-white/80 text-sm sm:text-base mb-8 max-w-lg mx-auto">
-                Bergabung sekarang dan rasakan kemudahan absensi digital. Tanpa biaya setup.
+                {get("cta_banner_desc", "Bergabung sekarang dan rasakan kemudahan absensi digital. Tanpa biaya setup.")}
               </p>
               <button onClick={() => navigate("/register")}
                 className="inline-flex items-center gap-2 bg-white text-indigo-700 px-8 py-3.5 rounded-2xl font-bold text-sm transition-all hover:bg-white/90 shadow-xl hover:scale-[1.02] active:scale-[0.98]">
