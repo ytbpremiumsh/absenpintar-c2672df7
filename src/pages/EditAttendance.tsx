@@ -208,10 +208,10 @@ const EditAttendance = () => {
                 />
               </div>
             </div>
-            {Object.keys(editChanges).length > 0 && (
+            {totalChanges > 0 && (
               <Button onClick={saveChanges} disabled={saving} size="sm" className="rounded-lg bg-[#5B6CF9] hover:bg-[#4c5ded] text-white h-9 gap-1.5">
                 {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
-                Simpan ({Object.keys(editChanges).length})
+                Simpan ({totalChanges})
               </Button>
             )}
           </div>
