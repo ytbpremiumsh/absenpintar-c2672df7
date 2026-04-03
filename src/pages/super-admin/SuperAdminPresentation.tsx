@@ -90,7 +90,7 @@ const SuperAdminPresentation = () => {
     setSaving(false);
   };
 
-  const presentationUrl = `${window.location.origin}/presentation`;
+  const presentationUrl = `${window.location.origin}/fitur`;
 
   const copyLink = () => {
     navigator.clipboard.writeText(presentationUrl);
