@@ -36,6 +36,7 @@ const EditAttendance = () => {
   const [students, setStudents] = useState<any[]>([]);
   const [logs, setLogs] = useState<any[]>([]);
   const [editChanges, setEditChanges] = useState<Record<string, string>>({});
+  const [newEntries, setNewEntries] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -66,20 +67,38 @@ const EditAttendance = () => {
       .order("created_at", { ascending: true });
     setLogs(data || []);
     setEditChanges({});
+    setNewEntries({});
     setLoading(false);
   }, [profile?.school_id, selectedDate, attendanceType]);
 
   useEffect(() => { fetchLogs(); }, [fetchLogs]);
 
+  const totalChanges = Object.keys(editChanges).length + Object.keys(newEntries).length;
+
   const saveChanges = async () => {
-    if (Object.keys(editChanges).length === 0) return;
+    if (totalChanges === 0) return;
     setSaving(true);
     try {
+      // Update existing logs
       for (const [logId, newStatus] of Object.entries(editChanges)) {
         await supabase.from("attendance_logs").update({ status: newStatus }).eq("id", logId);
       }
-      toast.success(`${Object.keys(editChanges).length} status berhasil diperbarui`);
+      // Insert new entries for students without logs
+      const now = new Date().toTimeString().slice(0, 8);
+      for (const [studentId, status] of Object.entries(newEntries)) {
+        await supabase.from("attendance_logs").insert({
+          school_id: profile!.school_id!,
+          student_id: studentId,
+          date: selectedDate,
+          status,
+          time: now,
+          method: "manual",
+          attendance_type: attendanceType,
+        });
+      }
+      toast.success(`${totalChanges} status berhasil diperbarui`);
       setEditChanges({});
+      setNewEntries({});
       fetchLogs();
     } catch {
       toast.error("Gagal menyimpan perubahan");
@@ -121,13 +140,15 @@ const EditAttendance = () => {
   // Stats for selected class/date
   const stats = useMemo(() => {
     const s = { total: mergedData.length, hadir: 0, izin: 0, sakit: 0, alfa: 0, belum: 0 };
-    mergedData.forEach(({ log }) => {
-      if (!log) { s.belum++; return; }
-      const status = editChanges[log.id] || log.status;
-      if (status in s) s[status as keyof typeof s]++;
+    mergedData.forEach(({ student, log }) => {
+      const newStatus = newEntries[student.id];
+      if (!log && !newStatus) { s.belum++; return; }
+      const status = newStatus || (log ? (editChanges[log.id] || log.status) : null);
+      if (status && status in s) s[status as keyof typeof s]++;
+      else s.belum++;
     });
     return s;
-  }, [mergedData, editChanges]);
+  }, [mergedData, editChanges, newEntries]);
 
   const typeLabel = attendanceType === "pulang" ? "Kepulangan" : "Kehadiran";
 
@@ -187,10 +208,10 @@ const EditAttendance = () => {
                 />
               </div>
             </div>
-            {Object.keys(editChanges).length > 0 && (
+            {totalChanges > 0 && (
               <Button onClick={saveChanges} disabled={saving} size="sm" className="rounded-lg bg-[#5B6CF9] hover:bg-[#4c5ded] text-white h-9 gap-1.5">
                 {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
-                Simpan ({Object.keys(editChanges).length})
+                Simpan ({totalChanges})
               </Button>
             )}
           </div>
@@ -332,9 +353,10 @@ const EditAttendance = () => {
               </TableHeader>
               <TableBody>
                 {mergedData.map(({ student, log }, idx) => {
-                  const currentStatus = log ? (editChanges[log.id] || log.status) : null;
+                  const newStatus = newEntries[student.id];
+                  const currentStatus = newStatus || (log ? (editChanges[log.id] || log.status) : null);
                   const statusColor = currentStatus ? STATUS_COLORS[currentStatus] || STATUS_COLORS.hadir : "";
-                  const isChanged = log && editChanges[log.id] && editChanges[log.id] !== log.status;
+                  const isChanged = (log && editChanges[log.id] && editChanges[log.id] !== log.status) || !!newStatus;
                   return (
                     <TableRow key={student.id} className={`${isChanged ? "bg-[#5B6CF9]/5" : ""} hover:bg-muted/20 transition-colors`}>
                       <TableCell className="text-xs text-muted-foreground py-2.5 w-10">{idx + 1}</TableCell>
@@ -359,32 +381,40 @@ const EditAttendance = () => {
                         )}
                       </TableCell>
                       <TableCell className="py-2.5">
-                        {log ? (
-                          <div className="flex gap-1">
-                            {["hadir", "izin", "sakit", "alfa"].map(s => (
-                              <button
-                                key={s}
-                                onClick={() => {
+                        <div className="flex gap-1">
+                          {["hadir", "izin", "sakit", "alfa"].map(s => (
+                            <button
+                              key={s}
+                              onClick={() => {
+                                if (log) {
+                                  // Has existing log — edit it
                                   setEditChanges(prev => {
                                     const next = { ...prev };
                                     if (s === log.status) { delete next[log.id]; } else { next[log.id] = s; }
                                     return next;
                                   });
-                                }}
-                                className={`text-[10px] font-bold px-2.5 py-1.5 rounded-lg transition-all ${
-                                  currentStatus === s
-                                    ? "text-white shadow-sm scale-105"
-                                    : "text-muted-foreground hover:bg-muted"
-                                }`}
-                                style={currentStatus === s ? { backgroundColor: STATUS_COLORS[s] } : {}}
-                              >
-                                {s === "hadir" ? "H" : s === "izin" ? "I" : s === "sakit" ? "S" : "A"}
-                              </button>
-                            ))}
-                          </div>
-                        ) : (
-                          <span className="text-[10px] text-muted-foreground italic">Belum scan</span>
-                        )}
+                                  // Clear newEntries for this student if any
+                                  setNewEntries(prev => { const n = { ...prev }; delete n[student.id]; return n; });
+                                } else {
+                                  // No log — create new entry
+                                  setNewEntries(prev => {
+                                    const next = { ...prev };
+                                    if (next[student.id] === s) { delete next[student.id]; } else { next[student.id] = s; }
+                                    return next;
+                                  });
+                                }
+                              }}
+                              className={`text-[10px] font-bold px-2.5 py-1.5 rounded-lg transition-all ${
+                                currentStatus === s
+                                  ? "text-white shadow-sm scale-105"
+                                  : "text-muted-foreground hover:bg-muted"
+                              }`}
+                              style={currentStatus === s ? { backgroundColor: STATUS_COLORS[s] } : {}}
+                            >
+                              {s === "hadir" ? "H" : s === "izin" ? "I" : s === "sakit" ? "S" : "A"}
+                            </button>
+                          ))}
+                        </div>
                       </TableCell>
                     </TableRow>
                   );
