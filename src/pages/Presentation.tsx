@@ -165,6 +165,21 @@ const FEATURES = [
     badge: "Management",
   },
   {
+    title: "Kelola Staff / Operator",
+    subtitle: "Manajemen Akun Staf Sekolah",
+    desc: "Halaman untuk menambah dan mengelola akun staff/operator yang memiliki akses operasional ke sistem absensi. Admin dapat mengatur nama, email, password, dan nomor WhatsApp setiap staf.",
+    points: [
+      "Tambah akun staff/operator dengan form yang mudah",
+      "Card visual per staf: avatar, nama, dan role",
+      "Edit profil staf: nama, email, password, dan nomor WhatsApp",
+      "Hapus akun staf yang sudah tidak aktif",
+    ],
+    image: "/images/presentation/ss-staff.png",
+    icon: Settings,
+    accent: "from-orange-500 to-amber-600",
+    badge: "Staff",
+  },
+  {
     title: "Rekap & Export Absensi",
     subtitle: "Format Absensi Nasional Bulanan",
     desc: "Fitur rekap absensi dengan format tabel nasional bulanan. Tabel menampilkan grid tanggal 1-31 dengan kode warna (H, S, I, A), ringkasan per siswa, dan area tanda tangan wali kelas. Dapat di-export ke Excel dan PDF.",
