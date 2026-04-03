@@ -299,9 +299,9 @@ const LandingPage = () => {
       </nav>
 
       {/* ─── Hero Section ─── */}
-      <section className="relative pt-28 sm:pt-36 pb-16 sm:pb-24 overflow-hidden bg-gradient-to-b from-slate-50 via-white to-white dark:from-slate-950 dark:via-slate-950 dark:to-slate-950">
+      <section className="relative pt-28 sm:pt-40 pb-20 sm:pb-32 overflow-hidden bg-gradient-to-b from-slate-50 via-white to-white dark:from-slate-950 dark:via-slate-950 dark:to-slate-950">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[600px] bg-indigo-500/6 rounded-full blur-[140px]" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1100px] h-[700px] bg-indigo-500/6 rounded-full blur-[160px]" />
           <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-teal-500/5 rounded-full blur-[100px]" />
           <div className="absolute top-1/4 left-0 w-[350px] h-[350px] bg-blue-400/4 rounded-full blur-[100px]" />
         </div>
