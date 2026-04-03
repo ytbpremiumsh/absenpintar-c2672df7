@@ -73,15 +73,32 @@ const EditAttendance = () => {
 
   useEffect(() => { fetchLogs(); }, [fetchLogs]);
 
+  const totalChanges = Object.keys(editChanges).length + Object.keys(newEntries).length;
+
   const saveChanges = async () => {
-    if (Object.keys(editChanges).length === 0) return;
+    if (totalChanges === 0) return;
     setSaving(true);
     try {
+      // Update existing logs
       for (const [logId, newStatus] of Object.entries(editChanges)) {
         await supabase.from("attendance_logs").update({ status: newStatus }).eq("id", logId);
       }
-      toast.success(`${Object.keys(editChanges).length} status berhasil diperbarui`);
+      // Insert new entries for students without logs
+      const now = new Date().toTimeString().slice(0, 8);
+      for (const [studentId, status] of Object.entries(newEntries)) {
+        await supabase.from("attendance_logs").insert({
+          school_id: profile!.school_id!,
+          student_id: studentId,
+          date: selectedDate,
+          status,
+          time: now,
+          method: "manual",
+          attendance_type: attendanceType,
+        });
+      }
+      toast.success(`${totalChanges} status berhasil diperbarui`);
       setEditChanges({});
+      setNewEntries({});
       fetchLogs();
     } catch {
       toast.error("Gagal menyimpan perubahan");
