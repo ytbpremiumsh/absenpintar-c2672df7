@@ -318,7 +318,7 @@ const LandingPage = () => {
               </motion.div>
 
               <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.7 }}
-                className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-extrabold tracking-tight leading-[1.15]">
+                className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-extrabold tracking-tight leading-[1.1]">
                 <TypingEffect texts={get("hero_title") ? [get("hero_title"), "Cepat, Aman & Mudah Digunakan", "Solusi Absensi Modern untuk Sekolah"] : ["ATSkolla — Absensi Digital Sekolah", "Cepat, Aman & Mudah Digunakan", "Solusi Absensi Modern untuk Sekolah"]} speed={60} className="bg-gradient-to-r from-slate-900 via-indigo-800 to-blue-700 dark:from-white dark:via-indigo-200 dark:to-blue-300 bg-clip-text text-transparent" />
               </motion.h1>
 
