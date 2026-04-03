@@ -140,13 +140,15 @@ const EditAttendance = () => {
   // Stats for selected class/date
   const stats = useMemo(() => {
     const s = { total: mergedData.length, hadir: 0, izin: 0, sakit: 0, alfa: 0, belum: 0 };
-    mergedData.forEach(({ log }) => {
-      if (!log) { s.belum++; return; }
-      const status = editChanges[log.id] || log.status;
-      if (status in s) s[status as keyof typeof s]++;
+    mergedData.forEach(({ student, log }) => {
+      const newStatus = newEntries[student.id];
+      if (!log && !newStatus) { s.belum++; return; }
+      const status = newStatus || (log ? (editChanges[log.id] || log.status) : null);
+      if (status && status in s) s[status as keyof typeof s]++;
+      else s.belum++;
     });
     return s;
-  }, [mergedData, editChanges]);
+  }, [mergedData, editChanges, newEntries]);
 
   const typeLabel = attendanceType === "pulang" ? "Kepulangan" : "Kehadiran";
 
