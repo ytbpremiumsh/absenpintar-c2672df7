@@ -299,9 +299,9 @@ const LandingPage = () => {
       </nav>
 
       {/* ─── Hero Section ─── */}
-      <section className="relative pt-28 sm:pt-36 pb-16 sm:pb-24 overflow-hidden bg-gradient-to-b from-slate-50 via-white to-white dark:from-slate-950 dark:via-slate-950 dark:to-slate-950">
+      <section className="relative pt-28 sm:pt-40 pb-20 sm:pb-32 overflow-hidden bg-gradient-to-b from-slate-50 via-white to-white dark:from-slate-950 dark:via-slate-950 dark:to-slate-950">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[600px] bg-indigo-500/6 rounded-full blur-[140px]" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1100px] h-[700px] bg-indigo-500/6 rounded-full blur-[160px]" />
           <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-teal-500/5 rounded-full blur-[100px]" />
           <div className="absolute top-1/4 left-0 w-[350px] h-[350px] bg-blue-400/4 rounded-full blur-[100px]" />
         </div>
@@ -318,7 +318,7 @@ const LandingPage = () => {
               </motion.div>
 
               <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.7 }}
-                className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-extrabold tracking-tight leading-[1.15]">
+                className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-extrabold tracking-tight leading-[1.1]">
                 <TypingEffect texts={get("hero_title") ? [get("hero_title"), "Cepat, Aman & Mudah Digunakan", "Solusi Absensi Modern untuk Sekolah"] : ["ATSkolla — Absensi Digital Sekolah", "Cepat, Aman & Mudah Digunakan", "Solusi Absensi Modern untuk Sekolah"]} speed={60} className="bg-gradient-to-r from-slate-900 via-indigo-800 to-blue-700 dark:from-white dark:via-indigo-200 dark:to-blue-300 bg-clip-text text-transparent" />
               </motion.h1>
 
@@ -374,29 +374,35 @@ const LandingPage = () => {
       </section>
 
       {/* ─── Hero Stats Banner ─── */}
-      <section className="relative bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-700 py-14 sm:py-16 overflow-hidden">
+      <section className="relative py-16 sm:py-20 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-700" />
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-0 left-1/4 w-[300px] h-[300px] bg-white/5 rounded-full blur-[80px]" />
           <div className="absolute bottom-0 right-1/4 w-[250px] h-[250px] bg-indigo-400/10 rounded-full blur-[60px]" />
         </div>
         <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-12">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
             {heroStats.map((stat, i) => (
               <motion.div
                 key={stat.label}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.1, duration: 0.5 }}
-                className="text-center"
+                transition={{ delay: i * 0.12, duration: 0.6 }}
+                className="group"
               >
-                <div className="flex justify-center mb-3">
-                  <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center">
-                    <stat.icon className={`h-7 w-7 sm:h-8 sm:w-8 ${(stat as any).iconColor || "text-white/70"}`} strokeWidth={1.5} />
+                <div className="relative bg-white/[0.07] backdrop-blur-xl border border-white/[0.12] rounded-2xl sm:rounded-3xl p-6 sm:p-8 text-center hover:bg-white/[0.12] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_20px_60px_-10px_rgba(0,0,0,0.3)]">
+                  <div className="absolute inset-0 rounded-2xl sm:rounded-3xl bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
+                  <div className="relative">
+                    <div className="flex justify-center mb-4">
+                      <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/10 group-hover:ring-white/20 transition-all group-hover:scale-110 duration-500">
+                        <stat.icon className={`h-7 w-7 sm:h-8 sm:w-8 ${(stat as any).iconColor || "text-white/70"}`} strokeWidth={1.5} />
+                      </div>
+                    </div>
+                    <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight">{stat.value}</p>
+                    <p className="mt-2 text-sm sm:text-base text-indigo-100/80 font-medium">{stat.label}</p>
                   </div>
                 </div>
-                <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight">{stat.value}</p>
-                <p className="mt-1.5 text-sm sm:text-base text-indigo-100/80 font-medium">{stat.label}</p>
               </motion.div>
             ))}
           </div>
