@@ -101,18 +101,13 @@ const Monitoring = () => {
     const allStudents = studentsRes.data || [];
     const logs = logsRes.data || [];
     const settings = settingsRes.data as any;
-    const depEnd = settings?.departure_end_time || settings?.attendance_end_time || "17:00:00";
-    const jakartaNow = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" }));
-    const currentTime = jakartaNow.toTimeString().slice(0, 8);
-    // Students without logs stay as "belum" — no auto-alfa
-
     const datangLogs = logs.filter((l: any) => (l.attendance_type || "datang") === "datang");
     const mapped: StudentWithStatus[] = allStudents.map((s: any) => {
       const log = datangLogs.find((l: any) => l.student_id === s.id);
       return {
         id: s.id, name: s.name, class: s.class,
         parent_name: s.parent_name, student_id: s.student_id, photo_url: s.photo_url,
-        status: log ? (log.status as any) : (autoAlfa ? "alfa" : "belum"),
+        status: log ? (log.status as any) : "belum",
         attendance_time: log?.time,
         log_id: log?.id,
       };
