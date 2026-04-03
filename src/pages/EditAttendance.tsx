@@ -36,6 +36,7 @@ const EditAttendance = () => {
   const [students, setStudents] = useState<any[]>([]);
   const [logs, setLogs] = useState<any[]>([]);
   const [editChanges, setEditChanges] = useState<Record<string, string>>({});
+  const [newEntries, setNewEntries] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
 
