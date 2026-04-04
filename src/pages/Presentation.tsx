@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Shield, QrCode, Monitor, Users, GraduationCap, BarChart3, Clock, Bell, Globe, FileText, Settings, ChevronRight, CheckCircle2, Zap, Smartphone, Sparkles, Sun, Moon, ArrowDown, Star, TrendingUp, Eye, Download, UserCheck, ScanLine, BookOpen, AlertTriangle, XCircle, ArrowRight, LayoutDashboard } from "lucide-react";
+import { Loader2, Shield, QrCode, Monitor, Users, GraduationCap, BarChart3, Clock, Bell, Globe, FileText, Settings, ChevronRight, CheckCircle2, Zap, Smartphone, Sparkles, Sun, Moon, ArrowDown, Star, TrendingUp, UserCheck, ScanLine, BookOpen, AlertTriangle, XCircle, ArrowRight, LayoutDashboard } from "lucide-react";
 import { motion } from "framer-motion";
 import { Navigate } from "react-router-dom";
 import TypingEffect from "@/components/TypingEffect";
@@ -28,7 +28,7 @@ const SOLUTIONS = [
   { icon: FileText, problem: "Laporan Tidak Akurat", solution: "Export Excel & PDF", desc: "Laporan kehadiran lengkap bisa di-export dalam format Excel atau PDF kapan saja." },
 ];
 
-const FEATURES = [
+const SCHOOL_FEATURES = [
   {
     title: "Dashboard Analitik",
     subtitle: "Pusat Kendali Sekolah Anda",
@@ -195,21 +195,6 @@ const FEATURES = [
     badge: "Export",
   },
   {
-    title: "Analytic Kelas",
-    subtitle: "Analitik & Rekap Kehadiran Siswa",
-    desc: "Dashboard analitik per kelas dengan statistik lengkap: jumlah siswa, total record, persentase kehadiran, dan total alfa. Dilengkapi donut chart distribusi status dan persentase kehadiran per siswa.",
-    points: [
-      "Analisa per kelas: jumlah siswa, total record, % kehadiran, total alfa",
-      "Donut chart distribusi status: Hadir, Izin, Sakit, Alfa",
-      "Persentase kehadiran per siswa dalam satu tampilan",
-      "Filter periode: 30 hari, 60 hari, 90 hari, atau custom range",
-    ],
-    image: "/images/presentation/ss-analytic.png",
-    icon: TrendingUp,
-    accent: "from-amber-500 to-orange-600",
-    badge: "Analytics",
-  },
-  {
     title: "Riwayat Absensi",
     subtitle: "Kelola Data Absensi Harian",
     desc: "Halaman riwayat absensi yang menampilkan data kehadiran harian per kelas. Admin dapat melihat, memfilter, dan mengubah status kehadiran siswa secara langsung dengan tombol ubah status interaktif.",
@@ -254,20 +239,98 @@ const FEATURES = [
     accent: "from-indigo-600 to-blue-600",
     badge: "Subscription",
   },
+];
+
+const WALIKELAS_FEATURES = [
   {
-    title: "Super Admin Panel",
-    subtitle: "Pusat Kendali Manajemen Platform",
-    desc: "Panel Super Admin menyediakan kontrol penuh untuk mengelola seluruh ekosistem Sistem Manajemen Absensi Sekolah. Mulai dari monitoring sekolah, pengelolaan langganan & pembayaran, komunikasi, hingga integrasi — semua dalam satu dashboard terpusat.",
+    title: "Dashboard Wali Kelas",
+    subtitle: "Pantau Kelas yang Anda Ampu",
+    desc: "Dashboard khusus wali kelas yang menampilkan ringkasan kehadiran kelas secara real-time. Dilengkapi kartu statistik (Total Siswa, Hadir, Izin, Sakit, Alfa, Belum), progress bar absensi harian, dan daftar siswa beserta status kehadiran terkini.",
     points: [
-      "Dashboard overview: total sekolah, siswa, kelas, pengguna, langganan aktif, dan pendapatan",
-      "Billing & Langganan: kelola paket, langganan aktif, dan riwayat pembayaran seluruh sekolah",
-      "Komunikasi: kirim pengumuman platform dan kelola tiket bantuan dari sekolah",
-      "Integrasi: konfigurasi WhatsApp Gateway, notifikasi registrasi, dan Multi Cabang",
+      "6 kartu statistik berwarna: Total Siswa, Hadir, Izin, Sakit, Alfa, Belum",
+      "Progress bar absensi harian dengan persentase visual real-time",
+      "Daftar siswa lengkap dengan badge status kehadiran (Hadir, Sakit, Alfa)",
+      "Pencarian siswa cepat langsung dari dashboard",
     ],
-    image: "/images/presentation/ss-superadmin.png",
+    image: "/images/presentation/ss-wk-dashboard.png",
     icon: LayoutDashboard,
-    accent: "from-slate-600 to-indigo-700",
-    badge: "Super Admin",
+    accent: "from-indigo-500 to-blue-600",
+    badge: "Dashboard",
+  },
+  {
+    title: "Absensi Manual Wali Kelas",
+    subtitle: "Koreksi & Input Kehadiran Siswa",
+    desc: "Halaman absensi manual yang memungkinkan wali kelas menginput atau mengoreksi status kehadiran siswa per kelas dan per tanggal. Dilengkapi tombol status interaktif (H/S/I/A) untuk setiap siswa serta fitur simpan batch.",
+    points: [
+      "Filter per kelas dan tanggal untuk input yang tepat",
+      "Tombol status interaktif: H (Hadir), S (Sakit), I (Izin), A (Alfa)",
+      "Simpan batch — ubah beberapa siswa sekaligus dalam satu klik",
+      "Indikator jumlah siswa yang sudah terisi status",
+    ],
+    image: "/images/presentation/ss-wk-absensi.png",
+    icon: UserCheck,
+    accent: "from-emerald-500 to-teal-600",
+    badge: "Manual Input",
+  },
+  {
+    title: "Siswa Kelas Saya",
+    subtitle: "Direktori Siswa & Wali Murid",
+    desc: "Halaman data siswa khusus kelas yang diampu oleh wali kelas. Menampilkan statistik kelas (Total Siswa, Laki-laki, Perempuan), daftar siswa lengkap dengan nama wali murid, dan persentase kehadiran individual.",
+    points: [
+      "4 kartu statistik: Total Siswa, Laki-laki, Perempuan, dan Kelas",
+      "Daftar siswa dengan NIS, nama wali murid, dan persentase kehadiran",
+      "Filter per kelas dan pencarian nama siswa atau wali murid",
+      "Navigasi ke detail profil siswa dengan satu klik",
+    ],
+    image: "/images/presentation/ss-wk-siswa.png",
+    icon: Users,
+    accent: "from-cyan-500 to-blue-600",
+    badge: "My Students",
+  },
+  {
+    title: "Rekap Absensi Wali Kelas",
+    subtitle: "Laporan Kehadiran Format Nasional",
+    desc: "Fitur rekap absensi bulanan dengan format tabel nasional yang dapat diakses langsung oleh wali kelas. Menampilkan grid tanggal 1-30 dengan kode warna status, ringkasan per siswa, serta area tanda tangan wali kelas. Mendukung export ke Excel.",
+    points: [
+      "Format tabel absensi nasional: NO, NIS, Nama, Tanggal, Rekap H/S/I/A",
+      "Tab Rekap Kehadiran (Datang) dan Rekap Kepulangan (Pulang)",
+      "Export Excel langsung dari halaman dengan format siap cetak",
+      "Area tanda tangan wali kelas & nama sekolah otomatis",
+    ],
+    image: "/images/presentation/ss-wk-rekap.png",
+    icon: FileText,
+    accent: "from-blue-600 to-indigo-700",
+    badge: "Rekap",
+  },
+  {
+    title: "Analytic Kelas Wali Kelas",
+    subtitle: "Analitik Kehadiran Mendalam",
+    desc: "Dashboard analitik per kelas yang menampilkan statistik lengkap: jumlah siswa, total record, persentase kehadiran, dan total alfa. Dilengkapi donut chart distribusi status serta persentase kehadiran per siswa dalam satu tampilan.",
+    points: [
+      "Kartu KPI: Jumlah Siswa, Total Record, % Kehadiran, Total Alfa",
+      "Donut chart distribusi status: Hadir, Izin, Sakit, Alfa",
+      "Tab Analisa Kelas dan Overview Kehadiran",
+      "Filter periode: 30 hari, 60 hari, 90 hari, atau custom range",
+    ],
+    image: "/images/presentation/ss-wk-analytic.png",
+    icon: TrendingUp,
+    accent: "from-amber-500 to-orange-600",
+    badge: "Analytics",
+  },
+  {
+    title: "Peringkat Kelas (Leaderboard)",
+    subtitle: "Kompetisi Kehadiran Antar Kelas",
+    desc: "Fitur peringkat kelas yang membandingkan tingkat kehadiran seluruh kelas di sekolah. Wali kelas dapat melihat posisi kelasnya, grafik perbandingan bar chart horizontal, dan papan peringkat lengkap berdasarkan persentase kehadiran 30 hari terakhir.",
+    points: [
+      "Posisi kelas Anda ditampilkan dengan highlight khusus",
+      "Bar chart horizontal perbandingan kehadiran semua kelas",
+      "Papan peringkat dengan medali emas, perak, perunggu",
+      "Data berdasarkan persentase kehadiran 30 hari terakhir",
+    ],
+    image: "/images/presentation/ss-wk-leaderboard.png",
+    icon: Star,
+    accent: "from-yellow-500 to-amber-600",
+    badge: "Leaderboard",
   },
 ];
 
@@ -484,86 +547,111 @@ const Presentation = () => {
         </div>
       </section>
 
-      {/* ===== FEATURES ===== */}
+      {/* ===== SCHOOL FEATURES ===== */}
       <section id="features" className="relative py-20 sm:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-16 sm:mb-24">
-            <span className={`text-xs font-semibold uppercase tracking-widest ${d ? "text-indigo-400" : "text-indigo-600"}`}>Fitur Utama</span>
+            <span className={`text-xs font-semibold uppercase tracking-widest ${d ? "text-indigo-400" : "text-indigo-600"}`}>Dashboard Sekolah</span>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mt-3">
-              Semua yang Sekolah Anda <br className="hidden sm:block" />
-              <span className={`bg-gradient-to-r ${d ? "from-indigo-300 to-blue-300" : "from-indigo-600 to-blue-500"} bg-clip-text text-transparent`}>Butuhkan</span>
+              Fitur untuk <br className="hidden sm:block" />
+              <span className={`bg-gradient-to-r ${d ? "from-indigo-300 to-blue-300" : "from-indigo-600 to-blue-500"} bg-clip-text text-transparent`}>Admin Sekolah</span>
             </h2>
             <p className={`mt-4 ${muted} max-w-xl mx-auto text-sm sm:text-base`}>
-              13 fitur utama yang dirancang untuk mempermudah proses absensi siswa secara digital, aman, dan efisien.
+              {SCHOOL_FEATURES.length} fitur utama untuk mengelola absensi siswa secara digital, aman, dan efisien dari sisi admin sekolah.
             </p>
           </div>
 
           <div className="space-y-16 sm:space-y-32">
-            {FEATURES.map((f, idx) => {
+            {SCHOOL_FEATURES.map((f, idx) => {
               const isEven = idx % 2 === 0;
               const Icon = f.icon;
-              const isLast = idx === FEATURES.length - 1;
-
-              const featureNode = isLast ? (
-                <div className="flex flex-col items-center text-center">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className={`h-10 w-10 rounded-xl bg-gradient-to-br ${f.accent} flex items-center justify-center shadow-lg`}>
-                      <Icon className="h-5 w-5 text-white" />
-                    </div>
-                    <span className={`text-[10px] font-bold uppercase tracking-widest ${d ? "text-slate-500" : "text-slate-400"}`}>{f.badge}</span>
-                  </div>
-                  <h3 className="text-2xl sm:text-3xl font-extrabold tracking-tight">{f.title}</h3>
-                   <p className={`text-xs uppercase tracking-widest font-semibold mt-1 ${d ? "text-indigo-400" : "text-indigo-600"}`}>{f.subtitle}</p>
-                  <p className={`mt-4 text-sm leading-relaxed max-w-2xl ${d ? "text-slate-300" : "text-slate-600"}`}>{f.desc}</p>
-                  <div className="w-full max-w-5xl my-8">
-                    <div className={`rounded-2xl overflow-hidden border ${d ? "border-white/10" : "border-slate-200"} shadow-2xl ${d ? "shadow-black/40" : "shadow-slate-400/30"}`}>
-                      <img src={f.image} alt={f.title} className="w-full h-auto block transition-transform duration-700" style={{ transform: "scale(1.012)" }} />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-left max-w-3xl w-full">
-                    {f.points.map((p, i) => (
-                      <div key={i} className="flex items-start gap-2.5">
-                        <CheckCircle2 className={`h-4 w-4 mt-0.5 flex-shrink-0 ${d ? "text-emerald-400" : "text-emerald-500"}`} />
-                        <span className={`text-sm ${d ? "text-slate-400" : "text-slate-500"}`}>{p}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className={`flex flex-col ${isEven ? "lg:flex-row" : "lg:flex-row-reverse"} gap-8 lg:gap-16 items-center`}>
-                  <div className="w-full lg:w-[58%]">
-                    <div className={`rounded-2xl overflow-hidden border ${d ? "border-white/10" : "border-slate-200"} shadow-2xl ${d ? "shadow-black/40" : "shadow-slate-400/30"}`}>
-                      <img src={f.image} alt={f.title} className="w-full h-auto block transition-transform duration-700" style={{ transform: "scale(1.012)" }} />
-                    </div>
-                  </div>
-                  <div className="w-full lg:w-[42%]">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className={`h-10 w-10 rounded-xl bg-gradient-to-br ${f.accent} flex items-center justify-center shadow-lg`}>
-                        <Icon className="h-5 w-5 text-white" />
-                      </div>
-                      <span className={`text-[10px] font-bold uppercase tracking-widest ${d ? "text-slate-500" : "text-slate-400"}`}>{f.badge}</span>
-                    </div>
-                    <h3 className="text-2xl sm:text-3xl font-extrabold tracking-tight">{f.title}</h3>
-                    <p className={`text-xs uppercase tracking-widest font-semibold mt-1 ${d ? "text-indigo-400" : "text-indigo-600"}`}>{f.subtitle}</p>
-                    <p className={`mt-4 text-sm leading-relaxed ${d ? "text-slate-300" : "text-slate-600"}`}>{f.desc}</p>
-                    <ul className="mt-5 space-y-2.5">
-                      {f.points.map((p, i) => (
-                        <li key={i} className="flex items-start gap-2.5">
-                          <CheckCircle2 className={`h-4 w-4 mt-0.5 flex-shrink-0 ${d ? "text-emerald-400" : "text-emerald-500"}`} />
-                          <span className={`text-sm ${d ? "text-slate-400" : "text-slate-500"}`}>{p}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              );
-
               return (
                 <div key={f.title}>
                   {idx > 0 && (
                     <div className={`block sm:hidden w-16 h-px mx-auto mb-16 ${d ? "bg-white/10" : "bg-slate-200"}`} />
                   )}
-                  {featureNode}
+                  <div className={`flex flex-col ${isEven ? "lg:flex-row" : "lg:flex-row-reverse"} gap-8 lg:gap-16 items-center`}>
+                    <div className="w-full lg:w-[58%]">
+                      <div className={`rounded-2xl overflow-hidden border ${d ? "border-white/10" : "border-slate-200"} shadow-2xl ${d ? "shadow-black/40" : "shadow-slate-400/30"}`}>
+                        <img src={f.image} alt={f.title} className="w-full h-auto block transition-transform duration-700" style={{ transform: "scale(1.012)" }} />
+                      </div>
+                    </div>
+                    <div className="w-full lg:w-[42%]">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className={`h-10 w-10 rounded-xl bg-gradient-to-br ${f.accent} flex items-center justify-center shadow-lg`}>
+                          <Icon className="h-5 w-5 text-white" />
+                        </div>
+                        <span className={`text-[10px] font-bold uppercase tracking-widest ${d ? "text-slate-500" : "text-slate-400"}`}>{f.badge}</span>
+                      </div>
+                      <h3 className="text-2xl sm:text-3xl font-extrabold tracking-tight">{f.title}</h3>
+                      <p className={`text-xs uppercase tracking-widest font-semibold mt-1 ${d ? "text-indigo-400" : "text-indigo-600"}`}>{f.subtitle}</p>
+                      <p className={`mt-4 text-sm leading-relaxed ${d ? "text-slate-300" : "text-slate-600"}`}>{f.desc}</p>
+                      <ul className="mt-5 space-y-2.5">
+                        {f.points.map((p, i) => (
+                          <li key={i} className="flex items-start gap-2.5">
+                            <CheckCircle2 className={`h-4 w-4 mt-0.5 flex-shrink-0 ${d ? "text-emerald-400" : "text-emerald-500"}`} />
+                            <span className={`text-sm ${d ? "text-slate-400" : "text-slate-500"}`}>{p}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ===== WALI KELAS FEATURES ===== */}
+      <section className={`relative py-20 sm:py-32 ${d ? "bg-white/[0.01]" : "bg-indigo-50/50"}`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-16 sm:mb-24">
+            <span className={`text-xs font-semibold uppercase tracking-widest ${d ? "text-purple-400" : "text-purple-600"}`}>Dashboard Wali Kelas</span>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mt-3">
+              Fitur untuk <br className="hidden sm:block" />
+              <span className={`bg-gradient-to-r ${d ? "from-purple-300 to-indigo-300" : "from-purple-600 to-indigo-500"} bg-clip-text text-transparent`}>Wali Kelas</span>
+            </h2>
+            <p className={`mt-4 ${muted} max-w-xl mx-auto text-sm sm:text-base`}>
+              {WALIKELAS_FEATURES.length} fitur khusus yang dirancang untuk membantu wali kelas memantau, mengelola, dan menganalisis kehadiran siswa kelas yang diampu.
+            </p>
+          </div>
+
+          <div className="space-y-16 sm:space-y-32">
+            {WALIKELAS_FEATURES.map((f, idx) => {
+              const isEven = idx % 2 === 0;
+              const Icon = f.icon;
+              return (
+                <div key={f.title}>
+                  {idx > 0 && (
+                    <div className={`block sm:hidden w-16 h-px mx-auto mb-16 ${d ? "bg-white/10" : "bg-slate-200"}`} />
+                  )}
+                  <div className={`flex flex-col ${isEven ? "lg:flex-row" : "lg:flex-row-reverse"} gap-8 lg:gap-16 items-center`}>
+                    <div className="w-full lg:w-[58%]">
+                      <div className={`rounded-2xl overflow-hidden border ${d ? "border-white/10" : "border-slate-200"} shadow-2xl ${d ? "shadow-black/40" : "shadow-slate-400/30"}`}>
+                        <img src={f.image} alt={f.title} className="w-full h-auto block transition-transform duration-700" style={{ transform: "scale(1.012)" }} />
+                      </div>
+                    </div>
+                    <div className="w-full lg:w-[42%]">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className={`h-10 w-10 rounded-xl bg-gradient-to-br ${f.accent} flex items-center justify-center shadow-lg`}>
+                          <Icon className="h-5 w-5 text-white" />
+                        </div>
+                        <span className={`text-[10px] font-bold uppercase tracking-widest ${d ? "text-slate-500" : "text-slate-400"}`}>{f.badge}</span>
+                      </div>
+                      <h3 className="text-2xl sm:text-3xl font-extrabold tracking-tight">{f.title}</h3>
+                      <p className={`text-xs uppercase tracking-widest font-semibold mt-1 ${d ? "text-purple-400" : "text-purple-600"}`}>{f.subtitle}</p>
+                      <p className={`mt-4 text-sm leading-relaxed ${d ? "text-slate-300" : "text-slate-600"}`}>{f.desc}</p>
+                      <ul className="mt-5 space-y-2.5">
+                        {f.points.map((p, i) => (
+                          <li key={i} className="flex items-start gap-2.5">
+                            <CheckCircle2 className={`h-4 w-4 mt-0.5 flex-shrink-0 ${d ? "text-emerald-400" : "text-emerald-500"}`} />
+                            <span className={`text-sm ${d ? "text-slate-400" : "text-slate-500"}`}>{p}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
                 </div>
               );
             })}
