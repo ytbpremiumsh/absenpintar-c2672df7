@@ -232,7 +232,9 @@ const LandingPage = () => {
       }
       // Build hero stats from content if available
       const ICON_MAP: Record<string, any> = { School, Users, Shield, Globe, GraduationCap, MapPin };
-      const ICON_COLOR_MAP: Record<string, string> = { School: "text-emerald-300", GraduationCap: "text-amber-300", Shield: "text-cyan-300", Globe: "text-rose-300", Users: "text-sky-300", MapPin: "text-rose-300" };
+      const ICON_COLOR_MAP: Record<string, string> = { School: "text-emerald-300", GraduationCap: "text-amber-300", Shield: "text-cyan-300", Globe: "text-rose-300", Users: "text-amber-300", MapPin: "text-rose-300" };
+      const RING_COLOR_MAP: Record<string, string> = { School: "ring-emerald-400/30", Users: "ring-amber-400/30", Shield: "ring-cyan-400/30", MapPin: "ring-rose-400/30", GraduationCap: "ring-amber-400/30", Globe: "ring-rose-400/30" };
+      const GLOW_MAP: Record<string, string> = { School: "from-emerald-400/20 to-emerald-600/5", Users: "from-amber-400/20 to-amber-600/5", Shield: "from-cyan-400/20 to-cyan-600/5", MapPin: "from-rose-400/20 to-rose-600/5", GraduationCap: "from-amber-400/20 to-amber-600/5", Globe: "from-rose-400/20 to-rose-600/5" };
       const statsKeys = ["hero_stat_1", "hero_stat_2", "hero_stat_3", "hero_stat_4"];
       const loadedStats = statsKeys.map((k, i) => {
         const val = map[`${k}_value`];
@@ -243,6 +245,8 @@ const LandingPage = () => {
           label: label || DEFAULT_HERO_STATS[i]?.label || "",
           icon: ICON_MAP[iconName] || DEFAULT_HERO_STATS[i]?.icon || Shield,
           iconColor: ICON_COLOR_MAP[iconName] || DEFAULT_HERO_STATS[i]?.iconColor || "text-white/70",
+          ringColor: RING_COLOR_MAP[iconName] || DEFAULT_HERO_STATS[i]?.ringColor || "ring-white/10",
+          bgGlow: GLOW_MAP[iconName] || DEFAULT_HERO_STATS[i]?.bgGlow || "from-white/10 to-transparent",
         };
       }).filter(s => s.value && s.label);
       if (loadedStats.length > 0) setHeroStats(loadedStats);
