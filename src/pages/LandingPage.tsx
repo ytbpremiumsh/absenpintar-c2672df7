@@ -307,69 +307,80 @@ const LandingPage = () => {
         </div>
         <div className="absolute inset-0 grid-bg opacity-40 pointer-events-none" />
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-            {/* Left: Text Content */}
-            <div className="text-center lg:text-left">
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-                <span className="inline-flex items-center gap-2 bg-indigo-500/8 border border-indigo-500/15 rounded-full px-4 py-1.5 text-xs font-bold text-indigo-700 dark:text-indigo-300 mb-6">
-                  <Sparkles className="h-3.5 w-3.5" /> Platform Absensi Digital #1 untuk Sekolah Indonesia
+        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+          {/* Centered Text Content */}
+          <div className="text-center">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+              <span className="inline-flex items-center gap-2 bg-indigo-500/8 border border-indigo-500/15 rounded-full px-4 py-1.5 text-xs font-bold text-indigo-700 dark:text-indigo-300 mb-6">
+                <Sparkles className="h-3.5 w-3.5" /> Platform Absensi Digital #1 untuk Sekolah Indonesia
+              </span>
+            </motion.div>
+
+            <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.7 }}
+              className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-extrabold tracking-tight leading-[1.1]">
+              <span className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 dark:from-white dark:via-slate-100 dark:to-slate-200 bg-clip-text text-transparent">
+                {get("hero_title", "ATSkolla — ")}
+              </span>
+              <span className="relative inline-block">
+                <span className="relative z-10 bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-500 dark:from-indigo-400 dark:via-blue-400 dark:to-indigo-300 bg-clip-text text-transparent">
+                  Absensi Digital Sekolah
                 </span>
-              </motion.div>
+                <motion.span
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  transition={{ delay: 0.8, duration: 0.6, ease: "easeOut" }}
+                  className="absolute -bottom-1 left-0 right-0 h-3 sm:h-4 bg-indigo-500/10 dark:bg-indigo-400/15 rounded-full origin-left -skew-x-3"
+                />
+              </span>
+            </motion.h1>
 
-              <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.7 }}
-                className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-extrabold tracking-tight leading-[1.1]">
-                <TypingEffect texts={get("hero_title") ? [get("hero_title"), "Cepat, Aman & Mudah Digunakan", "Solusi Absensi Modern untuk Sekolah"] : ["ATSkolla — Absensi Digital Sekolah", "Cepat, Aman & Mudah Digunakan", "Solusi Absensi Modern untuk Sekolah"]} speed={60} className="bg-gradient-to-r from-slate-900 via-indigo-800 to-blue-700 dark:from-white dark:via-indigo-200 dark:to-blue-300 bg-clip-text text-transparent" />
-              </motion.h1>
+            <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.6 }}
+              className="mt-6 text-base sm:text-lg text-slate-500 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
+              {get("hero_subtitle", "Platform absensi modern dengan barcode scan & face recognition AI. Dirancang khusus untuk sekolah Indonesia — cepat, aman, dan mudah digunakan.")}
+            </motion.p>
 
-              <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.6 }}
-                className="mt-6 text-base sm:text-lg text-slate-500 dark:text-slate-400 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                {get("hero_subtitle", "Platform absensi modern dengan barcode scan & face recognition AI. Dirancang khusus untuk sekolah Indonesia — cepat, aman, dan mudah digunakan.")}
-              </motion.p>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }}
+              className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+              <button onClick={() => navigate("/register")}
+                className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-7 py-3.5 rounded-2xl font-bold transition-all shadow-xl shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:scale-[1.02] active:scale-[0.98] text-sm">
+                <Zap className="h-4 w-4" /> {get("cta_text", "Coba Gratis Sekarang")}
+              </button>
+              <a href="#how-it-works"
+                className="inline-flex items-center justify-center gap-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-7 py-3.5 rounded-2xl font-semibold transition-all text-sm border border-slate-200 dark:border-slate-700 shadow-sm">
+                <Play className="h-4 w-4" /> Cara Kerja
+              </a>
+            </motion.div>
 
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }}
-                className="mt-8 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
-                <button onClick={() => navigate("/register")}
-                  className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-7 py-3.5 rounded-2xl font-bold transition-all shadow-xl shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:scale-[1.02] active:scale-[0.98] text-sm">
-                  <Zap className="h-4 w-4" /> {get("cta_text", "Coba Gratis Sekarang")}
-                </button>
-                <a href="#how-it-works"
-                  className="inline-flex items-center justify-center gap-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-7 py-3.5 rounded-2xl font-semibold transition-all text-sm border border-slate-200 dark:border-slate-700 shadow-sm">
-                  <Play className="h-4 w-4" /> Cara Kerja
-                </a>
-              </motion.div>
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}
+              className="mt-5 text-xs text-slate-400 dark:text-slate-500">
+              {get("hero_caption", "Penggunaan mudah \u00a0\u2022\u00a0 Pembayaran instan \u00a0\u2022\u00a0 Siap pakai dalam hitungan menit")}
+            </motion.p>
 
-              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}
-                className="mt-5 text-xs text-slate-400 dark:text-slate-500">
-                {get("hero_caption", "Penggunaan mudah \u00a0\u2022\u00a0 Pembayaran instan \u00a0\u2022\u00a0 Siap pakai dalam hitungan menit")}
-              </motion.p>
-
-              {/* Mini Stats */}
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 }}
-                className="mt-8 flex gap-6 justify-center lg:justify-start">
-                {STATS.map(s => (
-                  <div key={s.label} className="text-center">
-                    <p className="text-lg sm:text-xl font-extrabold text-indigo-600 dark:text-indigo-400">{s.value}</p>
-                    <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium">{s.label}</p>
-                  </div>
-                ))}
-              </motion.div>
-            </div>
-
-            {/* Right: Hero Image */}
-            <motion.div initial={{ opacity: 0, x: 40, scale: 0.95 }} animate={{ opacity: 1, x: 0, scale: 1 }} transition={{ delay: 0.4, duration: 1, ease: "easeOut" }}
-              className="relative">
-              <div className="absolute -inset-6 bg-gradient-to-br from-indigo-500/15 via-blue-500/8 to-teal-500/5 rounded-[2.5rem] blur-3xl animate-pulse" />
-              <div className="absolute -inset-2 bg-gradient-to-br from-indigo-500/8 to-blue-500/5 rounded-3xl" />
-              <motion.img
-                src={get("hero_image") || heroDashboard}
-                alt="Dashboard ATSkolla"
-                className="relative w-full h-auto rounded-2xl border border-slate-200/50 dark:border-slate-700/50 shadow-[0_30px_80px_-15px_rgba(0,0,0,0.25),0_0_50px_-10px_rgba(99,102,241,0.15)]"
-                whileHover={{ scale: 1.01, y: -4 }}
-                transition={{ duration: 0.4 }}
-              />
+            {/* Mini Stats */}
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 }}
+              className="mt-8 flex gap-6 sm:gap-10 justify-center">
+              {STATS.map(s => (
+                <div key={s.label} className="text-center">
+                  <p className="text-lg sm:text-xl font-extrabold text-indigo-600 dark:text-indigo-400">{s.value}</p>
+                  <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium">{s.label}</p>
+                </div>
+              ))}
             </motion.div>
           </div>
+
+          {/* Centered Hero Image */}
+          <motion.div initial={{ opacity: 0, y: 40, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ delay: 0.5, duration: 1, ease: "easeOut" }}
+            className="relative mt-14 sm:mt-20 max-w-4xl mx-auto">
+            <div className="absolute -inset-6 bg-gradient-to-br from-indigo-500/15 via-blue-500/8 to-teal-500/5 rounded-[2.5rem] blur-3xl animate-pulse" />
+            <div className="absolute -inset-2 bg-gradient-to-br from-indigo-500/8 to-blue-500/5 rounded-3xl" />
+            <motion.img
+              src={get("hero_image") || heroDashboard}
+              alt="Dashboard ATSkolla"
+              className="relative w-full h-auto rounded-2xl border border-slate-200/50 dark:border-slate-700/50 shadow-[0_30px_80px_-15px_rgba(0,0,0,0.25),0_0_50px_-10px_rgba(99,102,241,0.15)]"
+              whileHover={{ scale: 1.01, y: -4 }}
+              transition={{ duration: 0.4 }}
+            />
+          </motion.div>
         </div>
       </section>
 
