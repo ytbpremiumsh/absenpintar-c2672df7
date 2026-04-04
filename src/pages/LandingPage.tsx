@@ -321,10 +321,15 @@ const LandingPage = () => {
               <span className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 dark:from-white dark:via-slate-100 dark:to-slate-200 bg-clip-text text-transparent">
                 {get("hero_title", "ATSkolla — ")}
               </span>
+              <br className="hidden sm:block" />
               <span className="relative inline-block">
-                <span className="relative z-10 bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-500 dark:from-indigo-400 dark:via-blue-400 dark:to-indigo-300 bg-clip-text text-transparent">
-                  Absensi Digital Sekolah
-                </span>
+                <TypingEffect
+                  texts={["Absensi Digital Sekolah", "Cepat, Aman & Modern", "Scan Barcode & Face AI"]}
+                  speed={60}
+                  deleteSpeed={35}
+                  pauseTime={2500}
+                  className="bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-500 dark:from-indigo-400 dark:via-blue-400 dark:to-indigo-300 bg-clip-text text-transparent"
+                />
                 <motion.span
                   initial={{ scaleX: 0 }}
                   animate={{ scaleX: 1 }}
