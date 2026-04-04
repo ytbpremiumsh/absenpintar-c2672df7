@@ -28,7 +28,7 @@ const SOLUTIONS = [
   { icon: FileText, problem: "Laporan Tidak Akurat", solution: "Export Excel & PDF", desc: "Laporan kehadiran lengkap bisa di-export dalam format Excel atau PDF kapan saja." },
 ];
 
-const FEATURES = [
+const SCHOOL_FEATURES = [
   {
     title: "Dashboard Analitik",
     subtitle: "Pusat Kendali Sekolah Anda",
@@ -195,21 +195,6 @@ const FEATURES = [
     badge: "Export",
   },
   {
-    title: "Analytic Kelas",
-    subtitle: "Analitik & Rekap Kehadiran Siswa",
-    desc: "Dashboard analitik per kelas dengan statistik lengkap: jumlah siswa, total record, persentase kehadiran, dan total alfa. Dilengkapi donut chart distribusi status dan persentase kehadiran per siswa.",
-    points: [
-      "Analisa per kelas: jumlah siswa, total record, % kehadiran, total alfa",
-      "Donut chart distribusi status: Hadir, Izin, Sakit, Alfa",
-      "Persentase kehadiran per siswa dalam satu tampilan",
-      "Filter periode: 30 hari, 60 hari, 90 hari, atau custom range",
-    ],
-    image: "/images/presentation/ss-analytic.png",
-    icon: TrendingUp,
-    accent: "from-amber-500 to-orange-600",
-    badge: "Analytics",
-  },
-  {
     title: "Riwayat Absensi",
     subtitle: "Kelola Data Absensi Harian",
     desc: "Halaman riwayat absensi yang menampilkan data kehadiran harian per kelas. Admin dapat melihat, memfilter, dan mengubah status kehadiran siswa secara langsung dengan tombol ubah status interaktif.",
@@ -254,20 +239,98 @@ const FEATURES = [
     accent: "from-indigo-600 to-blue-600",
     badge: "Subscription",
   },
+];
+
+const WALIKELAS_FEATURES = [
   {
-    title: "Super Admin Panel",
-    subtitle: "Pusat Kendali Manajemen Platform",
-    desc: "Panel Super Admin menyediakan kontrol penuh untuk mengelola seluruh ekosistem Sistem Manajemen Absensi Sekolah. Mulai dari monitoring sekolah, pengelolaan langganan & pembayaran, komunikasi, hingga integrasi — semua dalam satu dashboard terpusat.",
+    title: "Dashboard Wali Kelas",
+    subtitle: "Pantau Kelas yang Anda Ampu",
+    desc: "Dashboard khusus wali kelas yang menampilkan ringkasan kehadiran kelas secara real-time. Dilengkapi kartu statistik (Total Siswa, Hadir, Izin, Sakit, Alfa, Belum), progress bar absensi harian, dan daftar siswa beserta status kehadiran terkini.",
     points: [
-      "Dashboard overview: total sekolah, siswa, kelas, pengguna, langganan aktif, dan pendapatan",
-      "Billing & Langganan: kelola paket, langganan aktif, dan riwayat pembayaran seluruh sekolah",
-      "Komunikasi: kirim pengumuman platform dan kelola tiket bantuan dari sekolah",
-      "Integrasi: konfigurasi WhatsApp Gateway, notifikasi registrasi, dan Multi Cabang",
+      "6 kartu statistik berwarna: Total Siswa, Hadir, Izin, Sakit, Alfa, Belum",
+      "Progress bar absensi harian dengan persentase visual real-time",
+      "Daftar siswa lengkap dengan badge status kehadiran (Hadir, Sakit, Alfa)",
+      "Pencarian siswa cepat langsung dari dashboard",
     ],
-    image: "/images/presentation/ss-superadmin.png",
+    image: "/images/presentation/ss-wk-dashboard.png",
     icon: LayoutDashboard,
-    accent: "from-slate-600 to-indigo-700",
-    badge: "Super Admin",
+    accent: "from-indigo-500 to-blue-600",
+    badge: "Dashboard",
+  },
+  {
+    title: "Absensi Manual Wali Kelas",
+    subtitle: "Koreksi & Input Kehadiran Siswa",
+    desc: "Halaman absensi manual yang memungkinkan wali kelas menginput atau mengoreksi status kehadiran siswa per kelas dan per tanggal. Dilengkapi tombol status interaktif (H/S/I/A) untuk setiap siswa serta fitur simpan batch.",
+    points: [
+      "Filter per kelas dan tanggal untuk input yang tepat",
+      "Tombol status interaktif: H (Hadir), S (Sakit), I (Izin), A (Alfa)",
+      "Simpan batch — ubah beberapa siswa sekaligus dalam satu klik",
+      "Indikator jumlah siswa yang sudah terisi status",
+    ],
+    image: "/images/presentation/ss-wk-absensi.png",
+    icon: UserCheck,
+    accent: "from-emerald-500 to-teal-600",
+    badge: "Manual Input",
+  },
+  {
+    title: "Siswa Kelas Saya",
+    subtitle: "Direktori Siswa & Wali Murid",
+    desc: "Halaman data siswa khusus kelas yang diampu oleh wali kelas. Menampilkan statistik kelas (Total Siswa, Laki-laki, Perempuan), daftar siswa lengkap dengan nama wali murid, dan persentase kehadiran individual.",
+    points: [
+      "4 kartu statistik: Total Siswa, Laki-laki, Perempuan, dan Kelas",
+      "Daftar siswa dengan NIS, nama wali murid, dan persentase kehadiran",
+      "Filter per kelas dan pencarian nama siswa atau wali murid",
+      "Navigasi ke detail profil siswa dengan satu klik",
+    ],
+    image: "/images/presentation/ss-wk-siswa.png",
+    icon: Users,
+    accent: "from-cyan-500 to-blue-600",
+    badge: "My Students",
+  },
+  {
+    title: "Rekap Absensi Wali Kelas",
+    subtitle: "Laporan Kehadiran Format Nasional",
+    desc: "Fitur rekap absensi bulanan dengan format tabel nasional yang dapat diakses langsung oleh wali kelas. Menampilkan grid tanggal 1-30 dengan kode warna status, ringkasan per siswa, serta area tanda tangan wali kelas. Mendukung export ke Excel.",
+    points: [
+      "Format tabel absensi nasional: NO, NIS, Nama, Tanggal, Rekap H/S/I/A",
+      "Tab Rekap Kehadiran (Datang) dan Rekap Kepulangan (Pulang)",
+      "Export Excel langsung dari halaman dengan format siap cetak",
+      "Area tanda tangan wali kelas & nama sekolah otomatis",
+    ],
+    image: "/images/presentation/ss-wk-rekap.png",
+    icon: FileText,
+    accent: "from-blue-600 to-indigo-700",
+    badge: "Rekap",
+  },
+  {
+    title: "Analytic Kelas Wali Kelas",
+    subtitle: "Analitik Kehadiran Mendalam",
+    desc: "Dashboard analitik per kelas yang menampilkan statistik lengkap: jumlah siswa, total record, persentase kehadiran, dan total alfa. Dilengkapi donut chart distribusi status serta persentase kehadiran per siswa dalam satu tampilan.",
+    points: [
+      "Kartu KPI: Jumlah Siswa, Total Record, % Kehadiran, Total Alfa",
+      "Donut chart distribusi status: Hadir, Izin, Sakit, Alfa",
+      "Tab Analisa Kelas dan Overview Kehadiran",
+      "Filter periode: 30 hari, 60 hari, 90 hari, atau custom range",
+    ],
+    image: "/images/presentation/ss-wk-analytic.png",
+    icon: TrendingUp,
+    accent: "from-amber-500 to-orange-600",
+    badge: "Analytics",
+  },
+  {
+    title: "Peringkat Kelas (Leaderboard)",
+    subtitle: "Kompetisi Kehadiran Antar Kelas",
+    desc: "Fitur peringkat kelas yang membandingkan tingkat kehadiran seluruh kelas di sekolah. Wali kelas dapat melihat posisi kelasnya, grafik perbandingan bar chart horizontal, dan papan peringkat lengkap berdasarkan persentase kehadiran 30 hari terakhir.",
+    points: [
+      "Posisi kelas Anda ditampilkan dengan highlight khusus",
+      "Bar chart horizontal perbandingan kehadiran semua kelas",
+      "Papan peringkat dengan medali emas, perak, perunggu",
+      "Data berdasarkan persentase kehadiran 30 hari terakhir",
+    ],
+    image: "/images/presentation/ss-wk-leaderboard.png",
+    icon: Star,
+    accent: "from-yellow-500 to-amber-600",
+    badge: "Leaderboard",
   },
 ];
 
