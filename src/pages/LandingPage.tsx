@@ -390,37 +390,42 @@ const LandingPage = () => {
       </section>
 
       {/* ─── Hero Stats Banner ─── */}
-      <section className="relative py-16 sm:py-20 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-700" />
+      <section className="relative py-16 sm:py-24 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900" />
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-1/4 w-[300px] h-[300px] bg-white/5 rounded-full blur-[80px]" />
-          <div className="absolute bottom-0 right-1/4 w-[250px] h-[250px] bg-indigo-400/10 rounded-full blur-[60px]" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-indigo-500/8 rounded-full blur-[120px]" />
         </div>
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '32px 32px' }} />
         <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
-            {heroStats.map((stat, i) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.12, duration: 0.6 }}
-                className="group"
-              >
-                <div className="relative bg-white/[0.07] backdrop-blur-xl border border-white/[0.12] rounded-2xl sm:rounded-3xl p-6 sm:p-8 text-center hover:bg-white/[0.12] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_20px_60px_-10px_rgba(0,0,0,0.3)]">
-                  <div className="absolute inset-0 rounded-2xl sm:rounded-3xl bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
-                  <div className="relative">
-                    <div className="flex justify-center mb-4">
-                      <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/10 group-hover:ring-white/20 transition-all group-hover:scale-110 duration-500">
-                        <stat.icon className={`h-7 w-7 sm:h-8 sm:w-8 ${(stat as any).iconColor || "text-white/70"}`} strokeWidth={1.5} />
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+            {heroStats.map((stat, i) => {
+              const extraProps = stat as any;
+              return (
+                <motion.div
+                  key={stat.label}
+                  initial={{ opacity: 0, y: 40, scale: 0.9 }}
+                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1, duration: 0.6, ease: "easeOut" }}
+                  className="group"
+                >
+                  <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-white/[0.08] bg-white/[0.04] backdrop-blur-2xl p-6 sm:p-8 text-center transition-all duration-500 hover:-translate-y-2 hover:border-white/[0.16] hover:shadow-[0_24px_80px_-12px_rgba(99,102,241,0.25)]">
+                    <div className={`absolute -top-12 -right-12 w-32 h-32 rounded-full bg-gradient-to-br ${extraProps.bgGlow || "from-white/10 to-transparent"} blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700`} />
+                    <div className="absolute inset-0 rounded-2xl sm:rounded-3xl bg-gradient-to-b from-white/[0.06] to-transparent pointer-events-none" />
+                    <div className="relative">
+                      <div className="flex justify-center mb-5">
+                        <div className={`h-14 w-14 sm:h-16 sm:w-16 rounded-2xl bg-gradient-to-br from-white/10 to-white/[0.03] flex items-center justify-center ring-1 ${extraProps.ringColor || "ring-white/10"} group-hover:scale-110 transition-all duration-500 shadow-lg shadow-black/20`}>
+                          <stat.icon className={`h-7 w-7 sm:h-8 sm:w-8 ${extraProps.iconColor || "text-white/70"}`} strokeWidth={1.5} />
+                        </div>
                       </div>
+                      <p className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight drop-shadow-sm">{stat.value}</p>
+                      <div className="mt-3 h-px w-12 mx-auto bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                      <p className="mt-3 text-sm sm:text-base text-slate-300/80 font-medium tracking-wide">{stat.label}</p>
                     </div>
-                    <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight">{stat.value}</p>
-                    <p className="mt-2 text-sm sm:text-base text-indigo-100/80 font-medium">{stat.label}</p>
                   </div>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>
