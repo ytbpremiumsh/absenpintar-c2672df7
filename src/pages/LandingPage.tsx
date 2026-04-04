@@ -231,8 +231,8 @@ const LandingPage = () => {
         if (sMap.header_logo_url) setHeaderLogo(sMap.header_logo_url);
       }
       // Build hero stats from content if available
-      const ICON_MAP: Record<string, any> = { School, Users, Shield, Globe, GraduationCap };
-      const ICON_COLOR_MAP: Record<string, string> = { School: "text-emerald-300", GraduationCap: "text-amber-300", Shield: "text-cyan-300", Globe: "text-rose-300", Users: "text-sky-300" };
+      const ICON_MAP: Record<string, any> = { School, Users, Shield, Globe, GraduationCap, MapPin };
+      const ICON_COLOR_MAP: Record<string, string> = { School: "text-emerald-300", GraduationCap: "text-amber-300", Shield: "text-cyan-300", Globe: "text-rose-300", Users: "text-sky-300", MapPin: "text-rose-300" };
       const statsKeys = ["hero_stat_1", "hero_stat_2", "hero_stat_3", "hero_stat_4"];
       const loadedStats = statsKeys.map((k, i) => {
         const val = map[`${k}_value`];
