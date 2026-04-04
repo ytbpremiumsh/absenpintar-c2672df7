@@ -323,7 +323,7 @@ const LandingPage = () => {
             <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.7 }}
               className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-extrabold tracking-tight leading-[1.1]">
               <span className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 dark:from-white dark:via-slate-100 dark:to-slate-200 bg-clip-text text-transparent">
-                {get("hero_title", "ATSkolla — ")}
+                {get("hero_title", "ATSkolla ")}
               </span>
               <br className="hidden sm:block" />
               <span className="relative inline-block">
