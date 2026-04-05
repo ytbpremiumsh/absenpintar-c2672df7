@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { UserCheck, Clock, GraduationCap, TrendingUp, AlertTriangle, ChevronRight, QrCode, School, BarChart3, Zap } from "lucide-react";
+import { UserCheck, Clock, GraduationCap, TrendingUp, AlertTriangle, ChevronRight, QrCode, School, BarChart3, Zap, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { motion } from "framer-motion";
@@ -41,6 +41,7 @@ const Dashboard = () => {
   const { profile } = useAuth();
   const [totalStudents, setTotalStudents] = useState(0);
   const [totalClasses, setTotalClasses] = useState(0);
+  const [waliKelasList, setWaliKelasList] = useState<{ name: string; class_name: string }[]>([]);
   const [todayLogs, setTodayLogs] = useState<any[]>([]);
   const [students, setStudents] = useState<StudentData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -55,10 +56,11 @@ const Dashboard = () => {
     const schoolId = profile.school_id;
     const today = new Date().toISOString().slice(0, 10);
 
-    const [studentsRes, logsRes, classesRes] = await Promise.all([
+    const [studentsRes, logsRes, classesRes, waliRes] = await Promise.all([
       supabase.from("students").select("id, name, class, parent_name, photo_url").eq("school_id", schoolId),
       supabase.from("attendance_logs").select("*").eq("school_id", schoolId).eq("date", today).eq("attendance_type", "datang").order("created_at", { ascending: false }),
       supabase.from("classes").select("id").eq("school_id", schoolId),
+      supabase.from("class_teachers").select("class_name, user_id").eq("school_id", schoolId),
     ]);
 
     const allStudents = studentsRes.data || [];
@@ -66,6 +68,18 @@ const Dashboard = () => {
     setTotalStudents(allStudents.length);
     setTotalClasses((classesRes.data || []).length);
     setTodayLogs(logsRes.data || []);
+
+    // Fetch wali kelas profiles
+    const waliData = waliRes.data || [];
+    if (waliData.length > 0) {
+      const userIds = waliData.map(w => w.user_id);
+      const { data: profiles } = await supabase.from("profiles").select("user_id, full_name").in("user_id", userIds);
+      const profileMap = new Map((profiles || []).map(p => [p.user_id, p.full_name]));
+      setWaliKelasList(waliData.map(w => ({ name: profileMap.get(w.user_id) || "—", class_name: w.class_name })).sort((a, b) => a.class_name.localeCompare(b.class_name)));
+    } else {
+      setWaliKelasList([]);
+    }
+
     setLoading(false);
   }, [profile?.school_id]);
 
@@ -393,6 +407,37 @@ const Dashboard = () => {
           </ScrollArea>
         </DialogContent>
       </Dialog>
+
+      {/* Daftar Wali Kelas */}
+      <Card className="rounded-2xl border border-border/60 shadow-sm">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-semibold flex items-center gap-2">
+            <Users className="h-4 w-4 text-muted-foreground" />
+            Daftar Wali Kelas
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {waliKelasList.length === 0 && !loading ? (
+            <p className="text-sm text-muted-foreground text-center py-6">Belum ada wali kelas yang ditugaskan</p>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              {waliKelasList.map((wk, idx) => (
+                <motion.div key={`${wk.class_name}-${idx}`} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.03 }}
+                  className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors">
+                  <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-bold shrink-0">
+                    {wk.name.charAt(0)}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold truncate">{wk.name}</p>
+                    <p className="text-[11px] text-muted-foreground">Kelas {wk.class_name}</p>
+                  </div>
+                  <Badge variant="secondary" className="text-[10px] shrink-0">{wk.class_name}</Badge>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Recent Attendance */}
       <Card className="rounded-2xl border border-border/60 shadow-sm">
