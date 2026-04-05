@@ -40,6 +40,7 @@ const DAY_NAMES = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
 const Dashboard = () => {
   const { profile } = useAuth();
   const [totalStudents, setTotalStudents] = useState(0);
+  const [totalClasses, setTotalClasses] = useState(0);
   const [todayLogs, setTodayLogs] = useState<any[]>([]);
   const [students, setStudents] = useState<StudentData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,14 +55,16 @@ const Dashboard = () => {
     const schoolId = profile.school_id;
     const today = new Date().toISOString().slice(0, 10);
 
-    const [studentsRes, logsRes] = await Promise.all([
+    const [studentsRes, logsRes, classesRes] = await Promise.all([
       supabase.from("students").select("id, name, class, parent_name, photo_url").eq("school_id", schoolId),
       supabase.from("attendance_logs").select("*").eq("school_id", schoolId).eq("date", today).eq("attendance_type", "datang").order("created_at", { ascending: false }),
+      supabase.from("classes").select("id").eq("school_id", schoolId),
     ]);
 
     const allStudents = studentsRes.data || [];
     setStudents(allStudents);
     setTotalStudents(allStudents.length);
+    setTotalClasses((classesRes.data || []).length);
     setTodayLogs(logsRes.data || []);
     setLoading(false);
   }, [profile?.school_id]);
@@ -115,7 +118,7 @@ const Dashboard = () => {
   const attendancePercent = totalStudents > 0 ? Math.round((statusCounts.hadir / totalStudents) * 100) : 0;
 
   const statCards = [
-    { label: "SEKOLAH AKTIF", value: 1, desc: "sekolah terdaftar", icon: School, iconBg: "bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/40 dark:to-teal-900/40", iconColor: "text-emerald-600 dark:text-emerald-400" },
+    { label: "TOTAL KELAS", value: totalClasses, desc: "kelas terdaftar", icon: School, iconBg: "bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/40 dark:to-teal-900/40", iconColor: "text-emerald-600 dark:text-emerald-400" },
     { label: "SISWA TERDAFTAR", value: totalStudents, desc: "total siswa aktif", icon: GraduationCap, iconBg: "bg-gradient-to-br from-indigo-100 to-violet-100 dark:from-indigo-900/40 dark:to-violet-900/40", iconColor: "text-indigo-600 dark:text-indigo-400" },
     { label: "HADIR HARI INI", value: statusCounts.hadir, desc: `${totalStudents > 0 ? Math.round((statusCounts.hadir / totalStudents) * 100) : 0}% kehadiran`, icon: TrendingUp, iconBg: "bg-gradient-to-br from-sky-100 to-blue-100 dark:from-sky-900/40 dark:to-blue-900/40", iconColor: "text-sky-600 dark:text-sky-400" },
     { label: "BELUM / ALFA", value: statusCounts.alfa + belumAbsen, desc: `${statusCounts.alfa} alfa, ${belumAbsen} belum`, icon: AlertTriangle, iconBg: "bg-gradient-to-br from-red-100 to-orange-100 dark:from-red-900/40 dark:to-orange-900/40", iconColor: "text-red-600 dark:text-red-400" },
