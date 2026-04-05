@@ -408,6 +408,37 @@ const Dashboard = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Daftar Wali Kelas */}
+      <Card className="rounded-2xl border border-border/60 shadow-sm">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-semibold flex items-center gap-2">
+            <Users className="h-4 w-4 text-muted-foreground" />
+            Daftar Wali Kelas
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {waliKelasList.length === 0 && !loading ? (
+            <p className="text-sm text-muted-foreground text-center py-6">Belum ada wali kelas yang ditugaskan</p>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              {waliKelasList.map((wk, idx) => (
+                <motion.div key={`${wk.class_name}-${idx}`} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.03 }}
+                  className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors">
+                  <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-bold shrink-0">
+                    {wk.name.charAt(0)}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold truncate">{wk.name}</p>
+                    <p className="text-[11px] text-muted-foreground">Kelas {wk.class_name}</p>
+                  </div>
+                  <Badge variant="secondary" className="text-[10px] shrink-0">{wk.class_name}</Badge>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Recent Attendance */}
       <Card className="rounded-2xl border border-border/60 shadow-sm">
         <CardHeader className="pb-2">
