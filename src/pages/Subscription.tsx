@@ -584,6 +584,8 @@ const Subscription = () => {
                 );
               })}
             </div>
+              );
+            })()}
           </div>
         </motion.div>
       )}
