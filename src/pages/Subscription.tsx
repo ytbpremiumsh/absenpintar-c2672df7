@@ -516,10 +516,10 @@ const Subscription = () => {
                       <div className="p-4 sm:p-5 flex flex-col flex-1">
                         {/* Plan Icon & Name */}
                         <div className="flex items-center gap-3 mb-3">
-                          <div className={`h-11 w-11 rounded-xl flex items-center justify-center shrink-0 ${
+                          <div className={`h-9 w-9 sm:h-11 sm:w-11 rounded-xl flex items-center justify-center shrink-0 ${
                             isCurrent ? "gradient-primary text-primary-foreground" : isPremium ? "bg-gradient-to-br from-amber-400 to-orange-500 text-white" : highlighted ? "bg-primary/10 text-primary" : "bg-secondary text-foreground"
                           }`}>
-                            <PIcon className="h-5 w-5" />
+                            <PIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                           </div>
                           <div className="min-w-0">
                             <h3 className="text-sm sm:text-base font-bold text-foreground">{plan.name}</h3>
