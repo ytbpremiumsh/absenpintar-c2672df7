@@ -230,6 +230,7 @@ const LandingPage = () => {
       if (settingsRes.data) {
         const sMap = Object.fromEntries(settingsRes.data.map((d: any) => [d.key, d.value]));
         if (sMap.header_logo_url) setHeaderLogo(sMap.header_logo_url);
+        if (sMap.hero_shadow_shapes_enabled === "false") setShowShadowShapes(false);
       }
       // Build hero stats from content if available
       const ICON_MAP: Record<string, any> = { School, Users, Shield, Globe, GraduationCap, MapPin };
@@ -381,8 +382,8 @@ const LandingPage = () => {
           {/* Centered Hero Image */}
           <motion.div initial={{ opacity: 0, y: 40, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ delay: 0.5, duration: 1, ease: "easeOut" }}
             className="relative mt-14 sm:mt-20 max-w-4xl mx-auto">
-            <div className="absolute -inset-6 bg-gradient-to-br from-indigo-500/15 via-blue-500/8 to-teal-500/5 rounded-[2.5rem] blur-3xl animate-pulse" />
-            <div className="absolute -inset-2 bg-gradient-to-br from-indigo-500/8 to-blue-500/5 rounded-3xl" />
+            {showShadowShapes && <div className="absolute -inset-6 bg-gradient-to-br from-indigo-500/15 via-blue-500/8 to-teal-500/5 rounded-[2.5rem] blur-3xl animate-pulse" />}
+            {showShadowShapes && <div className="absolute -inset-2 bg-gradient-to-br from-indigo-500/8 to-blue-500/5 rounded-3xl" />}
             <motion.img
               src={get("hero_image") || heroDashboard}
               alt="Dashboard ATSkolla"
@@ -733,8 +734,8 @@ const LandingPage = () => {
         <div className="max-w-4xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }}
             className="bg-gradient-to-r from-indigo-600 to-blue-700 rounded-3xl p-10 sm:p-14 text-center relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3" />
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/3" />
+            {showShadowShapes && <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3" />}
+            {showShadowShapes && <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/3" />}
 
             <div className="relative z-10">
               <div className="h-14 w-14 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center mx-auto mb-6">
