@@ -214,6 +214,7 @@ const LandingPage = () => {
   const [testimonials, setTestimonials] = useState<Testimonial[]>(DEFAULT_TESTIMONIALS);
   const [headerLogo, setHeaderLogo] = useState("/images/logo-atskolla.png");
   const [heroStats, setHeroStats] = useState(DEFAULT_HERO_STATS);
+  const [showShadowShapes, setShowShadowShapes] = useState(true);
 
   useEffect(() => {
     Promise.all([
