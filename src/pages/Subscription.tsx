@@ -522,16 +522,16 @@ const Subscription = () => {
                             <PIcon className="h-5 w-5" />
                           </div>
                           <div className="min-w-0">
-                            <h3 className="text-base font-bold text-foreground">{plan.name}</h3>
+                            <h3 className="text-sm sm:text-base font-bold text-foreground">{plan.name}</h3>
                             {plan.description && <p className="text-[10px] text-muted-foreground truncate">{plan.description}</p>}
                           </div>
                         </div>
 
                         {/* Price */}
-                        <div className="mb-4">
-                          <p className="text-2xl font-extrabold text-foreground">
+                        <div className="mb-3 sm:mb-4">
+                          <p className="text-lg sm:text-2xl font-extrabold text-foreground">
                             {formatRupiah(plan.price)}
-                            {plan.price > 0 && <span className="text-xs text-muted-foreground font-normal ml-1">/ bulan</span>}
+                            {plan.price > 0 && <span className="text-[10px] sm:text-xs text-muted-foreground font-normal ml-1">/ bln</span>}
                           </p>
                         </div>
 
