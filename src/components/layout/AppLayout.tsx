@@ -1,7 +1,9 @@
 import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
+import { MobileFooterNav } from "./MobileFooterNav";
 import { Outlet, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { Settings, LogOut, School, KeyRound, Gift } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { NotificationBell } from "@/components/NotificationBell";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
