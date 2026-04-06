@@ -1,7 +1,10 @@
 import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
+import { MobileFooterNav } from "./MobileFooterNav";
 import { Outlet, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { Settings, LogOut, School, KeyRound, Gift } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 import { NotificationBell } from "@/components/NotificationBell";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -18,6 +21,8 @@ function AppContent() {
   const navigate = useNavigate();
   const location = useLocation();
   const { isMobile, setOpenMobile } = useSidebar();
+  const isMobileDevice = useIsMobile();
+  const isDashboard = location.pathname === "/dashboard";
 
   if (loading) {
     return (
@@ -102,9 +107,10 @@ function AppContent() {
             </DropdownMenu>
           </div>
         </header>
-        <main className="flex-1 overflow-auto p-3 sm:p-5 md:p-6">
+        <main className={cn("flex-1 overflow-auto p-3 sm:p-5 md:p-6", isMobileDevice && isDashboard && "pb-24")}>
           <Outlet />
         </main>
+        {isMobileDevice && isDashboard && <MobileFooterNav />}
       </div>
     </>
   );
