@@ -22,7 +22,7 @@ function AppContent() {
   const location = useLocation();
   const { isMobile, setOpenMobile } = useSidebar();
   const isMobileDevice = useIsMobile();
-  const isDashboard = location.pathname === "/dashboard";
+  const showFooter = isMobileDevice;
 
   if (loading) {
     return (
