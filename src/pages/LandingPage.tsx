@@ -221,7 +221,7 @@ const LandingPage = () => {
       supabase.from("subscription_plans").select("*").eq("is_active", true).order("sort_order"),
       supabase.from("landing_trusted_schools").select("*").eq("is_active", true).order("sort_order"),
       supabase.from("landing_testimonials").select("*").eq("is_active", true).order("sort_order"),
-      supabase.from("platform_settings").select("key, value").in("key", ["header_logo_url"]),
+      supabase.from("platform_settings").select("key, value").in("key", ["header_logo_url", "hero_shadow_shapes_enabled"]),
     ]).then(([contentRes, plansRes, schoolsRes, testimonialsRes, settingsRes]) => {
       const map: Record<string, string> = {};
       (contentRes.data || []).forEach((item: any) => { map[item.key] = item.value; });
