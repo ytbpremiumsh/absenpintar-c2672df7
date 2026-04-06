@@ -478,8 +478,13 @@ const Subscription = () => {
               <p className="text-muted-foreground text-xs">Tingkatkan fitur dan kapasitas sekolah Anda</p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Collect all unique features across all plans */}
+            {(() => {
+              const allFeatures = Array.from(new Set(plans.flatMap((p: any) => p.features || [])));
+              return (
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
               {plans.map((plan, i) => {
+                const planFeatureSet = new Set(plan.features || []);
                 const isCurrent = currentPlan?.id === plan.id || (!currentPlan?.id && plan.price === 0 && (currentPlan?.name === plan.name || (!currentSub && plan.price === 0)));
                 const isLower = currentPlan && plan.price < (currentPlan.price || 0) && !isCurrent;
                 const highlighted = !isCurrent && (plan.name === "School" || plans.filter(p => p.price > (currentPlan?.price || 0)).length === 1 && plan.price > (currentPlan?.price || 0));
