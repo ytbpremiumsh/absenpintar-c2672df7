@@ -1,11 +1,11 @@
-import { useEffect, useState, useCallback, useRef } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { useEffect, useState, useRef } from "react";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
   Check, Star, Zap, Crown, Loader2, Shield, Calendar, Clock,
-  GraduationCap, Users, AlertTriangle, ExternalLink, CheckCircle2, CreditCard,
+  GraduationCap, AlertTriangle, CheckCircle2, CreditCard,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -239,7 +239,7 @@ const Subscription = () => {
   const classNearLimit = classPercent >= 80;
   const studentNearLimit = studentPercent >= 80;
 
-  const upgradePlans = plans.filter((p) => p.price > 0 && (!currentPlan || p.price > (currentPlan.price || 0)));
+  
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>;
 
