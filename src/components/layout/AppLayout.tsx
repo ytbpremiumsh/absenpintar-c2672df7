@@ -2,7 +2,7 @@ import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sid
 import { AppSidebar } from "./AppSidebar";
 import { MobileFooterNav } from "./MobileFooterNav";
 import { Outlet, Navigate, useNavigate, useLocation } from "react-router-dom";
-import { Settings, LogOut, School, KeyRound, Gift } from "lucide-react";
+import { Settings, LogOut, School, KeyRound, Gift, LayoutGrid, Activity, ScanLine, Users, Clock } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { NotificationBell } from "@/components/NotificationBell";
@@ -10,19 +10,35 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ActivePlanBadge } from "@/components/ActivePlanBadge";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import atskollaLogo from "@/assets/Logo_atskolla.png";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+const footerItems = [
+  { label: "Dashboard", icon: LayoutGrid, path: "/dashboard" },
+  { label: "Monitoring", icon: Activity, path: "/monitoring" },
+  { label: "Scan", icon: ScanLine, path: "/scan", isCenter: true },
+  { label: "Siswa", icon: Users, path: "/students" },
+  { label: "Riwayat", icon: Clock, path: "/history" },
+];
+
 function AppContent() {
   const { user, profile, roles, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const { isMobile, setOpenMobile } = useSidebar();
   const isMobileDevice = useIsMobile();
-  const showFooter = isMobileDevice;
+
+  const [headerLogo, setHeaderLogo] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.from("platform_settings").select("key, value").eq("key", "login_logo_url").maybeSingle().then(({ data }) => {
+      if (data?.value) setHeaderLogo(data.value);
+    });
+  }, []);
 
   if (loading) {
     return (
@@ -49,6 +65,8 @@ function AppContent() {
     navigate("/login");
   };
 
+  const logoSrc = headerLogo || atskollaLogo;
+
   return (
     <>
       <AppSidebar />
@@ -56,6 +74,14 @@ function AppContent() {
         <header className="h-14 flex items-center justify-between glass-subtle border-b border-border/40 px-3 sm:px-5 sticky top-0 z-30 shrink-0">
           <div className="flex items-center gap-2.5">
             <SidebarTrigger className="h-8 w-8 rounded-xl hover:bg-secondary/80 transition-colors" />
+            {/* Mobile logo */}
+            <div className="sm:hidden flex items-center gap-2">
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-[#5B6CF9] to-[#4c5ded] flex items-center justify-center shadow-sm">
+                <img src={logoSrc} alt="Logo" className="h-5 w-5 object-contain" />
+              </div>
+              <span className="text-sm font-bold text-foreground tracking-tight">ATSkolla</span>
+            </div>
+            {/* Desktop info */}
             <div className="hidden sm:flex flex-col">
               <span className="text-sm font-bold text-foreground tracking-tight truncate max-w-[200px]">
                 {profile?.full_name || "Dashboard"}
@@ -110,7 +136,7 @@ function AppContent() {
         <main className={cn("flex-1 overflow-auto p-3 sm:p-5 md:p-6", isMobileDevice && "pb-24")}>
           <Outlet />
         </main>
-        {isMobileDevice && <MobileFooterNav />}
+        {isMobileDevice && <MobileFooterNav items={footerItems} />}
       </div>
     </>
   );

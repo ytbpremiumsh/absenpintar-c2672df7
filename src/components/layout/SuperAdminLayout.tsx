@@ -2,9 +2,12 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Outlet, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
-import { LayoutGrid, School, Wallet, Receipt, LogOut, Shield, CalendarCheck, Building2, Megaphone, Globe, Presentation, Clock, Gift, Crown, UsersRound, MessageCircle, Eye, Palette, ChevronRight, Handshake } from "lucide-react";
+import { LayoutGrid, School, Wallet, Receipt, LogOut, Shield, CalendarCheck, Building2, Megaphone, Globe, Presentation, Clock, Gift, Crown, UsersRound, MessageCircle, Eye, Palette, ChevronRight, Handshake, CreditCard, Settings } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
+import { MobileFooterNav } from "./MobileFooterNav";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarFooter, SidebarHeader, useSidebar,
@@ -38,6 +41,14 @@ const groups = [
   { key: "billing", label: "BILLING" },
   { key: "integration", label: "INTEGRASI" },
   { key: "content", label: "TAMPILAN" },
+];
+
+const superAdminFooterItems = [
+  { label: "Dashboard", icon: LayoutGrid, path: "/super-admin" },
+  { label: "Sekolah", icon: School, path: "/super-admin/schools" },
+  { label: "Bayar", icon: CreditCard, path: "/super-admin/payments", isCenter: true },
+  { label: "Tiket", icon: UsersRound, path: "/super-admin/tickets" },
+  { label: "Setting", icon: Settings, path: "/super-admin/landing" },
 ];
 
 function SuperAdminSidebar() {
@@ -149,6 +160,7 @@ function SuperAdminSidebar() {
 
 export function SuperAdminLayout() {
   const { user, roles, loading, profile } = useAuth();
+  const isMobileDevice = useIsMobile();
 
   if (loading) return <div className="min-h-screen flex items-center justify-center"><Skeleton className="h-8 w-32" /></div>;
   if (!user) return <Navigate to="/login" replace />;
@@ -161,9 +173,17 @@ export function SuperAdminLayout() {
       <div className="min-h-screen flex w-full bg-background">
         <SuperAdminSidebar />
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-14 flex items-center justify-between glass-subtle border-b border-border/40 px-4 sm:px-5 sticky top-0 z-30">
+          <header className="h-14 flex items-center justify-between glass-subtle border-b border-border/40 px-3 sm:px-5 sticky top-0 z-30">
             <div className="flex items-center gap-2.5">
               <SidebarTrigger className="h-8 w-8 rounded-xl hover:bg-secondary/80 transition-colors" />
+              {/* Mobile logo */}
+              <div className="sm:hidden flex items-center gap-2">
+                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center shadow-sm">
+                  <Shield className="h-4 w-4 text-white stroke-[2.5]" />
+                </div>
+                <span className="text-sm font-bold text-foreground tracking-tight">Super Admin</span>
+              </div>
+              {/* Desktop */}
               <span className="text-sm font-semibold text-foreground/70 hidden sm:inline">Super Admin Panel</span>
             </div>
             <div className="flex items-center gap-2">
@@ -173,7 +193,13 @@ export function SuperAdminLayout() {
               </Avatar>
             </div>
           </header>
-          <main className="flex-1 p-4 md:p-6 overflow-auto"><Outlet /></main>
+          <main className={cn("flex-1 p-4 md:p-6 overflow-auto", isMobileDevice && "pb-24")}><Outlet /></main>
+          {isMobileDevice && (
+            <MobileFooterNav
+              items={superAdminFooterItems}
+              accentColor="from-red-500 to-rose-600"
+            />
+          )}
         </div>
       </div>
     </SidebarProvider>
