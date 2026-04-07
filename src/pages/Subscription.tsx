@@ -491,6 +491,13 @@ const Subscription = () => {
                 const PIcon = iconMap[plan.name] || Star;
                 const isPremium = plan.name === "Premium";
 
+                // Sort: active features first, inactive last
+                const sortedFeatures = [...allFeatures].sort((a, b) => {
+                  const aIn = planFeatureSet.has(a) ? 0 : 1;
+                  const bIn = planFeatureSet.has(b) ? 0 : 1;
+                  return aIn - bIn;
+                });
+
                 return (
                   <motion.div key={plan.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + i * 0.06 }}>
                     <Card className={`border-0 relative overflow-hidden flex flex-col ${
@@ -535,10 +542,10 @@ const Subscription = () => {
                           </p>
                         </div>
 
-                        {/* Features List - All features shown */}
+                        {/* Features List - Active on top, inactive on bottom */}
                         <div className="flex-1 mb-4">
                           <ul className="space-y-1 sm:space-y-1.5">
-                            {allFeatures.map((f: string, fi: number) => {
+                            {sortedFeatures.map((f: string, fi: number) => {
                               const isIncluded = planFeatureSet.has(f);
                               return (
                                 <li key={fi} className={`flex items-start gap-1.5 sm:gap-2 text-[10px] sm:text-xs ${!isIncluded ? "opacity-40" : ""}`}>
@@ -548,9 +555,6 @@ const Subscription = () => {
                               );
                             })}
                           </ul>
-                          {plan.max_students && (
-                            <p className="text-[10px] text-muted-foreground mt-2 pl-5">Maks {plan.max_students} siswa</p>
-                          )}
                         </div>
 
                         {/* CTA Button */}
