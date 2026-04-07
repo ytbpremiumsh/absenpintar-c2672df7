@@ -38,7 +38,7 @@ const SchoolSettings = () => {
   const maxInstructions = features.planName === "Free" ? 2 : 999;
 
   useEffect(() => {
-    if (!profile?.school_id) return;
+    if (!profile?.school_id) { setLoading(false); return; }
     Promise.all([
       supabase.from("schools").select("name, address, logo, npsn, city, province, timezone").eq("id", profile.school_id).single(),
       supabase.from("pickup_settings").select("school_start_time, school_end_time, attendance_start_time, attendance_end_time, departure_start_time, departure_end_time").eq("school_id", profile.school_id).maybeSingle(),
@@ -171,6 +171,14 @@ const SchoolSettings = () => {
   };
 
   if (loading) return <div className="flex items-center justify-center py-12 text-muted-foreground">Memuat...</div>;
+
+  if (!profile?.school_id) return (
+    <div className="flex flex-col items-center justify-center py-16 text-center space-y-3">
+      <School className="h-12 w-12 text-muted-foreground/30" />
+      <h3 className="text-lg font-semibold text-foreground">Sekolah Belum Terhubung</h3>
+      <p className="text-sm text-muted-foreground max-w-md">Akun Anda belum terhubung ke sekolah. Hubungi administrator untuk menghubungkan akun Anda ke data sekolah.</p>
+    </div>
+  );
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">

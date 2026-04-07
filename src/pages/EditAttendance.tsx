@@ -44,7 +44,7 @@ const EditAttendance = () => {
 
   // Fetch classes and students
   useEffect(() => {
-    if (!profile?.school_id) return;
+    if (!profile?.school_id) { setLoading(false); return; }
     Promise.all([
       supabase.from("classes").select("id, name").eq("school_id", profile.school_id).order("name"),
       supabase.from("students").select("id, name, class, student_id").eq("school_id", profile.school_id),
