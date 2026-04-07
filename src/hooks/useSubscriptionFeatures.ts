@@ -6,6 +6,7 @@ export interface PlanFeatures {
   planName: string;
   isTrial: boolean;
   trialDaysLeft: number | null;
+  trialExpiresAt: string | null;
   canImportExport: boolean;
   canUploadPhoto: boolean;
   canExportReport: boolean;
@@ -80,6 +81,7 @@ export function useSubscriptionFeatures(): PlanFeatures {
   const [planName, setPlanName] = useState("Free");
   const [isTrial, setIsTrial] = useState(false);
   const [trialDaysLeft, setTrialDaysLeft] = useState<number | null>(null);
+  const [trialExpiresAt, setTrialExpiresAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -107,9 +109,11 @@ export function useSubscriptionFeatures(): PlanFeatures {
           setPlanName("Free");
           setIsTrial(false);
           setTrialDaysLeft(null);
+          setTrialExpiresAt(null);
         } else {
           setPlanName(name);
           setIsTrial(isTrialSub);
+          setTrialExpiresAt(sub.expires_at || null);
           if (isTrialSub && sub.expires_at) {
             const days = Math.ceil(
               (new Date(sub.expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
@@ -117,6 +121,7 @@ export function useSubscriptionFeatures(): PlanFeatures {
             setTrialDaysLeft(Math.max(0, days));
           } else {
             setTrialDaysLeft(null);
+            setTrialExpiresAt(null);
           }
         }
       }
@@ -127,5 +132,5 @@ export function useSubscriptionFeatures(): PlanFeatures {
 
   const features = PLAN_FEATURES[planName] || PLAN_FEATURES.Free;
 
-  return { planName, isTrial, trialDaysLeft, loading, ...features };
+  return { planName, isTrial, trialDaysLeft, trialExpiresAt, loading, ...features };
 }
