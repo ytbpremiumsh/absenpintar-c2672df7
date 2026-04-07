@@ -21,7 +21,7 @@ export interface PlanFeatures {
   loading: boolean;
 }
 
-const PLAN_FEATURES: Record<string, Omit<PlanFeatures, "planName" | "loading" | "isTrial" | "trialDaysLeft">> = {
+const PLAN_FEATURES: Record<string, Omit<PlanFeatures, "planName" | "loading" | "isTrial" | "trialDaysLeft" | "trialExpiresAt">> = {
   Free: {
     canImportExport: false,
     canUploadPhoto: false,
