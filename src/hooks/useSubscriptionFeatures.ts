@@ -4,6 +4,8 @@ import { useAuth } from "@/hooks/useAuth";
 
 export interface PlanFeatures {
   planName: string;
+  isTrial: boolean;
+  trialDaysLeft: number | null;
   canImportExport: boolean;
   canUploadPhoto: boolean;
   canExportReport: boolean;
@@ -18,7 +20,7 @@ export interface PlanFeatures {
   loading: boolean;
 }
 
-const PLAN_FEATURES: Record<string, Omit<PlanFeatures, "planName" | "loading">> = {
+const PLAN_FEATURES: Record<string, Omit<PlanFeatures, "planName" | "loading" | "isTrial" | "trialDaysLeft">> = {
   Free: {
     canImportExport: false,
     canUploadPhoto: false,
@@ -76,6 +78,8 @@ const PLAN_FEATURES: Record<string, Omit<PlanFeatures, "planName" | "loading">> 
 export function useSubscriptionFeatures(): PlanFeatures {
   const { profile } = useAuth();
   const [planName, setPlanName] = useState("Free");
+  const [isTrial, setIsTrial] = useState(false);
+  const [trialDaysLeft, setTrialDaysLeft] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -84,20 +88,36 @@ export function useSubscriptionFeatures(): PlanFeatures {
         setLoading(false);
         return;
       }
+      // Fetch active or trial subscription
       const { data } = await supabase
         .from("school_subscriptions")
         .select("*, subscription_plans(name)")
         .eq("school_id", profile.school_id)
-        .eq("status", "active")
+        .in("status", ["active", "trial"])
+        .order("created_at", { ascending: false })
+        .limit(1)
         .maybeSingle();
 
       if (data) {
         const sub = data as any;
         const name = sub.subscription_plans?.name || "Free";
+        const isTrialSub = sub.status === "trial";
+
         if (sub.expires_at && new Date(sub.expires_at) < new Date()) {
           setPlanName("Free");
+          setIsTrial(false);
+          setTrialDaysLeft(null);
         } else {
           setPlanName(name);
+          setIsTrial(isTrialSub);
+          if (isTrialSub && sub.expires_at) {
+            const days = Math.ceil(
+              (new Date(sub.expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+            );
+            setTrialDaysLeft(Math.max(0, days));
+          } else {
+            setTrialDaysLeft(null);
+          }
         }
       }
       setLoading(false);
@@ -107,5 +127,5 @@ export function useSubscriptionFeatures(): PlanFeatures {
 
   const features = PLAN_FEATURES[planName] || PLAN_FEATURES.Free;
 
-  return { planName, loading, ...features };
+  return { planName, isTrial, trialDaysLeft, loading, ...features };
 }

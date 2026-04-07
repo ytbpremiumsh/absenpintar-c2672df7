@@ -1,23 +1,21 @@
 import { useEffect, useState } from "react";
 import {
-  LayoutGrid,
+  LayoutDashboard,
   Users,
   ScanLine,
   Activity,
-  Clock,
-  Wallet,
   LogOut,
   GraduationCap,
   UserCheck,
   BarChart3,
   HelpCircle,
-  ClipboardList,
+  ClipboardCheck,
   UsersRound,
-  Send,
-  Gift,
+  MessageCircle,
   ChevronRight,
   Crown,
-  Pencil,
+  PenLine,
+  Sparkles,
 } from "lucide-react";
 import atskollaLogo from "@/assets/Logo_atskolla.png";
 import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
@@ -41,7 +39,7 @@ import {
 } from "@/components/ui/sidebar";
 
 const mainNav = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutGrid, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
   { title: "Monitoring", url: "/monitoring", icon: Activity, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
   { title: "Scan Absensi", url: "/scan", icon: ScanLine, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
 ];
@@ -50,16 +48,16 @@ const dataNav = [
   { title: "Kelas", url: "/classes", icon: GraduationCap, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
   { title: "Siswa", url: "/students", icon: Users, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
   { title: "Wali Murid", url: "/teachers", icon: UserCheck, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
-  { title: "Wali Kelas", url: "/wali-kelas", icon: ClipboardList, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
+  { title: "Wali Kelas", url: "/wali-kelas", icon: ClipboardCheck, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
   { title: "Staff / Operator", url: "/staff", icon: UsersRound, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
 ];
 
 const whatsappNav = [
-  { title: "WhatsApp", url: "/whatsapp", icon: Send, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
+  { title: "WhatsApp", url: "/whatsapp", icon: MessageCircle, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
 ];
 
 const settingsNav = [
-  { title: "Langganan", url: "/subscription", icon: Wallet, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
+  { title: "Langganan", url: "/subscription", icon: Sparkles, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
   { title: "Bantuan", url: "/support", icon: HelpCircle, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
 ];
 
@@ -160,7 +158,9 @@ export function AppSidebar() {
               <div className="flex items-center gap-1.5 mt-0.5">
                 <span className="inline-flex items-center gap-1 text-[9px] font-bold text-white/90 bg-white/20 backdrop-blur-sm px-1.5 py-[1px] rounded-md border border-white/15">
                   <Crown className="h-2.5 w-2.5" />
-                  {features.planName === "Free" ? "Free Plan" : `${features.planName}`}
+                  {features.isTrial
+                    ? `🎁 Trial ${features.trialDaysLeft !== null ? `(${features.trialDaysLeft}h)` : ""}`
+                    : features.planName === "Free" ? "Free Plan" : `${features.planName}`}
                 </span>
               </div>
             </div>
@@ -176,8 +176,8 @@ export function AppSidebar() {
               <SidebarGroupContent>
                 <SidebarMenu className="space-y-1">
                    {renderNavItems([
-                    { title: "Dashboard Kelas", url: "/wali-kelas-dashboard", icon: LayoutGrid, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
-                    { title: "Absensi Manual", url: "/wali-kelas-attendance", icon: ClipboardList, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
+                    { title: "Dashboard Kelas", url: "/wali-kelas-dashboard", icon: LayoutDashboard, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
+                    { title: "Absensi Manual", url: "/wali-kelas-attendance", icon: ClipboardCheck, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
                     { title: "Siswa Kelas Saya", url: "/wali-kelas-students", icon: Users, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
                   ])}
                 </SidebarMenu>
@@ -189,7 +189,7 @@ export function AppSidebar() {
                 <SidebarMenu className="space-y-1">
                   {renderNavItems([
                     { title: "Rekap Absensi", url: "/export-history", icon: BarChart3, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
-                    { title: "Analytic Kelas", url: "/history", icon: Clock, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
+                    { title: "Analytic Kelas", url: "/history", icon: Activity, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
                   ])}
                 </SidebarMenu>
               </SidebarGroupContent>
@@ -217,8 +217,8 @@ export function AppSidebar() {
                 <SidebarMenu className="space-y-1">
                   {renderNavItems([
                     { title: "Rekap Absensi", url: "/export-history", icon: BarChart3, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
-                    { title: "Analytic Kelas", url: "/history", icon: Clock, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
-                    { title: "Riwayat Absensi", url: "/edit-attendance", icon: Pencil, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
+                    { title: "Analytic Kelas", url: "/history", icon: Activity, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
+                    { title: "Riwayat Absensi", url: "/edit-attendance", icon: PenLine, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
                   ])}
                 </SidebarMenu>
               </SidebarGroupContent>
