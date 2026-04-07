@@ -547,9 +547,15 @@ const Subscription = () => {
                           </p>
                         </div>
 
-                        {/* Features List - Active on top, inactive on bottom */}
+                        {/* Features List - Limit features on top (plan-specific), then active, then inactive */}
                         <div className="flex-1 mb-4">
                           <ul className="space-y-1 sm:space-y-1.5">
+                            {planLimitFeatures.map((f: string, fi: number) => (
+                              <li key={`limit-${fi}`} className="flex items-start gap-1.5 sm:gap-2 text-[10px] sm:text-xs">
+                                <Check className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0 mt-0.5 text-success" />
+                                <span className="text-foreground font-medium">{f}</span>
+                              </li>
+                            ))}
                             {sortedFeatures.map((f: string, fi: number) => {
                               const isIncluded = planFeatureSet.has(f);
                               return (
