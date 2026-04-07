@@ -58,6 +58,13 @@ serve(async (req) => {
           })
           .eq('id', trial.id);
 
+        // Deactivate WhatsApp Gateway for this school
+        await supabaseAdmin
+          .from('school_integrations')
+          .update({ is_active: false, wa_enabled: false })
+          .eq('school_id', trial.school_id)
+          .eq('integration_type', 'onesender');
+
         // Create notification
         await supabaseAdmin.from('notifications').insert({
           school_id: trial.school_id,
@@ -100,10 +107,21 @@ serve(async (req) => {
           .maybeSingle();
 
         if (!existingNotif) {
+          // Get custom warning message template
+          const { data: msgSetting } = await supabaseAdmin
+            .from('platform_settings')
+            .select('value')
+            .eq('key', 'trial_warning_message')
+            .maybeSingle();
+
+          const defaultMsg = `Masa trial Premium Anda akan berakhir dalam {days} hari. Segera lakukan upgrade agar fitur tidak terbatas dan data tetap aman!`;
+          const messageTemplate = msgSetting?.value || defaultMsg;
+          const message = messageTemplate.replace(/{days}/g, String(daysLeft));
+
           await supabaseAdmin.from('notifications').insert({
             school_id: trial.school_id,
             title: `Masa Trial Berakhir ${daysLeft} Hari Lagi`,
-            message: `Masa trial Premium Anda akan berakhir dalam ${daysLeft} hari. Segera lakukan upgrade agar fitur tidak terbatas dan data tetap aman!`,
+            message,
             type: 'trial_warning',
           });
           warned++;
