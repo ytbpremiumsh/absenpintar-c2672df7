@@ -91,12 +91,18 @@ const Register = () => {
     setManualAddress("");
   };
 
+  const passwordHasUpper = /[A-Z]/.test(password);
+  const passwordHasNumber = /[0-9]/.test(password);
+  const passwordHasSymbol = /[^A-Za-z0-9]/.test(password);
+  const passwordLongEnough = password.length >= 8;
+  const passwordValid = passwordHasUpper && passwordHasNumber && passwordHasSymbol && passwordLongEnough;
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!schoolData) { toast.error("Data sekolah belum diisi"); return; }
     if (!fullName.trim()) { toast.error("Nama lengkap wajib diisi"); return; }
     if (!email.trim()) { toast.error("Email wajib diisi"); return; }
-    if (password.length < 6) { toast.error("Password minimal 6 karakter"); return; }
+    if (!passwordValid) { toast.error("Password harus minimal 8 karakter, mengandung huruf besar, angka, dan simbol"); return; }
     if (password !== confirmPassword) { toast.error("Password tidak cocok"); return; }
 
     setRegistering(true);
@@ -397,17 +403,34 @@ const Register = () => {
                           <Input
                             id="regPassword"
                             type={showPassword ? "text" : "password"}
-                            placeholder="Minimal 6 karakter"
+                            placeholder="Min 8 karakter, huruf besar, angka, simbol"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             className="h-11 pr-10 rounded-xl"
                             required
-                            minLength={6}
                           />
                           <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
                             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                           </button>
                         </div>
+                        {password.length > 0 && (
+                          <div className="space-y-1 mt-1">
+                            <div className="flex flex-wrap gap-1.5">
+                              <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-medium ${passwordLongEnough ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" : "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"}`}>
+                                {passwordLongEnough ? "✓" : "✗"} 8+ karakter
+                              </span>
+                              <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-medium ${passwordHasUpper ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" : "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"}`}>
+                                {passwordHasUpper ? "✓" : "✗"} Huruf besar
+                              </span>
+                              <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-medium ${passwordHasNumber ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" : "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"}`}>
+                                {passwordHasNumber ? "✓" : "✗"} Angka
+                              </span>
+                              <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-medium ${passwordHasSymbol ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" : "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"}`}>
+                                {passwordHasSymbol ? "✓" : "✗"} Simbol
+                              </span>
+                            </div>
+                          </div>
+                        )}
                       </motion.div>
 
                       <motion.div variants={itemVariants} className="space-y-2">
