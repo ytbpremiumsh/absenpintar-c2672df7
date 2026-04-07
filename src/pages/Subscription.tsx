@@ -478,13 +478,18 @@ const Subscription = () => {
               <p className="text-muted-foreground text-xs">Tingkatkan fitur dan kapasitas sekolah Anda</p>
             </div>
 
-            {/* Collect all unique features across all plans */}
+            {/* Collect all unique features across all plans, excluding limit-based entries */}
             {(() => {
-              const allFeatures = Array.from(new Set(plans.flatMap((p: any) => p.features || [])));
+              const isLimitFeature = (f: string) => /^(Maks|Kelas unlimited|Siswa unlimited)/i.test(f);
+              const allFeatures = Array.from(new Set(
+                plans.flatMap((p: any) => (p.features || []).filter((f: string) => !isLimitFeature(f)))
+              ));
               return (
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
               {plans.map((plan, i) => {
-                const planFeatureSet = new Set(plan.features || []);
+                const planAllFeatures: string[] = plan.features || [];
+                const planLimitFeatures = planAllFeatures.filter((f: string) => isLimitFeature(f));
+                const planFeatureSet = new Set(planAllFeatures.filter((f: string) => !isLimitFeature(f)));
                 const isCurrent = currentPlan?.id === plan.id || (!currentPlan?.id && plan.price === 0 && (currentPlan?.name === plan.name || (!currentSub && plan.price === 0)));
                 const isLower = currentPlan && plan.price < (currentPlan.price || 0) && !isCurrent;
                 const highlighted = !isCurrent && (plan.name === "School" || plans.filter(p => p.price > (currentPlan?.price || 0)).length === 1 && plan.price > (currentPlan?.price || 0));
@@ -542,9 +547,15 @@ const Subscription = () => {
                           </p>
                         </div>
 
-                        {/* Features List - Active on top, inactive on bottom */}
+                        {/* Features List - Limit features on top (plan-specific), then active, then inactive */}
                         <div className="flex-1 mb-4">
                           <ul className="space-y-1 sm:space-y-1.5">
+                            {planLimitFeatures.map((f: string, fi: number) => (
+                              <li key={`limit-${fi}`} className="flex items-start gap-1.5 sm:gap-2 text-[10px] sm:text-xs">
+                                <Check className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0 mt-0.5 text-success" />
+                                <span className="text-foreground font-medium">{f}</span>
+                              </li>
+                            ))}
                             {sortedFeatures.map((f: string, fi: number) => {
                               const isIncluded = planFeatureSet.has(f);
                               return (
