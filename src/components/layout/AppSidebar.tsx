@@ -4,8 +4,6 @@ import {
   Users,
   ScanLine,
   Activity,
-  History,
-  Wallet,
   LogOut,
   GraduationCap,
   UserCheck,
@@ -14,11 +12,11 @@ import {
   ClipboardCheck,
   UsersRound,
   MessageCircle,
-  Gift,
   ChevronRight,
   Crown,
   PenLine,
   Sparkles,
+  Timer,
 } from "lucide-react";
 import atskollaLogo from "@/assets/Logo_atskolla.png";
 import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
