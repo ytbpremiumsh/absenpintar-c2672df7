@@ -241,6 +241,74 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6">
+      {/* Trial Popup */}
+      <AnimatePresence>
+        {showTrialPopup && subFeatures.isTrial && subFeatures.trialDaysLeft !== null && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+            onClick={() => { setShowTrialPopup(false); sessionStorage.setItem('trial_popup_dismissed', '1'); }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-card border border-border rounded-2xl shadow-2xl p-6 max-w-sm w-full text-center space-y-4"
+            >
+              <button onClick={() => { setShowTrialPopup(false); sessionStorage.setItem('trial_popup_dismissed', '1'); }} className="absolute top-3 right-3 text-muted-foreground hover:text-foreground">
+                <X className="h-5 w-5" />
+              </button>
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30">
+                <Crown className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+              </div>
+              <h3 className="text-xl font-bold text-foreground">🎁 Masa Trial Aktif!</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                Anda sedang dalam masa <span className="font-semibold text-primary">Trial Premium</span> selama{" "}
+                <span className="font-bold text-foreground">{subFeatures.trialDaysLeft} hari lagi</span>.
+                Nikmati semua fitur premium secara gratis!
+              </p>
+              {subFeatures.trialDaysLeft <= 3 && (
+                <div className="bg-warning/10 border border-warning/20 rounded-xl p-3 text-xs text-warning font-medium">
+                  ⚠️ Masa trial hampir berakhir! Upgrade sekarang agar fitur tetap aktif.
+                </div>
+              )}
+              <div className="flex gap-2">
+                <Button variant="outline" className="flex-1" onClick={() => { setShowTrialPopup(false); sessionStorage.setItem('trial_popup_dismissed', '1'); }}>
+                  Nanti
+                </Button>
+                <Button className="flex-1 gradient-primary text-primary-foreground" onClick={() => { setShowTrialPopup(false); sessionStorage.setItem('trial_popup_dismissed', '1'); navigate("/subscription"); }}>
+                  <Crown className="h-4 w-4 mr-1" /> Lihat Paket
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Trial Banner */}
+      {subFeatures.isTrial && subFeatures.trialDaysLeft !== null && (
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+          <Card className={`border-0 shadow-sm ${subFeatures.trialDaysLeft <= 3 ? "bg-warning/10 border-warning/30" : "bg-primary/5 border-primary/20"}`}>
+            <CardContent className="p-3 flex items-center gap-3">
+              <Crown className={`h-5 w-5 shrink-0 ${subFeatures.trialDaysLeft <= 3 ? "text-warning" : "text-primary"}`} />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs sm:text-sm font-semibold text-foreground">
+                  🎁 Trial Premium — {subFeatures.trialDaysLeft} hari tersisa
+                </p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">
+                  {subFeatures.trialDaysLeft <= 3 ? "Segera upgrade agar fitur tetap aktif!" : "Nikmati semua fitur premium secara gratis."}
+                </p>
+              </div>
+              <Button size="sm" variant="outline" className="shrink-0 text-xs h-7" onClick={() => navigate("/subscription")}>
+                Upgrade
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
       {/* Header */}
       <PageHeader
         icon={TrendingUp}
