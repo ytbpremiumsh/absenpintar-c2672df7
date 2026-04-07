@@ -88,7 +88,7 @@ const Monitoring = () => {
   const [newEntryId, setNewEntryId] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
-    if (!profile?.school_id) return;
+    if (!profile?.school_id) { setLoading(false); return; }
     const schoolId = profile.school_id;
     const today = new Date().toISOString().slice(0, 10);
 

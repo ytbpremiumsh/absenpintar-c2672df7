@@ -58,7 +58,7 @@ const ExportHistory = () => {
 
   // Fetch classes - merge from classes table + distinct student classes
   useEffect(() => {
-    if (!profile?.school_id) return;
+    if (!profile?.school_id) { setLoading(false); return; }
     const fetchClasses = async () => {
       if (isTeacher && user) {
         const { data } = await supabase
