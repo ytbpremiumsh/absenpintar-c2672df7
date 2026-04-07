@@ -37,6 +37,54 @@ interface StudentData {
   photo_url: string | null;
 }
 
+const TrialCountdownBanner = ({ trialDaysLeft, expiresAt, onUpgrade }: { trialDaysLeft: number; expiresAt: string | null; onUpgrade: () => void }) => {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const totalHours = expiresAt ? Math.max(0, Math.floor((new Date(expiresAt).getTime() - now) / (1000 * 60 * 60))) : 0;
+  const days = Math.floor(totalHours / 24);
+  const hours = totalHours % 24;
+  // Progress: assume 14 day trial max
+  const totalTrialMs = 14 * 24 * 60 * 60 * 1000;
+  const remainingMs = expiresAt ? Math.max(0, new Date(expiresAt).getTime() - now) : 0;
+  const progressPct = Math.round((remainingMs / totalTrialMs) * 100);
+  const isUrgent = trialDaysLeft <= 3;
+
+  return (
+    <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+      <Card className={`border shadow-sm overflow-hidden ${isUrgent ? "border-orange-300/50 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/20 dark:border-orange-800/40" : "border-violet-200/50 bg-gradient-to-r from-violet-50 to-indigo-50 dark:from-violet-950/30 dark:to-indigo-950/20 dark:border-violet-800/40"}`}>
+        <CardContent className="p-3 sm:p-4">
+          <div className="flex items-center gap-3">
+            <div className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 ${isUrgent ? "bg-gradient-to-br from-orange-400 to-amber-500 shadow-md shadow-orange-300/30" : "bg-gradient-to-br from-violet-500 to-indigo-500 shadow-md shadow-violet-300/30"}`}>
+              <Sparkles className="h-4 w-4 text-white" />
+            </div>
+            <div className="flex-1 min-w-0 space-y-1.5">
+              <div className="flex items-center justify-between">
+                <p className={`text-xs sm:text-sm font-bold ${isUrgent ? "text-orange-700 dark:text-orange-300" : "text-violet-700 dark:text-violet-300"}`}>
+                  Trial Premium — {days} hari {hours} jam tersisa
+                </p>
+                <Button size="sm" variant="outline" className={`shrink-0 text-[10px] sm:text-xs h-6 sm:h-7 rounded-lg ${isUrgent ? "border-orange-300 text-orange-700 hover:bg-orange-100 dark:border-orange-700 dark:text-orange-300" : "border-violet-300 text-violet-700 hover:bg-violet-100 dark:border-violet-700 dark:text-violet-300"}`} onClick={onUpgrade}>
+                  Upgrade
+                </Button>
+              </div>
+              <div className="flex items-center gap-2">
+                <Progress value={progressPct} className={`h-1.5 flex-1 ${isUrgent ? "[&>div]:bg-gradient-to-r [&>div]:from-orange-400 [&>div]:to-amber-500 bg-orange-200/50 dark:bg-orange-900/30" : "[&>div]:bg-gradient-to-r [&>div]:from-violet-500 [&>div]:to-indigo-500 bg-violet-200/50 dark:bg-violet-900/30"}`} />
+                <span className={`text-[10px] font-medium tabular-nums ${isUrgent ? "text-orange-600 dark:text-orange-400" : "text-violet-600 dark:text-violet-400"}`}>{progressPct}%</span>
+              </div>
+              <p className={`text-[10px] ${isUrgent ? "text-orange-600/80 dark:text-orange-400/70" : "text-violet-600/70 dark:text-violet-400/60"}`}>
+                {isUrgent ? "Segera upgrade agar fitur tetap aktif!" : "Nikmati semua fitur premium secara gratis."}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+};
+
 const DAY_NAMES = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
 
 const Dashboard = () => {
