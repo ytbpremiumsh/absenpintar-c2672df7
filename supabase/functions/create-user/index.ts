@@ -19,10 +19,11 @@ serve(async (req) => {
 
     const { email, password, full_name, role, school_id, npsn, school_name, school_address, phone, referral_code } = await req.json();
 
-    // Determine school_id: use provided or create new school from NPSN
+    // Determine school_id: use provided or create/find school
     let resolvedSchoolId = school_id;
 
-    if (!resolvedSchoolId && npsn && school_name) {
+    if (!resolvedSchoolId && school_name) {
+      // Try to find existing school by name
       const { data: existingSchool } = await supabaseAdmin
         .from('schools')
         .select('id')
@@ -32,12 +33,13 @@ serve(async (req) => {
       if (existingSchool) {
         resolvedSchoolId = existingSchool.id;
       } else {
+        // Create new school
+        const insertData: any = { name: school_name, address: school_address || null };
+        if (npsn) insertData.npsn = npsn;
+
         const { data: newSchool, error: schoolError } = await supabaseAdmin
           .from('schools')
-          .insert({
-            name: school_name,
-            address: school_address || null,
-          })
+          .insert(insertData)
           .select('id')
           .single();
 
@@ -125,7 +127,7 @@ serve(async (req) => {
     }
 
     // Create pickup_settings and auto-assign Trial subscription for new school
-    if (resolvedSchoolId && npsn) {
+    if (resolvedSchoolId) {
       const { data: existingSettings } = await supabaseAdmin
         .from('pickup_settings')
         .select('id')
