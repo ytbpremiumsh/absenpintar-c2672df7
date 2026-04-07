@@ -175,8 +175,8 @@ export function AppSidebar() {
               <SidebarGroupContent>
                 <SidebarMenu className="space-y-1">
                    {renderNavItems([
-                    { title: "Dashboard Kelas", url: "/wali-kelas-dashboard", icon: LayoutGrid, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
-                    { title: "Absensi Manual", url: "/wali-kelas-attendance", icon: ClipboardList, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
+                    { title: "Dashboard Kelas", url: "/wali-kelas-dashboard", icon: LayoutDashboard, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
+                    { title: "Absensi Manual", url: "/wali-kelas-attendance", icon: ClipboardCheck, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
                     { title: "Siswa Kelas Saya", url: "/wali-kelas-students", icon: Users, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
                   ])}
                 </SidebarMenu>
@@ -188,7 +188,7 @@ export function AppSidebar() {
                 <SidebarMenu className="space-y-1">
                   {renderNavItems([
                     { title: "Rekap Absensi", url: "/export-history", icon: BarChart3, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
-                    { title: "Analytic Kelas", url: "/history", icon: Clock, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
+                    { title: "Analytic Kelas", url: "/history", icon: Activity, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
                   ])}
                 </SidebarMenu>
               </SidebarGroupContent>
@@ -216,8 +216,8 @@ export function AppSidebar() {
                 <SidebarMenu className="space-y-1">
                   {renderNavItems([
                     { title: "Rekap Absensi", url: "/export-history", icon: BarChart3, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
-                    { title: "Analytic Kelas", url: "/history", icon: Clock, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
-                    { title: "Riwayat Absensi", url: "/edit-attendance", icon: Pencil, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
+                    { title: "Analytic Kelas", url: "/history", icon: Activity, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
+                    { title: "Riwayat Absensi", url: "/edit-attendance", icon: PenLine, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
                   ])}
                 </SidebarMenu>
               </SidebarGroupContent>
