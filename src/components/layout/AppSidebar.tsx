@@ -158,7 +158,9 @@ export function AppSidebar() {
               <div className="flex items-center gap-1.5 mt-0.5">
                 <span className="inline-flex items-center gap-1 text-[9px] font-bold text-white/90 bg-white/20 backdrop-blur-sm px-1.5 py-[1px] rounded-md border border-white/15">
                   <Crown className="h-2.5 w-2.5" />
-                  {features.planName === "Free" ? "Free Plan" : `${features.planName}`}
+                  {features.isTrial
+                    ? `🎁 Trial ${features.trialDaysLeft !== null ? `(${features.trialDaysLeft}h)` : ""}`
+                    : features.planName === "Free" ? "Free Plan" : `${features.planName}`}
                 </span>
               </div>
             </div>
