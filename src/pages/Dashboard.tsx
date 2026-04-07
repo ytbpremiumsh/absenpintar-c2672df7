@@ -113,6 +113,13 @@ const Dashboard = () => {
     setPeriodLogs(data || []);
   }, [profile?.school_id, chartPeriod]);
 
+  // Show trial popup on first load if user is on trial
+  useEffect(() => {
+    if (!subFeatures.loading && subFeatures.isTrial && subFeatures.trialDaysLeft !== null) {
+      const dismissed = sessionStorage.getItem('trial_popup_dismissed');
+      if (!dismissed) setShowTrialPopup(true);
+    }
+  }, [subFeatures.loading, subFeatures.isTrial, subFeatures.trialDaysLeft]);
 
   useEffect(() => {
     fetchData();
