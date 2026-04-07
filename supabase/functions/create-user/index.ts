@@ -82,13 +82,11 @@ serve(async (req) => {
         .maybeSingle();
 
       if (referrerProfile && referrerProfile.user_id !== userId) {
-        // Set referred_by
         await supabaseAdmin
           .from('profiles')
           .update({ referred_by: referrerProfile.user_id })
           .eq('user_id', userId);
 
-        // Create referral record
         await supabaseAdmin
           .from('referrals')
           .insert({
@@ -98,7 +96,6 @@ serve(async (req) => {
             points_awarded: 0,
           });
 
-        // Trigger referral event
         try {
           const refUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/referral`;
           await fetch(refUrl, {
@@ -127,7 +124,7 @@ serve(async (req) => {
         .insert({ user_id: userId, role });
     }
 
-    // Create pickup_settings and auto-assign Free subscription for new school
+    // Create pickup_settings and auto-assign Trial subscription for new school
     if (resolvedSchoolId && npsn) {
       const { data: existingSettings } = await supabaseAdmin
         .from('pickup_settings')
@@ -141,22 +138,52 @@ serve(async (req) => {
           .insert({ school_id: resolvedSchoolId, is_active: false });
       }
 
-      // Auto-assign Free plan subscription
-      const { data: freePlan } = await supabaseAdmin
+      // Get trial_days from platform_settings (default 14)
+      let trialDays = 14;
+      const { data: trialSetting } = await supabaseAdmin
+        .from('platform_settings')
+        .select('value')
+        .eq('key', 'trial_days')
+        .maybeSingle();
+      if (trialSetting?.value) {
+        const parsed = parseInt(trialSetting.value, 10);
+        if (!isNaN(parsed) && parsed > 0) trialDays = parsed;
+      }
+
+      // Auto-assign Trial subscription with Premium plan
+      const { data: premiumPlan } = await supabaseAdmin
         .from('subscription_plans')
         .select('id')
-        .eq('price', 0)
+        .eq('name', 'Premium')
         .eq('is_active', true)
         .maybeSingle();
 
-      if (freePlan) {
-        const { data: existingSub } = await supabaseAdmin
-          .from('school_subscriptions')
+      const { data: existingSub } = await supabaseAdmin
+        .from('school_subscriptions')
+        .select('id')
+        .eq('school_id', resolvedSchoolId)
+        .maybeSingle();
+
+      if (!existingSub && premiumPlan) {
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + trialDays);
+
+        await supabaseAdmin.from('school_subscriptions').insert({
+          school_id: resolvedSchoolId,
+          plan_id: premiumPlan.id,
+          status: 'trial',
+          expires_at: expiresAt.toISOString(),
+        });
+      } else if (!existingSub) {
+        // Fallback to Free plan if Premium not found
+        const { data: freePlan } = await supabaseAdmin
+          .from('subscription_plans')
           .select('id')
-          .eq('school_id', resolvedSchoolId)
+          .eq('price', 0)
+          .eq('is_active', true)
           .maybeSingle();
 
-        if (!existingSub) {
+        if (freePlan) {
           await supabaseAdmin.from('school_subscriptions').insert({
             school_id: resolvedSchoolId,
             plan_id: freePlan.id,
@@ -170,7 +197,6 @@ serve(async (req) => {
     // Send WhatsApp registration notification
     if (phone) {
       try {
-        // Fetch platform WA settings
         const { data: settings } = await supabaseAdmin
           .from('platform_settings')
           .select('key, value')
@@ -180,19 +206,16 @@ serve(async (req) => {
         (settings || []).forEach((s: any) => { settingsMap[s.key] = s.value; });
 
         if (settingsMap.wa_registration_enabled === 'true' && settingsMap.wa_api_url && settingsMap.wa_api_key) {
-          // Format phone number
           let formattedPhone = phone.replace(/\D/g, '');
           if (formattedPhone.startsWith('0')) {
             formattedPhone = '62' + formattedPhone.substring(1);
           }
 
-          // Build message with placeholders
           const message = (settingsMap.wa_registration_message || 'Selamat datang, {name}!')
             .replace(/{name}/g, full_name || '')
             .replace(/{school}/g, school_name || '')
             .replace(/{email}/g, email || '');
 
-          // Send via OneSender API
           const waResponse = await fetch(settingsMap.wa_api_url, {
             method: 'POST',
             headers: {
@@ -215,7 +238,6 @@ serve(async (req) => {
           }
         }
       } catch (waErr) {
-        // Don't fail registration if WA fails
         console.error('WA notification error:', waErr);
       }
     }
