@@ -76,11 +76,8 @@ serve(async (req) => {
     };
 
     if (action === 'generate-qr') {
-      const res = await fetch('https://app.ayopintar.com/generate-qr', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ api_key: finalApiKey, device: finalSender }),
-      });
+      const qrUrl = `https://app.ayopintar.com/generate-qr?api_key=${encodeURIComponent(finalApiKey)}&device=${encodeURIComponent(finalSender)}`;
+      const res = await fetch(qrUrl, { method: 'GET' });
       const data = await safeJson(res);
 
       // Update connected status
