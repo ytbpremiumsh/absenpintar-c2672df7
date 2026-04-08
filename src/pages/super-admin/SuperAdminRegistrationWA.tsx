@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Loader2, Save, Send, MessageSquare, Info } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Loader2, Save, Send, MessageSquare, Info, Smartphone, Settings2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -15,11 +16,14 @@ const SuperAdminRegistrationWA = () => {
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
   const [testPhone, setTestPhone] = useState("");
+  const [activeTab, setActiveTab] = useState("onesender");
   const [settings, setSettings] = useState({
     wa_registration_enabled: "false",
     wa_api_url: "",
     wa_api_key: "",
     wa_registration_message: "",
+    mpwa_platform_api_key: "",
+    mpwa_platform_sender: "",
   });
 
   useEffect(() => {
@@ -30,7 +34,10 @@ const SuperAdminRegistrationWA = () => {
     const { data } = await supabase
       .from("platform_settings" as any)
       .select("key, value")
-      .in("key", ["wa_registration_enabled", "wa_api_url", "wa_api_key", "wa_registration_message"]);
+      .in("key", [
+        "wa_registration_enabled", "wa_api_url", "wa_api_key", "wa_registration_message",
+        "mpwa_platform_api_key", "mpwa_platform_sender",
+      ]);
 
     const map: Record<string, string> = {};
     ((data as any[]) || []).forEach((item) => { map[item.key] = item.value; });
@@ -52,31 +59,60 @@ const SuperAdminRegistrationWA = () => {
     if (error) {
       toast.error("Gagal menyimpan: " + error.message);
     } else {
-      toast.success("Pengaturan notifikasi registrasi berhasil disimpan!");
+      toast.success("Pengaturan berhasil disimpan!");
     }
     setSaving(false);
   };
 
   const handleTest = async () => {
     if (!testPhone.trim()) { toast.error("Masukkan nomor WhatsApp tujuan"); return; }
-    if (!settings.wa_api_url || !settings.wa_api_key) { toast.error("API URL dan API Key harus diisi"); return; }
+
+    if (activeTab === "onesender") {
+      if (!settings.wa_api_url || !settings.wa_api_key) { toast.error("API URL dan API Key OneSender harus diisi"); return; }
+    } else {
+      if (!settings.mpwa_platform_api_key || !settings.mpwa_platform_sender) { toast.error("API Key dan Sender MPWA harus diisi"); return; }
+    }
 
     setTesting(true);
     try {
       const message = settings.wa_registration_message
         .replace(/{name}/g, "Admin Test")
         .replace(/{school}/g, "Sekolah Test")
-        .replace(/{email}/g, "test@sekolah.com");
+        .replace(/{email}/g, "test@sekolah.com") || "✅ Tes koneksi WhatsApp Gateway berhasil!";
 
-      const res = await supabase.functions.invoke("send-whatsapp", {
-        body: {
-          phone: testPhone.replace(/\D/g, ""),
-          message,
-          api_url: settings.wa_api_url,
-          api_key: settings.wa_api_key,
-        },
-      });
+      const body: any = {
+        phone: testPhone.replace(/\D/g, ""),
+        message,
+      };
 
+      if (activeTab === "mpwa") {
+        body.gateway_type = "mpwa";
+        // For MPWA we send directly via the MPWA API
+        const mpwaRes = await fetch("https://app.ayopintar.com/send-message", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            api_key: settings.mpwa_platform_api_key,
+            sender: settings.mpwa_platform_sender,
+            number: testPhone.replace(/\D/g, ""),
+            message,
+          }),
+        });
+        const mpwaData = await mpwaRes.json();
+        if (mpwaData?.status) {
+          toast.success("Pesan tes MPWA berhasil dikirim!");
+        } else {
+          toast.error("Gagal MPWA: " + (mpwaData?.msg || "Unknown error"));
+        }
+        setTesting(false);
+        return;
+      }
+
+      // OneSender
+      body.api_url = settings.wa_api_url;
+      body.api_key = settings.wa_api_key;
+
+      const res = await supabase.functions.invoke("send-whatsapp", { body });
       const data = res.data as any;
       if (data?.success) {
         toast.success("Pesan tes berhasil dikirim!");
@@ -98,10 +134,10 @@ const SuperAdminRegistrationWA = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
-            <MessageSquare className="h-5 w-5 text-primary" />
-            Notifikasi Registrasi
+            <Settings2 className="h-5 w-5 text-primary" />
+            Konfigurasi API WA
           </h1>
-          <p className="text-muted-foreground text-xs sm:text-sm">Kirim pesan WhatsApp otomatis saat pendaftaran sekolah baru</p>
+          <p className="text-muted-foreground text-xs sm:text-sm">Pengaturan API OneSender & MPWA untuk platform</p>
         </div>
         <Button onClick={handleSave} disabled={saving} className="gradient-primary text-primary-foreground">
           {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
@@ -114,7 +150,7 @@ const SuperAdminRegistrationWA = () => {
         <CardContent className="p-4 sm:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-bold text-foreground text-sm">Aktifkan Notifikasi</h3>
+              <h3 className="font-bold text-foreground text-sm">Aktifkan Notifikasi Registrasi</h3>
               <p className="text-xs text-muted-foreground">Kirim pesan WhatsApp otomatis ke nomor admin yang mendaftar</p>
             </div>
             <Switch
@@ -125,34 +161,81 @@ const SuperAdminRegistrationWA = () => {
         </CardContent>
       </Card>
 
-      {/* API Settings */}
+      {/* API Settings - Tabbed */}
       <Card className="border-0 shadow-card">
         <CardContent className="p-4 sm:p-6 space-y-4">
           <h3 className="font-bold text-foreground text-sm">Pengaturan API WhatsApp</h3>
-          <div className="space-y-1">
-            <Label className="text-xs">API URL (OneSender)</Label>
-            <Input
-              value={settings.wa_api_url}
-              onChange={(e) => setSettings({ ...settings, wa_api_url: e.target.value })}
-              placeholder="http://proxy.onesender.net/api/v1/messages"
-            />
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs">API Key / Token</Label>
-            <Input
-              type="password"
-              value={settings.wa_api_key}
-              onChange={(e) => setSettings({ ...settings, wa_api_key: e.target.value })}
-              placeholder="Masukkan API Key OneSender"
-            />
-          </div>
+
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 h-10">
+              <TabsTrigger value="onesender" className="text-xs sm:text-sm gap-1.5">
+                <MessageSquare className="h-3.5 w-3.5" />
+                OneSender
+              </TabsTrigger>
+              <TabsTrigger value="mpwa" className="text-xs sm:text-sm gap-1.5">
+                <Smartphone className="h-3.5 w-3.5" />
+                MPWA
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="onesender" className="mt-4 space-y-4">
+              <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
+                <p className="text-[11px] text-muted-foreground">
+                  OneSender digunakan sebagai gateway utama sistem ATSkolla. Konfigurasi ini berlaku untuk notifikasi registrasi platform.
+                </p>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">API URL</Label>
+                <Input
+                  value={settings.wa_api_url}
+                  onChange={(e) => setSettings({ ...settings, wa_api_url: e.target.value })}
+                  placeholder="http://proxy.onesender.net/api/v1/messages"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">API Key / Token</Label>
+                <Input
+                  type="password"
+                  value={settings.wa_api_key}
+                  onChange={(e) => setSettings({ ...settings, wa_api_key: e.target.value })}
+                  placeholder="Masukkan API Key OneSender"
+                />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="mpwa" className="mt-4 space-y-4">
+              <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
+                <p className="text-[11px] text-muted-foreground">
+                  MPWA (Multi-Platform WhatsApp) memungkinkan sekolah menggunakan nomor WhatsApp sendiri. API Key dan Sender di sini adalah konfigurasi default platform. Per-sekolah dikonfigurasi di halaman <strong>Aktivasi WA Sekolah</strong>.
+                </p>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">MPWA API Key</Label>
+                <Input
+                  type="password"
+                  value={settings.mpwa_platform_api_key}
+                  onChange={(e) => setSettings({ ...settings, mpwa_platform_api_key: e.target.value })}
+                  placeholder="API Key dari MPWA (app.ayopintar.com)"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">MPWA Sender (Nomor Device Platform)</Label>
+                <Input
+                  value={settings.mpwa_platform_sender}
+                  onChange={(e) => setSettings({ ...settings, mpwa_platform_sender: e.target.value })}
+                  placeholder="6281234567890"
+                />
+                <p className="text-[10px] text-muted-foreground mt-1">Nomor WhatsApp yang terdaftar di MPWA untuk keperluan platform (format: 62xxx)</p>
+              </div>
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
 
       {/* Message Template */}
       <Card className="border-0 shadow-card">
         <CardContent className="p-4 sm:p-6 space-y-4">
-          <h3 className="font-bold text-foreground text-sm">Template Pesan</h3>
+          <h3 className="font-bold text-foreground text-sm">Template Pesan Registrasi</h3>
           <div className="flex flex-wrap gap-1.5 mb-2">
             <Badge variant="secondary" className="text-[10px]">{"{name}"} = Nama Admin</Badge>
             <Badge variant="secondary" className="text-[10px]">{"{school}"} = Nama Sekolah</Badge>
@@ -168,7 +251,7 @@ const SuperAdminRegistrationWA = () => {
           <div className="p-3 rounded-lg bg-muted/50 space-y-1">
             <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><Info className="h-3 w-3" /> Preview:</p>
             <p className="text-xs text-foreground whitespace-pre-wrap">
-              {settings.wa_registration_message
+              {(settings.wa_registration_message || "Belum ada template")
                 .replace(/{name}/g, "Budi Santoso")
                 .replace(/{school}/g, "SDN 1 Jakarta")
                 .replace(/{email}/g, "budi@sdn1jakarta.sch.id")}
@@ -181,6 +264,9 @@ const SuperAdminRegistrationWA = () => {
       <Card className="border-0 shadow-card">
         <CardContent className="p-4 sm:p-6 space-y-4">
           <h3 className="font-bold text-foreground text-sm">Tes Kirim Pesan</h3>
+          <p className="text-[11px] text-muted-foreground">
+            Tes menggunakan gateway: <span className="font-semibold">{activeTab === "mpwa" ? "MPWA" : "OneSender"}</span>
+          </p>
           <div className="flex gap-2">
             <Input
               value={testPhone}
