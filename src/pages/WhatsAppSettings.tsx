@@ -194,7 +194,7 @@ const WhatsAppSettings = () => {
     setGatewayType(value);
     if (integrationId) {
       await supabase.from("school_integrations" as any).update({ gateway_type: value }).eq("id", integrationId);
-      toast.success(`Gateway diubah ke ${value === "mpwa" ? "MPWA (WA Sendiri)" : "OneSender (ATSkolla)"}`);
+      toast.success(`Gateway diubah ke ${value === "mpwa" ? "WASkolla Scan Sendiri" : "WASkolla (Sistem)"}`);
     }
   };
 
@@ -217,7 +217,7 @@ const WhatsAppSettings = () => {
       const data = res.data as any;
       if (data?.error) {
         if (data.error.includes("API Key") || data.error.includes("Sender")) {
-          toast.error("MPWA belum dikonfigurasi. Hubungi administrator untuk mengatur API Key dan Sender MPWA.");
+          toast.error("WhatsApp Scan Sendiri belum dikonfigurasi. Hubungi administrator untuk mengatur koneksi.");
         } else {
           toast.error(data.error);
         }
@@ -313,7 +313,7 @@ const WhatsAppSettings = () => {
                 <div>
                   <p className="text-sm font-semibold text-foreground">Status WhatsApp</p>
                   <p className="text-[10px] text-muted-foreground">
-                    Gateway: <span className="font-semibold">{gatewayType === "mpwa" ? "MPWA (WA Sendiri)" : "OneSender (ATSkolla)"}</span>
+                    Gateway: <span className="font-semibold">{gatewayType === "mpwa" ? "WASkolla Scan Sendiri" : "WASkolla (Sistem)"}</span>
                     {gatewayType === "mpwa" && (
                       <span className={`ml-2 ${mpwaConnected ? "text-success" : "text-destructive"}`}>
                         • {mpwaConnected ? "Terhubung" : "Belum Terhubung"}
@@ -387,7 +387,7 @@ const WhatsAppSettings = () => {
                         <MessageSquare className={`h-5 w-5 ${gatewayType === "onesender" ? "text-primary" : "text-muted-foreground"}`} />
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-foreground">OneSender</p>
+                        <p className="text-sm font-bold text-foreground">WASkolla</p>
                         <p className="text-[10px] text-muted-foreground">Sistem ATSkolla</p>
                       </div>
                       {gatewayType === "onesender" && (
@@ -395,7 +395,7 @@ const WhatsAppSettings = () => {
                       )}
                     </div>
                     <p className="text-[11px] text-muted-foreground leading-relaxed">
-                      Menggunakan layanan WhatsApp API dari OneSender. Dikonfigurasi oleh admin sistem, tidak perlu scan QR.
+                      Menggunakan layanan WhatsApp dari sistem ATSkolla. Dikonfigurasi oleh admin, tidak perlu scan QR.
                     </p>
                   </button>
 
@@ -416,8 +416,8 @@ const WhatsAppSettings = () => {
                         <Smartphone className={`h-5 w-5 ${gatewayType === "mpwa" ? "text-primary" : "text-muted-foreground"}`} />
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-foreground">MPWA</p>
-                        <p className="text-[10px] text-muted-foreground">WA Sendiri</p>
+                        <p className="text-sm font-bold text-foreground">WASkolla Scan Sendiri</p>
+                        <p className="text-[10px] text-muted-foreground">Gunakan WA Anda</p>
                       </div>
                       {gatewayType === "mpwa" && (
                         <CheckCircle2 className="h-5 w-5 text-primary ml-auto" />
@@ -437,7 +437,7 @@ const WhatsAppSettings = () => {
                 <div className="px-4 py-3 border-b border-border bg-muted/20">
                   <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
                     <QrCode className="h-4 w-4 text-primary" />
-                    Koneksi MPWA Device
+                    Koneksi WhatsApp Anda
                   </h3>
                   <p className="text-[10px] text-muted-foreground mt-0.5">
                     Scan QR code dari WhatsApp Anda untuk menghubungkan device
@@ -525,9 +525,9 @@ const WhatsAppSettings = () => {
                       <CheckCircle2 className="h-4 w-4 text-primary" />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-foreground">OneSender Aktif</p>
+                      <p className="text-sm font-semibold text-foreground">WASkolla Aktif</p>
                       <p className="text-[10px] text-muted-foreground">
-                        Konfigurasi API OneSender dikelola oleh administrator sistem. Anda tidak perlu melakukan pengaturan tambahan.
+                        Konfigurasi WhatsApp dikelola oleh administrator sistem. Anda tidak perlu melakukan pengaturan tambahan.
                       </p>
                     </div>
                   </div>
