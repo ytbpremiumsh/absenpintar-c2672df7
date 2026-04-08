@@ -93,6 +93,7 @@ serve(async (req) => {
         if (formattedPhone.startsWith('0')) {
           formattedPhone = '62' + formattedPhone.substring(1);
         }
+        console.log(`MPWA sending to phone: ${formattedPhone}, sender: ${mpwaSender}`);
         sendRequests.push(
           fetch(mpwaUrl, {
             method: 'POST',
@@ -108,6 +109,7 @@ serve(async (req) => {
       }
 
       if (group_id) {
+        console.log(`MPWA sending to group: ${group_id}, sender: ${mpwaSender}`);
         sendRequests.push(
           fetch(mpwaUrl, {
             method: 'POST',
