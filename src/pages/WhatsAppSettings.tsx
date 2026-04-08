@@ -215,7 +215,13 @@ const WhatsAppSettings = () => {
         body: { action: "generate-qr", school_id: schoolId },
       });
       const data = res.data as any;
-      if (data?.qrcode) {
+      if (data?.error) {
+        if (data.error.includes("API Key") || data.error.includes("Sender")) {
+          toast.error("MPWA belum dikonfigurasi. Hubungi administrator untuk mengatur API Key dan Sender MPWA.");
+        } else {
+          toast.error(data.error);
+        }
+      } else if (data?.qrcode) {
         setQrData(data.qrcode);
       } else if (data?.msg === "Device already connected!" || data?.status === true) {
         setMpwaConnected(true);
