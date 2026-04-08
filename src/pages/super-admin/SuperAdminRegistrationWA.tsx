@@ -190,26 +190,20 @@ const SuperAdminRegistrationWA = () => {
             <TabsContent value="mpwa" className="mt-4 space-y-4">
               <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
                 <p className="text-[11px] text-muted-foreground">
-                  MPWA (Multi-Platform WhatsApp) memungkinkan sekolah menggunakan nomor WhatsApp sendiri. API Key dan Sender di sini adalah konfigurasi default platform. Per-sekolah dikonfigurasi di halaman <strong>Aktivasi WA Sekolah</strong>.
+                  MPWA memungkinkan setiap sekolah menggunakan nomor WhatsApp sendiri. Cukup masukkan API Key di sini — setiap sekolah akan memasukkan nomor WhatsApp dan scan QR code sendiri di dashboard masing-masing.
                 </p>
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">MPWA API Key</Label>
+                <Label className="text-xs">MPWA API Key (Global)</Label>
                 <Input
                   type="password"
                   value={settings.mpwa_platform_api_key}
                   onChange={(e) => setSettings({ ...settings, mpwa_platform_api_key: e.target.value })}
                   placeholder="API Key dari MPWA (app.ayopintar.com)"
                 />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">MPWA Sender (Nomor Device Platform)</Label>
-                <Input
-                  value={settings.mpwa_platform_sender}
-                  onChange={(e) => setSettings({ ...settings, mpwa_platform_sender: e.target.value })}
-                  placeholder="6281234567890"
-                />
-                <p className="text-[10px] text-muted-foreground mt-1">Nomor WhatsApp yang terdaftar di MPWA untuk keperluan platform (format: 62xxx)</p>
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  API Key ini digunakan untuk semua sekolah yang memilih gateway WASkolla Scan Sendiri. Setiap sekolah akan input nomor WA dan scan QR sendiri.
+                </p>
               </div>
             </TabsContent>
           </Tabs>
