@@ -1,5 +1,5 @@
 import { PageHeader } from "@/components/PageHeader";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   MessageSquare, Save, Loader2, Send, History, Users, Power, Clock, Link2,
   CheckCircle2, AlertCircle, FileText, Megaphone, QrCode, Wifi, WifiOff, RefreshCw,
-  Smartphone, Radio,
+  Smartphone, Radio, UserCheck,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -76,7 +76,6 @@ const WhatsAppSettings = () => {
   const [departTemplate, setDepartTemplate] = useState(DEFAULT_DEPART);
   const [groupTemplate, setGroupTemplate] = useState(DEFAULT_GROUP);
   const [integrationId, setIntegrationId] = useState<string | null>(null);
-  const [isActive, setIsActive] = useState(false);
   const [waEnabled, setWaEnabled] = useState(true);
   const [deliveryTarget, setDeliveryTarget] = useState("parent_only");
   const [gatewayType, setGatewayType] = useState("onesender");
@@ -97,7 +96,7 @@ const WhatsAppSettings = () => {
   const [qrLoading, setQrLoading] = useState(false);
   const [qrData, setQrData] = useState<string | null>(null);
   const [disconnecting, setDisconnecting] = useState(false);
-  const pollingRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Broadcast to parents
   const [parentBroadcastClass, setParentBroadcastClass] = useState("");
@@ -123,7 +122,6 @@ const WhatsAppSettings = () => {
       if (intRes.data) {
         const d = intRes.data as any;
         setIntegrationId(d.id);
-        setIsActive(d.is_active);
         setWaEnabled(d.wa_enabled !== false);
         setDeliveryTarget(d.wa_delivery_target || "parent_only");
         setArriveTemplate(d.attendance_arrive_template || DEFAULT_ARRIVE);
@@ -140,11 +138,14 @@ const WhatsAppSettings = () => {
     fetchData();
   }, [schoolId]);
 
+  // Cleanup polling on unmount
   useEffect(() => {
-    if (activeTab === "history") void fetchLogs();
-  }, [activeTab]);
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current);
+    };
+  }, []);
 
-  const fetchLogs = async () => {
+  const fetchLogs = useCallback(async () => {
     if (!schoolId) return;
     setLogsLoading(true);
     const { data } = await supabase
@@ -155,7 +156,11 @@ const WhatsAppSettings = () => {
       .limit(100);
     setLogs(data || []);
     setLogsLoading(false);
-  };
+  }, [schoolId]);
+
+  useEffect(() => {
+    if (activeTab === "history") void fetchLogs();
+  }, [activeTab, fetchLogs]);
 
   const handleSaveSettings = async () => {
     if (!schoolId) { toast.error("School ID tidak ditemukan."); return; }
@@ -215,6 +220,28 @@ const WhatsAppSettings = () => {
     }
   };
 
+  // Start polling for connection status after QR is shown
+  const startConnectionPolling = useCallback(() => {
+    if (pollingRef.current) clearInterval(pollingRef.current);
+    pollingRef.current = setInterval(async () => {
+      if (!schoolId) return;
+      try {
+        const res = await supabase.functions.invoke("mpwa-qr", {
+          body: { action: "generate-qr", school_id: schoolId, sender: mpwaSenderNumber.replace(/\D/g, "") },
+        });
+        const data = res.data as any;
+        if (data?.msg === "Device already connected!" || data?.msg === "Perangkat sudah terhubung!" || data?.status === true) {
+          setMpwaConnected(true);
+          setQrData(null);
+          toast.success("🎉 Device berhasil terhubung!");
+          if (pollingRef.current) clearInterval(pollingRef.current);
+        }
+      } catch {
+        // silently retry
+      }
+    }, 5000);
+  }, [schoolId, mpwaSenderNumber]);
+
   const handleGenerateQr = async () => {
     if (!schoolId) return;
     if (!mpwaSenderNumber.trim()) {
@@ -232,6 +259,8 @@ const WhatsAppSettings = () => {
         toast.error(data.error);
       } else if (data?.qrcode) {
         setQrData(data.qrcode);
+        // Start auto-polling for connection
+        startConnectionPolling();
       } else if (data?.msg === "Device already connected!" || data?.msg === "Perangkat sudah terhubung!" || data?.status === true) {
         setMpwaConnected(true);
         toast.success("Device sudah terhubung!");
@@ -244,13 +273,10 @@ const WhatsAppSettings = () => {
     setQrLoading(false);
   };
 
-  const handleCheckConnection = async () => {
-    await handleGenerateQr();
-  };
-
   const handleDisconnect = async () => {
     if (!schoolId) return;
     setDisconnecting(true);
+    if (pollingRef.current) clearInterval(pollingRef.current);
     try {
       const res = await supabase.functions.invoke("mpwa-qr", {
         body: { action: "disconnect", school_id: schoolId },
@@ -294,6 +320,86 @@ const WhatsAppSettings = () => {
       else toast.error("Gagal: " + (data?.error || "Unknown error"));
     } catch (err: any) { toast.error("Gagal: " + err.message); }
     setSendingGroup(false);
+  };
+
+  const handleSendToParents = async () => {
+    if (!parentBroadcastClass || !parentMessage.trim() || !schoolId) {
+      toast.error("Pilih kelas dan isi pesan");
+      return;
+    }
+    setSendingParent(true);
+    setParentSendProgress("Memuat data siswa...");
+
+    try {
+      // Fetch students for the selected class
+      const { data: studentData, error: studentErr } = await supabase
+        .from("students")
+        .select("name, parent_phone, parent_name")
+        .eq("school_id", schoolId)
+        .eq("class", parentBroadcastClass);
+
+      if (studentErr) { toast.error("Gagal memuat data siswa: " + studentErr.message); setSendingParent(false); return; }
+      if (!studentData || studentData.length === 0) { toast.error("Tidak ada siswa di kelas ini"); setSendingParent(false); return; }
+
+      // Get unique parent phones
+      const uniqueParents = new Map<string, { phone: string; name: string; studentNames: string[] }>();
+      for (const s of studentData) {
+        if (!s.parent_phone) continue;
+        const phone = s.parent_phone.replace(/\D/g, "");
+        if (!phone) continue;
+        if (uniqueParents.has(phone)) {
+          uniqueParents.get(phone)!.studentNames.push(s.name);
+        } else {
+          uniqueParents.set(phone, { phone: s.parent_phone, name: s.parent_name, studentNames: [s.name] });
+        }
+      }
+
+      if (uniqueParents.size === 0) {
+        toast.error("Tidak ada wali murid dengan nomor telepon di kelas ini");
+        setSendingParent(false);
+        return;
+      }
+
+      let sent = 0;
+      let failed = 0;
+      const total = uniqueParents.size;
+
+      for (const [, parent] of uniqueParents) {
+        setParentSendProgress(`Mengirim ${sent + failed + 1}/${total}...`);
+        try {
+          const personalMsg = parentMessage
+            .replace(/\{parent_name\}/g, parent.name || "Bapak/Ibu")
+            .replace(/\{student_name\}/g, parent.studentNames.join(", "))
+            .replace(/\{class\}/g, parentBroadcastClass);
+
+          const res = await supabase.functions.invoke("send-whatsapp", {
+            body: {
+              school_id: schoolId,
+              phone: parent.phone,
+              message: personalMsg,
+              message_type: "parent_broadcast",
+              student_name: parent.studentNames.join(", "),
+            },
+          });
+          const data = res.data as any;
+          if (data?.success) sent++;
+          else failed++;
+        } catch {
+          failed++;
+        }
+        // Small delay between messages to avoid rate limiting
+        await new Promise(r => setTimeout(r, 500));
+      }
+
+      setParentSendProgress("");
+      if (sent > 0) toast.success(`Berhasil kirim ke ${sent} wali murid${failed > 0 ? `, ${failed} gagal` : ""}`);
+      else toast.error(`Gagal mengirim ke semua wali murid (${failed} gagal)`);
+      if (sent > 0) setParentMessage("");
+    } catch (err: any) {
+      toast.error("Gagal: " + err.message);
+    }
+    setSendingParent(false);
+    setParentSendProgress("");
   };
 
   if (loading) {
@@ -379,7 +485,7 @@ const WhatsAppSettings = () => {
               </div>
               <CardContent className="p-4 space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {/* MPWA / WASkolla Scan Sendiri — FIRST */}
+                  {/* WASkolla Scan Sendiri — FIRST */}
                   <button
                     type="button"
                     onClick={() => handleSwitchGateway("mpwa")}
@@ -408,7 +514,7 @@ const WhatsAppSettings = () => {
                     </p>
                   </button>
 
-                  {/* OneSender / WASkolla — SECOND */}
+                  {/* WASkolla (Sistem) — SECOND */}
                   <button
                     type="button"
                     onClick={() => handleSwitchGateway("onesender")}
@@ -456,93 +562,95 @@ const WhatsAppSettings = () => {
                   {/* Phone Number Input */}
                   <div className="space-y-1.5">
                     <Label className="text-xs font-semibold">Nomor WhatsApp Sekolah</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        value={mpwaSenderNumber}
-                        onChange={(e) => setMpwaSenderNumber(e.target.value)}
-                        placeholder="628812345678"
-                        className="flex-1 h-10 bg-muted/30 focus:bg-background transition-colors"
-                        disabled={mpwaConnected}
-                      />
-                    </div>
+                    <Input
+                      value={mpwaSenderNumber}
+                      onChange={(e) => setMpwaSenderNumber(e.target.value)}
+                      placeholder="628812345678"
+                      className="h-10 bg-muted/30 focus:bg-background transition-colors"
+                      disabled={mpwaConnected}
+                    />
                     <p className="text-[10px] text-muted-foreground">
                       Masukkan nomor WhatsApp dengan format internasional (62xxx). Nomor ini yang akan digunakan untuk mengirim pesan.
                     </p>
                   </div>
 
-                  {/* Connection Status */}
-                  <div className={`flex items-center gap-3 rounded-xl border p-3 ${
-                    mpwaConnected
-                      ? "border-success/20 bg-success/[0.03]"
-                      : "border-amber-500/20 bg-amber-500/[0.03]"
-                  }`}>
-                    <div className={`h-9 w-9 rounded-lg flex items-center justify-center ${
-                      mpwaConnected ? "bg-success/10" : "bg-amber-500/10"
-                    }`}>
-                      {mpwaConnected ? (
-                        <Wifi className="h-4 w-4 text-success" />
-                      ) : (
-                        <WifiOff className="h-4 w-4 text-amber-500" />
-                      )}
+                  {/* Connection Status — Beautiful Design */}
+                  {mpwaConnected ? (
+                    <div className="rounded-2xl border-2 border-success/30 bg-gradient-to-br from-success/5 to-success/10 p-5">
+                      <div className="flex items-center gap-4">
+                        <div className="relative">
+                          <div className="h-14 w-14 rounded-2xl bg-success/15 flex items-center justify-center">
+                            <Wifi className="h-7 w-7 text-success" />
+                          </div>
+                          <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-success flex items-center justify-center shadow-lg">
+                            <CheckCircle2 className="h-3 w-3 text-white" />
+                          </div>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-base font-bold text-foreground">Device Terhubung ✅</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            Nomor <span className="font-semibold text-foreground">{mpwaSenderNumber}</span> sudah aktif dan siap mengirim pesan
+                          </p>
+                          <div className="flex items-center gap-2 mt-2">
+                            <span className="relative flex h-2.5 w-2.5">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-success"></span>
+                            </span>
+                            <span className="text-[10px] font-semibold text-success uppercase tracking-wider">Online</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 mt-4 pt-4 border-t border-success/20">
+                        <Button variant="destructive" size="sm" onClick={handleDisconnect} disabled={disconnecting} className="gap-1.5">
+                          {disconnecting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <WifiOff className="h-3.5 w-3.5" />}
+                          Disconnect
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-foreground">
-                        {mpwaConnected ? "Device Terhubung" : "Device Belum Terhubung"}
-                      </p>
-                      <p className="text-[10px] text-muted-foreground">
-                        {mpwaConnected
-                          ? `Nomor ${mpwaSenderNumber} sudah terhubung dan siap mengirim pesan`
-                          : "Masukkan nomor lalu klik Generate QR untuk scan"
-                        }
-                      </p>
+                  ) : (
+                    <div className="rounded-xl border border-amber-500/20 bg-amber-500/[0.03] p-3">
+                      <div className="flex items-center gap-3">
+                        <div className="h-9 w-9 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                          <WifiOff className="h-4 w-4 text-amber-500" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-foreground">Device Belum Terhubung</p>
+                          <p className="text-[10px] text-muted-foreground">
+                            Masukkan nomor lalu klik Generate QR untuk scan
+                          </p>
+                        </div>
+                        <Badge className="text-[10px] bg-amber-500/10 text-amber-500 border-amber-500/20">Offline</Badge>
+                      </div>
                     </div>
-                    <Badge className={`text-[10px] ${
-                      mpwaConnected ? "bg-success/10 text-success border-success/20" : "bg-amber-500/10 text-amber-500 border-amber-500/20"
-                    }`}>
-                      {mpwaConnected ? "Online" : "Offline"}
-                    </Badge>
-                  </div>
+                  )}
 
                   {/* QR Code Display */}
                   {qrData && !mpwaConnected && (
                     <div className="flex flex-col items-center gap-3 py-4">
                       <div className="rounded-xl border-2 border-primary/20 p-3 bg-white">
-                        <img src={qrData} alt="QR Code MPWA" className="w-52 h-52 sm:w-64 sm:h-64" />
+                        <img src={qrData} alt="QR Code" className="w-52 h-52 sm:w-64 sm:h-64" />
                       </div>
                       <p className="text-xs text-muted-foreground text-center max-w-xs">
                         Buka WhatsApp → Menu → Perangkat Tertaut → Tautkan Perangkat → Scan QR di atas
                       </p>
-                      <Button variant="outline" size="sm" onClick={handleCheckConnection} disabled={qrLoading} className="gap-1.5">
-                        <RefreshCw className={`h-3.5 w-3.5 ${qrLoading ? "animate-spin" : ""}`} />
-                        Cek Koneksi
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
+                        <p className="text-[11px] text-primary font-medium">Menunggu koneksi... (otomatis refresh)</p>
+                      </div>
                     </div>
                   )}
 
                   {/* Action Buttons */}
-                  <div className="flex flex-wrap gap-2">
-                    {!mpwaConnected ? (
-                      <Button
-                        onClick={handleGenerateQr}
-                        disabled={qrLoading || !mpwaSenderNumber.trim()}
-                        className="gradient-primary hover:opacity-90 shadow-md h-10 px-6 gap-2"
-                      >
-                        {qrLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <QrCode className="h-4 w-4" />}
-                        {qrData ? "Refresh QR Code" : "Generate QR Code"}
-                      </Button>
-                    ) : (
-                      <>
-                        <Button variant="outline" onClick={handleCheckConnection} disabled={qrLoading} className="gap-2 h-10">
-                          <RefreshCw className={`h-4 w-4 ${qrLoading ? "animate-spin" : ""}`} />
-                          Cek Status
-                        </Button>
-                        <Button variant="destructive" onClick={handleDisconnect} disabled={disconnecting} className="gap-2 h-10">
-                          {disconnecting ? <Loader2 className="h-4 w-4 animate-spin" /> : <WifiOff className="h-4 w-4" />}
-                          Disconnect
-                        </Button>
-                      </>
-                    )}
-                  </div>
+                  {!mpwaConnected && (
+                    <Button
+                      onClick={handleGenerateQr}
+                      disabled={qrLoading || !mpwaSenderNumber.trim()}
+                      className="gradient-primary hover:opacity-90 shadow-md h-10 px-6 gap-2"
+                    >
+                      {qrLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <QrCode className="h-4 w-4" />}
+                      {qrData ? "Refresh QR Code" : "Generate QR Code"}
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             )}
@@ -693,7 +801,8 @@ const WhatsAppSettings = () => {
           </TabsContent>
 
           {/* ═══════ BROADCAST TAB ═══════ */}
-          <TabsContent value="broadcast" className="mt-4">
+          <TabsContent value="broadcast" className="mt-4 space-y-4">
+            {/* Broadcast to Group */}
             <Card className="border-0 shadow-card overflow-hidden">
               <div className="px-4 py-3 border-b border-border bg-muted/20">
                 <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
@@ -731,7 +840,7 @@ const WhatsAppSettings = () => {
                   <Textarea
                     value={groupMessage}
                     onChange={(e) => setGroupMessage(e.target.value)}
-                    rows={5}
+                    rows={4}
                     placeholder="Ketik pesan yang akan dikirim ke group kelas..."
                     className="bg-muted/30 focus:bg-background transition-colors"
                   />
@@ -744,6 +853,77 @@ const WhatsAppSettings = () => {
                 >
                   {sendingGroup ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
                   Kirim ke Group
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Broadcast to Parents (Wali Murid) */}
+            <Card className="border-0 shadow-card overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/20">
+                <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                  <UserCheck className="h-4 w-4 text-primary" />
+                  Kirim Pesan ke Wali Murid
+                </h3>
+                <p className="text-[10px] text-muted-foreground mt-0.5">
+                  Broadcast pesan ke semua wali murid per kelas (pesan dikirim satu-satu ke nomor masing-masing)
+                </p>
+              </div>
+              <CardContent className="p-4 space-y-4">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold">Pilih Kelas</Label>
+                  <Select value={parentBroadcastClass} onValueChange={setParentBroadcastClass}>
+                    <SelectTrigger className="h-9 bg-background">
+                      <SelectValue placeholder="Pilih kelas..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {classes.map((c) => (
+                        <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold">Isi Pesan</Label>
+                  <Textarea
+                    value={parentMessage}
+                    onChange={(e) => setParentMessage(e.target.value)}
+                    rows={4}
+                    placeholder="Ketik pesan untuk wali murid... Gunakan {parent_name} untuk nama wali, {student_name} untuk nama siswa, {class} untuk kelas"
+                    className="bg-muted/30 focus:bg-background transition-colors"
+                  />
+                  <div className="flex flex-wrap gap-1.5 mt-1">
+                    {[
+                      { key: "{parent_name}", label: "Nama Wali" },
+                      { key: "{student_name}", label: "Nama Siswa" },
+                      { key: "{class}", label: "Kelas" },
+                    ].map(p => (
+                      <button
+                        key={p.key}
+                        type="button"
+                        className="rounded-full bg-primary/5 border border-primary/10 px-2.5 py-1 text-[10px] text-foreground transition hover:bg-primary/10 hover:border-primary/20 font-medium"
+                        onClick={() => setParentMessage(prev => prev + p.key)}
+                      >
+                        {p.key} <span className="text-muted-foreground">({p.label})</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {parentSendProgress && (
+                  <div className="flex items-center gap-2 text-xs text-primary bg-primary/5 rounded-lg p-2">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    {parentSendProgress}
+                  </div>
+                )}
+
+                <Button
+                  onClick={handleSendToParents}
+                  disabled={sendingParent || !parentBroadcastClass || !parentMessage.trim()}
+                  className="gradient-primary hover:opacity-90 shadow-md h-10 px-6"
+                >
+                  {sendingParent ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UserCheck className="mr-2 h-4 w-4" />}
+                  Kirim ke Wali Murid
                 </Button>
               </CardContent>
             </Card>
