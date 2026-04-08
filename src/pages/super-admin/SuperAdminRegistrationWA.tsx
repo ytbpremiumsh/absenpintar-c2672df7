@@ -23,7 +23,6 @@ const SuperAdminRegistrationWA = () => {
     wa_api_key: "",
     wa_registration_message: "",
     mpwa_platform_api_key: "",
-    mpwa_platform_sender: "",
   });
 
   useEffect(() => {
