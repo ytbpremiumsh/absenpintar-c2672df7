@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MessageSquare, Save, Loader2, Send, School, Pencil, Plus } from "lucide-react";
+import { MessageSquare, Save, Loader2, Send, School, Pencil, Plus, Smartphone, Wifi, WifiOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -27,12 +27,14 @@ interface IntegrationData {
   attendance_group_template: string;
   wa_delivery_target: string;
   wa_enabled: boolean;
+  gateway_type: string;
+  mpwa_api_key: string;
+  mpwa_sender: string;
+  mpwa_connected: boolean;
 }
 
 const DEFAULT_ARRIVE_TEMPLATE = `📋 *Notifikasi Absensi Datang*\n\n{school_name}\n\nAnanda *{student_name}* (Kelas {class}) telah tercatat HADIR pada {day}, pukul {time}.\n\nNIS: {student_id}\nMetode: {method}\n\n_Pesan otomatis dari ATSkolla_`;
-
 const DEFAULT_DEPART_TEMPLATE = `📋 *Notifikasi Absensi Pulang*\n\n{school_name}\n\nAnanda *{student_name}* (Kelas {class}) telah tercatat PULANG pada {day}, pukul {time}.\n\nNIS: {student_id}\nMetode: {method}\n\n_Pesan otomatis dari ATSkolla_`;
-
 const DEFAULT_GROUP_TEMPLATE = `📋 *Notifikasi Absensi {type}*\n\n{school_name}\n\nSiswa *{student_name}* (Kelas {class}) telah tercatat {type} pada {day}, pukul {time}.\n\nMetode: {method}\n\n_Pesan otomatis dari Smart School Attendance System_`;
 
 const ATTENDANCE_PLACEHOLDERS = [
@@ -72,6 +74,7 @@ const SuperAdminWhatsApp = () => {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<IntegrationData | null>(null);
+  const [dialogTab, setDialogTab] = useState("onesender");
   const [form, setForm] = useState({
     school_id: "",
     api_url: "http://proxy.onesender.net/api/v1/messages",
@@ -83,6 +86,9 @@ const SuperAdminWhatsApp = () => {
     attendance_group_template: DEFAULT_GROUP_TEMPLATE,
     wa_delivery_target: "parent_only",
     wa_enabled: true,
+    gateway_type: "onesender",
+    mpwa_api_key: "",
+    mpwa_sender: "",
   });
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState<string | null>(null);
@@ -110,6 +116,7 @@ const SuperAdminWhatsApp = () => {
 
   const openCreate = () => {
     setEditing(null);
+    setDialogTab("onesender");
     setForm({
       school_id: "", api_url: "http://proxy.onesender.net/api/v1/messages", api_key: "", is_active: false,
       message_template: "",
@@ -118,12 +125,16 @@ const SuperAdminWhatsApp = () => {
       attendance_group_template: DEFAULT_GROUP_TEMPLATE,
       wa_delivery_target: "parent_only",
       wa_enabled: true,
+      gateway_type: "onesender",
+      mpwa_api_key: "",
+      mpwa_sender: "",
     });
     setDialogOpen(true);
   };
 
   const openEdit = (int: IntegrationData) => {
     setEditing(int);
+    setDialogTab(int.gateway_type === "mpwa" ? "mpwa" : "onesender");
     setForm({
       school_id: int.school_id, api_url: int.api_url, api_key: int.api_key, is_active: int.is_active,
       message_template: int.message_template || "",
@@ -132,13 +143,23 @@ const SuperAdminWhatsApp = () => {
       attendance_group_template: int.attendance_group_template || DEFAULT_GROUP_TEMPLATE,
       wa_delivery_target: int.wa_delivery_target || "parent_only",
       wa_enabled: int.wa_enabled !== false,
+      gateway_type: int.gateway_type || "onesender",
+      mpwa_api_key: int.mpwa_api_key || "",
+      mpwa_sender: int.mpwa_sender || "",
     });
     setDialogOpen(true);
   };
 
   const handleSave = async () => {
     if (!form.school_id) { toast.error("Pilih sekolah"); return; }
-    if (!form.api_url || !form.api_key) { toast.error("API URL dan API Key wajib diisi"); return; }
+    if (form.gateway_type === "onesender" && (!form.api_url || !form.api_key)) {
+      toast.error("API URL dan API Key OneSender wajib diisi");
+      return;
+    }
+    if (form.gateway_type === "mpwa" && (!form.mpwa_api_key || !form.mpwa_sender)) {
+      toast.error("API Key dan Sender MPWA wajib diisi");
+      return;
+    }
     setSaving(true);
 
     const payload = {
@@ -153,6 +174,9 @@ const SuperAdminWhatsApp = () => {
       attendance_group_template: form.attendance_group_template,
       wa_delivery_target: form.wa_delivery_target,
       wa_enabled: form.wa_enabled,
+      gateway_type: form.gateway_type,
+      mpwa_api_key: form.mpwa_api_key,
+      mpwa_sender: form.mpwa_sender,
     };
 
     let error;
@@ -186,14 +210,20 @@ const SuperAdminWhatsApp = () => {
     if (!testPhone.trim()) { toast.error("Masukkan nomor WhatsApp"); return; }
     setTesting(int.id);
     try {
-      const res = await supabase.functions.invoke("send-whatsapp", {
-        body: {
-          phone: testPhone.replace(/\D/g, ""),
-          message: `✅ Tes koneksi WhatsApp Gateway untuk ${int.school_name} berhasil!\n\nPesan ini dikirim dari Smart School Pickup System.`,
-          api_url: int.api_url,
-          api_key: int.api_key,
-        },
-      });
+      const body: any = {
+        phone: testPhone.replace(/\D/g, ""),
+        message: `✅ Tes koneksi WhatsApp Gateway (${int.gateway_type === "mpwa" ? "MPWA" : "OneSender"}) untuk ${int.school_name} berhasil!\n\nPesan ini dikirim dari Smart School Pickup System.`,
+      };
+
+      if (int.gateway_type === "mpwa") {
+        body.gateway_type = "mpwa";
+        body.school_id = int.school_id;
+      } else {
+        body.api_url = int.api_url;
+        body.api_key = int.api_key;
+      }
+
+      const res = await supabase.functions.invoke("send-whatsapp", { body });
       const data = res.data as any;
       if (data?.success) {
         toast.success("Pesan tes berhasil dikirim!");
@@ -218,7 +248,7 @@ const SuperAdminWhatsApp = () => {
             <MessageSquare className="h-6 w-6 text-primary" />
             WhatsApp Gateway
           </h1>
-          <p className="text-muted-foreground text-sm">Kelola integrasi OneSender & template notifikasi per sekolah</p>
+          <p className="text-muted-foreground text-sm">Kelola integrasi OneSender & MPWA, template notifikasi per sekolah</p>
         </div>
         <Button onClick={openCreate} className="gradient-primary text-primary-foreground">
           <Plus className="h-4 w-4 mr-1" /> Tambah Integrasi
@@ -241,16 +271,30 @@ const SuperAdminWhatsApp = () => {
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
                     <div className="h-11 w-11 rounded-xl gradient-primary flex items-center justify-center shrink-0">
-                      <School className="h-5 w-5 text-primary-foreground" />
+                      {int.gateway_type === "mpwa" ? (
+                        <Smartphone className="h-5 w-5 text-primary-foreground" />
+                      ) : (
+                        <School className="h-5 w-5 text-primary-foreground" />
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-bold text-foreground truncate">{int.school_name}</h3>
-                      <p className="text-[11px] text-muted-foreground font-mono truncate">{int.api_url}</p>
-                      <div className="flex items-center gap-2 mt-1">
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <Badge variant="secondary" className="text-[10px]">
+                          {int.gateway_type === "mpwa" ? "MPWA" : "OneSender"}
+                        </Badge>
+                        {int.gateway_type === "mpwa" && (
+                          <Badge className={`text-[10px] gap-1 ${int.mpwa_connected ? "bg-success/10 text-success border-success/20" : "bg-amber-500/10 text-amber-500 border-amber-500/20"}`}>
+                            {int.mpwa_connected ? <><Wifi className="h-2.5 w-2.5" /> Online</> : <><WifiOff className="h-2.5 w-2.5" /> Offline</>}
+                          </Badge>
+                        )}
                         <Badge className={`text-[10px] ${int.is_active ? "bg-success/10 text-success border-success/20" : "bg-muted text-muted-foreground"}`}>
                           {int.is_active ? "Aktif" : "Nonaktif"}
                         </Badge>
                       </div>
+                      <p className="text-[11px] text-muted-foreground font-mono truncate mt-0.5">
+                        {int.gateway_type === "mpwa" ? `Sender: ${int.mpwa_sender || "—"}` : int.api_url}
+                      </p>
                     </div>
                     <div className="flex gap-1 shrink-0">
                       <Button variant="ghost" size="sm" className="text-xs" onClick={() => { setTestDialogId(int.id); setTestPhone(""); }}>
@@ -287,14 +331,53 @@ const SuperAdminWhatsApp = () => {
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Gateway Type Selector */}
             <div>
-              <Label>API URL</Label>
-              <Input value={form.api_url} onChange={(e) => setForm({ ...form, api_url: e.target.value })} placeholder="http://proxy.onesender.net/api/v1/messages" />
+              <Label>Tipe Gateway</Label>
+              <Select value={form.gateway_type} onValueChange={(v) => setForm({ ...form, gateway_type: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="onesender">OneSender (API Sistem)</SelectItem>
+                  <SelectItem value="mpwa">MPWA (WA Sendiri)</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            <div>
-              <Label>API Key / Token</Label>
-              <Input type="password" value={form.api_key} onChange={(e) => setForm({ ...form, api_key: e.target.value })} placeholder="Token OneSender" />
-            </div>
+
+            {/* Gateway-specific Settings */}
+            <Tabs value={form.gateway_type} onValueChange={(v) => setForm({ ...form, gateway_type: v })} className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="onesender" className="text-xs gap-1.5">
+                  <MessageSquare className="h-3.5 w-3.5" /> OneSender
+                </TabsTrigger>
+                <TabsTrigger value="mpwa" className="text-xs gap-1.5">
+                  <Smartphone className="h-3.5 w-3.5" /> MPWA
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="onesender" className="space-y-3 mt-3">
+                <div>
+                  <Label>API URL</Label>
+                  <Input value={form.api_url} onChange={(e) => setForm({ ...form, api_url: e.target.value })} placeholder="http://proxy.onesender.net/api/v1/messages" />
+                </div>
+                <div>
+                  <Label>API Key / Token</Label>
+                  <Input type="password" value={form.api_key} onChange={(e) => setForm({ ...form, api_key: e.target.value })} placeholder="Token OneSender" />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="mpwa" className="space-y-3 mt-3">
+                <div>
+                  <Label>MPWA API Key</Label>
+                  <Input type="password" value={form.mpwa_api_key} onChange={(e) => setForm({ ...form, mpwa_api_key: e.target.value })} placeholder="API Key dari MPWA" />
+                </div>
+                <div>
+                  <Label>Sender (Nomor Device)</Label>
+                  <Input value={form.mpwa_sender} onChange={(e) => setForm({ ...form, mpwa_sender: e.target.value })} placeholder="6281234567890" />
+                  <p className="text-[10px] text-muted-foreground mt-1">Nomor WhatsApp yang terdaftar di MPWA (format: 62xxx)</p>
+                </div>
+              </TabsContent>
+            </Tabs>
 
             {/* Template Tabs */}
             <Tabs defaultValue="arrive" className="w-full">
@@ -381,6 +464,13 @@ const SuperAdminWhatsApp = () => {
               <Input value={testPhone} onChange={(e) => setTestPhone(e.target.value)} placeholder="6281234567890" />
               <p className="text-[11px] text-muted-foreground mt-1">Format internasional (62...)</p>
             </div>
+            {testDialogId && (
+              <div className="text-[11px] text-muted-foreground bg-muted/50 rounded-lg p-2">
+                Gateway: <span className="font-semibold">
+                  {integrations.find(i => i.id === testDialogId)?.gateway_type === "mpwa" ? "MPWA" : "OneSender"}
+                </span>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button
