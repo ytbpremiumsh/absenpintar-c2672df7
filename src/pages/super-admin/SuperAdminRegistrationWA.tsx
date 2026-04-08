@@ -69,7 +69,7 @@ const SuperAdminRegistrationWA = () => {
     if (activeTab === "onesender") {
       if (!settings.wa_api_url || !settings.wa_api_key) { toast.error("API URL dan API Key OneSender harus diisi"); return; }
     } else {
-      if (!settings.mpwa_platform_api_key || !settings.mpwa_platform_sender) { toast.error("API Key dan Sender MPWA harus diisi"); return; }
+      if (!settings.mpwa_platform_api_key) { toast.error("API Key MPWA harus diisi"); return; }
     }
 
     setTesting(true);
