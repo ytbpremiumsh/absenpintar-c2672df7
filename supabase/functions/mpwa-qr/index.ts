@@ -64,13 +64,24 @@ serve(async (req) => {
       });
     }
 
+    // Helper to safely parse JSON from external API
+    const safeJson = async (res: Response) => {
+      const text = await res.text();
+      try {
+        return JSON.parse(text);
+      } catch {
+        console.error('MPWA API returned non-JSON:', text.substring(0, 200));
+        return { status: false, msg: 'MPWA API returned invalid response', raw: text.substring(0, 200) };
+      }
+    };
+
     if (action === 'generate-qr') {
       const res = await fetch('https://app.ayopintar.com/generate-qr', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ api_key: finalApiKey, device: finalSender }),
       });
-      const data = await res.json();
+      const data = await safeJson(res);
 
       // Update connected status
       if (data.msg === 'Device already connected!' || data.status === true) {
@@ -92,7 +103,7 @@ serve(async (req) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ api_key: finalApiKey, sender: finalSender }),
       });
-      const data = await res.json();
+      const data = await safeJson(res);
 
       await supabaseAdmin
         .from('school_integrations')
@@ -112,7 +123,7 @@ serve(async (req) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ api_key: finalApiKey, sender: finalSender, number }),
       });
-      const data = await res.json();
+      const data = await safeJson(res);
       return new Response(JSON.stringify(data), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
