@@ -54,9 +54,9 @@ const NAV = [
 const BMC = {
   keyPartners: [
     "Sekolah dan yayasan pendidikan di seluruh wilayah Indonesia",
-    "Penyedia layanan WhatsApp API (Fonnte) untuk pengiriman notifikasi otomatis",
-    "Penyedia layanan cloud computing (Supabase) untuk penyimpanan dan pengelolaan data",
     "Dinas Pendidikan tingkat kabupaten, kota, dan provinsi",
+    "Penyedia layanan WhatsApp API (Onesender) untuk pengiriman notifikasi otomatis",
+    "Penyedia layanan cloud computing (Supabase) untuk penyimpanan dan pengelolaan data",
   ],
   keyActivities: [
     "Pengembangan dan pemeliharaan fitur platform secara berkelanjutan",
