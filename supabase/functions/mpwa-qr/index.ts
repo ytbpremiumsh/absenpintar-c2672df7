@@ -10,7 +10,7 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
   try {
-    const { action, school_id, api_key, sender } = await req.json();
+    const { action, school_id, sender, number } = await req.json();
 
     if (!action || !school_id) {
       return new Response(JSON.stringify({ error: 'action and school_id are required' }), {
@@ -24,45 +24,40 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    let finalApiKey = api_key;
-    let finalSender = sender;
+    // API Key: first check school_integrations, then platform_settings
+    let finalApiKey = '';
+    const { data: integration } = await supabaseAdmin
+      .from('school_integrations')
+      .select('mpwa_api_key, mpwa_sender')
+      .eq('school_id', school_id)
+      .eq('integration_type', 'onesender')
+      .maybeSingle();
 
-    // Look up from school integration if not provided
-    if (!finalApiKey || !finalSender) {
-      const { data: integration } = await supabaseAdmin
-        .from('school_integrations')
-        .select('mpwa_api_key, mpwa_sender')
-        .eq('school_id', school_id)
-        .eq('integration_type', 'onesender')
-        .maybeSingle();
-
-      if (integration) {
-        finalApiKey = finalApiKey || integration.mpwa_api_key;
-        finalSender = finalSender || integration.mpwa_sender;
-      }
+    if (integration?.mpwa_api_key) {
+      finalApiKey = integration.mpwa_api_key;
     }
 
-    // Fall back to platform_settings if still not found
-    if (!finalApiKey || !finalSender) {
+    if (!finalApiKey) {
       const { data: platformSettings } = await supabaseAdmin
         .from('platform_settings')
         .select('key, value')
-        .in('key', ['mpwa_platform_api_key', 'mpwa_platform_sender']);
+        .eq('key', 'mpwa_platform_api_key')
+        .maybeSingle();
 
-      if (platformSettings) {
-        for (const s of platformSettings) {
-          if (s.key === 'mpwa_platform_api_key' && !finalApiKey) finalApiKey = s.value;
-          if (s.key === 'mpwa_platform_sender' && !finalSender) finalSender = s.value;
-        }
+      if (platformSettings?.value) {
+        finalApiKey = platformSettings.value;
       }
     }
 
-    if (!finalApiKey || !finalSender) {
-      return new Response(JSON.stringify({ error: 'MPWA API Key and Sender are required' }), {
+    if (!finalApiKey) {
+      return new Response(JSON.stringify({ error: 'MPWA API Key belum dikonfigurasi. Hubungi administrator.' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    // Sender: from request body or from school_integrations
+    let finalSender = sender || integration?.mpwa_sender || '';
 
     // Helper to safely parse JSON from external API
     const safeJson = async (res: Response) => {
@@ -76,12 +71,26 @@ serve(async (req) => {
     };
 
     if (action === 'generate-qr') {
+      if (!finalSender) {
+        return new Response(JSON.stringify({ error: 'Nomor WhatsApp (sender) harus diisi terlebih dahulu' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // Save sender to school_integrations
+      await supabaseAdmin
+        .from('school_integrations')
+        .update({ mpwa_sender: finalSender })
+        .eq('school_id', school_id)
+        .eq('integration_type', 'onesender');
+
       const qrUrl = `https://app.ayopintar.com/generate-qr?api_key=${encodeURIComponent(finalApiKey)}&device=${encodeURIComponent(finalSender)}`;
       const res = await fetch(qrUrl, { method: 'GET' });
       const data = await safeJson(res);
 
       // Update connected status
-      if (data.msg === 'Device already connected!' || data.status === true) {
+      if (data.msg === 'Device already connected!' || data.msg === 'Perangkat sudah terhubung!' || data.status === true) {
         await supabaseAdmin
           .from('school_integrations')
           .update({ mpwa_connected: true })
@@ -95,6 +104,13 @@ serve(async (req) => {
     }
 
     if (action === 'disconnect') {
+      if (!finalSender) {
+        return new Response(JSON.stringify({ error: 'Sender tidak ditemukan' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
       const res = await fetch('https://app.ayopintar.com/logout-device', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -114,7 +130,12 @@ serve(async (req) => {
     }
 
     if (action === 'check-number') {
-      const { number } = await req.json();
+      if (!finalSender || !number) {
+        return new Response(JSON.stringify({ error: 'sender and number are required' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
       const res = await fetch('https://app.ayopintar.com/check-number', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

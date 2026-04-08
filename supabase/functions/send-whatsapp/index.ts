@@ -48,8 +48,26 @@ serve(async (req) => {
       gatewayType = integration.gateway_type || 'onesender';
 
       if (gatewayType === 'mpwa') {
-        finalApiKey = integration.mpwa_api_key;
+        // For MPWA: sender from school_integrations, API key from school or platform_settings
         mpwaSender = integration.mpwa_sender || '';
+        finalApiKey = integration.mpwa_api_key || '';
+
+        // Fallback API key to platform_settings
+        if (!finalApiKey) {
+          const { data: platformKey } = await supabaseAdmin
+            .from('platform_settings')
+            .select('value')
+            .eq('key', 'mpwa_platform_api_key')
+            .maybeSingle();
+          if (platformKey?.value) finalApiKey = platformKey.value;
+        }
+
+        if (!mpwaSender) {
+          return new Response(JSON.stringify({ success: false, error: 'MPWA sender belum dikonfigurasi. Scan QR terlebih dahulu.' }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
         finalApiUrl = 'https://app.ayopintar.com/send-message';
       } else {
         finalApiUrl = integration.api_url;
@@ -90,7 +108,6 @@ serve(async (req) => {
       }
 
       if (group_id) {
-        // MPWA sends to group using group number/id
         sendRequests.push(
           fetch(mpwaUrl, {
             method: 'POST',
@@ -139,7 +156,16 @@ serve(async (req) => {
     }
 
     const responses = await Promise.all(sendRequests);
-    const results = await Promise.all(responses.map(r => r.json()));
+
+    // Safe JSON parsing for responses
+    const results = await Promise.all(responses.map(async (r) => {
+      const text = await r.text();
+      try {
+        return JSON.parse(text);
+      } catch {
+        return { status: false, msg: 'Invalid response', raw: text.substring(0, 200) };
+      }
+    }));
 
     // For MPWA, check status field; for OneSender, check HTTP status
     let hasError: boolean;

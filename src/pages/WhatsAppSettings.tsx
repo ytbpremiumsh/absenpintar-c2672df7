@@ -81,6 +81,7 @@ const WhatsAppSettings = () => {
   const [deliveryTarget, setDeliveryTarget] = useState("parent_only");
   const [gatewayType, setGatewayType] = useState("onesender");
   const [mpwaConnected, setMpwaConnected] = useState(false);
+  const [mpwaSenderNumber, setMpwaSenderNumber] = useState("");
 
   const [classes, setClasses] = useState<{ id: string; name: string; wa_group_id: string | null }[]>([]);
   const [selectedClass, setSelectedClass] = useState("");
@@ -123,6 +124,7 @@ const WhatsAppSettings = () => {
         setGroupTemplate(d.attendance_group_template || DEFAULT_GROUP);
         setGatewayType(d.gateway_type || "onesender");
         setMpwaConnected(d.mpwa_connected || false);
+        setMpwaSenderNumber(d.mpwa_sender || "");
       }
 
       setClasses(classRes.data || []);
@@ -208,22 +210,22 @@ const WhatsAppSettings = () => {
 
   const handleGenerateQr = async () => {
     if (!schoolId) return;
+    if (!mpwaSenderNumber.trim()) {
+      toast.error("Masukkan nomor WhatsApp yang akan digunakan terlebih dahulu");
+      return;
+    }
     setQrLoading(true);
     setQrData(null);
     try {
       const res = await supabase.functions.invoke("mpwa-qr", {
-        body: { action: "generate-qr", school_id: schoolId },
+        body: { action: "generate-qr", school_id: schoolId, sender: mpwaSenderNumber.replace(/\D/g, "") },
       });
       const data = res.data as any;
       if (data?.error) {
-        if (data.error.includes("API Key") || data.error.includes("Sender")) {
-          toast.error("WhatsApp Scan Sendiri belum dikonfigurasi. Hubungi administrator untuk mengatur koneksi.");
-        } else {
-          toast.error(data.error);
-        }
+        toast.error(data.error);
       } else if (data?.qrcode) {
         setQrData(data.qrcode);
-      } else if (data?.msg === "Device already connected!" || data?.status === true) {
+      } else if (data?.msg === "Device already connected!" || data?.msg === "Perangkat sudah terhubung!" || data?.status === true) {
         setMpwaConnected(true);
         toast.success("Device sudah terhubung!");
       } else {
@@ -440,10 +442,27 @@ const WhatsAppSettings = () => {
                     Koneksi WhatsApp Anda
                   </h3>
                   <p className="text-[10px] text-muted-foreground mt-0.5">
-                    Scan QR code dari WhatsApp Anda untuk menghubungkan device
+                    Masukkan nomor WhatsApp Anda lalu scan QR code untuk menghubungkan
                   </p>
                 </div>
                 <CardContent className="p-4 space-y-4">
+                  {/* Phone Number Input */}
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold">Nomor WhatsApp Sekolah</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        value={mpwaSenderNumber}
+                        onChange={(e) => setMpwaSenderNumber(e.target.value)}
+                        placeholder="628812345678"
+                        className="flex-1 h-10 bg-muted/30 focus:bg-background transition-colors"
+                        disabled={mpwaConnected}
+                      />
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">
+                      Masukkan nomor WhatsApp dengan format internasional (62xxx). Nomor ini yang akan digunakan untuk mengirim pesan.
+                    </p>
+                  </div>
+
                   {/* Connection Status */}
                   <div className={`flex items-center gap-3 rounded-xl border p-3 ${
                     mpwaConnected
@@ -465,8 +484,8 @@ const WhatsAppSettings = () => {
                       </p>
                       <p className="text-[10px] text-muted-foreground">
                         {mpwaConnected
-                          ? "WhatsApp Anda sudah terhubung dan siap mengirim pesan"
-                          : "Klik tombol di bawah untuk scan QR code"
+                          ? `Nomor ${mpwaSenderNumber} sudah terhubung dan siap mengirim pesan`
+                          : "Masukkan nomor lalu klik Generate QR untuk scan"
                         }
                       </p>
                     </div>
@@ -496,7 +515,11 @@ const WhatsAppSettings = () => {
                   {/* Action Buttons */}
                   <div className="flex flex-wrap gap-2">
                     {!mpwaConnected ? (
-                      <Button onClick={handleGenerateQr} disabled={qrLoading} className="gradient-primary hover:opacity-90 shadow-md h-10 px-6 gap-2">
+                      <Button
+                        onClick={handleGenerateQr}
+                        disabled={qrLoading || !mpwaSenderNumber.trim()}
+                        className="gradient-primary hover:opacity-90 shadow-md h-10 px-6 gap-2"
+                      >
                         {qrLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <QrCode className="h-4 w-4" />}
                         {qrData ? "Refresh QR Code" : "Generate QR Code"}
                       </Button>

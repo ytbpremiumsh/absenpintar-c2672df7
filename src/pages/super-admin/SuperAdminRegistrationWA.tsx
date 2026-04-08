@@ -23,7 +23,6 @@ const SuperAdminRegistrationWA = () => {
     wa_api_key: "",
     wa_registration_message: "",
     mpwa_platform_api_key: "",
-    mpwa_platform_sender: "",
   });
 
   useEffect(() => {
@@ -36,7 +35,7 @@ const SuperAdminRegistrationWA = () => {
       .select("key, value")
       .in("key", [
         "wa_registration_enabled", "wa_api_url", "wa_api_key", "wa_registration_message",
-        "mpwa_platform_api_key", "mpwa_platform_sender",
+        "mpwa_platform_api_key",
       ]);
 
     const map: Record<string, string> = {};
@@ -70,7 +69,7 @@ const SuperAdminRegistrationWA = () => {
     if (activeTab === "onesender") {
       if (!settings.wa_api_url || !settings.wa_api_key) { toast.error("API URL dan API Key OneSender harus diisi"); return; }
     } else {
-      if (!settings.mpwa_platform_api_key || !settings.mpwa_platform_sender) { toast.error("API Key dan Sender MPWA harus diisi"); return; }
+      if (!settings.mpwa_platform_api_key) { toast.error("API Key MPWA harus diisi"); return; }
     }
 
     setTesting(true);
@@ -87,23 +86,8 @@ const SuperAdminRegistrationWA = () => {
 
       if (activeTab === "mpwa") {
         body.gateway_type = "mpwa";
-        // For MPWA we send directly via the MPWA API
-        const mpwaRes = await fetch("https://app.ayopintar.com/send-message", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            api_key: settings.mpwa_platform_api_key,
-            sender: settings.mpwa_platform_sender,
-            number: testPhone.replace(/\D/g, ""),
-            message,
-          }),
-        });
-        const mpwaData = await mpwaRes.json();
-        if (mpwaData?.status) {
-          toast.success("Pesan tes MPWA berhasil dikirim!");
-        } else {
-          toast.error("Gagal MPWA: " + (mpwaData?.msg || "Unknown error"));
-        }
+        // For MPWA test, we need a sender - use testPhone as both sender and recipient for testing
+        toast.error("Untuk tes MPWA, gunakan dashboard sekolah yang sudah scan QR. API Key yang disimpan di sini hanya sebagai konfigurasi global.");
         setTesting(false);
         return;
       }
@@ -206,26 +190,20 @@ const SuperAdminRegistrationWA = () => {
             <TabsContent value="mpwa" className="mt-4 space-y-4">
               <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
                 <p className="text-[11px] text-muted-foreground">
-                  MPWA (Multi-Platform WhatsApp) memungkinkan sekolah menggunakan nomor WhatsApp sendiri. API Key dan Sender di sini adalah konfigurasi default platform. Per-sekolah dikonfigurasi di halaman <strong>Aktivasi WA Sekolah</strong>.
+                  MPWA memungkinkan setiap sekolah menggunakan nomor WhatsApp sendiri. Cukup masukkan API Key di sini — setiap sekolah akan memasukkan nomor WhatsApp dan scan QR code sendiri di dashboard masing-masing.
                 </p>
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">MPWA API Key</Label>
+                <Label className="text-xs">MPWA API Key (Global)</Label>
                 <Input
                   type="password"
                   value={settings.mpwa_platform_api_key}
                   onChange={(e) => setSettings({ ...settings, mpwa_platform_api_key: e.target.value })}
                   placeholder="API Key dari MPWA (app.ayopintar.com)"
                 />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">MPWA Sender (Nomor Device Platform)</Label>
-                <Input
-                  value={settings.mpwa_platform_sender}
-                  onChange={(e) => setSettings({ ...settings, mpwa_platform_sender: e.target.value })}
-                  placeholder="6281234567890"
-                />
-                <p className="text-[10px] text-muted-foreground mt-1">Nomor WhatsApp yang terdaftar di MPWA untuk keperluan platform (format: 62xxx)</p>
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  API Key ini digunakan untuk semua sekolah yang memilih gateway WASkolla Scan Sendiri. Setiap sekolah akan input nomor WA dan scan QR sendiri.
+                </p>
               </div>
             </TabsContent>
           </Tabs>
