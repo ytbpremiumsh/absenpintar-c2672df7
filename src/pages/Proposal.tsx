@@ -283,7 +283,7 @@ const Proposal = () => {
         <li>Badan Pusat Statistik. (2024). <em>Statistik Pendidikan Indonesia</em>.</li>
         <li>Osterwalder, A., dan Pigneur, Y. (2010). <em>Business Model Generation</em>. John Wiley and Sons.</li>
         <li>McKinsey and Company. (2023). <em>The State of EdTech in Southeast Asia</em>.</li>
-        <li>Fonnte. (2024). <em>WhatsApp API Documentation</em>. https://fonnte.com</li>
+        <li>Onesender. (2024). <em>WhatsApp API Documentation</em>. https://onesender.net</li>
       </ol>
       
       <h2>BAB VIII - LAMPIRAN</h2>
@@ -1022,7 +1022,7 @@ const Proposal = () => {
                     "Badan Pusat Statistik. (2024). Statistik Pendidikan Indonesia.",
                     "Osterwalder, A., dan Pigneur, Y. (2010). Business Model Generation. John Wiley and Sons.",
                     "McKinsey and Company. (2023). The State of EdTech in Southeast Asia.",
-                    "Fonnte. (2024). WhatsApp API Documentation. https://fonnte.com",
+                    "Onesender. (2024). WhatsApp API Documentation. https://onesender.net",
                   ].map((ref, i) => (
                     <p key={i} className="pl-6 -indent-6">[{i + 1}] {ref}</p>
                   ))}
