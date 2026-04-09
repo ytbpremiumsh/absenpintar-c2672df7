@@ -146,3 +146,8 @@
     transform: translateY(-1px);
   }
 }
+
+@keyframes barcodePulse {
+  0%, 100% { opacity: 0.4; transform: scaleY(0.7); }
+  50% { opacity: 1; transform: scaleY(1); }
+}
