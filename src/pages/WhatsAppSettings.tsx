@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   MessageSquare, Save, Loader2, Send, History, Users, Power, Clock, Link2,
-  CheckCircle2, AlertCircle, FileText, Megaphone, QrCode, Wifi, WifiOff,
+  AlertCircle, FileText, Megaphone, QrCode, Wifi, WifiOff,
   Smartphone, Radio, UserCheck, Shield, Zap, Signal,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
