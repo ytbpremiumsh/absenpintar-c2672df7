@@ -218,7 +218,7 @@ const WhatsAppSettings = () => {
     setGatewayType(value);
     if (integrationId) {
       await supabase.from("school_integrations" as any).update({ gateway_type: value }).eq("id", integrationId);
-      toast.success(`Gateway diubah ke ${value === "mpwa" ? "WASkolla Scan Sendiri" : "WASkolla (Sistem)"}`);
+      toast.success(`Gateway diubah ke ${value === "mpwa" ? "WASkolla - Nomor Admin Sekolah" : "WASkolla (Sistem)"}`);
     }
   };
 
@@ -437,7 +437,7 @@ const WhatsAppSettings = () => {
                 <div>
                   <p className="text-sm font-semibold text-foreground">Status WhatsApp</p>
                   <p className="text-[10px] text-muted-foreground">
-                    Gateway: <span className="font-semibold">{gatewayType === "mpwa" ? "WASkolla Scan Sendiri" : "WASkolla (Sistem)"}</span>
+                    Gateway: <span className="font-semibold">{gatewayType === "mpwa" ? "WASkolla - Nomor Admin Sekolah" : "WASkolla (Sistem)"}</span>
                     {gatewayType === "mpwa" && (
                       <span className={`ml-2 ${mpwaConnected ? "text-success" : "text-destructive"}`}>
                         • {mpwaConnected ? "Terhubung" : "Belum Terhubung"}
@@ -482,84 +482,179 @@ const WhatsAppSettings = () => {
 
           {/* ═══════ GATEWAY TAB ═══════ */}
           <TabsContent value="gateway" className="mt-4 space-y-4">
-            <Card className="border-0 shadow-card overflow-hidden">
-              <div className="px-4 py-3 border-b border-border bg-muted/20">
-                <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                  <Radio className="h-4 w-4 text-primary" />
-                  Pilih Gateway WhatsApp
-                </h3>
-                <p className="text-[10px] text-muted-foreground mt-0.5">
-                  Pilih layanan pengiriman pesan WhatsApp yang ingin digunakan
-                </p>
-              </div>
-              <CardContent className="p-4 space-y-4">
-                <div className={`grid grid-cols-1 ${onesenderEnabled ? "sm:grid-cols-2" : ""} gap-3`}>
-                  {/* WASkolla Scan Sendiri — FIRST */}
-                  <button
-                    type="button"
-                    onClick={() => handleSwitchGateway("mpwa")}
-                    className={`text-left rounded-xl border-2 p-4 transition-all ${
-                      gatewayType === "mpwa"
-                        ? "border-primary bg-primary/5 shadow-md"
-                        : "border-border bg-background hover:border-primary/30"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${
-                        gatewayType === "mpwa" ? "bg-primary/10" : "bg-muted"
-                      }`}>
-                        <Smartphone className={`h-5 w-5 ${gatewayType === "mpwa" ? "text-primary" : "text-muted-foreground"}`} />
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-foreground">WASkolla Scan Sendiri</p>
-                        <p className="text-[10px] text-muted-foreground">Gunakan WA Anda</p>
-                      </div>
-                      {gatewayType === "mpwa" && (
+            {/* When onesender disabled: 2-column layout combining gateway + connection */}
+            {!onesenderEnabled && gatewayType === "mpwa" ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Gateway Card */}
+                <Card className="border-0 shadow-card overflow-hidden">
+                  <div className="px-4 py-3 border-b border-border bg-muted/20">
+                    <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                      <Radio className="h-4 w-4 text-primary" />
+                      WhatsApp Gateway
+                    </h3>
+                  </div>
+                  <CardContent className="p-4">
+                    <div className="rounded-xl border-2 border-primary bg-primary/5 p-4">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <Smartphone className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-foreground">WASkolla - Nomor Admin Sekolah</p>
+                          <p className="text-[10px] text-muted-foreground">Gunakan WA Anda</p>
+                        </div>
                         <div className="ml-auto h-6 w-6 rounded-full bg-primary flex items-center justify-center">
                           <Zap className="h-3.5 w-3.5 text-primary-foreground" />
                         </div>
-                      )}
+                      </div>
+                      <p className="text-[11px] text-muted-foreground leading-relaxed">
+                        Menggunakan nomor WhatsApp sendiri. Perlu scan QR code untuk menghubungkan device.
+                      </p>
                     </div>
-                    <p className="text-[11px] text-muted-foreground leading-relaxed">
-                      Menggunakan nomor WhatsApp sendiri. Perlu scan QR code untuk menghubungkan device Anda.
-                    </p>
-                  </button>
+                  </CardContent>
+                </Card>
 
-                  {/* WASkolla (Sistem) — SECOND — only show if enabled */}
-                  {onesenderEnabled && (
+                {/* Connection Card */}
+                <Card className="border-0 shadow-card overflow-hidden">
+                  <div className="px-4 py-3 border-b border-border bg-muted/20">
+                    <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                      <QrCode className="h-4 w-4 text-primary" />
+                      Koneksi WhatsApp Anda
+                    </h3>
+                  </div>
+                  <CardContent className="p-4 space-y-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-semibold">Nomor WhatsApp Sekolah</Label>
+                      <Input
+                        value={mpwaSenderNumber}
+                        onChange={(e) => setMpwaSenderNumber(e.target.value)}
+                        placeholder="628812345678"
+                        className="h-10 bg-muted/30 focus:bg-background transition-colors"
+                        disabled={mpwaConnected}
+                      />
+                    </div>
+                    {mpwaConnected ? (
+                      <ConnectedDeviceCard
+                        mpwaSenderNumber={mpwaSenderNumber}
+                        disconnecting={disconnecting}
+                        handleDisconnect={handleDisconnect}
+                      />
+                    ) : (
+                      <>
+                        <div className="rounded-xl border border-amber-500/20 bg-amber-500/[0.03] p-3">
+                          <div className="flex items-center gap-3">
+                            <WifiOff className="h-4 w-4 text-amber-500" />
+                            <div className="flex-1">
+                              <p className="text-xs font-semibold text-foreground">Device Belum Terhubung</p>
+                            </div>
+                            <Badge className="text-[10px] bg-amber-500/10 text-amber-500 border-amber-500/20">Offline</Badge>
+                          </div>
+                        </div>
+                        {qrData && (
+                          <div className="flex flex-col items-center gap-2 py-2">
+                            <div className="rounded-xl border-2 border-primary/20 p-2 bg-white">
+                              <img src={qrData} alt="QR Code" className="w-40 h-40" />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Loader2 className="h-3 w-3 animate-spin text-primary" />
+                              <p className="text-[10px] text-primary font-medium">Menunggu koneksi...</p>
+                            </div>
+                          </div>
+                        )}
+                        <Button
+                          onClick={handleGenerateQr}
+                          disabled={qrLoading || !mpwaSenderNumber.trim()}
+                          className="gradient-primary hover:opacity-90 shadow-md h-9 px-5 gap-2 w-full text-xs"
+                        >
+                          {qrLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <QrCode className="h-4 w-4" />}
+                          {qrData ? "Refresh QR" : "Generate QR Code"}
+                        </Button>
+                      </>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            ) : (
+              /* Normal layout with onesender enabled */
+              <Card className="border-0 shadow-card overflow-hidden">
+                <div className="px-4 py-3 border-b border-border bg-muted/20">
+                  <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                    <Radio className="h-4 w-4 text-primary" />
+                    Pilih Gateway WhatsApp
+                  </h3>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                    Pilih layanan pengiriman pesan WhatsApp yang ingin digunakan
+                  </p>
+                </div>
+                <CardContent className="p-4 space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* WASkolla - Nomor Admin Sekolah — FIRST */}
                     <button
                       type="button"
-                      onClick={() => handleSwitchGateway("onesender")}
+                      onClick={() => handleSwitchGateway("mpwa")}
                       className={`text-left rounded-xl border-2 p-4 transition-all ${
-                        gatewayType === "onesender"
+                        gatewayType === "mpwa"
                           ? "border-primary bg-primary/5 shadow-md"
                           : "border-border bg-background hover:border-primary/30"
                       }`}
                     >
                       <div className="flex items-center gap-3 mb-2">
                         <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${
-                          gatewayType === "onesender" ? "bg-primary/10" : "bg-muted"
+                          gatewayType === "mpwa" ? "bg-primary/10" : "bg-muted"
                         }`}>
-                          <MessageSquare className={`h-5 w-5 ${gatewayType === "onesender" ? "text-primary" : "text-muted-foreground"}`} />
+                          <Smartphone className={`h-5 w-5 ${gatewayType === "mpwa" ? "text-primary" : "text-muted-foreground"}`} />
                         </div>
                         <div>
-                          <p className="text-sm font-bold text-foreground">WASkolla</p>
-                          <p className="text-[10px] text-muted-foreground">Sistem ATSkolla</p>
+                          <p className="text-sm font-bold text-foreground">WASkolla - Nomor Admin Sekolah</p>
+                          <p className="text-[10px] text-muted-foreground">Gunakan WA Anda</p>
                         </div>
-                        {gatewayType === "onesender" && (
+                        {gatewayType === "mpwa" && (
                           <div className="ml-auto h-6 w-6 rounded-full bg-primary flex items-center justify-center">
                             <Zap className="h-3.5 w-3.5 text-primary-foreground" />
                           </div>
                         )}
                       </div>
                       <p className="text-[11px] text-muted-foreground leading-relaxed">
-                        Menggunakan layanan WhatsApp dari sistem ATSkolla. Dikonfigurasi oleh admin, tidak perlu scan QR.
+                        Menggunakan nomor WhatsApp sendiri. Perlu scan QR code untuk menghubungkan device Anda.
                       </p>
                     </button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+
+                    {/* WASkolla (Sistem) — SECOND */}
+                    {onesenderEnabled && (
+                      <button
+                        type="button"
+                        onClick={() => handleSwitchGateway("onesender")}
+                        className={`text-left rounded-xl border-2 p-4 transition-all ${
+                          gatewayType === "onesender"
+                            ? "border-primary bg-primary/5 shadow-md"
+                            : "border-border bg-background hover:border-primary/30"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${
+                            gatewayType === "onesender" ? "bg-primary/10" : "bg-muted"
+                          }`}>
+                            <MessageSquare className={`h-5 w-5 ${gatewayType === "onesender" ? "text-primary" : "text-muted-foreground"}`} />
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-foreground">WASkolla</p>
+                            <p className="text-[10px] text-muted-foreground">Sistem ATSkolla</p>
+                          </div>
+                          {gatewayType === "onesender" && (
+                            <div className="ml-auto h-6 w-6 rounded-full bg-primary flex items-center justify-center">
+                              <Zap className="h-3.5 w-3.5 text-primary-foreground" />
+                            </div>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-muted-foreground leading-relaxed">
+                          Menggunakan layanan WhatsApp dari sistem ATSkolla. Dikonfigurasi oleh admin, tidak perlu scan QR.
+                        </p>
+                      </button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* MPWA QR Scan Section */}
             {gatewayType === "mpwa" && (
@@ -591,59 +686,11 @@ const WhatsAppSettings = () => {
 
                   {/* ═══ Connected State — Premium Design ═══ */}
                   {mpwaConnected ? (
-                    <div className="rounded-2xl border border-border bg-gradient-to-br from-background via-background to-primary/5 p-5 relative overflow-hidden">
-                      {/* Decorative background elements */}
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-                      <div className="absolute bottom-0 left-0 w-20 h-20 bg-success/5 rounded-full translate-y-1/2 -translate-x-1/2" />
-                      
-                      <div className="relative flex items-start gap-4">
-                        <div className="relative shrink-0">
-                          <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary/10 to-success/10 border border-primary/10 flex items-center justify-center">
-                            <Signal className="h-7 w-7 text-primary" />
-                          </div>
-                          {/* Live pulse indicator */}
-                          <div className="absolute -bottom-0.5 -right-0.5">
-                            <span className="relative flex h-4 w-4">
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-60"></span>
-                              <span className="relative inline-flex rounded-full h-4 w-4 bg-success border-2 border-background"></span>
-                            </span>
-                          </div>
-                        </div>
-                        
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <p className="text-base font-bold text-foreground">Perangkat Aktif</p>
-                            <Badge className="bg-success/10 text-success border-success/20 text-[9px] px-2 py-0 font-semibold uppercase tracking-wider">
-                              Live
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-muted-foreground">
-                            <span className="font-mono font-semibold text-foreground">{mpwaSenderNumber}</span>
-                          </p>
-                          <p className="text-[11px] text-muted-foreground mt-1">
-                            WhatsApp terhubung dan siap mengirim pesan otomatis
-                          </p>
-
-                          <div className="flex items-center gap-4 mt-3">
-                            <div className="flex items-center gap-1.5">
-                              <Shield className="h-3.5 w-3.5 text-primary/60" />
-                              <span className="text-[10px] text-muted-foreground">Terenkripsi</span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                              <Zap className="h-3.5 w-3.5 text-primary/60" />
-                              <span className="text-[10px] text-muted-foreground">Siap Kirim</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="relative flex gap-2 mt-4 pt-4 border-t border-border/50">
-                        <Button variant="destructive" size="sm" onClick={handleDisconnect} disabled={disconnecting} className="gap-1.5 h-8 text-xs">
-                          {disconnecting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <WifiOff className="h-3.5 w-3.5" />}
-                          Putuskan Koneksi
-                        </Button>
-                      </div>
-                    </div>
+                    <ConnectedDeviceCard
+                      mpwaSenderNumber={mpwaSenderNumber}
+                      disconnecting={disconnecting}
+                      handleDisconnect={handleDisconnect}
+                    />
                   ) : (
                     <div className="rounded-xl border border-amber-500/20 bg-amber-500/[0.03] p-3">
                       <div className="flex items-center gap-3">
