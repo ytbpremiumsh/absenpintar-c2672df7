@@ -16,8 +16,7 @@ serve(async (req) => {
 
     if (!action || !school_id) {
       return new Response(JSON.stringify({ error: 'action and school_id are required' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
@@ -26,7 +25,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    // Resolve API Key: school_integrations first, then platform_settings
+    // Resolve API Key
     let finalApiKey = '';
     const { data: integration } = await supabaseAdmin
       .from('school_integrations')
@@ -35,91 +34,68 @@ serve(async (req) => {
       .eq('integration_type', 'onesender')
       .maybeSingle();
 
-    if (integration?.mpwa_api_key) {
-      finalApiKey = integration.mpwa_api_key;
-    }
+    finalApiKey = integration?.mpwa_api_key || '';
 
     if (!finalApiKey) {
-      const { data: platformSettings } = await supabaseAdmin
-        .from('platform_settings')
-        .select('key, value')
-        .eq('key', 'mpwa_platform_api_key')
-        .maybeSingle();
-      if (platformSettings?.value) {
-        finalApiKey = platformSettings.value;
-      }
+      const { data: ps } = await supabaseAdmin
+        .from('platform_settings').select('value')
+        .eq('key', 'mpwa_platform_api_key').maybeSingle();
+      if (ps?.value) finalApiKey = ps.value;
     }
 
     if (!finalApiKey) {
       return new Response(JSON.stringify({ error: 'MPWA API Key belum dikonfigurasi. Hubungi administrator.' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
     const finalSender = sender || integration?.mpwa_sender || '';
 
-    // Safe JSON parser
     const safeJson = async (res: Response) => {
       const text = await res.text();
-      try {
-        return JSON.parse(text);
-      } catch {
-        console.error('MPWA API returned non-JSON:', text.substring(0, 200));
-        return { status: false, msg: 'MPWA API returned invalid response', raw: text.substring(0, 200) };
+      try { return JSON.parse(text); }
+      catch { 
+        console.error('Non-JSON response:', text.substring(0, 200));
+        return { status: false, msg: 'Invalid API response' };
       }
     };
 
-    // Helper: check if response means "already connected"
     const isConnected = (data: any) =>
       data?.msg === 'Device already connected!' ||
       data?.msg === 'Perangkat sudah terhubung!' ||
       (data?.status === true && !data?.qrcode);
 
-    // ═══ CONNECT: Register device + Generate QR (one-click) ═══
+    const markConnected = async (connected: boolean) => {
+      await supabaseAdmin.from('school_integrations')
+        .update({ mpwa_connected: connected })
+        .eq('school_id', school_id)
+        .eq('integration_type', 'onesender');
+    };
+
+    // ═══ CONNECT: Save sender + Generate QR (device auto-registered by MPWA) ═══
     if (action === 'connect') {
       if (!finalSender) {
         return new Response(JSON.stringify({ error: 'Nomor WhatsApp (sender) harus diisi terlebih dahulu' }), {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
 
-      // Save sender to school_integrations
-      await supabaseAdmin
-        .from('school_integrations')
+      // Save sender number and set gateway type
+      await supabaseAdmin.from('school_integrations')
         .update({ mpwa_sender: finalSender, gateway_type: 'mpwa' })
         .eq('school_id', school_id)
         .eq('integration_type', 'onesender');
 
-      // Step 1: Register device via API (try multiple endpoint patterns)
-      console.log(`Registering device: ${finalSender}`);
-      for (const endpoint of ['/api/add-device', '/add-device']) {
-        try {
-          const addRes = await fetch(`${MPWA_BASE}${endpoint}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ api_key: finalApiKey, device: finalSender }),
-          });
-          const addData = await safeJson(addRes);
-          console.log(`${endpoint} result:`, JSON.stringify(addData));
-          if (addData.status !== false) break; // success, stop trying
-        } catch (e) {
-          console.error(`${endpoint} error (non-fatal):`, e.message);
-        }
-      }
+      console.log(`Connecting device: ${finalSender}`);
 
-      // Step 2: Generate QR code
+      // Generate QR — MPWA auto-registers the device when generating QR
       const qrUrl = `${MPWA_BASE}/generate-qr?api_key=${encodeURIComponent(finalApiKey)}&device=${encodeURIComponent(finalSender)}`;
-      const res = await fetch(qrUrl, { method: 'GET' });
+      const res = await fetch(qrUrl);
       const data = await safeJson(res);
+      console.log('Generate QR result:', JSON.stringify(data).substring(0, 200));
 
       if (isConnected(data)) {
-        await supabaseAdmin
-          .from('school_integrations')
-          .update({ mpwa_connected: true })
-          .eq('school_id', school_id)
-          .eq('integration_type', 'onesender');
+        await markConnected(true);
       }
 
       return new Response(JSON.stringify(data), {
@@ -127,25 +103,20 @@ serve(async (req) => {
       });
     }
 
-    // ═══ POLL: Check connection status via QR endpoint ═══
+    // ═══ POLL: Check connection status ═══
     if (action === 'poll-status') {
       if (!finalSender) {
-        return new Response(JSON.stringify({ error: 'Sender tidak ditemukan' }), {
-          status: 400,
+        return new Response(JSON.stringify({ connected: false }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
 
       const qrUrl = `${MPWA_BASE}/generate-qr?api_key=${encodeURIComponent(finalApiKey)}&device=${encodeURIComponent(finalSender)}`;
-      const res = await fetch(qrUrl, { method: 'GET' });
+      const res = await fetch(qrUrl);
       const data = await safeJson(res);
 
       if (isConnected(data)) {
-        await supabaseAdmin
-          .from('school_integrations')
-          .update({ mpwa_connected: true })
-          .eq('school_id', school_id)
-          .eq('integration_type', 'onesender');
+        await markConnected(true);
       }
 
       return new Response(JSON.stringify(data), {
@@ -157,8 +128,7 @@ serve(async (req) => {
     if (action === 'disconnect') {
       if (!finalSender) {
         return new Response(JSON.stringify({ error: 'Sender tidak ditemukan' }), {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
 
@@ -168,12 +138,7 @@ serve(async (req) => {
         body: JSON.stringify({ api_key: finalApiKey, sender: finalSender }),
       });
       const data = await safeJson(res);
-
-      await supabaseAdmin
-        .from('school_integrations')
-        .update({ mpwa_connected: false })
-        .eq('school_id', school_id)
-        .eq('integration_type', 'onesender');
+      await markConnected(false);
 
       return new Response(JSON.stringify(data), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -181,14 +146,12 @@ serve(async (req) => {
     }
 
     return new Response(JSON.stringify({ error: 'Unknown action' }), {
-      status: 400,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
     console.error('MPWA QR error:', error);
     return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 });
