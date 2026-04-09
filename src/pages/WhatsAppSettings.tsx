@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   MessageSquare, Save, Loader2, Send, History, Users, Power, Clock, Link2,
   AlertCircle, FileText, Megaphone, QrCode, Wifi, WifiOff,
-  Smartphone, Radio, UserCheck, Shield, Zap, Signal,
+  Smartphone, Radio, UserCheck, Zap,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -63,6 +63,71 @@ const PlaceholderButtons = ({
         {p.key} <span className="text-muted-foreground">({p.label})</span>
       </button>
     ))}
+  </div>
+);
+
+/* ═══ Connected Device Card — Premium with animated barcode ═══ */
+const ConnectedDeviceCard = ({
+  mpwaSenderNumber,
+  disconnecting,
+  handleDisconnect,
+}: {
+  mpwaSenderNumber: string;
+  disconnecting: boolean;
+  handleDisconnect: () => void;
+}) => (
+  <div className="rounded-2xl border border-success/20 bg-gradient-to-br from-background via-success/[0.02] to-primary/[0.04] p-5 relative overflow-hidden">
+    {/* Decorative circles */}
+    <div className="absolute top-0 right-0 w-32 h-32 bg-success/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+    <div className="absolute bottom-0 left-0 w-20 h-20 bg-primary/5 rounded-full translate-y-1/2 -translate-x-1/2" />
+
+    <div className="relative flex flex-col items-center text-center gap-4">
+      {/* Animated barcode icon */}
+      <div className="relative">
+        <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-success/10 to-primary/10 border border-success/20 flex items-center justify-center">
+          {/* Barcode bars animation */}
+          <div className="flex items-end gap-[3px] h-10">
+            {[10, 16, 8, 20, 6, 14, 10, 18, 8, 12].map((h, i) => (
+              <div
+                key={i}
+                className="w-[3px] rounded-full bg-success"
+                style={{
+                  height: `${h}px`,
+                  animation: `barcodePulse 2s ease-in-out ${i * 0.15}s infinite`,
+                }}
+              />
+            ))}
+          </div>
+        </div>
+        {/* Live pulse */}
+        <div className="absolute -bottom-1 -right-1">
+          <span className="relative flex h-5 w-5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-50"></span>
+            <span className="relative inline-flex rounded-full h-5 w-5 bg-success border-2 border-background"></span>
+          </span>
+        </div>
+      </div>
+
+      <div>
+        <div className="flex items-center justify-center gap-2 mb-1">
+          <p className="text-lg font-bold text-foreground">Perangkat Aktif</p>
+          <Badge className="bg-success/10 text-success border-success/20 text-[9px] px-2 py-0.5 font-bold uppercase tracking-widest">
+            Connected
+          </Badge>
+        </div>
+        <p className="font-mono text-base font-semibold text-foreground tracking-wide">{mpwaSenderNumber}</p>
+        <p className="text-xs text-muted-foreground mt-1.5">
+          WhatsApp terhubung dan siap mengirim pesan otomatis
+        </p>
+      </div>
+
+      <div className="w-full pt-3 border-t border-border/40">
+        <Button variant="destructive" size="sm" onClick={handleDisconnect} disabled={disconnecting} className="gap-1.5 h-8 text-xs">
+          {disconnecting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <WifiOff className="h-3.5 w-3.5" />}
+          Putuskan Koneksi
+        </Button>
+      </div>
+    </div>
   </div>
 );
 
