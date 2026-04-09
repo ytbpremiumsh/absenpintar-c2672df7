@@ -282,10 +282,10 @@ const WhatsAppSettings = () => {
       if (!schoolId) return;
       try {
         const res = await supabase.functions.invoke("mpwa-qr", {
-          body: { action: "generate-qr", school_id: schoolId, sender: mpwaSenderNumber.replace(/\D/g, "") },
+          body: { action: "poll-status", school_id: schoolId, sender: mpwaSenderNumber.replace(/\D/g, "") },
         });
         const data = res.data as any;
-        if (data?.msg === "Device already connected!" || data?.msg === "Perangkat sudah terhubung!" || data?.status === true) {
+        if (data?.msg === "Device already connected!" || data?.msg === "Perangkat sudah terhubung!" || (data?.status === true && !data?.qrcode)) {
           setMpwaConnected(true); setQrData(null);
           toast.success("🎉 Device berhasil terhubung!");
           if (pollingRef.current) clearInterval(pollingRef.current);
@@ -301,7 +301,7 @@ const WhatsAppSettings = () => {
     setQrLoading(true); setQrData(null);
     try {
       const res = await supabase.functions.invoke("mpwa-qr", {
-        body: { action: "add-device-and-qr", school_id: schoolId, sender: cleanNumber },
+        body: { action: "connect", school_id: schoolId, sender: cleanNumber },
       });
       const data = res.data as any;
       if (data?.error) toast.error(data.error);
