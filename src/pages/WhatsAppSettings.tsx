@@ -304,11 +304,12 @@ const WhatsAppSettings = () => {
         body: { action: "connect", school_id: schoolId, sender: cleanNumber },
       });
       const data = res.data as any;
-      if (data?.error) toast.error(data.error);
-      else if (data?.qrcode) { setQrData(data.qrcode); startConnectionPolling(); }
-      else if (data?.msg === "Device already connected!" || data?.msg === "Perangkat sudah terhubung!" || data?.status === true) {
+      if (data?.error) { toast.error(data.error); }
+      else if (data?.qrcode) { setQrData(data.qrcode); startConnectionPolling(); toast.success("QR Code berhasil dibuat! Scan dengan WhatsApp Anda"); }
+      else if (data?.msg === "Device already connected!" || data?.msg === "Perangkat sudah terhubung!" || (data?.status === true && !data?.qrcode)) {
         setMpwaConnected(true); toast.success("Device sudah terhubung!");
-      } else toast.error(data?.msg || "Gagal generate QR");
+      } else if (data?.img) { setQrData(data.img); startConnectionPolling(); toast.success("QR Code berhasil dibuat! Scan dengan WhatsApp Anda"); }
+      else { toast.error(data?.msg || "Gagal mendaftarkan device. Pastikan API Key dan nomor benar."); }
     } catch (err: any) { toast.error("Gagal: " + err.message); }
     setQrLoading(false);
   };
