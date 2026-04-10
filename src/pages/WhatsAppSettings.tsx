@@ -289,10 +289,8 @@ const WhatsAppSettings = () => {
           setMpwaConnected(true); setQrData(null);
           toast.success("🎉 Device berhasil terhubung!");
           if (pollingRef.current) clearInterval(pollingRef.current);
-        } else if (data?.qrcode) {
-          // Update QR if a new one is returned
-          setQrData(data.qrcode);
         }
+        // Do NOT update QR here - it would invalidate the one being scanned
       } catch { /* silently retry */ }
     }, 5000);
   }, [schoolId, mpwaSenderNumber]);
