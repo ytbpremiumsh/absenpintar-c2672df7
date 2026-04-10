@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Database, Download, RefreshCw, Shield, Clock, HardDrive, Loader2,
   CheckCircle, AlertTriangle, Table2, BarChart3, FileDown, Cloud,
-  FolderOpen, ExternalLink, BookOpen, Copy, Info,
+  FolderOpen, ExternalLink, BookOpen, Info,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -144,10 +144,6 @@ const SuperAdminBackup = () => {
     catch { return iso; }
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success("Berhasil disalin!");
-  };
 
   const topTables = currentStats?.stats
     ? Object.entries(currentStats.stats).sort((a, b) => b[1] - a[1]).slice(0, 8)
