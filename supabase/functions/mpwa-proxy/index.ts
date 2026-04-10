@@ -9,22 +9,16 @@ const corsHeaders = {
 const MPWA_BASE = 'https://app.ayopintar.com';
 
 const generateQrRequest = async (apiKey: string, device: string, force?: boolean) => {
-  const body: Record<string, unknown> = {
+  const params = new URLSearchParams({
     api_key: apiKey,
     device,
-  };
-
-  if (typeof force === 'boolean') {
-    body.force = force;
-  }
-
-  const res = await fetch(`${MPWA_BASE}/generate-qr`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
   });
-
-  return res;
+  if (force) {
+    params.set('force', 'true');
+  }
+  const url = `${MPWA_BASE}/generate-qr?${params.toString()}`;
+  console.log(`[mpwa-proxy] GET ${MPWA_BASE}/generate-qr?api_key=***&device=${device}&force=${force || false}`);
+  return await fetch(url);
 };
 
 serve(async (req) => {
