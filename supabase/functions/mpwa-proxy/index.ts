@@ -99,13 +99,18 @@ serve(async (req) => {
 
       console.log(`[mpwa-proxy] generate-qr for device: ${cleanNumber}`);
 
-      // IMPORTANT: MPWA API uses GET method only
-      // The generate-qr endpoint auto-registers the device if it doesn't exist
-      // Adding force=true to force new QR generation
-      const qrUrl = `${MPWA_BASE}/generate-qr?api_key=${encodeURIComponent(apiKey)}&device=${encodeURIComponent(cleanNumber)}&force=true`;
-      console.log(`[mpwa-proxy] Calling MPWA: ${qrUrl.replace(apiKey, '***')}`);
+      // MPWA API generate-qr uses POST with JSON body
+      console.log(`[mpwa-proxy] Calling MPWA POST /generate-qr for device: ${cleanNumber}`);
 
-      const res = await fetch(qrUrl);
+      const res = await fetch(`${MPWA_BASE}/generate-qr`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          api_key: apiKey,
+          device: cleanNumber,
+          force: true,
+        }),
+      });
       const data = await safeJson(res);
       console.log('[mpwa-proxy] MPWA response:', JSON.stringify(data).substring(0, 300));
 
@@ -151,9 +156,12 @@ serve(async (req) => {
         });
       }
 
-      // Use generate-qr to check - if device connected, it returns "Device already connected!"
-      const qrUrl = `${MPWA_BASE}/generate-qr?api_key=${encodeURIComponent(apiKey)}&device=${encodeURIComponent(cleanNumber)}`;
-      const res = await fetch(qrUrl);
+      // Use generate-qr POST to check status
+      const res = await fetch(`${MPWA_BASE}/generate-qr`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ api_key: apiKey, device: cleanNumber }),
+      });
       const data = await safeJson(res);
 
       if (isConnected(data)) {
