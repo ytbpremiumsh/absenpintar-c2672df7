@@ -1,5 +1,5 @@
 import { PageHeader } from "@/components/PageHeader";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -154,7 +154,7 @@ const ScanningAnimation = () => {
 };
 
 const WhatsAppSettings = () => {
-  const { profile } = useAuth();
+  const { profile, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("gateway");
@@ -183,7 +183,7 @@ const WhatsAppSettings = () => {
   const [qrLoading, setQrLoading] = useState(false);
   const [qrData, setQrData] = useState<string | null>(null);
   const [disconnecting, setDisconnecting] = useState(false);
-  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [checkingConnection, setCheckingConnection] = useState(false);
 
   const [parentBroadcastClass, setParentBroadcastClass] = useState("");
   const [parentMessage, setParentMessage] = useState("");
@@ -193,42 +193,59 @@ const WhatsAppSettings = () => {
   const schoolId = profile?.school_id;
 
   useEffect(() => {
-    if (!schoolId) return;
-    const fetchData = async () => {
-      const [intRes, classRes, platformRes] = await Promise.all([
-        supabase.from("school_integrations").select("*").eq("school_id", schoolId).eq("integration_type", "onesender").maybeSingle(),
-        supabase.from("classes").select("id, name, wa_group_id").eq("school_id", schoolId).order("name"),
-        supabase.from("platform_settings").select("key, value").eq("key", "onesender_enabled").maybeSingle(),
-      ]);
-
-      const osEnabled = platformRes.data?.value !== "false";
-      setOnesenderEnabled(osEnabled);
-
-      if (intRes.data) {
-        const d = intRes.data as any;
-        setIntegrationId(d.id);
-        setWaEnabled(d.wa_enabled !== false);
-        setDeliveryTarget(d.wa_delivery_target || "parent_only");
-        setArriveTemplate(d.attendance_arrive_template || DEFAULT_ARRIVE);
-        setDepartTemplate(d.attendance_depart_template || DEFAULT_DEPART);
-        setGroupTemplate(d.attendance_group_template || DEFAULT_GROUP);
-        const gt = d.gateway_type || "onesender";
-        setGatewayType(!osEnabled && gt === "onesender" ? "mpwa" : gt);
-        setMpwaConnected(d.mpwa_connected || false);
-        setMpwaSenderNumber(d.mpwa_sender || "");
-      } else {
-        setGatewayType("mpwa");
-      }
-
-      setClasses(classRes.data || []);
+    if (authLoading) return;
+    if (!schoolId) {
       setLoading(false);
-    };
-    fetchData();
-  }, [schoolId]);
+      return;
+    }
 
-  useEffect(() => {
-    return () => { if (pollingRef.current) clearInterval(pollingRef.current); };
-  }, []);
+    let cancelled = false;
+
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [intRes, classRes, platformRes] = await Promise.all([
+          supabase.from("school_integrations").select("*").eq("school_id", schoolId).eq("integration_type", "onesender").maybeSingle(),
+          supabase.from("classes").select("id, name, wa_group_id").eq("school_id", schoolId).order("name"),
+          supabase.from("platform_settings").select("key, value").eq("key", "onesender_enabled").maybeSingle(),
+        ]);
+
+        if (cancelled) return;
+
+        const osEnabled = platformRes.data?.value !== "false";
+        setOnesenderEnabled(osEnabled);
+
+        if (intRes.data) {
+          const d = intRes.data as any;
+          setIntegrationId(d.id);
+          setWaEnabled(d.wa_enabled !== false);
+          setDeliveryTarget(d.wa_delivery_target || "parent_only");
+          setArriveTemplate(d.attendance_arrive_template || DEFAULT_ARRIVE);
+          setDepartTemplate(d.attendance_depart_template || DEFAULT_DEPART);
+          setGroupTemplate(d.attendance_group_template || DEFAULT_GROUP);
+          const gt = d.gateway_type || "onesender";
+          setGatewayType(!osEnabled && gt === "onesender" ? "mpwa" : gt);
+          setMpwaConnected(d.mpwa_connected || false);
+          setMpwaSenderNumber(d.mpwa_sender || "");
+        } else {
+          setGatewayType("mpwa");
+        }
+
+        setClasses(classRes.data || []);
+      } catch (error) {
+        console.error("Failed to load WhatsApp settings:", error);
+        if (!cancelled) toast.error("Gagal memuat pengaturan WhatsApp");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    void fetchData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authLoading, schoolId]);
 
   const fetchLogs = useCallback(async () => {
     if (!schoolId) return;
@@ -276,32 +293,40 @@ const WhatsAppSettings = () => {
     }
   };
 
-  const startConnectionPolling = useCallback(() => {
-    if (pollingRef.current) clearInterval(pollingRef.current);
-    pollingRef.current = setInterval(async () => {
-      if (!schoolId) return;
-      try {
-        const res = await supabase.functions.invoke("mpwa-proxy", {
-          body: { action: "check-status", school_id: schoolId, number: mpwaSenderNumber.replace(/\D/g, "") },
-        });
-        const data = res.data as any;
-        if (data?.connected) {
-          setMpwaConnected(true); setQrData(null);
-          toast.success("🎉 Device berhasil terhubung!");
-          if (pollingRef.current) clearInterval(pollingRef.current);
-        }
-        // Do NOT update QR here - it would invalidate the one being scanned
-      } catch { /* silently retry */ }
-    }, 5000);
-  }, [schoolId, mpwaSenderNumber]);
+  const handleCheckConnectionStatus = async () => {
+    if (!schoolId) return;
+    const cleanNumber = mpwaSenderNumber.replace(/\D/g, "");
+    if (!cleanNumber) { toast.error("Masukkan nomor WhatsApp terlebih dahulu"); return; }
+
+    setCheckingConnection(true);
+    try {
+      const res = await supabase.functions.invoke("mpwa-proxy", {
+        body: { action: "check-status", school_id: schoolId, number: cleanNumber },
+      });
+      const data = res.data as any;
+
+      if (data?.connected) {
+        setMpwaConnected(true);
+        setQrData(null);
+        toast.success("🎉 Device berhasil terhubung!");
+      } else if (data?.error) {
+        toast.error(data.error);
+      } else {
+        toast("QR belum terhubung. Scan dulu lalu klik Cek Status lagi.");
+      }
+    } catch (err: any) {
+      toast.error("Gagal cek status: " + err.message);
+    } finally {
+      setCheckingConnection(false);
+    }
+  };
 
   const handleGenerateQr = async () => {
     if (!schoolId) return;
     const cleanNumber = mpwaSenderNumber.replace(/\D/g, "");
     if (!cleanNumber) { toast.error("Masukkan nomor WhatsApp terlebih dahulu"); return; }
-    setQrLoading(true); setQrData(null);
+    setQrLoading(true); setQrData(null); setMpwaConnected(false);
     try {
-      // mpwa-proxy auto-registers the device in MPWA and generates QR in one step
       const res = await supabase.functions.invoke("mpwa-proxy", {
         body: { action: "generate-qr", school_id: schoolId, number: cleanNumber },
       });
@@ -310,13 +335,13 @@ const WhatsAppSettings = () => {
         toast.error(data.error);
       } else if (data?.connected) {
         setMpwaConnected(true);
+        setQrData(null);
         toast.success("Device sudah terhubung!");
       } else if (data?.qrcode) {
         setQrData(data.qrcode);
-        startConnectionPolling();
-        toast.success("QR Code berhasil dibuat! Scan dengan WhatsApp Anda");
+        toast.success("QR Code berhasil dibuat! Scan di WhatsApp lalu klik Cek Status.");
       } else {
-        toast.error(data?.message || "Gagal generate QR code. Coba lagi.");
+        toast.error(data?.error || data?.msg || data?.message || "Gagal generate QR code. Coba lagi.");
       }
     } catch (err: any) { toast.error("Gagal: " + err.message); }
     setQrLoading(false);
@@ -325,7 +350,6 @@ const WhatsAppSettings = () => {
   const handleDisconnect = async () => {
     if (!schoolId) return;
     setDisconnecting(true);
-    if (pollingRef.current) clearInterval(pollingRef.current);
     try {
       const res = await supabase.functions.invoke("mpwa-proxy", {
         body: { action: "disconnect", school_id: schoolId, number: mpwaSenderNumber.replace(/\D/g, "") },
@@ -409,10 +433,33 @@ const WhatsAppSettings = () => {
     setSendingParent(false); setParentSendProgress("");
   };
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!schoolId) {
+    return (
+      <div className="mx-auto max-w-4xl space-y-6">
+        <PageHeader icon={MessageSquare} title="WhatsApp" subtitle="Gateway, template pesan, broadcast group, dan riwayat pengiriman" />
+        <Card className="border-0 shadow-card overflow-hidden">
+          <CardContent className="p-6">
+            <div className="flex items-start gap-3">
+              <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                <AlertCircle className="h-5 w-5 text-primary" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-semibold text-foreground">Data sekolah belum ditemukan</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Halaman WhatsApp sekarang tetap bisa dibuka, tetapi akun ini belum terhubung ke data sekolah sehingga pengaturan WhatsApp belum bisa dimuat.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -522,10 +569,10 @@ const WhatsAppSettings = () => {
                         <div className="space-y-2.5">
                           {[
                             { step: "1", text: "Masukkan nomor WhatsApp sekolah (format 628xxx)" },
-                            { step: "2", text: 'Klik "Generate QR Code" — device otomatis ditambahkan' },
+                            { step: "2", text: 'Klik "Hubungkan" untuk membuat QR code WhatsApp' },
                             { step: "3", text: "Buka WhatsApp di HP → Menu (⋮) → Perangkat Tertaut" },
                             { step: "4", text: "Ketuk Tautkan Perangkat → Scan QR code yang tampil" },
-                            { step: "5", text: "Koneksi akan terdeteksi otomatis dalam beberapa detik" },
+                            { step: "5", text: 'Setelah selesai scan, klik "Cek Status Koneksi"' },
                           ].map((s) => (
                             <div key={s.step} className="flex items-start gap-2.5">
                               <span className="h-5 w-5 rounded-full bg-primary/10 text-primary text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
@@ -674,15 +721,26 @@ const WhatsAppSettings = () => {
                         )}
 
                         {qrData && (
-                          <Button
-                            onClick={handleGenerateQr}
-                            disabled={qrLoading}
-                            variant="outline"
-                            className="h-8 px-4 gap-1.5 w-full text-xs"
-                          >
-                            {qrLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <QrCode className="h-3.5 w-3.5" />}
-                            Refresh QR
-                          </Button>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <Button
+                              onClick={handleCheckConnectionStatus}
+                              disabled={checkingConnection}
+                              variant="secondary"
+                              className="h-8 px-4 gap-1.5 w-full text-xs"
+                            >
+                              {checkingConnection ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wifi className="h-3.5 w-3.5" />}
+                              Cek Status Koneksi
+                            </Button>
+                            <Button
+                              onClick={handleGenerateQr}
+                              disabled={qrLoading}
+                              variant="outline"
+                              className="h-8 px-4 gap-1.5 w-full text-xs"
+                            >
+                              {qrLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <QrCode className="h-3.5 w-3.5" />}
+                              Refresh QR
+                            </Button>
+                          </div>
                         )}
                       </>
                     )}

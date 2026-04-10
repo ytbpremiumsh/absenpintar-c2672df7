@@ -8,6 +8,25 @@ const corsHeaders = {
 
 const MPWA_BASE = 'https://app.ayopintar.com';
 
+const generateQrRequest = async (apiKey: string, device: string, force?: boolean) => {
+  const body: Record<string, unknown> = {
+    api_key: apiKey,
+    device,
+  };
+
+  if (typeof force === 'boolean') {
+    body.force = force;
+  }
+
+  const res = await fetch(`${MPWA_BASE}/generate-qr`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+
+  return res;
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
@@ -97,12 +116,9 @@ serve(async (req) => {
         });
       }
 
-      // MPWA API uses GET with query parameters for generate-qr
-      // force=true ensures a fresh QR is generated (also auto-creates device if not exists)
-      const qrUrl = `${MPWA_BASE}/generate-qr?api_key=${encodeURIComponent(apiKey)}&device=${encodeURIComponent(cleanNumber)}&force=true`;
-      console.log(`[mpwa-proxy] Calling MPWA GET /generate-qr for device: ${cleanNumber}`);
+      console.log(`[mpwa-proxy] Calling MPWA POST /generate-qr for device: ${cleanNumber}`);
 
-      const res = await fetch(qrUrl);
+      const res = await generateQrRequest(apiKey, cleanNumber, true);
       const data = await safeJson(res);
       console.log('[mpwa-proxy] MPWA response:', JSON.stringify(data).substring(0, 300));
 
@@ -148,10 +164,7 @@ serve(async (req) => {
         });
       }
 
-      // IMPORTANT: Do NOT use force=true for status check - it would regenerate QR and invalidate the one being scanned
-      // Without force, if connected it returns "Device already connected!", otherwise returns current QR
-      const checkUrl = `${MPWA_BASE}/generate-qr?api_key=${encodeURIComponent(apiKey)}&device=${encodeURIComponent(cleanNumber)}`;
-      const res = await fetch(checkUrl);
+      const res = await generateQrRequest(apiKey, cleanNumber);
       const data = await safeJson(res);
 
       if (isConnected(data)) {
