@@ -183,7 +183,7 @@ const WhatsAppSettings = () => {
   const [qrLoading, setQrLoading] = useState(false);
   const [qrData, setQrData] = useState<string | null>(null);
   const [disconnecting, setDisconnecting] = useState(false);
-  const [checkingConnection, setCheckingConnection] = useState(false);
+  
 
   const [parentBroadcastClass, setParentBroadcastClass] = useState("");
   const [parentMessage, setParentMessage] = useState("");
@@ -290,34 +290,6 @@ const WhatsAppSettings = () => {
     if (integrationId) {
       await supabase.from("school_integrations" as any).update({ wa_enabled: val }).eq("id", integrationId);
       toast.success(val ? "WhatsApp diaktifkan" : "WhatsApp dinonaktifkan");
-    }
-  };
-
-  const handleCheckConnectionStatus = async () => {
-    if (!schoolId) return;
-    const cleanNumber = mpwaSenderNumber.replace(/\D/g, "");
-    if (!cleanNumber) { toast.error("Masukkan nomor WhatsApp terlebih dahulu"); return; }
-
-    setCheckingConnection(true);
-    try {
-      const res = await supabase.functions.invoke("mpwa-proxy", {
-        body: { action: "check-status", school_id: schoolId, number: cleanNumber },
-      });
-      const data = res.data as any;
-
-      if (data?.connected) {
-        setMpwaConnected(true);
-        setQrData(null);
-        toast.success("🎉 Device berhasil terhubung!");
-      } else if (data?.error) {
-        toast.error(data.error);
-      } else {
-        toast("QR belum terhubung. Scan dulu lalu klik Cek Status lagi.");
-      }
-    } catch (err: any) {
-      toast.error("Gagal cek status: " + err.message);
-    } finally {
-      setCheckingConnection(false);
     }
   };
 
