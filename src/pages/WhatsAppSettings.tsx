@@ -746,21 +746,12 @@ const WhatsAppSettings = () => {
                         )}
 
                         {qrData && (
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            <Button
-                              onClick={handleCheckConnectionStatus}
-                              disabled={checkingConnection}
-                              variant="secondary"
-                              className="h-8 px-4 gap-1.5 w-full text-xs"
-                            >
-                              {checkingConnection ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wifi className="h-3.5 w-3.5" />}
-                              Cek Status Koneksi
-                            </Button>
+                          <div className="flex justify-center">
                             <Button
                               onClick={handleGenerateQr}
                               disabled={qrLoading}
                               variant="outline"
-                              className="h-8 px-4 gap-1.5 w-full text-xs"
+                              className="h-8 px-4 gap-1.5 text-xs"
                             >
                               {qrLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <QrCode className="h-3.5 w-3.5" />}
                               Refresh QR
