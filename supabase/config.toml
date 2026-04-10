@@ -38,3 +38,6 @@ verify_jwt = false
 
 [functions.mpwa-qr]
 verify_jwt = false
+
+[functions.mpwa-proxy]
+verify_jwt = false
