@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, Users, BookOpen, GraduationCap } from "lucide-react";
+import { Search, Users, BookOpen, GraduationCap, Mail, Phone, UserCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { SchoolData } from "./SchoolCard";
 
@@ -26,7 +26,8 @@ interface ClassData {
 interface AdminContact {
   full_name: string;
   email: string;
-  phone: string | null;
+  phone: string;
+  roles: string[];
 }
 
 interface SchoolDetailDialogProps {
@@ -62,51 +63,14 @@ const SchoolDetailDialog = ({ school, onClose, getStatusBadge }: SchoolDetailDia
         .eq("school_id", schoolId)
         .order("class")
         .order("name"),
-      supabase
-        .from("profiles")
-        .select("full_name, phone, user_id")
-        .eq("school_id", schoolId),
+      supabase.functions.invoke("get-school-admins", {
+        body: { school_id: schoolId },
+      }),
     ]);
 
     const studentList = studentsRes.data || [];
     setStudents(studentList);
-
-    // Fetch admin emails from user_roles + auth
-    const profilesList = adminsRes.data || [];
-    if (profilesList.length > 0) {
-      const { data: rolesData } = await supabase
-        .from("user_roles")
-        .select("user_id, role")
-        .in("user_id", profilesList.map(p => p.user_id))
-        .eq("role", "school_admin");
-      
-      const adminUserIds = new Set((rolesData || []).map(r => r.user_id));
-      const adminProfiles = profilesList.filter(p => adminUserIds.has(p.user_id));
-      
-      // Get emails via edge function or just show what we have
-      setAdmins(adminProfiles.map(p => ({
-        full_name: p.full_name,
-        email: "", // will be populated below
-        phone: p.phone,
-      })));
-      
-      // Try to get emails from create-user edge function or profiles
-      // Since we can't access auth.users directly, we'll use the user metadata approach
-      // For now, show profile data which includes phone
-      const adminContacts: AdminContact[] = [];
-      for (const p of adminProfiles) {
-        // We can get email from auth.users via service role in edge function
-        // but for now use the profile data
-        adminContacts.push({
-          full_name: p.full_name,
-          email: "",
-          phone: p.phone,
-        });
-      }
-      setAdmins(adminContacts);
-    } else {
-      setAdmins([]);
-    }
+    setAdmins((adminsRes.data as any)?.admins || []);
 
     // Build class summary
     const classMap: Record<string, number> = {};
