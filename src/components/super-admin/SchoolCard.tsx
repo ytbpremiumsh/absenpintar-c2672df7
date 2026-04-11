@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { School, Users, Eye, CreditCard, Pencil } from "lucide-react";
+import { School, Users, Eye, CreditCard, Pencil, Mail, Phone } from "lucide-react";
 import { motion } from "framer-motion";
 
 export interface SchoolData {
@@ -16,6 +16,9 @@ export interface SchoolData {
   created_at: string;
   studentCount?: number;
   classCount?: number;
+  adminEmail?: string | null;
+  adminPhone?: string | null;
+  adminName?: string | null;
   subscription?: {
     id: string;
     plan_id: string;
@@ -66,6 +69,21 @@ const SchoolCard = ({ school, index, onDetail, onSubscription, onEdit, getStatus
                   <Badge variant="outline" className="text-[10px] text-muted-foreground">Belum berlangganan</Badge>
                 )}
               </div>
+              {/* Admin Contact Info */}
+              {(school.adminEmail || school.adminPhone) && (
+                <div className="flex items-center gap-3 mt-2 flex-wrap">
+                  {school.adminEmail && (
+                    <a href={`mailto:${school.adminEmail}`} className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline">
+                      <Mail className="h-3 w-3" />{school.adminEmail}
+                    </a>
+                  )}
+                  {school.adminPhone && (
+                    <a href={`https://wa.me/${school.adminPhone.replace(/^0/, '62').replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline">
+                      <Phone className="h-3 w-3" />{school.adminPhone}
+                    </a>
+                  )}
+                </div>
+              )}
             </div>
             <div className="flex gap-1 shrink-0">
               <Button variant="ghost" size="icon" className="h-8 w-8" title="Detail" onClick={() => onDetail(school)}>
