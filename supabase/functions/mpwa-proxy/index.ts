@@ -39,22 +39,47 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    // Resolve API Key: school-level → platform-level
+    // ═══ Platform-level MPWA (Super Admin) ═══
+    const isPlatform = school_id === '__platform__';
+
     let apiKey = '';
-    const { data: integration } = await supabaseAdmin
-      .from('school_integrations')
-      .select('mpwa_api_key, mpwa_sender, mpwa_connected, id')
-      .eq('school_id', school_id)
-      .eq('integration_type', 'onesender')
-      .maybeSingle();
+    let integration: any = null;
 
-    apiKey = integration?.mpwa_api_key || '';
+    if (isPlatform) {
+      // Use platform_settings for API key and sender
+      const { data: platformSettings } = await supabaseAdmin
+        .from('platform_settings')
+        .select('key, value')
+        .in('key', ['mpwa_platform_api_key', 'mpwa_platform_sender', 'mpwa_platform_connected']);
 
-    if (!apiKey) {
-      const { data: ps } = await supabaseAdmin
-        .from('platform_settings').select('value')
-        .eq('key', 'mpwa_platform_api_key').maybeSingle();
-      if (ps?.value) apiKey = ps.value;
+      const ps: Record<string, string> = {};
+      (platformSettings || []).forEach((s: any) => { ps[s.key] = s.value; });
+
+      apiKey = ps.mpwa_platform_api_key || '';
+      // Create a virtual integration object for compatibility
+      integration = {
+        id: null,
+        mpwa_sender: ps.mpwa_platform_sender || '',
+        mpwa_connected: ps.mpwa_platform_connected === 'true',
+      };
+    } else {
+      // Resolve API Key: school-level → platform-level
+      const { data: intData } = await supabaseAdmin
+        .from('school_integrations')
+        .select('mpwa_api_key, mpwa_sender, mpwa_connected, id')
+        .eq('school_id', school_id)
+        .eq('integration_type', 'onesender')
+        .maybeSingle();
+
+      integration = intData;
+      apiKey = intData?.mpwa_api_key || '';
+
+      if (!apiKey) {
+        const { data: ps } = await supabaseAdmin
+          .from('platform_settings').select('value')
+          .eq('key', 'mpwa_platform_api_key').maybeSingle();
+        if (ps?.value) apiKey = ps.value;
+      }
     }
 
     if (!apiKey) {
