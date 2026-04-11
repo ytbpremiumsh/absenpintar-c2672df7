@@ -868,12 +868,32 @@ const Proposal = () => {
                 <span className="text-primary">5.1</span> Proyeksi Pendapatan dan Pengeluaran (2 Tahun)
               </h3>
               <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                Proyeksi disusun berdasarkan asumsi realistis: tahun pertama rata-rata 26 sekolah berlangganan 
-                (mayoritas Basic), tahun kedua tumbuh menjadi rata-rata 95 sekolah. Biaya operasional 
-                dihitung berdasarkan harga aktual layanan cloud dan API yang digunakan.
+                Proyeksi disusun berdasarkan target realistis: <strong className="text-foreground">50 sekolah</strong> di tahun pertama 
+                dan <strong className="text-foreground">200 sekolah</strong> di tahun kedua, dengan komposisi 65% paket Premium. 
+                Biaya operasional dihitung berdasarkan harga aktual layanan yang digunakan.
               </p>
 
               <h4 className="text-sm font-bold text-foreground mb-2 mt-4">A. PENDAPATAN</h4>
+
+              {/* Komposisi Sekolah */}
+              <div className="overflow-x-auto mb-4">
+                <table className="w-full text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-muted/50">
+                      <th className="text-left p-2 font-bold text-foreground rounded-tl-lg">Komposisi Sekolah</th>
+                      <th className="text-center p-2 font-bold text-foreground">Tahun 1 (50 Sekolah)</th>
+                      <th className="text-center p-2 font-bold text-foreground rounded-tr-lg">Tahun 2 (200 Sekolah)</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    <tr className="hover:bg-muted/20"><td className="p-2 text-muted-foreground">Paket Basic (15%)</td><td className="p-2 text-center text-foreground">8 sekolah</td><td className="p-2 text-center text-foreground">30 sekolah</td></tr>
+                    <tr className="hover:bg-muted/20"><td className="p-2 text-muted-foreground">Paket School (20%)</td><td className="p-2 text-center text-foreground">10 sekolah</td><td className="p-2 text-center text-foreground">40 sekolah</td></tr>
+                    <tr className="hover:bg-muted/20"><td className="p-2 text-muted-foreground">Paket Premium (65%)</td><td className="p-2 text-center text-foreground font-semibold">32 sekolah</td><td className="p-2 text-center text-foreground font-semibold">130 sekolah</td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Tabel Pendapatan */}
               <div className="overflow-x-auto mb-6">
                 <table className="w-full text-xs border-collapse">
                   <thead>
@@ -886,29 +906,26 @@ const Proposal = () => {
                   </thead>
                   <tbody className="divide-y divide-border">
                     <tr className="bg-primary/5"><td colSpan={4} className="p-2.5 font-bold text-foreground">Pendapatan Langganan SaaS</td></tr>
-                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground pl-5">Paket Basic (Rp 99.000/bln)</td><td className="p-2.5 text-muted-foreground">Avg 15 → 50 sekolah</td><td className="p-2.5 text-right text-foreground">Rp 17.820.000</td><td className="p-2.5 text-right text-foreground">Rp 59.400.000</td></tr>
-                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground pl-5">Paket School (Rp 249.000/bln)</td><td className="p-2.5 text-muted-foreground">Avg 8 → 30 sekolah</td><td className="p-2.5 text-right text-foreground">Rp 23.904.000</td><td className="p-2.5 text-right text-foreground">Rp 89.640.000</td></tr>
-                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground pl-5">Paket Premium (Rp 399.000/bln)</td><td className="p-2.5 text-muted-foreground">Avg 3 → 15 sekolah</td><td className="p-2.5 text-right text-foreground">Rp 14.364.000</td><td className="p-2.5 text-right text-foreground">Rp 71.820.000</td></tr>
-                    <tr className="font-bold"><td className="p-2.5 text-foreground" colSpan={2}>Subtotal Langganan SaaS</td><td className="p-2.5 text-right text-foreground">Rp 56.088.000</td><td className="p-2.5 text-right text-foreground">Rp 220.860.000</td></tr>
+                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground pl-5">Paket Basic (Rp 99.000/bln)</td><td className="p-2.5 text-muted-foreground">8 sekolah × 12 bulan</td><td className="p-2.5 text-right text-foreground">Rp 9.504.000</td><td className="p-2.5 text-right text-foreground">Rp 35.640.000</td></tr>
+                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground pl-5">Paket School (Rp 249.000/bln)</td><td className="p-2.5 text-muted-foreground">10 sekolah × 12 bulan</td><td className="p-2.5 text-right text-foreground">Rp 29.880.000</td><td className="p-2.5 text-right text-foreground">Rp 119.520.000</td></tr>
+                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground pl-5">Paket Premium (Rp 399.000/bln)</td><td className="p-2.5 text-muted-foreground">32 sekolah × 12 bulan</td><td className="p-2.5 text-right text-foreground">Rp 153.216.000</td><td className="p-2.5 text-right text-foreground">Rp 622.440.000</td></tr>
+                    <tr className="font-bold"><td className="p-2.5 text-foreground" colSpan={2}>Subtotal Langganan SaaS</td><td className="p-2.5 text-right text-foreground">Rp 192.600.000</td><td className="p-2.5 text-right text-foreground">Rp 777.600.000</td></tr>
 
                     <tr className="bg-primary/5"><td colSpan={4} className="p-2.5 font-bold text-foreground">Pendapatan Jasa Enterprise</td></tr>
-                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground pl-5">Setup & konfigurasi sekolah baru</td><td className="p-2.5 text-muted-foreground">Rp 500.000/sekolah</td><td className="p-2.5 text-right text-foreground">Rp 13.000.000</td><td className="p-2.5 text-right text-foreground">Rp 47.500.000</td></tr>
-                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground pl-5">Pelatihan & onboarding intensif</td><td className="p-2.5 text-muted-foreground">Rp 1.000.000/sesi</td><td className="p-2.5 text-right text-foreground">Rp 3.000.000</td><td className="p-2.5 text-right text-foreground">Rp 10.000.000</td></tr>
-                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground pl-5">Kustomisasi yayasan multi-cabang</td><td className="p-2.5 text-muted-foreground">Rp 3-5 jt/proyek</td><td className="p-2.5 text-right text-foreground">Rp 3.000.000</td><td className="p-2.5 text-right text-foreground">Rp 15.000.000</td></tr>
-                    <tr className="font-bold"><td className="p-2.5 text-foreground" colSpan={2}>Subtotal Jasa Enterprise</td><td className="p-2.5 text-right text-foreground">Rp 19.000.000</td><td className="p-2.5 text-right text-foreground">Rp 72.500.000</td></tr>
+                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground pl-5">Pelatihan & onboarding intensif</td><td className="p-2.5 text-muted-foreground">Rp 1.000.000/sesi</td><td className="p-2.5 text-right text-foreground">Rp 15.000.000</td><td className="p-2.5 text-right text-foreground">Rp 50.000.000</td></tr>
+                    <tr className="font-bold"><td className="p-2.5 text-foreground" colSpan={2}>Subtotal Jasa Enterprise</td><td className="p-2.5 text-right text-foreground">Rp 15.000.000</td><td className="p-2.5 text-right text-foreground">Rp 50.000.000</td></tr>
 
                     <tr className="bg-primary/5"><td colSpan={4} className="p-2.5 font-bold text-foreground">Pendapatan Layanan Add-on</td></tr>
-                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground pl-5">Kuota tambahan WA broadcast</td><td className="p-2.5 text-muted-foreground">Rp 50.000/1.000 pesan</td><td className="p-2.5 text-right text-foreground">Rp 3.000.000</td><td className="p-2.5 text-right text-foreground">Rp 15.000.000</td></tr>
-                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground pl-5">Kartu pelajar digital (cetak QR)</td><td className="p-2.5 text-muted-foreground">Rp 5.000/kartu</td><td className="p-2.5 text-right text-foreground">Rp 2.000.000</td><td className="p-2.5 text-right text-foreground">Rp 8.000.000</td></tr>
-                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground pl-5">White-label branding yayasan</td><td className="p-2.5 text-muted-foreground">Rp 2 jt/yayasan/thn</td><td className="p-2.5 text-right text-foreground">Rp 0</td><td className="p-2.5 text-right text-foreground">Rp 4.000.000</td></tr>
-                    <tr className="font-bold"><td className="p-2.5 text-foreground" colSpan={2}>Subtotal Layanan Add-on</td><td className="p-2.5 text-right text-foreground">Rp 5.000.000</td><td className="p-2.5 text-right text-foreground">Rp 27.000.000</td></tr>
+                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground pl-5">Kuota tambahan WA broadcast</td><td className="p-2.5 text-muted-foreground">Rp 50.000/1.000 pesan</td><td className="p-2.5 text-right text-foreground">Rp 5.000.000</td><td className="p-2.5 text-right text-foreground">Rp 20.000.000</td></tr>
+                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground pl-5">Cetak Kartu Pelajar</td><td className="p-2.5 text-muted-foreground">Rp 7.000/kartu</td><td className="p-2.5 text-right text-foreground">Rp 14.000.000</td><td className="p-2.5 text-right text-foreground">Rp 56.000.000</td></tr>
+                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground pl-5">White-label branding yayasan</td><td className="p-2.5 text-muted-foreground">Rp 2 jt/yayasan/tahun</td><td className="p-2.5 text-right text-foreground">Rp 2.000.000</td><td className="p-2.5 text-right text-foreground">Rp 10.000.000</td></tr>
+                    <tr className="font-bold"><td className="p-2.5 text-foreground" colSpan={2}>Subtotal Layanan Add-on</td><td className="p-2.5 text-right text-foreground">Rp 21.000.000</td><td className="p-2.5 text-right text-foreground">Rp 86.000.000</td></tr>
 
                     <tr><td colSpan={4} className="h-1" /></tr>
-                    <tr className="font-bold bg-emerald-50 dark:bg-emerald-950/20"><td className="p-2.5 text-emerald-700 dark:text-emerald-400" colSpan={2}>TOTAL PENDAPATAN</td><td className="p-2.5 text-right text-emerald-700 dark:text-emerald-400">Rp 80.088.000</td><td className="p-2.5 text-right text-emerald-700 dark:text-emerald-400">Rp 320.360.000</td></tr>
+                    <tr className="font-bold bg-emerald-50 dark:bg-emerald-950/20"><td className="p-2.5 text-emerald-700 dark:text-emerald-400" colSpan={2}>TOTAL PENDAPATAN</td><td className="p-2.5 text-right text-emerald-700 dark:text-emerald-400">Rp 228.600.000</td><td className="p-2.5 text-right text-emerald-700 dark:text-emerald-400">Rp 913.600.000</td></tr>
                   </tbody>
                 </table>
               </div>
-
               <h4 className="text-sm font-bold text-foreground mb-2">B. PENGELUARAN</h4>
               <div className="overflow-x-auto mb-4">
                 <table className="w-full text-xs border-collapse">
@@ -921,16 +938,15 @@ const Proposal = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
-                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground">Biaya Server & Cloud (Supabase Pro)</td><td className="p-2.5 text-muted-foreground">$25/bln ≈ Rp 400.000/bln</td><td className="p-2.5 text-right text-foreground">Rp 4.800.000</td><td className="p-2.5 text-right text-foreground">Rp 4.800.000</td></tr>
-                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground">Domain & Hosting Web</td><td className="p-2.5 text-muted-foreground">Domain .com + hosting statis</td><td className="p-2.5 text-right text-foreground">Rp 500.000</td><td className="p-2.5 text-right text-foreground">Rp 500.000</td></tr>
-                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground">Biaya WhatsApp API (MPWA)</td><td className="p-2.5 text-muted-foreground">Rp 150.000/bln/device, avg 10→40</td><td className="p-2.5 text-right text-foreground">Rp 1.800.000</td><td className="p-2.5 text-right text-foreground">Rp 7.200.000</td></tr>
-                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground">Kompensasi Tim (Freelance)</td><td className="p-2.5 text-muted-foreground">1 dev + 1 CS part-time</td><td className="p-2.5 text-right text-foreground">Rp 24.000.000</td><td className="p-2.5 text-right text-foreground">Rp 48.000.000</td></tr>
+                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground">Biaya Server & Cloud</td><td className="p-2.5 text-muted-foreground">Rp 500.000/bulan</td><td className="p-2.5 text-right text-foreground">Rp 6.000.000</td><td className="p-2.5 text-right text-foreground">Rp 6.000.000</td></tr>
+                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground">Domain</td><td className="p-2.5 text-muted-foreground">Domain .com per tahun</td><td className="p-2.5 text-right text-foreground">Rp 250.000</td><td className="p-2.5 text-right text-foreground">Rp 250.000</td></tr>
+                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground">Kompensasi Tim (4 Orang)</td><td className="p-2.5 text-muted-foreground">Rp 1.500.000/org/bln → Rp 2.500.000</td><td className="p-2.5 text-right text-foreground">Rp 72.000.000</td><td className="p-2.5 text-right text-foreground">Rp 120.000.000</td></tr>
                     <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground">Biaya Pemasaran Digital</td><td className="p-2.5 text-muted-foreground">Iklan sosmed, konten, kunjungan</td><td className="p-2.5 text-right text-foreground">Rp 12.000.000</td><td className="p-2.5 text-right text-foreground">Rp 24.000.000</td></tr>
-                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground">Biaya Operasional Lainnya</td><td className="p-2.5 text-muted-foreground">Pulsa, transportasi, admin, tools</td><td className="p-2.5 text-right text-foreground">Rp 3.600.000</td><td className="p-2.5 text-right text-foreground">Rp 6.000.000</td></tr>
+                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground">Biaya Operasional Lainnya</td><td className="p-2.5 text-muted-foreground">WA API, pulsa, transportasi, tools</td><td className="p-2.5 text-right text-foreground">Rp 6.000.000</td><td className="p-2.5 text-right text-foreground">Rp 12.000.000</td></tr>
                     <tr><td colSpan={4} className="h-1" /></tr>
-                    <tr className="font-bold bg-red-50 dark:bg-red-950/20"><td className="p-2.5 text-red-700 dark:text-red-400" colSpan={2}>TOTAL PENGELUARAN</td><td className="p-2.5 text-right text-red-700 dark:text-red-400">Rp 46.700.000</td><td className="p-2.5 text-right text-red-700 dark:text-red-400">Rp 90.500.000</td></tr>
+                    <tr className="font-bold bg-red-50 dark:bg-red-950/20"><td className="p-2.5 text-red-700 dark:text-red-400" colSpan={2}>TOTAL PENGELUARAN</td><td className="p-2.5 text-right text-red-700 dark:text-red-400">Rp 96.250.000</td><td className="p-2.5 text-right text-red-700 dark:text-red-400">Rp 162.250.000</td></tr>
                     <tr><td colSpan={4} className="h-1" /></tr>
-                    <tr className="font-bold bg-emerald-50 dark:bg-emerald-950/20"><td className="p-2.5 text-emerald-700 dark:text-emerald-400" colSpan={2}>LABA BERSIH</td><td className="p-2.5 text-right text-emerald-700 dark:text-emerald-400">Rp 33.388.000</td><td className="p-2.5 text-right text-emerald-700 dark:text-emerald-400">Rp 229.860.000</td></tr>
+                    <tr className="font-bold bg-emerald-50 dark:bg-emerald-950/20"><td className="p-2.5 text-emerald-700 dark:text-emerald-400" colSpan={2}>LABA BERSIH</td><td className="p-2.5 text-right text-emerald-700 dark:text-emerald-400">Rp 132.350.000</td><td className="p-2.5 text-right text-emerald-700 dark:text-emerald-400">Rp 751.350.000</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -949,9 +965,9 @@ const Proposal = () => {
                   </p>
                   <div className="space-y-2">
                     {[
-                      { label: "Pengembangan Platform & Tools", pct: 20, amount: "Rp 3.000.000", desc: "Biaya tools development, library berbayar, dan testing." },
+                      { label: "Pengembangan Platform & Tools", pct: 17, amount: "Rp 2.500.000", desc: "Biaya tools development, library berbayar, dan testing." },
                       { label: "Pemasaran Awal & Akuisisi", pct: 33, amount: "Rp 5.000.000", desc: "Iklan digital, cetak brosur, dan kunjungan sekolah 3 bulan pertama." },
-                      { label: "Infrastruktur Cloud (6 bulan)", pct: 20, amount: "Rp 3.000.000", desc: "Sewa Supabase Pro + domain + MPWA API selama 6 bulan." },
+                      { label: "Infrastruktur & Domain (6 bulan)", pct: 23, amount: "Rp 3.500.000", desc: "Server cloud Rp 500.000/bln × 6 + domain Rp 250.000 + WA API." },
                       { label: "Operasional & Dana Cadangan", pct: 27, amount: "Rp 4.000.000", desc: "Kebutuhan operasional harian, transportasi, dan dana darurat." },
                     ].map((item) => (
                       <div key={item.label}>
