@@ -14,19 +14,19 @@ serve(async (req) => {
 
     if (!email || !otp_code) {
       return new Response(JSON.stringify({ error: 'Email dan OTP wajib diisi' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
     if (!verify_only && !new_password) {
       return new Response(JSON.stringify({ error: 'Password baru wajib diisi' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
     if (new_password && new_password.length < 6) {
       return new Response(JSON.stringify({ error: 'Password minimal 6 karakter' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
@@ -51,7 +51,7 @@ serve(async (req) => {
 
     if (!otpRecord) {
       return new Response(JSON.stringify({ error: 'Kode OTP tidak valid atau sudah kadaluarsa' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
@@ -74,7 +74,7 @@ serve(async (req) => {
 
     if (!user) {
       return new Response(JSON.stringify({ error: 'Pengguna tidak ditemukan' }), {
-        status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
@@ -84,7 +84,7 @@ serve(async (req) => {
 
     if (updateErr) {
       return new Response(JSON.stringify({ error: 'Gagal mengubah password: ' + updateErr.message }), {
-        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
@@ -95,7 +95,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Verify OTP reset error:', error);
     return new Response(JSON.stringify({ error: error.message }), {
-      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 });
