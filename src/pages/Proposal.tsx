@@ -238,29 +238,50 @@ const Proposal = () => {
       
       <h2>BAB V - ANALISIS KEUANGAN</h2>
       <h3>5.1 Proyeksi Pendapatan dan Pengeluaran (2 Tahun)</h3>
+      <p><strong>A. PENDAPATAN</strong></p>
       <table>
-        <tr><th>Keterangan</th><th>Tahun Pertama</th><th>Tahun Kedua</th></tr>
-        <tr><td>Jumlah Sekolah Berlangganan</td><td>50 sekolah</td><td>200 sekolah</td></tr>
-        <tr><td>Pendapatan Langganan SaaS</td><td>Rp 120.000.000</td><td>Rp 600.000.000</td></tr>
-        <tr><td>Pendapatan Jasa Enterprise</td><td>Rp 30.000.000</td><td>Rp 150.000.000</td></tr>
-        <tr><td>Pendapatan Layanan Add-on</td><td>Rp 10.000.000</td><td>Rp 50.000.000</td></tr>
-        <tr style="font-weight:bold"><td>Total Pendapatan</td><td>Rp 160.000.000</td><td>Rp 800.000.000</td></tr>
-        <tr><td>Biaya Server dan Cloud</td><td>Rp 24.000.000</td><td>Rp 60.000.000</td></tr>
-        <tr><td>Kompensasi Tim</td><td>Rp 72.000.000</td><td>Rp 180.000.000</td></tr>
-        <tr><td>Biaya Pemasaran</td><td>Rp 30.000.000</td><td>Rp 80.000.000</td></tr>
-        <tr><td>Biaya WhatsApp API</td><td>Rp 12.000.000</td><td>Rp 40.000.000</td></tr>
-        <tr><td>Biaya Operasional Lainnya</td><td>Rp 10.000.000</td><td>Rp 20.000.000</td></tr>
-        <tr style="font-weight:bold"><td>Total Pengeluaran</td><td>Rp 148.000.000</td><td>Rp 380.000.000</td></tr>
-        <tr style="font-weight:bold; color:green"><td>Laba Bersih</td><td>Rp 12.000.000</td><td>Rp 420.000.000</td></tr>
+        <tr><th>Keterangan</th><th>Rincian</th><th>Tahun 1</th><th>Tahun 2</th></tr>
+        <tr><td colspan="4" style="background:#eff6ff;font-weight:bold">Pendapatan Langganan SaaS</td></tr>
+        <tr><td>- Paket Basic (Rp 99.000/bln)</td><td>Thn 1: avg 15 sekolah × 12 bln<br/>Thn 2: avg 50 sekolah × 12 bln</td><td>Rp 17.820.000</td><td>Rp 59.400.000</td></tr>
+        <tr><td>- Paket School (Rp 249.000/bln)</td><td>Thn 1: avg 8 sekolah × 12 bln<br/>Thn 2: avg 30 sekolah × 12 bln</td><td>Rp 23.904.000</td><td>Rp 89.640.000</td></tr>
+        <tr><td>- Paket Premium (Rp 399.000/bln)</td><td>Thn 1: avg 3 sekolah × 12 bln<br/>Thn 2: avg 15 sekolah × 12 bln</td><td>Rp 14.364.000</td><td>Rp 71.820.000</td></tr>
+        <tr style="font-weight:bold"><td>Subtotal Langganan SaaS</td><td></td><td>Rp 56.088.000</td><td>Rp 220.860.000</td></tr>
+
+        <tr><td colspan="4" style="background:#eff6ff;font-weight:bold">Pendapatan Jasa Enterprise</td></tr>
+        <tr><td>- Setup & konfigurasi awal sekolah baru</td><td>Biaya setup Rp 500.000/sekolah</td><td>Rp 13.000.000</td><td>Rp 47.500.000</td></tr>
+        <tr><td>- Pelatihan & onboarding intensif</td><td>Rp 1.000.000/sesi untuk sekolah besar</td><td>Rp 3.000.000</td><td>Rp 10.000.000</td></tr>
+        <tr><td>- Kustomisasi yayasan multi-cabang</td><td>Rp 3.000.000-5.000.000/proyek</td><td>Rp 3.000.000</td><td>Rp 15.000.000</td></tr>
+        <tr style="font-weight:bold"><td>Subtotal Jasa Enterprise</td><td></td><td>Rp 19.000.000</td><td>Rp 72.500.000</td></tr>
+
+        <tr><td colspan="4" style="background:#eff6ff;font-weight:bold">Pendapatan Layanan Add-on</td></tr>
+        <tr><td>- Kuota tambahan WhatsApp broadcast</td><td>Rp 50.000/1.000 pesan ekstra</td><td>Rp 3.000.000</td><td>Rp 15.000.000</td></tr>
+        <tr><td>- Kartu pelajar digital (cetak QR)</td><td>Rp 5.000/kartu × pesanan sekolah</td><td>Rp 2.000.000</td><td>Rp 8.000.000</td></tr>
+        <tr><td>- White-label branding yayasan</td><td>Rp 2.000.000/yayasan/tahun</td><td>Rp 0</td><td>Rp 4.000.000</td></tr>
+        <tr style="font-weight:bold"><td>Subtotal Layanan Add-on</td><td></td><td>Rp 5.000.000</td><td>Rp 27.000.000</td></tr>
+
+        <tr style="font-weight:bold;background:#dcfce7"><td>TOTAL PENDAPATAN</td><td></td><td>Rp 80.088.000</td><td>Rp 320.360.000</td></tr>
       </table>
-      
+
+      <p><strong>B. PENGELUARAN</strong></p>
+      <table>
+        <tr><th>Keterangan</th><th>Rincian</th><th>Tahun 1</th><th>Tahun 2</th></tr>
+        <tr><td>Biaya Server & Cloud (Supabase)</td><td>Paket Pro $25/bln = Rp 400.000/bln</td><td>Rp 4.800.000</td><td>Rp 4.800.000</td></tr>
+        <tr><td>Domain & Hosting Web</td><td>Domain .com + hosting statis</td><td>Rp 500.000</td><td>Rp 500.000</td></tr>
+        <tr><td>Biaya WhatsApp API (MPWA)</td><td>Rp 150.000/bln per device aktif<br/>Thn 1: avg 10 device, Thn 2: avg 40</td><td>Rp 1.800.000</td><td>Rp 7.200.000</td></tr>
+        <tr><td>Kompensasi Tim (Freelance)</td><td>1 developer part-time + 1 CS part-time</td><td>Rp 24.000.000</td><td>Rp 48.000.000</td></tr>
+        <tr><td>Biaya Pemasaran Digital</td><td>Iklan sosmed, konten, kunjungan sekolah</td><td>Rp 12.000.000</td><td>Rp 24.000.000</td></tr>
+        <tr><td>Biaya Operasional Lainnya</td><td>Pulsa, transportasi, admin, tools</td><td>Rp 3.600.000</td><td>Rp 6.000.000</td></tr>
+        <tr style="font-weight:bold;background:#fef2f2"><td>TOTAL PENGELUARAN</td><td></td><td>Rp 46.700.000</td><td>Rp 90.500.000</td></tr>
+        <tr style="font-weight:bold;color:green"><td>LABA BERSIH</td><td></td><td>Rp 33.388.000</td><td>Rp 229.860.000</td></tr>
+      </table>
+
       <h3>5.2 Perencanaan Modal</h3>
-      <p>Modal awal yang dibutuhkan untuk memulai operasional bisnis adalah sebesar Rp 50.000.000, dengan alokasi sebagai berikut:</p>
+      <p>Modal awal yang dibutuhkan untuk memulai operasional bisnis adalah sebesar Rp 15.000.000, dengan alokasi sebagai berikut:</p>
       <ul>
-        <li>Pengembangan Platform: Rp 20.000.000 (40%) -- untuk biaya pengembangan fitur-fitur utama platform.</li>
-        <li>Pemasaran dan Akuisisi Pelanggan: Rp 12.500.000 (25%) -- untuk biaya promosi dan perolehan pelanggan baru.</li>
-        <li>Infrastruktur Cloud (6 bulan pertama): Rp 7.500.000 (15%) -- untuk sewa server dan layanan cloud computing.</li>
-        <li>Operasional dan Dana Cadangan: Rp 10.000.000 (20%) -- untuk kebutuhan operasional harian dan dana darurat.</li>
+        <li>Pengembangan Platform & Tools: Rp 3.000.000 (20%) -- biaya tools development, library berbayar, dan testing.</li>
+        <li>Pemasaran Awal & Akuisisi: Rp 5.000.000 (33%) -- biaya iklan digital, cetak brosur, dan kunjungan sekolah selama 3 bulan pertama.</li>
+        <li>Infrastruktur Cloud (6 bulan pertama): Rp 3.000.000 (20%) -- sewa Supabase Pro + domain + MPWA API untuk 6 bulan.</li>
+        <li>Operasional & Dana Cadangan: Rp 4.000.000 (27%) -- kebutuhan operasional harian, transportasi, dan dana darurat.</li>
       </ul>
       
       <h3>5.3 Analisis Risiko</h3>
