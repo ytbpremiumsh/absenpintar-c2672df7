@@ -13,7 +13,7 @@ serve(async (req) => {
     const { email } = await req.json();
     if (!email) {
       return new Response(JSON.stringify({ error: 'Email wajib diisi' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
@@ -28,7 +28,7 @@ serve(async (req) => {
     const user = users.find(u => u.email?.toLowerCase() === email.toLowerCase());
     if (!user) {
       return new Response(JSON.stringify({ error: 'Email tidak ditemukan di sistem' }), {
-        status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
@@ -97,7 +97,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Forgot password error:', error);
     return new Response(JSON.stringify({ error: error.message }), {
-      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 });
