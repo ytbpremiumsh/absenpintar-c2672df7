@@ -55,7 +55,7 @@ serve(async (req) => {
 
       if (gatewayType === 'mpwa') {
         // For MPWA: sender from school_integrations, API key from school or platform_settings
-        mpwaSender = integration.mpwa_sender || '';
+        mpwaSenderNum = integration.mpwa_sender || '';
         finalApiKey = integration.mpwa_api_key || '';
 
         // Fallback API key to platform_settings
@@ -68,7 +68,7 @@ serve(async (req) => {
           if (platformKey?.value) finalApiKey = platformKey.value;
         }
 
-        if (!mpwaSender) {
+        if (!mpwaSenderNum) {
           return new Response(JSON.stringify({ success: false, error: 'MPWA sender belum dikonfigurasi. Scan QR terlebih dahulu.' }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           });
@@ -99,14 +99,14 @@ serve(async (req) => {
         if (formattedPhone.startsWith('0')) {
           formattedPhone = '62' + formattedPhone.substring(1);
         }
-        console.log(`MPWA sending to phone: ${formattedPhone}, sender: ${mpwaSender}`);
+        console.log(`MPWA sending to phone: ${formattedPhone}, sender: ${mpwaSenderNum}`);
         sendRequests.push(
           fetch(mpwaUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               api_key: finalApiKey,
-              sender: mpwaSender,
+              sender: mpwaSenderNum,
               number: formattedPhone,
               message: message,
             }),
@@ -115,14 +115,14 @@ serve(async (req) => {
       }
 
       if (group_id) {
-        console.log(`MPWA sending to group: ${group_id}, sender: ${mpwaSender}`);
+        console.log(`MPWA sending to group: ${group_id}, sender: ${mpwaSenderNum}`);
         sendRequests.push(
           fetch(mpwaUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               api_key: finalApiKey,
-              sender: mpwaSender,
+              sender: mpwaSenderNum,
               number: group_id,
               message: message,
             }),
