@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Globe, Crown, CheckCircle2, Clock, AlertCircle, ExternalLink, Copy, ArrowRight, Shield, Server, Zap, BookOpen } from "lucide-react";
+import { Globe, Crown, CheckCircle2, Clock, AlertCircle, ExternalLink, Copy, ChevronRight, Shield, Server, Zap, BookOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
