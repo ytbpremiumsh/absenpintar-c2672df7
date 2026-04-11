@@ -113,6 +113,7 @@ const App = () => (
               <Route path="/super-admin/penawaran" element={<SuperAdminPenawaran />} />
               <Route path="/super-admin/affiliate" element={<SuperAdminAffiliate />} />
               <Route path="/super-admin/backup" element={<SuperAdminBackup />} />
+              <Route path="/super-admin/addons" element={<SuperAdminAddons />} />
             </Route>
             {/* School Admin / Staff */}
             <Route element={<AppLayout />}>
@@ -137,6 +138,7 @@ const App = () => (
               <Route path="/support" element={<SupportTickets />} />
               <Route path="/referral" element={<ReferralDashboard />} />
               <Route path="/whatsapp" element={<WhatsAppSettings />} />
+              <Route path="/custom-domain" element={<CustomDomain />} />
               <Route path="/wa-templates" element={<Navigate to="/whatsapp" replace />} />
               <Route path="/wa-broadcast" element={<Navigate to="/whatsapp" replace />} />
               <Route path="/wa-history" element={<Navigate to="/whatsapp" replace />} />
