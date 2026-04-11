@@ -11,7 +11,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { phone, message, api_url, api_key, school_id, group_id, student_name, message_type, gateway_type: explicitGateway } = body;
+    const { phone, message, api_url, api_key, school_id, group_id, student_name, message_type, gateway_type: explicitGateway, gateway, mpwa_api_key, mpwa_sender } = body;
 
     if ((!phone && !group_id) || !message) {
       return new Response(JSON.stringify({ error: 'phone or group_id, and message are required' }), {
@@ -27,8 +27,14 @@ serve(async (req) => {
 
     let finalApiUrl = api_url;
     let finalApiKey = api_key;
-    let gatewayType = explicitGateway || 'onesender';
-    let mpwaSender = '';
+    let gatewayType = gateway || explicitGateway || 'onesender';
+    let mpwaSenderNum = mpwa_sender || '';
+
+    // If direct MPWA params provided (e.g. from Super Admin test)
+    if (gatewayType === 'mpwa' && mpwa_api_key) {
+      finalApiKey = mpwa_api_key;
+      mpwaSenderNum = mpwa_sender || '';
+    }
 
     // If school_id provided, look up integration settings
     if (school_id && (!finalApiUrl || !finalApiKey)) {
@@ -49,7 +55,7 @@ serve(async (req) => {
 
       if (gatewayType === 'mpwa') {
         // For MPWA: sender from school_integrations, API key from school or platform_settings
-        mpwaSender = integration.mpwa_sender || '';
+        mpwaSenderNum = integration.mpwa_sender || '';
         finalApiKey = integration.mpwa_api_key || '';
 
         // Fallback API key to platform_settings
@@ -62,7 +68,7 @@ serve(async (req) => {
           if (platformKey?.value) finalApiKey = platformKey.value;
         }
 
-        if (!mpwaSender) {
+        if (!mpwaSenderNum) {
           return new Response(JSON.stringify({ success: false, error: 'MPWA sender belum dikonfigurasi. Scan QR terlebih dahulu.' }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           });
@@ -93,14 +99,14 @@ serve(async (req) => {
         if (formattedPhone.startsWith('0')) {
           formattedPhone = '62' + formattedPhone.substring(1);
         }
-        console.log(`MPWA sending to phone: ${formattedPhone}, sender: ${mpwaSender}`);
+        console.log(`MPWA sending to phone: ${formattedPhone}, sender: ${mpwaSenderNum}`);
         sendRequests.push(
           fetch(mpwaUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               api_key: finalApiKey,
-              sender: mpwaSender,
+              sender: mpwaSenderNum,
               number: formattedPhone,
               message: message,
             }),
@@ -109,14 +115,14 @@ serve(async (req) => {
       }
 
       if (group_id) {
-        console.log(`MPWA sending to group: ${group_id}, sender: ${mpwaSender}`);
+        console.log(`MPWA sending to group: ${group_id}, sender: ${mpwaSenderNum}`);
         sendRequests.push(
           fetch(mpwaUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               api_key: finalApiKey,
-              sender: mpwaSender,
+              sender: mpwaSenderNum,
               number: group_id,
               message: message,
             }),

@@ -89,45 +89,39 @@ const SuperAdminRegistrationWA = () => {
     setQrCode(null);
 
     try {
-      // Save sender number to platform_settings first
+      // Save API key and sender to platform_settings first
       await supabase.from("platform_settings").upsert([
         { key: "mpwa_platform_sender", value: cleanNumber, updated_at: new Date().toISOString() },
+        { key: "mpwa_platform_api_key", value: settings.mpwa_platform_api_key, updated_at: new Date().toISOString() },
       ], { onConflict: "key" });
       setSettings(prev => ({ ...prev, mpwa_platform_sender: cleanNumber }));
 
-      // Call MPWA generate-qr endpoint directly via POST
-      const res = await fetch("https://app.ayopintar.com/generate-qr", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          api_key: settings.mpwa_platform_api_key,
-          device: cleanNumber,
-          force: true,
-        }),
+      // Use mpwa-proxy edge function to avoid CORS
+      const { data, error } = await supabase.functions.invoke("mpwa-proxy", {
+        body: {
+          action: "generate-qr",
+          school_id: "__platform__",
+          number: cleanNumber,
+        },
       });
 
-      const text = await res.text();
-      let data: any;
-      try { data = JSON.parse(text); } catch { data = { status: false, msg: text.substring(0, 200) }; }
-
+      if (error) throw error;
       console.log("[SuperAdmin MPWA] generate-qr response:", JSON.stringify(data).substring(0, 300));
 
-      // Check if already connected
-      if (data?.msg === "Device already connected!" || data?.msg === "Perangkat sudah terhubung!") {
+      if (data?.connected) {
         await markPlatformConnected(true);
         toast.success("Device sudah terhubung!");
         setQrLoading(false);
         return;
       }
 
-      // Extract QR code
       const qr = data?.qrcode || data?.img || data?.qr || null;
       if (qr) {
         setQrCode(qr);
         startPolling(cleanNumber);
         toast.info("Scan QR Code dengan WhatsApp Anda");
       } else {
-        toast.error(data?.msg || data?.message || "Gagal generate QR code");
+        toast.error(data?.error || data?.msg || data?.message || "Gagal generate QR code");
       }
     } catch (err: any) {
       toast.error("Error: " + (err.message || "Gagal terhubung ke MPWA"));
@@ -148,12 +142,15 @@ const SuperAdminRegistrationWA = () => {
       }
 
       try {
-        const res = await fetch(`https://app.ayopintar.com/generate-qr?api_key=${encodeURIComponent(settings.mpwa_platform_api_key)}&device=${encodeURIComponent(deviceNumber)}`);
-        const text = await res.text();
-        let data: any;
-        try { data = JSON.parse(text); } catch { return; }
+        const { data } = await supabase.functions.invoke("mpwa-proxy", {
+          body: {
+            action: "check-status",
+            school_id: "__platform__",
+            number: deviceNumber,
+          },
+        });
 
-        if (data?.msg === "Device already connected!" || data?.msg === "Perangkat sudah terhubung!") {
+        if (data?.connected) {
           if (pollRef.current) clearInterval(pollRef.current);
           setQrCode(null);
           await markPlatformConnected(true);
@@ -169,12 +166,17 @@ const SuperAdminRegistrationWA = () => {
 
     setCheckingStatus(true);
     try {
-      const res = await fetch(`https://app.ayopintar.com/generate-qr?api_key=${encodeURIComponent(settings.mpwa_platform_api_key)}&device=${encodeURIComponent(device)}`);
-      const text = await res.text();
-      let data: any;
-      try { data = JSON.parse(text); } catch { data = { status: false, msg: text.substring(0, 200) }; }
+      const { data, error } = await supabase.functions.invoke("mpwa-proxy", {
+        body: {
+          action: "check-status",
+          school_id: "__platform__",
+          number: device,
+        },
+      });
 
-      if (data?.msg === "Device already connected!" || data?.msg === "Perangkat sudah terhubung!") {
+      if (error) throw error;
+
+      if (data?.connected) {
         await markPlatformConnected(true);
         toast.success("Device terhubung!");
       } else {
@@ -193,8 +195,14 @@ const SuperAdminRegistrationWA = () => {
 
     setDisconnecting(true);
     try {
-      const logoutUrl = `https://app.ayopintar.com/logout-device?api_key=${encodeURIComponent(settings.mpwa_platform_api_key)}&sender=${encodeURIComponent(device)}`;
-      await fetch(logoutUrl);
+      const { error } = await supabase.functions.invoke("mpwa-proxy", {
+        body: {
+          action: "disconnect",
+          school_id: "__platform__",
+          number: device,
+        },
+      });
+      if (error) throw error;
       await markPlatformConnected(false);
       toast.success("Device berhasil di-disconnect");
     } catch (err: any) {
@@ -237,22 +245,21 @@ const SuperAdminRegistrationWA = () => {
       if (formattedPhone.startsWith("0")) formattedPhone = "62" + formattedPhone.substring(1);
 
       if (activeTab === "mpwa") {
-        // Send directly via MPWA
-        const res = await fetch("https://app.ayopintar.com/send-message", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            api_key: settings.mpwa_platform_api_key,
-            sender: settings.mpwa_platform_sender,
-            number: formattedPhone,
+        // Send via edge function to avoid CORS
+        const res = await supabase.functions.invoke("send-whatsapp", {
+          body: {
+            phone: formattedPhone,
             message,
-          }),
+            gateway: "mpwa",
+            mpwa_api_key: settings.mpwa_platform_api_key,
+            mpwa_sender: settings.mpwa_platform_sender,
+          },
         });
-        const data = await res.json();
-        if (data?.status === false) {
-          toast.error("Gagal: " + (data?.msg || "Unknown error"));
-        } else {
+        const data = res.data as any;
+        if (data?.success) {
           toast.success("Pesan tes MPWA berhasil dikirim!");
+        } else {
+          toast.error("Gagal: " + (data?.error || "Unknown error"));
         }
       } else {
         const body = {
