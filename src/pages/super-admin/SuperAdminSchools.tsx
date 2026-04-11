@@ -37,17 +37,23 @@ const SuperAdminSchools = () => {
   const [subSchool, setSubSchool] = useState<SchoolData | null>(null);
 
   const fetchSchools = async () => {
-    const [schoolsRes, studentsRes, subsRes, plansRes, profilesRes] = await Promise.all([
+    const [schoolsRes, studentsRes, subsRes, plansRes, profilesRes, loginLogsRes] = await Promise.all([
       supabase.from("schools").select("*"),
       supabase.from("students").select("school_id, class"),
       supabase.from("school_subscriptions").select("id, school_id, plan_id, status, expires_at, subscription_plans(name)"),
       supabase.from("subscription_plans").select("id, name, price").eq("is_active", true).order("sort_order"),
       supabase.from("profiles").select("school_id, full_name, phone, user_id"),
+      supabase.from("login_logs").select("user_id, email").order("created_at", { ascending: false }),
     ]);
 
-    // Fetch emails from auth for school_admin users
     const { data: adminRoles } = await supabase.from("user_roles").select("user_id, role").eq("role", "school_admin");
     const adminUserIds = new Set((adminRoles || []).map((r: any) => r.user_id));
+
+    // Build email map from login_logs (most recent per user)
+    const emailMap: Record<string, string> = {};
+    (loginLogsRes.data || []).forEach((l: any) => {
+      if (l.email && !emailMap[l.user_id]) emailMap[l.user_id] = l.email;
+    });
 
     const schoolsList = schoolsRes.data || [];
     const students = studentsRes.data || [];
@@ -61,7 +67,6 @@ const SuperAdminSchools = () => {
       const schoolSubs = subs.filter((sb: any) => sb.school_id === s.id);
       const activeSub = schoolSubs.find((sb: any) => sb.status === "active") || schoolSubs[0];
       
-      // Find school_admin profile for this school
       const adminProfile = profiles.find((p: any) => p.school_id === s.id && adminUserIds.has(p.user_id));
       
       return {
@@ -70,7 +75,7 @@ const SuperAdminSchools = () => {
         classCount: uniqueClasses.size,
         adminName: adminProfile?.full_name || null,
         adminPhone: adminProfile?.phone || null,
-        adminEmail: null, // Will be set from user data if available
+        adminEmail: adminProfile ? (emailMap[adminProfile.user_id] || null) : null,
         subscription: activeSub
           ? { id: activeSub.id, plan_id: activeSub.plan_id, plan_name: (activeSub as any).subscription_plans?.name || "—", status: activeSub.status, expires_at: activeSub.expires_at }
           : null,
