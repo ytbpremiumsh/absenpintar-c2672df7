@@ -180,8 +180,8 @@ const Proposal = () => {
       <h2>BAB II - STRATEGI USAHA</h2>
       <h3>2.1 Model Bisnis (Business Model Canvas)</h3>
       <p>Model bisnis ATSkolla dirancang dengan pendekatan sistematis di mana setiap elemen saling mendukung dan berkaitan. Mitra utama (Key Partners) yang terdiri dari sekolah, yayasan pendidikan, dan penyedia layanan API WhatsApp menyediakan jaringan distribusi dan infrastruktur teknologi yang diperlukan. Aktivitas utama (Key Activities) mencakup pengembangan platform, integrasi teknologi, serta pelaksanaan strategi pemasaran. Keseluruhan aktivitas tersebut menghasilkan proposisi nilai (Value Proposition) berupa sistem pencatatan kehadiran digital yang komprehensif, akurat, dan mudah digunakan.</p>
-      <p>Arus pendapatan (Revenue Streams) bersumber dari tiga pilihan paket berlangganan bulanan, yaitu: paket Basic seharga Rp 99.000, paket School seharga Rp 249.000, dan paket Premium seharga Rp 399.000. Selain itu, terdapat pendapatan tambahan yang berasal dari jasa implementasi dan kustomisasi untuk institusi berskala besar, layanan add-on WhatsApp, serta layanan white-labeling bagi yayasan yang menghendaki penggunaan merek sendiri.</p>
-      <p>Struktur biaya (Cost Structure) terdiri dari biaya infrastruktur cloud sebesar kurang lebih 20%, kompensasi tim sebesar kurang lebih 40%, biaya penggunaan WhatsApp API sebesar kurang lebih 15%, serta biaya pemasaran dan promosi sebesar kurang lebih 25%. Dengan model bisnis SaaS yang diterapkan, diproyeksikan bahwa margin keuntungan kotor dapat mencapai 60% hingga 70% setelah tahun pertama operasional.</p>
+      <p>Arus pendapatan (Revenue Streams) bersumber dari tiga pilihan paket berlangganan bulanan, yaitu: paket Basic seharga Rp 99.000, paket School seharga Rp 249.000, dan paket Premium seharga Rp 399.000. Selain itu, terdapat pendapatan tambahan dari jasa enterprise (setup & konfigurasi sekolah baru, pelatihan intensif, dan kustomisasi yayasan multi-cabang), serta layanan add-on berupa kuota tambahan WhatsApp broadcast, kartu pelajar digital, dan white-label branding bagi yayasan.</p>
+      <p>Struktur biaya (Cost Structure) terdiri dari biaya infrastruktur cloud (Supabase Pro ≈ Rp 400.000/bulan), biaya WhatsApp API MPWA (≈ Rp 150.000/bulan/device), kompensasi tim freelance, serta biaya pemasaran digital. Dengan model bisnis SaaS dan biaya operasional yang rendah, diproyeksikan bahwa margin keuntungan kotor dapat mencapai 60% hingga 70% setelah tahun pertama operasional.</p>
       
       <h3>2.2 Rencana Pemasaran</h3>
       <p><strong>Strategi Akuisisi Pelanggan:</strong></p>
@@ -238,29 +238,50 @@ const Proposal = () => {
       
       <h2>BAB V - ANALISIS KEUANGAN</h2>
       <h3>5.1 Proyeksi Pendapatan dan Pengeluaran (2 Tahun)</h3>
+      <p><strong>A. PENDAPATAN</strong></p>
       <table>
-        <tr><th>Keterangan</th><th>Tahun Pertama</th><th>Tahun Kedua</th></tr>
-        <tr><td>Jumlah Sekolah Berlangganan</td><td>50 sekolah</td><td>200 sekolah</td></tr>
-        <tr><td>Pendapatan Langganan SaaS</td><td>Rp 120.000.000</td><td>Rp 600.000.000</td></tr>
-        <tr><td>Pendapatan Jasa Enterprise</td><td>Rp 30.000.000</td><td>Rp 150.000.000</td></tr>
-        <tr><td>Pendapatan Layanan Add-on</td><td>Rp 10.000.000</td><td>Rp 50.000.000</td></tr>
-        <tr style="font-weight:bold"><td>Total Pendapatan</td><td>Rp 160.000.000</td><td>Rp 800.000.000</td></tr>
-        <tr><td>Biaya Server dan Cloud</td><td>Rp 24.000.000</td><td>Rp 60.000.000</td></tr>
-        <tr><td>Kompensasi Tim</td><td>Rp 72.000.000</td><td>Rp 180.000.000</td></tr>
-        <tr><td>Biaya Pemasaran</td><td>Rp 30.000.000</td><td>Rp 80.000.000</td></tr>
-        <tr><td>Biaya WhatsApp API</td><td>Rp 12.000.000</td><td>Rp 40.000.000</td></tr>
-        <tr><td>Biaya Operasional Lainnya</td><td>Rp 10.000.000</td><td>Rp 20.000.000</td></tr>
-        <tr style="font-weight:bold"><td>Total Pengeluaran</td><td>Rp 148.000.000</td><td>Rp 380.000.000</td></tr>
-        <tr style="font-weight:bold; color:green"><td>Laba Bersih</td><td>Rp 12.000.000</td><td>Rp 420.000.000</td></tr>
+        <tr><th>Keterangan</th><th>Rincian</th><th>Tahun 1</th><th>Tahun 2</th></tr>
+        <tr><td colspan="4" style="background:#eff6ff;font-weight:bold">Pendapatan Langganan SaaS</td></tr>
+        <tr><td>- Paket Basic (Rp 99.000/bln)</td><td>Thn 1: avg 15 sekolah × 12 bln<br/>Thn 2: avg 50 sekolah × 12 bln</td><td>Rp 17.820.000</td><td>Rp 59.400.000</td></tr>
+        <tr><td>- Paket School (Rp 249.000/bln)</td><td>Thn 1: avg 8 sekolah × 12 bln<br/>Thn 2: avg 30 sekolah × 12 bln</td><td>Rp 23.904.000</td><td>Rp 89.640.000</td></tr>
+        <tr><td>- Paket Premium (Rp 399.000/bln)</td><td>Thn 1: avg 3 sekolah × 12 bln<br/>Thn 2: avg 15 sekolah × 12 bln</td><td>Rp 14.364.000</td><td>Rp 71.820.000</td></tr>
+        <tr style="font-weight:bold"><td>Subtotal Langganan SaaS</td><td></td><td>Rp 56.088.000</td><td>Rp 220.860.000</td></tr>
+
+        <tr><td colspan="4" style="background:#eff6ff;font-weight:bold">Pendapatan Jasa Enterprise</td></tr>
+        <tr><td>- Setup & konfigurasi awal sekolah baru</td><td>Biaya setup Rp 500.000/sekolah</td><td>Rp 13.000.000</td><td>Rp 47.500.000</td></tr>
+        <tr><td>- Pelatihan & onboarding intensif</td><td>Rp 1.000.000/sesi untuk sekolah besar</td><td>Rp 3.000.000</td><td>Rp 10.000.000</td></tr>
+        <tr><td>- Kustomisasi yayasan multi-cabang</td><td>Rp 3.000.000-5.000.000/proyek</td><td>Rp 3.000.000</td><td>Rp 15.000.000</td></tr>
+        <tr style="font-weight:bold"><td>Subtotal Jasa Enterprise</td><td></td><td>Rp 19.000.000</td><td>Rp 72.500.000</td></tr>
+
+        <tr><td colspan="4" style="background:#eff6ff;font-weight:bold">Pendapatan Layanan Add-on</td></tr>
+        <tr><td>- Kuota tambahan WhatsApp broadcast</td><td>Rp 50.000/1.000 pesan ekstra</td><td>Rp 3.000.000</td><td>Rp 15.000.000</td></tr>
+        <tr><td>- Kartu pelajar digital (cetak QR)</td><td>Rp 5.000/kartu × pesanan sekolah</td><td>Rp 2.000.000</td><td>Rp 8.000.000</td></tr>
+        <tr><td>- White-label branding yayasan</td><td>Rp 2.000.000/yayasan/tahun</td><td>Rp 0</td><td>Rp 4.000.000</td></tr>
+        <tr style="font-weight:bold"><td>Subtotal Layanan Add-on</td><td></td><td>Rp 5.000.000</td><td>Rp 27.000.000</td></tr>
+
+        <tr style="font-weight:bold;background:#dcfce7"><td>TOTAL PENDAPATAN</td><td></td><td>Rp 80.088.000</td><td>Rp 320.360.000</td></tr>
       </table>
-      
+
+      <p><strong>B. PENGELUARAN</strong></p>
+      <table>
+        <tr><th>Keterangan</th><th>Rincian</th><th>Tahun 1</th><th>Tahun 2</th></tr>
+        <tr><td>Biaya Server & Cloud (Supabase)</td><td>Paket Pro $25/bln = Rp 400.000/bln</td><td>Rp 4.800.000</td><td>Rp 4.800.000</td></tr>
+        <tr><td>Domain & Hosting Web</td><td>Domain .com + hosting statis</td><td>Rp 500.000</td><td>Rp 500.000</td></tr>
+        <tr><td>Biaya WhatsApp API (MPWA)</td><td>Rp 150.000/bln per device aktif<br/>Thn 1: avg 10 device, Thn 2: avg 40</td><td>Rp 1.800.000</td><td>Rp 7.200.000</td></tr>
+        <tr><td>Kompensasi Tim (Freelance)</td><td>1 developer part-time + 1 CS part-time</td><td>Rp 24.000.000</td><td>Rp 48.000.000</td></tr>
+        <tr><td>Biaya Pemasaran Digital</td><td>Iklan sosmed, konten, kunjungan sekolah</td><td>Rp 12.000.000</td><td>Rp 24.000.000</td></tr>
+        <tr><td>Biaya Operasional Lainnya</td><td>Pulsa, transportasi, admin, tools</td><td>Rp 3.600.000</td><td>Rp 6.000.000</td></tr>
+        <tr style="font-weight:bold;background:#fef2f2"><td>TOTAL PENGELUARAN</td><td></td><td>Rp 46.700.000</td><td>Rp 90.500.000</td></tr>
+        <tr style="font-weight:bold;color:green"><td>LABA BERSIH</td><td></td><td>Rp 33.388.000</td><td>Rp 229.860.000</td></tr>
+      </table>
+
       <h3>5.2 Perencanaan Modal</h3>
-      <p>Modal awal yang dibutuhkan untuk memulai operasional bisnis adalah sebesar Rp 50.000.000, dengan alokasi sebagai berikut:</p>
+      <p>Modal awal yang dibutuhkan untuk memulai operasional bisnis adalah sebesar Rp 15.000.000, dengan alokasi sebagai berikut:</p>
       <ul>
-        <li>Pengembangan Platform: Rp 20.000.000 (40%) -- untuk biaya pengembangan fitur-fitur utama platform.</li>
-        <li>Pemasaran dan Akuisisi Pelanggan: Rp 12.500.000 (25%) -- untuk biaya promosi dan perolehan pelanggan baru.</li>
-        <li>Infrastruktur Cloud (6 bulan pertama): Rp 7.500.000 (15%) -- untuk sewa server dan layanan cloud computing.</li>
-        <li>Operasional dan Dana Cadangan: Rp 10.000.000 (20%) -- untuk kebutuhan operasional harian dan dana darurat.</li>
+        <li>Pengembangan Platform & Tools: Rp 3.000.000 (20%) -- biaya tools development, library berbayar, dan testing.</li>
+        <li>Pemasaran Awal & Akuisisi: Rp 5.000.000 (33%) -- biaya iklan digital, cetak brosur, dan kunjungan sekolah selama 3 bulan pertama.</li>
+        <li>Infrastruktur Cloud (6 bulan pertama): Rp 3.000.000 (20%) -- sewa Supabase Pro + domain + MPWA API untuk 6 bulan.</li>
+        <li>Operasional & Dana Cadangan: Rp 4.000.000 (27%) -- kebutuhan operasional harian, transportasi, dan dana darurat.</li>
       </ul>
       
       <h3>5.3 Analisis Risiko</h3>
@@ -618,19 +639,18 @@ const Proposal = () => {
                     </p>
                     <p>
                       <strong className="text-foreground">Arus Pendapatan (Revenue Streams):</strong> Pendapatan 
-                      utama bersumber dari tiga pilihan paket berlangganan bulanan, yaitu: paket Basic seharga 
-                      Rp 99.000, paket School seharga Rp 249.000, dan paket Premium seharga Rp 399.000. Selain 
-                      itu, terdapat pendapatan tambahan yang berasal dari jasa implementasi dan kustomisasi 
-                      untuk institusi berskala besar, layanan add-on WhatsApp, serta layanan white-labeling 
-                      bagi yayasan yang menghendaki penggunaan merek sendiri.
+                      utama bersumber dari tiga pilihan paket berlangganan bulanan: Basic (Rp 99.000), School 
+                      (Rp 249.000), dan Premium (Rp 399.000). Pendapatan tambahan dari jasa enterprise meliputi 
+                      setup & konfigurasi sekolah baru, pelatihan & onboarding intensif, dan kustomisasi yayasan 
+                      multi-cabang. Layanan add-on mencakup kuota tambahan WhatsApp broadcast, kartu pelajar 
+                      digital (cetak QR), dan white-label branding bagi yayasan.
                     </p>
                     <p>
                       <strong className="text-foreground">Struktur Biaya (Cost Structure):</strong> Biaya 
-                      operasional terdiri dari infrastruktur cloud (kurang lebih 20%), kompensasi tim pengembang 
-                      dan staf layanan pelanggan (kurang lebih 40%), biaya penggunaan WhatsApp API (kurang lebih 
-                      15%), serta biaya pemasaran dan promosi (kurang lebih 25%). Dengan model bisnis SaaS yang 
-                      diterapkan, diproyeksikan bahwa margin keuntungan kotor dapat mencapai 60% hingga 70% 
-                      setelah tahun pertama operasional.
+                      operasional terdiri dari server cloud Supabase Pro (≈ Rp 400.000/bulan), WhatsApp API MPWA 
+                      (≈ Rp 150.000/bulan/device), kompensasi tim freelance (developer dan CS part-time), serta 
+                      biaya pemasaran digital. Total pengeluaran tahun pertama diproyeksikan hanya Rp 46,7 juta, 
+                      sehingga margin keuntungan dapat mencapai 40-70% sejak tahun pertama.
                     </p>
                   </CardContent>
                 </Card>
@@ -848,43 +868,69 @@ const Proposal = () => {
                 <span className="text-primary">5.1</span> Proyeksi Pendapatan dan Pengeluaran (2 Tahun)
               </h3>
               <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                Berikut ini disajikan proyeksi pendapatan dan pengeluaran ATSkolla selama dua tahun 
-                ke depan. Angka-angka tersebut disusun berdasarkan asumsi keberhasilan akuisisi 
-                50 sekolah pada tahun pertama dan 200 sekolah pada tahun kedua.
+                Proyeksi disusun berdasarkan asumsi realistis: tahun pertama rata-rata 26 sekolah berlangganan 
+                (mayoritas Basic), tahun kedua tumbuh menjadi rata-rata 95 sekolah. Biaya operasional 
+                dihitung berdasarkan harga aktual layanan cloud dan API yang digunakan.
               </p>
-              <div className="overflow-x-auto">
+
+              <h4 className="text-sm font-bold text-foreground mb-2 mt-4">A. PENDAPATAN</h4>
+              <div className="overflow-x-auto mb-6">
                 <table className="w-full text-xs border-collapse">
                   <thead>
                     <tr className="bg-muted/50">
-                      <th className="text-left p-3 font-bold text-foreground rounded-tl-lg">Keterangan</th>
-                      <th className="text-right p-3 font-bold text-foreground">Tahun Pertama</th>
-                      <th className="text-right p-3 font-bold text-foreground rounded-tr-lg">Tahun Kedua</th>
+                      <th className="text-left p-2.5 font-bold text-foreground rounded-tl-lg">Keterangan</th>
+                      <th className="text-left p-2.5 font-bold text-foreground">Rincian</th>
+                      <th className="text-right p-2.5 font-bold text-foreground">Tahun 1</th>
+                      <th className="text-right p-2.5 font-bold text-foreground rounded-tr-lg">Tahun 2</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
-                    {[
-                      ["Jumlah Sekolah Berlangganan", "50 sekolah", "200 sekolah"],
-                      ["Pendapatan Langganan SaaS", "Rp 120.000.000", "Rp 600.000.000"],
-                      ["Pendapatan Jasa Enterprise", "Rp 30.000.000", "Rp 150.000.000"],
-                      ["Pendapatan Layanan Add-on", "Rp 10.000.000", "Rp 50.000.000"],
-                      ["Total Pendapatan", "Rp 160.000.000", "Rp 800.000.000"],
-                      ["", "", ""],
-                      ["Biaya Server dan Cloud", "Rp 24.000.000", "Rp 60.000.000"],
-                      ["Kompensasi Tim", "Rp 72.000.000", "Rp 180.000.000"],
-                      ["Biaya Pemasaran", "Rp 30.000.000", "Rp 80.000.000"],
-                      ["Biaya WhatsApp API", "Rp 12.000.000", "Rp 40.000.000"],
-                      ["Biaya Operasional Lainnya", "Rp 10.000.000", "Rp 20.000.000"],
-                      ["Total Pengeluaran", "Rp 148.000.000", "Rp 380.000.000"],
-                      ["", "", ""],
-                      ["Laba Bersih", "Rp 12.000.000", "Rp 420.000.000"],
-                    ].map(([label, y1, y2], i) => (
-                      label === "" ? <tr key={i}><td colSpan={3} className="h-2" /></tr> :
-                      <tr key={i} className={`hover:bg-muted/20 transition ${label.includes("Total") || label.includes("Laba") ? "font-bold" : ""}`}>
-                        <td className={`p-3 ${label.includes("Laba") ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"}`}>{label}</td>
-                        <td className={`p-3 text-right ${label.includes("Laba") ? "text-emerald-600 dark:text-emerald-400" : "text-foreground"}`}>{y1}</td>
-                        <td className={`p-3 text-right ${label.includes("Laba") ? "text-emerald-600 dark:text-emerald-400" : "text-foreground"}`}>{y2}</td>
-                      </tr>
-                    ))}
+                    <tr className="bg-primary/5"><td colSpan={4} className="p-2.5 font-bold text-foreground">Pendapatan Langganan SaaS</td></tr>
+                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground pl-5">Paket Basic (Rp 99.000/bln)</td><td className="p-2.5 text-muted-foreground">Avg 15 → 50 sekolah</td><td className="p-2.5 text-right text-foreground">Rp 17.820.000</td><td className="p-2.5 text-right text-foreground">Rp 59.400.000</td></tr>
+                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground pl-5">Paket School (Rp 249.000/bln)</td><td className="p-2.5 text-muted-foreground">Avg 8 → 30 sekolah</td><td className="p-2.5 text-right text-foreground">Rp 23.904.000</td><td className="p-2.5 text-right text-foreground">Rp 89.640.000</td></tr>
+                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground pl-5">Paket Premium (Rp 399.000/bln)</td><td className="p-2.5 text-muted-foreground">Avg 3 → 15 sekolah</td><td className="p-2.5 text-right text-foreground">Rp 14.364.000</td><td className="p-2.5 text-right text-foreground">Rp 71.820.000</td></tr>
+                    <tr className="font-bold"><td className="p-2.5 text-foreground" colSpan={2}>Subtotal Langganan SaaS</td><td className="p-2.5 text-right text-foreground">Rp 56.088.000</td><td className="p-2.5 text-right text-foreground">Rp 220.860.000</td></tr>
+
+                    <tr className="bg-primary/5"><td colSpan={4} className="p-2.5 font-bold text-foreground">Pendapatan Jasa Enterprise</td></tr>
+                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground pl-5">Setup & konfigurasi sekolah baru</td><td className="p-2.5 text-muted-foreground">Rp 500.000/sekolah</td><td className="p-2.5 text-right text-foreground">Rp 13.000.000</td><td className="p-2.5 text-right text-foreground">Rp 47.500.000</td></tr>
+                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground pl-5">Pelatihan & onboarding intensif</td><td className="p-2.5 text-muted-foreground">Rp 1.000.000/sesi</td><td className="p-2.5 text-right text-foreground">Rp 3.000.000</td><td className="p-2.5 text-right text-foreground">Rp 10.000.000</td></tr>
+                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground pl-5">Kustomisasi yayasan multi-cabang</td><td className="p-2.5 text-muted-foreground">Rp 3-5 jt/proyek</td><td className="p-2.5 text-right text-foreground">Rp 3.000.000</td><td className="p-2.5 text-right text-foreground">Rp 15.000.000</td></tr>
+                    <tr className="font-bold"><td className="p-2.5 text-foreground" colSpan={2}>Subtotal Jasa Enterprise</td><td className="p-2.5 text-right text-foreground">Rp 19.000.000</td><td className="p-2.5 text-right text-foreground">Rp 72.500.000</td></tr>
+
+                    <tr className="bg-primary/5"><td colSpan={4} className="p-2.5 font-bold text-foreground">Pendapatan Layanan Add-on</td></tr>
+                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground pl-5">Kuota tambahan WA broadcast</td><td className="p-2.5 text-muted-foreground">Rp 50.000/1.000 pesan</td><td className="p-2.5 text-right text-foreground">Rp 3.000.000</td><td className="p-2.5 text-right text-foreground">Rp 15.000.000</td></tr>
+                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground pl-5">Kartu pelajar digital (cetak QR)</td><td className="p-2.5 text-muted-foreground">Rp 5.000/kartu</td><td className="p-2.5 text-right text-foreground">Rp 2.000.000</td><td className="p-2.5 text-right text-foreground">Rp 8.000.000</td></tr>
+                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground pl-5">White-label branding yayasan</td><td className="p-2.5 text-muted-foreground">Rp 2 jt/yayasan/thn</td><td className="p-2.5 text-right text-foreground">Rp 0</td><td className="p-2.5 text-right text-foreground">Rp 4.000.000</td></tr>
+                    <tr className="font-bold"><td className="p-2.5 text-foreground" colSpan={2}>Subtotal Layanan Add-on</td><td className="p-2.5 text-right text-foreground">Rp 5.000.000</td><td className="p-2.5 text-right text-foreground">Rp 27.000.000</td></tr>
+
+                    <tr><td colSpan={4} className="h-1" /></tr>
+                    <tr className="font-bold bg-emerald-50 dark:bg-emerald-950/20"><td className="p-2.5 text-emerald-700 dark:text-emerald-400" colSpan={2}>TOTAL PENDAPATAN</td><td className="p-2.5 text-right text-emerald-700 dark:text-emerald-400">Rp 80.088.000</td><td className="p-2.5 text-right text-emerald-700 dark:text-emerald-400">Rp 320.360.000</td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <h4 className="text-sm font-bold text-foreground mb-2">B. PENGELUARAN</h4>
+              <div className="overflow-x-auto mb-4">
+                <table className="w-full text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-muted/50">
+                      <th className="text-left p-2.5 font-bold text-foreground rounded-tl-lg">Keterangan</th>
+                      <th className="text-left p-2.5 font-bold text-foreground">Rincian</th>
+                      <th className="text-right p-2.5 font-bold text-foreground">Tahun 1</th>
+                      <th className="text-right p-2.5 font-bold text-foreground rounded-tr-lg">Tahun 2</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground">Biaya Server & Cloud (Supabase Pro)</td><td className="p-2.5 text-muted-foreground">$25/bln ≈ Rp 400.000/bln</td><td className="p-2.5 text-right text-foreground">Rp 4.800.000</td><td className="p-2.5 text-right text-foreground">Rp 4.800.000</td></tr>
+                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground">Domain & Hosting Web</td><td className="p-2.5 text-muted-foreground">Domain .com + hosting statis</td><td className="p-2.5 text-right text-foreground">Rp 500.000</td><td className="p-2.5 text-right text-foreground">Rp 500.000</td></tr>
+                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground">Biaya WhatsApp API (MPWA)</td><td className="p-2.5 text-muted-foreground">Rp 150.000/bln/device, avg 10→40</td><td className="p-2.5 text-right text-foreground">Rp 1.800.000</td><td className="p-2.5 text-right text-foreground">Rp 7.200.000</td></tr>
+                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground">Kompensasi Tim (Freelance)</td><td className="p-2.5 text-muted-foreground">1 dev + 1 CS part-time</td><td className="p-2.5 text-right text-foreground">Rp 24.000.000</td><td className="p-2.5 text-right text-foreground">Rp 48.000.000</td></tr>
+                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground">Biaya Pemasaran Digital</td><td className="p-2.5 text-muted-foreground">Iklan sosmed, konten, kunjungan</td><td className="p-2.5 text-right text-foreground">Rp 12.000.000</td><td className="p-2.5 text-right text-foreground">Rp 24.000.000</td></tr>
+                    <tr className="hover:bg-muted/20"><td className="p-2.5 text-muted-foreground">Biaya Operasional Lainnya</td><td className="p-2.5 text-muted-foreground">Pulsa, transportasi, admin, tools</td><td className="p-2.5 text-right text-foreground">Rp 3.600.000</td><td className="p-2.5 text-right text-foreground">Rp 6.000.000</td></tr>
+                    <tr><td colSpan={4} className="h-1" /></tr>
+                    <tr className="font-bold bg-red-50 dark:bg-red-950/20"><td className="p-2.5 text-red-700 dark:text-red-400" colSpan={2}>TOTAL PENGELUARAN</td><td className="p-2.5 text-right text-red-700 dark:text-red-400">Rp 46.700.000</td><td className="p-2.5 text-right text-red-700 dark:text-red-400">Rp 90.500.000</td></tr>
+                    <tr><td colSpan={4} className="h-1" /></tr>
+                    <tr className="font-bold bg-emerald-50 dark:bg-emerald-950/20"><td className="p-2.5 text-emerald-700 dark:text-emerald-400" colSpan={2}>LABA BERSIH</td><td className="p-2.5 text-right text-emerald-700 dark:text-emerald-400">Rp 33.388.000</td><td className="p-2.5 text-right text-emerald-700 dark:text-emerald-400">Rp 229.860.000</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -898,15 +944,15 @@ const Proposal = () => {
                 <CardContent className="p-5 space-y-4">
                   <p className="text-sm text-muted-foreground leading-relaxed">
                     Modal awal yang dibutuhkan untuk memulai operasional bisnis adalah sebesar 
-                    <strong className="text-foreground"> Rp 50.000.000</strong>. Dana tersebut akan 
+                    <strong className="text-foreground"> Rp 15.000.000</strong>. Dana tersebut akan 
                     dialokasikan ke beberapa pos kebutuhan utama sebagai berikut:
                   </p>
                   <div className="space-y-2">
                     {[
-                      { label: "Pengembangan Platform", pct: 40, amount: "Rp 20.000.000", desc: "Dialokasikan untuk biaya pengembangan fitur-fitur utama platform." },
-                      { label: "Pemasaran dan Akuisisi Pelanggan", pct: 25, amount: "Rp 12.500.000", desc: "Dialokasikan untuk biaya promosi dan perolehan pelanggan baru." },
-                      { label: "Infrastruktur Cloud (6 bulan pertama)", pct: 15, amount: "Rp 7.500.000", desc: "Dialokasikan untuk sewa server dan layanan cloud computing." },
-                      { label: "Operasional dan Dana Cadangan", pct: 20, amount: "Rp 10.000.000", desc: "Dialokasikan untuk kebutuhan operasional harian dan dana darurat." },
+                      { label: "Pengembangan Platform & Tools", pct: 20, amount: "Rp 3.000.000", desc: "Biaya tools development, library berbayar, dan testing." },
+                      { label: "Pemasaran Awal & Akuisisi", pct: 33, amount: "Rp 5.000.000", desc: "Iklan digital, cetak brosur, dan kunjungan sekolah 3 bulan pertama." },
+                      { label: "Infrastruktur Cloud (6 bulan)", pct: 20, amount: "Rp 3.000.000", desc: "Sewa Supabase Pro + domain + MPWA API selama 6 bulan." },
+                      { label: "Operasional & Dana Cadangan", pct: 27, amount: "Rp 4.000.000", desc: "Kebutuhan operasional harian, transportasi, dan dana darurat." },
                     ].map((item) => (
                       <div key={item.label}>
                         <div className="flex justify-between text-xs mb-1">
