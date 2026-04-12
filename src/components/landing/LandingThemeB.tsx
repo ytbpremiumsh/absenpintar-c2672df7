@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Monitor, FileBarChart, ArrowRight, CheckCircle2, Mail, Phone, MapPin,
-  Zap, Bell, QrCode, GraduationCap, UserCheck, Shield,
+  ArrowRight, CheckCircle2, Mail, Phone, MapPin,
+  Zap, QrCode, GraduationCap, Shield,
   Star, ChevronRight, Sparkles, Play,
   Quote, ChevronLeft, Code, HeartHandshake, Award,
 } from "lucide-react";
