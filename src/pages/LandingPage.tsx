@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import TypingEffect from "@/components/TypingEffect";
+import LandingThemeB from "@/components/landing/LandingThemeB";
 import {
   Monitor, FileBarChart,
   ArrowRight, CheckCircle2, Mail, Phone, MapPin,
@@ -198,6 +199,7 @@ const LandingPage = () => {
   const [plans, setPlans] = useState<PlanRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [scrolled, setScrolled] = useState(false);
+  const [landingTheme, setLandingTheme] = useState<string | null>(null);
   const [showPricing, setShowPricing] = useState(true);
   const [trustedSchools, setTrustedSchools] = useState<TrustedSchool[]>(DEFAULT_TRUSTED_SCHOOLS);
   const [testimonials, setTestimonials] = useState<Testimonial[]>(DEFAULT_TESTIMONIALS);
@@ -211,7 +213,7 @@ const LandingPage = () => {
       supabase.from("subscription_plans").select("*").eq("is_active", true).order("sort_order"),
       supabase.from("landing_trusted_schools").select("*").eq("is_active", true).order("sort_order"),
       supabase.from("landing_testimonials").select("*").eq("is_active", true).order("sort_order"),
-      supabase.from("platform_settings").select("key, value").in("key", ["header_logo_url", "hero_shadow_shapes_enabled"]),
+      supabase.from("platform_settings").select("key, value").in("key", ["header_logo_url", "hero_shadow_shapes_enabled", "landing_theme"]),
     ]).then(([contentRes, plansRes, schoolsRes, testimonialsRes, settingsRes]) => {
       const map: Record<string, string> = {};
       (contentRes.data || []).forEach((item: any) => { map[item.key] = item.value; });
@@ -220,6 +222,7 @@ const LandingPage = () => {
         const sMap = Object.fromEntries(settingsRes.data.map((d: any) => [d.key, d.value]));
         if (sMap.header_logo_url) setHeaderLogo(sMap.header_logo_url);
         if (sMap.hero_shadow_shapes_enabled === "false") setShowShadowShapes(false);
+        if (sMap.landing_theme) setLandingTheme(sMap.landing_theme);
       }
       // Build hero stats from content if available
       const ICON_MAP: Record<string, any> = { School, Users, Shield, Globe, GraduationCap, MapPin };
@@ -271,6 +274,11 @@ const LandingPage = () => {
         </motion.div>
       </div>
     );
+  }
+
+  // Theme B (Modern SaaS)
+  if (landingTheme === "modern") {
+    return <LandingThemeB />;
   }
 
   return (

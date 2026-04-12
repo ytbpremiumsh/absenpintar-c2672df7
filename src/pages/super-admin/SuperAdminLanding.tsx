@@ -1,12 +1,89 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Loader2, Save, Upload, X, Image as ImageIcon, Globe, ImagePlus } from "lucide-react";
+import { Loader2, Save, Upload, X, Globe, Palette } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
+/* ── Landing Theme Selector ── */
+function LandingThemeSelector() {
+  const [theme, setTheme] = useState("classic");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    supabase.from("platform_settings").select("value").eq("key", "landing_theme").maybeSingle().then(({ data }) => {
+      if (data?.value) setTheme(data.value);
+    });
+  }, []);
+
+  const handleSave = async (selected: string) => {
+    setTheme(selected);
+    setSaving(true);
+    const { error } = await supabase.from("platform_settings").upsert(
+      { key: "landing_theme", value: selected, updated_at: new Date().toISOString() },
+      { onConflict: "key" }
+    );
+    if (error) toast.error("Gagal menyimpan tema");
+    else toast.success(`Tema landing page diubah ke "${selected === "modern" ? "Modern SaaS" : "Classic"}". Refresh landing page untuk melihat perubahan.`);
+    setSaving(false);
+  };
+
+  const themes = [
+    { id: "classic", name: "Classic", desc: "Tampilan original dengan typing effect, gradient hero, dan layout terpusat.", preview: "bg-gradient-to-b from-slate-50 to-white" },
+    { id: "modern", name: "Modern SaaS", desc: "Tampilan profesional dengan hero biru curved, mockup floating, dan promo bar.", preview: "bg-gradient-to-br from-indigo-600 to-blue-800" },
+  ];
+
+  return (
+    <Card className="border-0 shadow-card">
+      <CardContent className="p-4 sm:p-6 space-y-5">
+        <div className="flex items-center gap-2">
+          <Palette className="h-4 w-4 text-primary" />
+          <h3 className="font-bold text-foreground text-sm">Tema Landing Page</h3>
+        </div>
+        <p className="text-xs text-muted-foreground">Pilih tampilan halaman utama. Perubahan langsung berlaku setelah disimpan.</p>
+        <div className="grid sm:grid-cols-2 gap-4">
+          {themes.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => handleSave(t.id)}
+              disabled={saving}
+              className={`relative text-left rounded-xl border-2 p-4 transition-all hover:shadow-md ${theme === t.id ? "border-primary ring-2 ring-primary/20 bg-primary/5" : "border-muted hover:border-primary/30"}`}
+            >
+              <div className={`h-20 rounded-lg mb-3 ${t.preview} flex items-center justify-center`}>
+                {t.id === "classic" ? (
+                  <div className="text-center">
+                    <div className="h-2 w-16 bg-slate-300 rounded mx-auto mb-1" />
+                    <div className="h-1.5 w-12 bg-slate-200 rounded mx-auto" />
+                    <div className="h-8 w-20 bg-slate-100 rounded mt-2 mx-auto border border-slate-200" />
+                  </div>
+                ) : (
+                  <div className="text-center">
+                    <div className="h-2 w-16 bg-white/40 rounded mx-auto mb-1" />
+                    <div className="h-1.5 w-12 bg-white/25 rounded mx-auto" />
+                    <div className="flex gap-1 mt-2 justify-center">
+                      <div className="h-6 w-8 bg-white/20 rounded" />
+                      <div className="h-8 w-10 bg-white/30 rounded" />
+                    </div>
+                  </div>
+                )}
+              </div>
+              <p className="font-bold text-sm text-foreground">{t.name}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{t.desc}</p>
+              {theme === t.id && (
+                <div className="absolute top-2 right-2 h-5 w-5 rounded-full bg-primary flex items-center justify-center">
+                  <svg className="h-3 w-3 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                </div>
+              )}
+            </button>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 /* ── Branding Settings (Favicon + Header Logo) ── */
 function BrandingSettings() {
@@ -278,6 +355,7 @@ const SuperAdminLanding = () => {
   return (
     <div className="space-y-6">
       <BrandingSettings />
+      <LandingThemeSelector />
 
       <div className="flex items-center justify-between">
         <div>
