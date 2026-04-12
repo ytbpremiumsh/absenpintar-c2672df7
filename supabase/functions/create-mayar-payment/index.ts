@@ -16,13 +16,8 @@ serve(async (req) => {
     );
 
     let mayarApiKey = Deno.env.get("MAYAR_API_KEY");
-
     const { data: keyFromDb } = await supabaseAdmin
-      .from("platform_settings")
-      .select("value")
-      .eq("key", "mayar_api_key")
-      .maybeSingle();
-
+      .from("platform_settings").select("value").eq("key", "mayar_api_key").maybeSingle();
     if (keyFromDb?.value) mayarApiKey = keyFromDb.value;
     if (!mayarApiKey) throw new Error("MAYAR_API_KEY not configured");
 
@@ -30,77 +25,128 @@ serve(async (req) => {
     const accessToken = authHeader?.replace(/^Bearer\s+/i, "").trim();
     if (!accessToken) throw new Error("Unauthorized");
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabaseAdmin.auth.getUser(accessToken);
-
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(accessToken);
     if (authError || !user) throw new Error("Unauthorized");
 
     const body = await req.json();
-    const { plan_id, school_id: requestedSchoolId, addon_type } = body;
+    const { plan_id, school_id: requestedSchoolId, addon_type, order_id } = body;
 
-    // Handle add-on purchase (custom_domain etc)
-    if (addon_type) {
-      // Resolve school id
-      let schoolId: string | null = requestedSchoolId || null;
-      if (!schoolId) {
-        const { data: schoolIdFromFn } = await supabaseAdmin.rpc("get_user_school_id", { _user_id: user.id });
-        schoolId = schoolIdFromFn || null;
-        if (!schoolId) {
-          const { data: profile } = await supabaseAdmin.from("profiles").select("school_id").eq("user_id", user.id).limit(1).maybeSingle();
-          schoolId = profile?.school_id || null;
+    // ── Helper: resolve school ID ──
+    const resolveSchoolId = async (): Promise<string> => {
+      let sid: string | null = requestedSchoolId || null;
+      if (!sid) {
+        const { data } = await supabaseAdmin.rpc("get_user_school_id", { _user_id: user.id });
+        sid = data || null;
+        if (!sid) {
+          const { data: p } = await supabaseAdmin.from("profiles").select("school_id").eq("user_id", user.id).limit(1).maybeSingle();
+          sid = p?.school_id || null;
         }
       }
-      if (!schoolId) throw new Error("Akun Anda belum terhubung ke sekolah.");
+      if (!sid) throw new Error("Akun Anda belum terhubung ke sekolah.");
+      return sid;
+    };
 
-      const addonAmount = 200000;
-      const { data: school } = await supabaseAdmin.from("schools").select("name").eq("id", schoolId).maybeSingle();
+    const siteUrl = "https://absenpintar.lovable.app";
 
-      // Reuse pending addon payment within 5 min window
+    // ── Helper: create Mayar payment link ──
+    const createMayarLink = async (name: string, amount: number, description: string, redirectUrl: string) => {
+      const mayarRes = await fetch("https://api.mayar.id/hl/v1/payment/create", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${mayarApiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ name, amount, description, email: user.email || "noemail@school.com", mobile: "08000000000", redirectUrl }),
+      });
+      const mayarData = await mayarRes.json();
+      if (!mayarRes.ok) throw new Error(`Mayar API error: ${mayarData?.message || JSON.stringify(mayarData)}`);
+      if (!mayarData?.data?.link) throw new Error("Mayar tidak mengembalikan link pembayaran");
+      return mayarData.data;
+    };
+
+    // ── Helper: find recent pending payment ──
+    const findRecentPending = async (filters: Record<string, string>) => {
       const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-      const { data: existingAddonPending } = await supabaseAdmin
-        .from("payment_transactions")
-        .select("id, mayar_payment_url")
-        .eq("school_id", schoolId)
-        .eq("payment_method", "addon_custom_domain")
-        .eq("status", "pending")
-        .gte("created_at", fiveMinAgo)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      let q = supabaseAdmin.from("payment_transactions").select("id, mayar_payment_url")
+        .eq("status", "pending").gte("created_at", fiveMinAgo).order("created_at", { ascending: false }).limit(1);
+      for (const [k, v] of Object.entries(filters)) q = q.eq(k, v);
+      const { data } = await q.maybeSingle();
+      return data;
+    };
 
-      if (existingAddonPending?.mayar_payment_url) {
-        return new Response(JSON.stringify({ success: true, payment_url: existingAddonPending.mayar_payment_url }), {
+    // ═══════════════════════════════════════════
+    // 1. ID Card Order Payment
+    // ═══════════════════════════════════════════
+    if (addon_type === "idcard" && order_id) {
+      const schoolId = await resolveSchoolId();
+      const { data: order } = await supabaseAdmin.from("id_card_orders").select("*").eq("id", order_id).eq("school_id", schoolId).single();
+      if (!order) throw new Error("Pesanan tidak ditemukan");
+      if (order.progress !== "waiting_payment") throw new Error("Pesanan sudah dibayar");
+
+      const { data: school } = await supabaseAdmin.from("schools").select("name").eq("id", schoolId).maybeSingle();
+      const amount = order.total_amount;
+
+      // Check recent pending
+      const existing = await findRecentPending({ school_id: schoolId, payment_method: "addon_idcard" });
+      if (existing?.mayar_payment_url) {
+        return new Response(JSON.stringify({ success: true, payment_url: existing.mayar_payment_url }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
-      const siteUrl = "https://absenpintar.lovable.app";
-      const redirectUrl = `${siteUrl}/custom-domain?status=success`;
+      const redirectUrl = `${siteUrl}/order-idcard?status=success`;
+      const paymentLink = await createMayarLink(
+        `ID Card ${order.total_cards} kartu - ${school?.name || "Sekolah"}`,
+        amount,
+        `Cetak ID Card ${order.total_cards} kartu - ${school?.name || "Sekolah"}`,
+        redirectUrl
+      );
 
-      const mayarRes = await fetch("https://api.mayar.id/hl/v1/payment/create", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${mayarApiKey}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: `Add-on Custom Domain - ${school?.name || "Sekolah"}`,
-          amount: addonAmount,
-          description: `Add-on Custom Domain - (${school?.name || "Sekolah"})`,
-          email: user.email || "noemail@school.com",
-          mobile: "08000000000",
-          redirectUrl,
-        }),
-      });
+      // Get any plan id for FK requirement
+      const { data: anyPlan } = await supabaseAdmin.from("subscription_plans").select("id").limit(1).single();
 
-      const mayarData = await mayarRes.json();
-      if (!mayarRes.ok) throw new Error(`Mayar API error: ${mayarData?.message || JSON.stringify(mayarData)}`);
-      const paymentLink = mayarData?.data;
-      if (!paymentLink?.link) throw new Error("Mayar tidak mengembalikan link pembayaran");
-
-      // Create payment transaction
       const { data: txn } = await supabaseAdmin.from("payment_transactions").insert({
         school_id: schoolId,
-        plan_id: (await supabaseAdmin.from("subscription_plans").select("id").limit(1).single()).data?.id || schoolId,
+        plan_id: anyPlan?.id || schoolId,
+        amount,
+        status: "pending",
+        mayar_transaction_id: paymentLink?.id || null,
+        mayar_payment_url: paymentLink?.link || null,
+        payment_method: "addon_idcard",
+      }).select("id").single();
+
+      // Link payment to order
+      await supabaseAdmin.from("id_card_orders").update({ payment_transaction_id: txn?.id || null }).eq("id", order_id);
+
+      return new Response(JSON.stringify({ success: true, payment_url: paymentLink.link }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ═══════════════════════════════════════════
+    // 2. Custom Domain Add-on Payment
+    // ═══════════════════════════════════════════
+    if (addon_type === "custom_domain") {
+      const schoolId = await resolveSchoolId();
+      const addonAmount = 200000;
+      const { data: school } = await supabaseAdmin.from("schools").select("name").eq("id", schoolId).maybeSingle();
+
+      const existing = await findRecentPending({ school_id: schoolId, payment_method: "addon_custom_domain" });
+      if (existing?.mayar_payment_url) {
+        return new Response(JSON.stringify({ success: true, payment_url: existing.mayar_payment_url }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const redirectUrl = `${siteUrl}/custom-domain?status=success`;
+      const paymentLink = await createMayarLink(
+        `Add-on Custom Domain - ${school?.name || "Sekolah"}`,
+        addonAmount,
+        `Add-on Custom Domain - (${school?.name || "Sekolah"})`,
+        redirectUrl
+      );
+
+      const { data: anyPlan } = await supabaseAdmin.from("subscription_plans").select("id").limit(1).single();
+      const { data: txn } = await supabaseAdmin.from("payment_transactions").insert({
+        school_id: schoolId,
+        plan_id: anyPlan?.id || schoolId,
         amount: addonAmount,
         status: "pending",
         mayar_transaction_id: paymentLink?.id || null,
@@ -108,7 +154,6 @@ serve(async (req) => {
         payment_method: "addon_custom_domain",
       }).select("id").single();
 
-      // Create addon record
       const subRes = await supabaseAdmin.from("school_subscriptions").select("expires_at").eq("school_id", schoolId).in("status", ["active", "trial"]).order("created_at", { ascending: false }).limit(1).maybeSingle();
       await supabaseAdmin.from("school_addons").upsert({
         school_id: schoolId,
@@ -124,167 +169,61 @@ serve(async (req) => {
       });
     }
 
+    // ═══════════════════════════════════════════
+    // 3. Subscription Plan Payment
+    // ═══════════════════════════════════════════
     if (!plan_id) throw new Error("plan_id is required");
 
-    const { data: plan, error: planError } = await supabaseAdmin
-      .from("subscription_plans")
-      .select("*")
-      .eq("id", plan_id)
-      .single();
-
+    const { data: plan, error: planError } = await supabaseAdmin.from("subscription_plans").select("*").eq("id", plan_id).single();
     if (planError || !plan) throw new Error("Plan not found");
 
-    // Resolve school id robustly
-    let schoolId: string | null = null;
-
-    const { data: schoolIdFromFn } = await supabaseAdmin.rpc("get_user_school_id", {
-      _user_id: user.id,
-    });
-
-    if (schoolIdFromFn) {
-      schoolId = schoolIdFromFn;
-    } else {
-      const { data: profile } = await supabaseAdmin
-        .from("profiles")
-        .select("school_id")
-        .eq("user_id", user.id)
-        .limit(1)
-        .maybeSingle();
-      schoolId = profile?.school_id || null;
-    }
-
-    // Allow super admin fallback when school_id explicitly passed
+    let schoolId = await resolveSchoolId().catch(() => null);
     if (!schoolId && requestedSchoolId) {
-      const { data: isSuperAdmin } = await supabaseAdmin.rpc("has_role", {
-        _user_id: user.id,
-        _role: "super_admin",
-      });
-      if (isSuperAdmin) schoolId = requestedSchoolId;
+      const { data: isSA } = await supabaseAdmin.rpc("has_role", { _user_id: user.id, _role: "super_admin" });
+      if (isSA) schoolId = requestedSchoolId;
     }
+    if (!schoolId) throw new Error("Akun Anda belum terhubung ke sekolah. Silakan hubungi Super Admin.");
 
-    if (!schoolId) {
-      throw new Error("Akun Anda belum terhubung ke sekolah. Silakan hubungi Super Admin.");
-    }
-
-    const { data: school } = await supabaseAdmin
-      .from("schools")
-      .select("name")
-      .eq("id", schoolId)
-      .maybeSingle();
+    const { data: school } = await supabaseAdmin.from("schools").select("name").eq("id", schoolId).maybeSingle();
 
     // Free plan: auto-approved
     if (plan.price === 0) {
       await supabaseAdmin.from("payment_transactions").insert({
-        school_id: schoolId,
-        plan_id: plan.id,
-        amount: 0,
-        status: "paid",
-        paid_at: new Date().toISOString(),
-        payment_method: "free",
+        school_id: schoolId, plan_id: plan.id, amount: 0, status: "paid", paid_at: new Date().toISOString(), payment_method: "free",
       });
-
-      const expiresAt = new Date();
-      expiresAt.setMonth(expiresAt.getMonth() + 1);
-
-      const { data: existingSub } = await supabaseAdmin
-        .from("school_subscriptions")
-        .select("id")
-        .eq("school_id", schoolId)
-        .eq("status", "active")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
+      const expiresAt = new Date(); expiresAt.setMonth(expiresAt.getMonth() + 1);
+      const { data: existingSub } = await supabaseAdmin.from("school_subscriptions").select("id").eq("school_id", schoolId).eq("status", "active").order("created_at", { ascending: false }).limit(1).maybeSingle();
       if (existingSub) {
-        await supabaseAdmin
-          .from("school_subscriptions")
-          .update({ plan_id: plan.id, expires_at: expiresAt.toISOString() })
-          .eq("id", existingSub.id);
+        await supabaseAdmin.from("school_subscriptions").update({ plan_id: plan.id, expires_at: expiresAt.toISOString() }).eq("id", existingSub.id);
       } else {
-        await supabaseAdmin.from("school_subscriptions").insert({
-          school_id: schoolId,
-          plan_id: plan.id,
-          status: "active",
-          expires_at: expiresAt.toISOString(),
-        });
+        await supabaseAdmin.from("school_subscriptions").insert({ school_id: schoolId, plan_id: plan.id, status: "active", expires_at: expiresAt.toISOString() });
       }
-
-      return new Response(JSON.stringify({ success: true, auto_approved: true }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(JSON.stringify({ success: true, auto_approved: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // Reuse pending payment in short window
-    const twoMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-    const { data: existingPending } = await supabaseAdmin
-      .from("payment_transactions")
-      .select("id, mayar_payment_url")
-      .eq("school_id", schoolId)
-      .eq("plan_id", plan.id)
-      .eq("status", "pending")
-      .gte("created_at", twoMinAgo)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (existingPending?.mayar_payment_url) {
-      return new Response(
-        JSON.stringify({ success: true, payment_url: existingPending.mayar_payment_url }),
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
+    const existing = await findRecentPending({ school_id: schoolId, plan_id: plan.id });
+    if (existing?.mayar_payment_url) {
+      return new Response(JSON.stringify({ success: true, payment_url: existing.mayar_payment_url }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // Keep redirect stable to the published app domain
-    const siteUrl = "https://absenpintar.lovable.app";
     const redirectUrl = `${siteUrl}/subscription?status=success`;
-    console.log("Redirect URL:", redirectUrl);
-
-    const mayarRes = await fetch("https://api.mayar.id/hl/v1/payment/create", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${mayarApiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name: `Paket ${plan.name} - ${school?.name || "Sekolah"}`,
-        amount: plan.price,
-        description: `Paket ${plan.name} - (${school?.name || "Sekolah"})`,
-        email: user.email || "noemail@school.com",
-        mobile: "08000000000",
-        redirectUrl,
-      }),
-    });
-
-    const mayarData = await mayarRes.json();
-    if (!mayarRes.ok) {
-      console.error("Mayar API error:", mayarData);
-      throw new Error(`Mayar API error: ${mayarData?.message || JSON.stringify(mayarData)}`);
-    }
-
-    const paymentLink = mayarData?.data;
-    if (!paymentLink?.link) {
-      throw new Error("Mayar tidak mengembalikan link pembayaran");
-    }
+    const paymentLink = await createMayarLink(
+      `Paket ${plan.name} - ${school?.name || "Sekolah"}`,
+      plan.price,
+      `Paket ${plan.name} - (${school?.name || "Sekolah"})`,
+      redirectUrl
+    );
 
     await supabaseAdmin.from("payment_transactions").insert({
-      school_id: schoolId,
-      plan_id: plan.id,
-      amount: plan.price,
-      status: "pending",
-      mayar_transaction_id: paymentLink?.id || null,
-      mayar_payment_url: paymentLink?.link || null,
+      school_id: schoolId, plan_id: plan.id, amount: plan.price, status: "pending",
+      mayar_transaction_id: paymentLink?.id || null, mayar_payment_url: paymentLink?.link || null,
     });
 
-    return new Response(JSON.stringify({ success: true, payment_url: paymentLink.link }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(JSON.stringify({ success: true, payment_url: paymentLink.link }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {
     console.error("create-mayar-payment error:", error);
     return new Response(JSON.stringify({ success: false, error: error.message }), {
-      status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
