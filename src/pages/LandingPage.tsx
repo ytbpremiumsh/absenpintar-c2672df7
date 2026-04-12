@@ -276,6 +276,11 @@ const LandingPage = () => {
     );
   }
 
+  // Theme B (Modern SaaS)
+  if (landingTheme === "modern") {
+    return <LandingThemeB />;
+  }
+
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-white overflow-x-hidden">
       {/* ─── Navbar ─── */}
