@@ -355,6 +355,7 @@ const SuperAdminLanding = () => {
   return (
     <div className="space-y-6">
       <BrandingSettings />
+      <LandingThemeSelector />
 
       <div className="flex items-center justify-between">
         <div>
