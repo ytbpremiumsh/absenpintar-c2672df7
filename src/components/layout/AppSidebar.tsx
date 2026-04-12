@@ -243,7 +243,7 @@ export function AppSidebar() {
             <SidebarGroup>
               {renderGroupLabel("Pengaturan")}
               <SidebarGroupContent>
-                <SidebarMenu className="space-y-1">{renderNavItems(settingsNav.filter(i => i.url !== "/custom-domain" || domainAddonEnabled))}</SidebarMenu>
+                <SidebarMenu className="space-y-1">{renderNavItems(settingsNav)}</SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
           </>
