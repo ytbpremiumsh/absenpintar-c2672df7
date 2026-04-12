@@ -244,7 +244,6 @@ const LandingThemeB = () => {
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {(() => {
-              const ICON_MAP: Record<string, any> = { scan: QrCode, monitor: Monitor, message: Bell, chart: FileBarChart, face: UserCheck, school: GraduationCap, code: Code, support: HeartHandshake, shield: Shield };
               return DEFAULT_FEATURES.map((f, i) => {
                 const title = get(`feature_${i + 1}_title`) || f.title;
                 const desc = get(`feature_${i + 1}_desc`) || f.desc;
