@@ -53,6 +53,7 @@ import LandingPage from "./pages/LandingPage";
 import Presentation from "./pages/Presentation";
 import BusinessModel from "./pages/BusinessModel";
 import Proposal from "./pages/Proposal";
+import PitchDeck from "./pages/PitchDeck";
 import ReferralDashboard from "./pages/ReferralDashboard";
 import NotFound from "./pages/NotFound";
 import Penawaran from "./pages/Penawaran";
@@ -89,6 +90,7 @@ const App = () => (
             <Route path="/business-model" element={<BusinessModel />} />
             <Route path="/penawaran" element={<Penawaran />} />
             <Route path="/proposal" element={<Proposal />} />
+            <Route path="/pitchdeck" element={<PitchDeck />} />
             <Route path="/affiliate/register" element={<AffiliateRegister />} />
             <Route path="/affiliate/login" element={<AffiliateLogin />} />
             <Route path="/affiliate/dashboard" element={<AffiliateDashboard />} />
