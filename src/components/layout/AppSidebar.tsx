@@ -73,15 +73,14 @@ export function AppSidebar() {
 
   const [schoolData, setSchoolData] = useState<{ name: string; logo: string | null } | null>(null);
   const [platformLogo, setPlatformLogo] = useState<string | null>(null);
-  const [domainAddonEnabled, setDomainAddonEnabled] = useState(true);
+  
 
   const isPremiumBrand = ["School", "Premium"].includes(features.planName);
 
   useEffect(() => {
-    supabase.from("platform_settings").select("key, value").in("key", ["login_logo_url", "addon_custom_domain_enabled"]).then(({ data }) => {
+    supabase.from("platform_settings").select("key, value").in("key", ["login_logo_url"]).then(({ data }) => {
       (data || []).forEach((d: any) => {
         if (d.key === "login_logo_url" && d.value) setPlatformLogo(d.value);
-        if (d.key === "addon_custom_domain_enabled" && d.value === "false") setDomainAddonEnabled(false);
       });
     });
   }, []);
