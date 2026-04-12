@@ -57,6 +57,25 @@ serve(async (req) => {
       const addonAmount = 200000;
       const { data: school } = await supabaseAdmin.from("schools").select("name").eq("id", schoolId).maybeSingle();
 
+      // Reuse pending addon payment within 5 min window
+      const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+      const { data: existingAddonPending } = await supabaseAdmin
+        .from("payment_transactions")
+        .select("id, mayar_payment_url")
+        .eq("school_id", schoolId)
+        .eq("payment_method", "addon_custom_domain")
+        .eq("status", "pending")
+        .gte("created_at", fiveMinAgo)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (existingAddonPending?.mayar_payment_url) {
+        return new Response(JSON.stringify({ success: true, payment_url: existingAddonPending.mayar_payment_url }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       const siteUrl = "https://absenpintar.lovable.app";
       const redirectUrl = `${siteUrl}/custom-domain?status=success`;
 
@@ -196,7 +215,7 @@ serve(async (req) => {
     }
 
     // Reuse pending payment in short window
-    const twoMinAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
+    const twoMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
     const { data: existingPending } = await supabaseAdmin
       .from("payment_transactions")
       .select("id, mayar_payment_url")
