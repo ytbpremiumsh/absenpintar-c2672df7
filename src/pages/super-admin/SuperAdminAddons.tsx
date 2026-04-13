@@ -132,7 +132,7 @@ const SuperAdminAddons = () => {
     setDetailLoading(true);
     setViewBarcodeStudent(null);
     const { data } = await supabase.from("id_card_order_items")
-      .select("*, students(qr_code, student_id, name, class)")
+      .select("*, students(qr_code, student_id, name, class, photo_url)")
       .eq("order_id", order.id).order("student_class").order("student_name");
     setDetailItems(data || []);
     setDetailLoading(false);
@@ -583,9 +583,15 @@ const SuperAdminAddons = () => {
                     {detailItems.map((item, i) => {
                       const showBarcode = viewBarcodeStudent === "all" || viewBarcodeStudent?.id === item.id;
                       return (
-                        <div key={item.id} className="p-3">
+                         <div key={item.id} className="p-3">
                           <div className="flex items-center gap-3">
                             <span className="text-xs text-muted-foreground w-6 text-center font-bold">{i + 1}</span>
+                            <Avatar className="h-9 w-9 shrink-0">
+                              <AvatarImage src={(item as any).students?.photo_url || undefined} alt={item.student_name} />
+                              <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-bold">
+                                {item.student_name.split(" ").map((n: string) => n[0]).join("").substring(0, 2).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
                             <div className="flex-1 min-w-0">
                               <p className="font-medium text-sm truncate">{item.student_name}</p>
                               <p className="text-xs text-muted-foreground">{item.student_class} • NIS: {(item as any).students?.student_id || "-"}</p>
