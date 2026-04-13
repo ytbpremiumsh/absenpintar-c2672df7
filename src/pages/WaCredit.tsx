@@ -72,7 +72,9 @@ const WaCredit = () => {
       if (error) throw error;
       if (data?.payment_url) {
         toast.success("Membuka halaman pembayaran...");
-        window.open(data.payment_url, "_blank");
+        window.location.href = data.payment_url;
+      } else {
+        throw new Error(data?.error || "Tidak mendapatkan link pembayaran");
       }
     } catch (err: any) {
       toast.error(err.message || "Gagal membuat pembayaran");
