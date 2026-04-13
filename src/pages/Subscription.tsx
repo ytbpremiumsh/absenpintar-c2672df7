@@ -350,6 +350,39 @@ const Subscription = () => {
               </div>
             )}
 
+            {/* WA Credits Progress */}
+            {waCredits && (
+              <div className="mb-4 p-3 rounded-xl bg-violet-500/5 border border-violet-500/20">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                    <MessageSquare className="h-3.5 w-3.5 text-violet-600" /> Kredit Pesan WA
+                  </span>
+                  <span className={`text-xs font-bold ${waCredits.balance < 100 ? "text-warning" : "text-violet-600"}`}>
+                    {waCredits.balance.toLocaleString("id-ID")} pesan
+                  </span>
+                </div>
+                <div className="h-2.5 rounded-full bg-muted overflow-hidden">
+                  <motion.div
+                    className={`h-full rounded-full ${waCredits.balance < 100 ? "bg-gradient-to-r from-warning to-destructive" : "bg-gradient-to-r from-violet-500 to-purple-500"}`}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min(100, waCredits.total_purchased > 0 ? (waCredits.balance / waCredits.total_purchased) * 100 : 0)}%` }}
+                    transition={{ duration: 1, ease: "easeOut" }}
+                  />
+                </div>
+                <div className="flex justify-between mt-1.5">
+                  <span className="text-[10px] text-muted-foreground">
+                    Terpakai: {waCredits.total_used.toLocaleString("id-ID")}
+                  </span>
+                  <span className={`text-[10px] font-medium ${waCredits.balance < 100 ? "text-warning" : "text-muted-foreground"}`}>
+                    {waCredits.balance < 100 ? "⚠ Kredit hampir habis" : `Sisa ${Math.round(waCredits.total_purchased > 0 ? (waCredits.balance / waCredits.total_purchased) * 100 : 0)}%`}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">
+                    Total: {waCredits.total_purchased.toLocaleString("id-ID")}
+                  </span>
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 mb-4">
               <div className="p-2.5 rounded-xl bg-success/5 border border-success/20 text-center">
                 <Shield className="h-4 w-4 text-success mx-auto mb-1" />
