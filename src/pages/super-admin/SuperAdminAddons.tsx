@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Globe, Package, Search, CheckCircle2, Clock, XCircle, ExternalLink, CreditCard, Image, Trash2, Plus, Pencil, Eye, Users } from "lucide-react";
+import { Globe, Package, Search, CheckCircle2, Clock, XCircle, ExternalLink, CreditCard, Image, Trash2, Plus, Pencil, Eye, Users, Download, MessageSquare } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -24,11 +24,15 @@ const PROGRESS_STEPS = [
 const SuperAdminAddons = () => {
   const [domainEnabled, setDomainEnabled] = useState(true);
   const [idcardEnabled, setIdcardEnabled] = useState(true);
+  const [waCreditEnabled, setWaCreditEnabled] = useState(true);
   const [toggling, setToggling] = useState(false);
   const [domainAddons, setDomainAddons] = useState<any[]>([]);
   const [idcardOrders, setIdcardOrders] = useState<any[]>([]);
   const [designs, setDesigns] = useState<any[]>([]);
   const [pricePerCard, setPricePerCard] = useState("7000");
+  const [waCreditPrice, setWaCreditPrice] = useState("50000");
+  const [waCreditPerPack, setWaCreditPerPack] = useState("1000");
+  const [waCredits, setWaCredits] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [orderSearch, setOrderSearch] = useState("");
@@ -36,7 +40,6 @@ const SuperAdminAddons = () => {
   const [editDesign, setEditDesign] = useState<any>(null);
   const [designName, setDesignName] = useState("");
   const [designUrl, setDesignUrl] = useState("");
-  // Order detail
   const [detailOrder, setDetailOrder] = useState<any>(null);
   const [detailItems, setDetailItems] = useState<any[]>([]);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -44,20 +47,25 @@ const SuperAdminAddons = () => {
   useEffect(() => { fetchData(); }, []);
 
   const fetchData = async () => {
-    const [settingRes, addonsRes, ordersRes, designsRes] = await Promise.all([
-      supabase.from("platform_settings").select("key, value").in("key", ["addon_custom_domain_enabled", "addon_idcard_enabled", "idcard_price_per_card"]),
+    const [settingRes, addonsRes, ordersRes, designsRes, creditsRes] = await Promise.all([
+      supabase.from("platform_settings").select("key, value").in("key", ["addon_custom_domain_enabled", "addon_idcard_enabled", "idcard_price_per_card", "addon_wa_credit_enabled", "wa_credit_price", "wa_credit_per_pack"]),
       supabase.from("school_addons").select("*, schools(name)").eq("addon_type", "custom_domain").order("created_at", { ascending: false }),
       supabase.from("id_card_orders").select("*, schools(name), id_card_designs(name, preview_url)").order("created_at", { ascending: false }),
       supabase.from("id_card_designs").select("*").order("sort_order"),
+      supabase.from("wa_credits").select("*, schools(name)").order("updated_at", { ascending: false }),
     ]);
     (settingRes.data || []).forEach((s: any) => {
       if (s.key === "addon_custom_domain_enabled") setDomainEnabled(s.value !== "false");
       if (s.key === "addon_idcard_enabled") setIdcardEnabled(s.value !== "false");
       if (s.key === "idcard_price_per_card") setPricePerCard(s.value || "7000");
+      if (s.key === "addon_wa_credit_enabled") setWaCreditEnabled(s.value !== "false");
+      if (s.key === "wa_credit_price") setWaCreditPrice(s.value || "50000");
+      if (s.key === "wa_credit_per_pack") setWaCreditPerPack(s.value || "1000");
     });
     setDomainAddons(addonsRes.data || []);
     setIdcardOrders(ordersRes.data || []);
     setDesigns(designsRes.data || []);
+    setWaCredits(creditsRes.data || []);
     setLoading(false);
   };
 
@@ -88,6 +96,14 @@ const SuperAdminAddons = () => {
     else toast.success("Harga per kartu diperbarui");
   };
 
+  const saveWaCreditSettings = async () => {
+    await Promise.all([
+      supabase.from("platform_settings").upsert({ key: "wa_credit_price", value: waCreditPrice }, { onConflict: "key" }),
+      supabase.from("platform_settings").upsert({ key: "wa_credit_per_pack", value: waCreditPerPack }, { onConflict: "key" }),
+    ]);
+    toast.success("Pengaturan kredit WA diperbarui");
+  };
+
   const saveDesign = async () => {
     if (!designName) return;
     if (editDesign) {
@@ -111,9 +127,24 @@ const SuperAdminAddons = () => {
   const openOrderDetail = async (order: any) => {
     setDetailOrder(order);
     setDetailLoading(true);
-    const { data } = await supabase.from("id_card_order_items").select("*").eq("order_id", order.id).order("student_class").order("student_name");
+    const { data } = await supabase.from("id_card_order_items")
+      .select("*, students(qr_code, student_id)")
+      .eq("order_id", order.id).order("student_class").order("student_name");
     setDetailItems(data || []);
     setDetailLoading(false);
+  };
+
+  const downloadOrderCSV = (order: any, items: any[]) => {
+    const lines = ["No,Nama Siswa,Kelas,NIS,QR/Barcode"];
+    items.forEach((item, i) => {
+      lines.push(`${i + 1},"${item.student_name}","${item.student_class}","${(item as any).students?.student_id || ""}","${(item as any).students?.qr_code || ""}"`);
+    });
+    const blob = new Blob([lines.join("\n")], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = `order-idcard-${order.id.slice(0, 8)}.csv`;
+    a.click(); URL.revokeObjectURL(url);
+    toast.success("Data siswa + barcode berhasil didownload");
   };
 
   const filteredDomain = domainAddons.filter((a) =>
@@ -145,7 +176,7 @@ const SuperAdminAddons = () => {
       </div>
 
       {/* Toggle Menus */}
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-3">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -184,13 +215,33 @@ const SuperAdminAddons = () => {
             </div>
           </CardContent>
         </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-violet-500/10 flex items-center justify-center">
+                  <MessageSquare className="h-5 w-5 text-violet-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-sm">Kredit WA</h3>
+                  <p className="text-xs text-muted-foreground">Rp {parseInt(waCreditPrice).toLocaleString("id-ID")} / {parseInt(waCreditPerPack).toLocaleString("id-ID")} pesan</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant={waCreditEnabled ? "default" : "secondary"} className="text-[10px]">{waCreditEnabled ? "Aktif" : "Nonaktif"}</Badge>
+                <Switch checked={waCreditEnabled} onCheckedChange={(v) => toggleSetting("addon_wa_credit_enabled", v, setWaCreditEnabled)} disabled={toggling} />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <Tabs defaultValue="domain" className="space-y-4">
-        <TabsList>
+        <TabsList className="flex-wrap">
           <TabsTrigger value="domain" className="gap-1.5"><Globe className="h-3.5 w-3.5" /> Custom Domain</TabsTrigger>
           <TabsTrigger value="idcard-orders" className="gap-1.5"><CreditCard className="h-3.5 w-3.5" /> Pesanan ID Card</TabsTrigger>
           <TabsTrigger value="idcard-designs" className="gap-1.5"><Image className="h-3.5 w-3.5" /> Desain & Harga</TabsTrigger>
+          <TabsTrigger value="wa-credits" className="gap-1.5"><MessageSquare className="h-3.5 w-3.5" /> Kredit WA</TabsTrigger>
         </TabsList>
 
         {/* Domain Tab */}
@@ -335,13 +386,13 @@ const SuperAdminAddons = () => {
                 {designs.length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-8">Belum ada desain.</p>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                     {designs.map((d) => (
                       <div key={d.id} className="border rounded-xl overflow-hidden">
                         {d.preview_url ? (
-                          <img src={d.preview_url} alt={d.name} className="w-full h-40 object-cover" loading="lazy" />
+                          <img src={d.preview_url} alt={d.name} className="w-full aspect-[2/3] object-cover" loading="lazy" />
                         ) : (
-                          <div className="w-full h-40 bg-muted flex items-center justify-center">
+                          <div className="w-full aspect-[2/3] bg-muted flex items-center justify-center">
                             <Image className="h-8 w-8 text-muted-foreground/40" />
                           </div>
                         )}
@@ -364,6 +415,67 @@ const SuperAdminAddons = () => {
             </Card>
           </div>
         </TabsContent>
+
+        {/* WA Credits Tab */}
+        <TabsContent value="wa-credits">
+          <div className="space-y-4">
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+                  <div className="flex-1 space-y-2">
+                    <h3 className="font-semibold text-sm">Pengaturan Harga Kredit WA</h3>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs text-muted-foreground">Harga per Paket (Rp)</label>
+                        <Input type="number" value={waCreditPrice} onChange={(e) => setWaCreditPrice(e.target.value)} />
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">Jumlah Pesan per Paket</label>
+                        <Input type="number" value={waCreditPerPack} onChange={(e) => setWaCreditPerPack(e.target.value)} />
+                      </div>
+                    </div>
+                  </div>
+                  <Button size="sm" onClick={saveWaCreditSettings}>Simpan</Button>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Kredit WA per Sekolah ({waCredits.length})</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {waCredits.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-8">Belum ada sekolah dengan kredit WA</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Sekolah</TableHead>
+                          <TableHead>Sisa Kredit</TableHead>
+                          <TableHead>Total Dibeli</TableHead>
+                          <TableHead>Terpakai</TableHead>
+                          <TableHead>Terakhir Update</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {waCredits.map((c) => (
+                          <TableRow key={c.id}>
+                            <TableCell className="font-medium text-sm">{(c as any).schools?.name || "—"}</TableCell>
+                            <TableCell className="font-bold">{c.balance.toLocaleString("id-ID")}</TableCell>
+                            <TableCell>{c.total_purchased.toLocaleString("id-ID")}</TableCell>
+                            <TableCell>{c.total_used.toLocaleString("id-ID")}</TableCell>
+                            <TableCell className="text-xs text-muted-foreground">{new Date(c.updated_at).toLocaleDateString("id-ID")}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
       </Tabs>
 
       {/* Design Dialog */}
@@ -376,9 +488,9 @@ const SuperAdminAddons = () => {
               <Input value={designName} onChange={(e) => setDesignName(e.target.value)} placeholder="e.g. Blue Professional" />
             </div>
             <div>
-              <label className="text-sm font-medium">URL Preview Gambar</label>
+              <label className="text-sm font-medium">URL Preview Gambar (Portrait)</label>
               <Input value={designUrl} onChange={(e) => setDesignUrl(e.target.value)} placeholder="https://..." />
-              {designUrl && <img src={designUrl} alt="Preview" className="mt-2 max-h-32 rounded-lg border" loading="lazy" />}
+              {designUrl && <img src={designUrl} alt="Preview" className="mt-2 max-w-[150px] aspect-[2/3] object-cover rounded-lg border" loading="lazy" />}
             </div>
           </div>
           <DialogFooter>
@@ -390,7 +502,7 @@ const SuperAdminAddons = () => {
 
       {/* Order Detail Dialog */}
       <Dialog open={!!detailOrder} onOpenChange={(open) => !open && setDetailOrder(null)}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <CreditCard className="h-5 w-5 text-emerald-600" />
@@ -428,14 +540,25 @@ const SuperAdminAddons = () => {
                 </div>
               </div>
 
+              {/* Design Preview Portrait */}
               {(detailOrder as any).id_card_designs?.preview_url && (
-                <img src={(detailOrder as any).id_card_designs.preview_url} alt="Design" className="w-full max-h-32 object-contain rounded-lg border" />
+                <div className="text-center">
+                  <p className="text-xs font-semibold text-muted-foreground mb-2">Preview Desain</p>
+                  <img src={(detailOrder as any).id_card_designs.preview_url} alt="Design" className="mx-auto max-w-[200px] aspect-[2/3] object-cover rounded-lg border shadow-sm" />
+                </div>
               )}
 
               <div>
-                <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
-                  <Users className="h-4 w-4" /> Daftar Siswa ({detailItems.length})
-                </h4>
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-semibold text-sm flex items-center gap-2">
+                    <Users className="h-4 w-4" /> Daftar Siswa + Barcode ({detailItems.length})
+                  </h4>
+                  {detailItems.length > 0 && (
+                    <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => downloadOrderCSV(detailOrder, detailItems)}>
+                      <Download className="h-3 w-3 mr-1" /> Download CSV
+                    </Button>
+                  )}
+                </div>
                 {detailLoading ? (
                   <div className="flex justify-center py-4"><div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" /></div>
                 ) : (
@@ -445,8 +568,11 @@ const SuperAdminAddons = () => {
                         <span className="text-xs text-muted-foreground w-6 text-center">{i + 1}</span>
                         <div className="flex-1 min-w-0">
                           <p className="font-medium truncate">{item.student_name}</p>
-                          <p className="text-xs text-muted-foreground">{item.student_class}</p>
+                          <p className="text-xs text-muted-foreground">{item.student_class} • NIS: {(item as any).students?.student_id || "-"}</p>
                         </div>
+                        {(item as any).students?.qr_code && (
+                          <code className="text-[9px] bg-muted px-1.5 py-0.5 rounded font-mono text-muted-foreground shrink-0">{(item as any).students.qr_code}</code>
+                        )}
                       </div>
                     ))}
                     {detailItems.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">Tidak ada data siswa</p>}

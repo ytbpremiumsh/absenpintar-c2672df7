@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
   Check, Star, Zap, Crown, Loader2, Shield, Calendar, Clock,
-  GraduationCap, AlertTriangle, CheckCircle2, CreditCard,
+  GraduationCap, AlertTriangle, CheckCircle2, CreditCard, MessageSquare,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
