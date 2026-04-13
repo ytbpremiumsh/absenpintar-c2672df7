@@ -160,7 +160,9 @@ const OrderIdCard = () => {
   const openDetail = async (order: any) => {
     setDetailOrder(order);
     setDetailLoading(true);
-    const { data } = await supabase.from("id_card_order_items").select("*").eq("order_id", order.id).order("student_class").order("student_name");
+    const { data } = await supabase.from("id_card_order_items")
+      .select("*, students(qr_code, student_id)")
+      .eq("order_id", order.id).order("student_class").order("student_name");
     setDetailItems(data || []);
     setDetailLoading(false);
   };
