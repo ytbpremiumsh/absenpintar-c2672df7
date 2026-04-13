@@ -68,6 +68,7 @@ import SuperAdminAddons from "./pages/super-admin/SuperAdminAddons";
 import CustomDomain from "./pages/CustomDomain";
 import Addons from "./pages/Addons";
 import OrderIdCard from "./pages/OrderIdCard";
+import WaCredit from "./pages/WaCredit";
 
 const queryClient = new QueryClient();
 
@@ -145,6 +146,7 @@ const App = () => (
               <Route path="/addons" element={<Addons />} />
               <Route path="/custom-domain" element={<CustomDomain />} />
               <Route path="/order-idcard" element={<OrderIdCard />} />
+              <Route path="/wa-credit" element={<WaCredit />} />
               <Route path="/wa-templates" element={<Navigate to="/whatsapp" replace />} />
               <Route path="/wa-broadcast" element={<Navigate to="/whatsapp" replace />} />
               <Route path="/wa-history" element={<Navigate to="/whatsapp" replace />} />
