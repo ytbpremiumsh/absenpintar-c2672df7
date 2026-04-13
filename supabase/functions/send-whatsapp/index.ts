@@ -105,6 +105,8 @@ serve(async (req) => {
 
     if (gatewayType === 'mpwa') {
       // ═══ MPWA Gateway ═══
+      const mpwaSendUrl = finalApiUrl || `${MPWA_BASE}/send-message`;
+
       if (phone) {
         let formattedPhone = phone.replace(/\D/g, '');
         if (formattedPhone.startsWith('0')) {
@@ -112,7 +114,7 @@ serve(async (req) => {
         }
         console.log(`MPWA sending to phone: ${formattedPhone}, sender: ${mpwaSenderNum}`);
         sendRequests.push(
-          fetch(`${MPWA_BASE}/send-message`, {
+          fetch(mpwaSendUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -126,16 +128,15 @@ serve(async (req) => {
       }
 
       if (group_id) {
-        // MPWA uses /send-group endpoint for group messages
         console.log(`MPWA sending to group: ${group_id}, sender: ${mpwaSenderNum}`);
         sendRequests.push(
-          fetch(`${MPWA_BASE}/send-group`, {
+          fetch(mpwaSendUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               api_key: finalApiKey,
               sender: mpwaSenderNum,
-              group_id: group_id,
+              number: group_id,
               message: message,
             }),
           })
