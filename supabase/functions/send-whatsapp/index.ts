@@ -54,17 +54,13 @@ serve(async (req) => {
       gatewayType = integration.gateway_type || 'onesender';
 
       if (gatewayType === 'mpwa') {
-        // For MPWA: sender from school_integrations, API key from school or platform_settings
         mpwaSenderNum = integration.mpwa_sender || '';
         finalApiKey = integration.mpwa_api_key || '';
 
-        // Fallback API key to platform_settings
         if (!finalApiKey) {
           const { data: platformKey } = await supabaseAdmin
-            .from('platform_settings')
-            .select('value')
-            .eq('key', 'mpwa_platform_api_key')
-            .maybeSingle();
+            .from('platform_settings').select('value')
+            .eq('key', 'mpwa_platform_api_key').maybeSingle();
           if (platformKey?.value) finalApiKey = platformKey.value;
         }
 
@@ -88,12 +84,27 @@ serve(async (req) => {
       });
     }
 
+    // ═══ Check & deduct WA credits ═══
+    if (school_id) {
+      const messageCount = (phone ? 1 : 0) + (group_id ? 1 : 0);
+      const { data: credit } = await supabaseAdmin
+        .from('wa_credits')
+        .select('balance')
+        .eq('school_id', school_id)
+        .maybeSingle();
+
+      if (!credit || credit.balance < messageCount) {
+        return new Response(JSON.stringify({ success: false, error: 'Kredit WhatsApp tidak mencukupi. Silakan beli kredit tambahan.' }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
     const sendRequests: Promise<Response>[] = [];
+    const MPWA_BASE = 'https://app.ayopintar.com';
 
     if (gatewayType === 'mpwa') {
       // ═══ MPWA Gateway ═══
-      const mpwaUrl = 'https://app.ayopintar.com/send-message';
-
       if (phone) {
         let formattedPhone = phone.replace(/\D/g, '');
         if (formattedPhone.startsWith('0')) {
@@ -101,7 +112,7 @@ serve(async (req) => {
         }
         console.log(`MPWA sending to phone: ${formattedPhone}, sender: ${mpwaSenderNum}`);
         sendRequests.push(
-          fetch(mpwaUrl, {
+          fetch(`${MPWA_BASE}/send-message`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -115,15 +126,16 @@ serve(async (req) => {
       }
 
       if (group_id) {
+        // MPWA uses /send-group endpoint for group messages
         console.log(`MPWA sending to group: ${group_id}, sender: ${mpwaSenderNum}`);
         sendRequests.push(
-          fetch(mpwaUrl, {
+          fetch(`${MPWA_BASE}/send-group`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               api_key: finalApiKey,
               sender: mpwaSenderNum,
-              number: group_id,
+              group_id: group_id,
               message: message,
             }),
           })
@@ -196,6 +208,26 @@ serve(async (req) => {
           student_name: student_name || null,
         });
       } catch { /* ignore logging errors */ }
+
+      // Deduct WA credits on successful send
+      if (!hasError) {
+        const messageCount = (phone ? 1 : 0) + (group_id ? 1 : 0);
+        try {
+          const { data: credit } = await supabaseAdmin
+            .from('wa_credits')
+            .select('balance, total_used')
+            .eq('school_id', school_id)
+            .maybeSingle();
+
+          if (credit) {
+            await supabaseAdmin.from('wa_credits').update({
+              balance: Math.max(0, credit.balance - messageCount),
+              total_used: credit.total_used + messageCount,
+              updated_at: new Date().toISOString(),
+            }).eq('school_id', school_id);
+          }
+        } catch { /* ignore credit errors */ }
+      }
     }
 
     if (hasError) {

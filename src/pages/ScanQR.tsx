@@ -350,7 +350,7 @@ const ScanQR = () => {
     if (error) { toast.error("Gagal mencatat absensi: " + error.message); return; }
     setConfirmed(true);
     const typeLabel = currentAttType === "datang" ? "Datang" : "Pulang";
-    toast.success(`Absensi ${typeLabel} ${scannedStudent.name} berhasil dicatat!`);
+    // Success visual feedback is handled by the confirmed state UI, no toast needed
 
     // Send WA notification based on school delivery settings
     try {
