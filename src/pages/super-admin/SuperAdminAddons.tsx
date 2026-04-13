@@ -44,6 +44,7 @@ const SuperAdminAddons = () => {
   const [detailOrder, setDetailOrder] = useState<any>(null);
   const [detailItems, setDetailItems] = useState<any[]>([]);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [viewBarcodeStudent, setViewBarcodeStudent] = useState<any>(null);
 
   useEffect(() => { fetchData(); }, []);
 
