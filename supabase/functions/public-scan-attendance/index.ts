@@ -6,6 +6,25 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+const invokeSendWhatsApp = async (payload: Record<string, unknown>) => {
+  const response = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-whatsapp`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      apikey: Deno.env.get('SUPABASE_ANON_KEY') || Deno.env.get('SUPABASE_PUBLISHABLE_KEY') || '',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const text = await response.text();
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return { success: false, error: text.substring(0, 200) };
+  }
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
@@ -155,13 +174,10 @@ serve(async (req) => {
             .replace(/\{school_name\}/g, schoolName)
             .replace(/\{type\}/g, typeLabel);
 
-        const apiUrl = integration.api_url;
-        const apiKey = integration.api_key;
-
-        const sendTasks: Promise<void>[] = [];
+        const sendTasks: Promise<unknown>[] = [];
 
         // Send to parent (Wali Murid)
-        if ((deliveryTarget === 'parent_only' || deliveryTarget === 'both') && student.parent_phone && apiUrl && apiKey) {
+        if ((deliveryTarget === 'parent_only' || deliveryTarget === 'both') && student.parent_phone) {
           const template = attendance_type === 'datang'
             ? (integration.attendance_arrive_template || '')
             : (integration.attendance_depart_template || '');
@@ -169,26 +185,16 @@ serve(async (req) => {
           const message = template ? applyReplacements(template)
             : `📋 *Notifikasi Absensi ${typeLabel}*\n\n${schoolName}\n\nAnanda *${student.name}* (Kelas ${student.class}) telah tercatat ${typeLabel.toLowerCase()} pada ${dayName}, pukul ${timeStr}.\n\nMetode: ${methodLabel}\n\n_Pesan otomatis dari Smart School Attendance System_`;
 
-          let formattedPhone = student.parent_phone.replace(/\D/g, '');
-          if (formattedPhone.startsWith('0')) formattedPhone = '62' + formattedPhone.substring(1);
-
           sendTasks.push((async () => {
             try {
-              const r = await fetch(apiUrl, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ recipient_type: 'individual', to: formattedPhone, type: 'text', text: { body: message } }),
-              });
-              const result = await r.json().catch(() => ({}));
-              console.log('WA parent result:', JSON.stringify(result));
-              await supabase.from('wa_message_logs').insert({
+              const result = await invokeSendWhatsApp({
                 school_id,
-                phone: formattedPhone,
-                message: message.substring(0, 500),
+                phone: student.parent_phone,
+                message,
                 message_type: 'attendance',
-                status: r.ok ? 'sent' : 'failed',
                 student_name: student.name,
               });
+              console.log('WA parent result:', JSON.stringify(result).substring(0, 200));
             } catch (e) {
               console.error('WA parent error:', e);
             }
@@ -196,29 +202,21 @@ serve(async (req) => {
         }
 
         // Send to Group Kelas
-        if ((deliveryTarget === 'group_only' || deliveryTarget === 'both') && groupId && apiUrl && apiKey) {
+        if ((deliveryTarget === 'group_only' || deliveryTarget === 'both') && groupId) {
           const groupTpl = integration.attendance_group_template || '';
           const groupMessage = groupTpl ? applyReplacements(groupTpl)
             : `📋 *Notifikasi Absensi ${typeLabel}*\n\n${schoolName}\n\nSiswa *${student.name}* (Kelas ${student.class}) telah tercatat ${typeLabel.toLowerCase()} pada ${dayName}, pukul ${timeStr}.\n\nMetode: ${methodLabel}\n\n_Pesan otomatis dari Smart School Attendance System_`;
 
           sendTasks.push((async () => {
             try {
-              console.log('Sending to group:', groupId, 'via:', apiUrl);
-              const r = await fetch(apiUrl, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ recipient_type: 'group', to: groupId, type: 'text', text: { body: groupMessage } }),
-              });
-              const result = await r.json().catch(() => ({}));
-              console.log('WA group result:', JSON.stringify(result));
-              await supabase.from('wa_message_logs').insert({
+              const result = await invokeSendWhatsApp({
                 school_id,
                 group_id: groupId,
-                message: groupMessage.substring(0, 500),
+                message: groupMessage,
                 message_type: 'attendance_group',
-                status: r.ok ? 'sent' : 'failed',
                 student_name: student.name,
               });
+              console.log('WA group result:', JSON.stringify(result).substring(0, 200));
             } catch (e) {
               console.error('WA group error:', e);
             }
