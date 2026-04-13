@@ -8,9 +8,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Globe, Package, Search, CheckCircle2, Clock, XCircle, ExternalLink, CreditCard, Image, Trash2, Plus, Pencil, Eye, Users, Download, MessageSquare } from "lucide-react";
+import { Globe, Package, Search, CheckCircle2, Clock, XCircle, ExternalLink, CreditCard, Image, Trash2, Plus, Pencil, Eye, Users, MessageSquare } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import QRCodeDisplay from "@/components/QRCodeDisplay";
 
 const PROGRESS_STEPS = [
   { key: "waiting_payment", label: "Menunggu Bayar" },
@@ -43,6 +44,7 @@ const SuperAdminAddons = () => {
   const [detailOrder, setDetailOrder] = useState<any>(null);
   const [detailItems, setDetailItems] = useState<any[]>([]);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [viewBarcodeStudent, setViewBarcodeStudent] = useState<any>(null);
 
   useEffect(() => { fetchData(); }, []);
 
@@ -127,24 +129,12 @@ const SuperAdminAddons = () => {
   const openOrderDetail = async (order: any) => {
     setDetailOrder(order);
     setDetailLoading(true);
+    setViewBarcodeStudent(null);
     const { data } = await supabase.from("id_card_order_items")
-      .select("*, students(qr_code, student_id)")
+      .select("*, students(qr_code, student_id, name, class)")
       .eq("order_id", order.id).order("student_class").order("student_name");
     setDetailItems(data || []);
     setDetailLoading(false);
-  };
-
-  const downloadOrderCSV = (order: any, items: any[]) => {
-    const lines = ["No,Nama Siswa,Kelas,NIS,QR/Barcode"];
-    items.forEach((item, i) => {
-      lines.push(`${i + 1},"${item.student_name}","${item.student_class}","${(item as any).students?.student_id || ""}","${(item as any).students?.qr_code || ""}"`);
-    });
-    const blob = new Blob([lines.join("\n")], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = `order-idcard-${order.id.slice(0, 8)}.csv`;
-    a.click(); URL.revokeObjectURL(url);
-    toast.success("Data siswa + barcode berhasil didownload");
   };
 
   const filteredDomain = domainAddons.filter((a) =>
@@ -503,12 +493,12 @@ const SuperAdminAddons = () => {
       </Dialog>
 
       {/* Order Detail Dialog */}
-      <Dialog open={!!detailOrder} onOpenChange={(open) => !open && setDetailOrder(null)}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+      <Dialog open={!!detailOrder} onOpenChange={(open) => { if (!open) { setDetailOrder(null); setViewBarcodeStudent(null); } }}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <CreditCard className="h-5 w-5 text-emerald-600" />
-              Detail Pesanan
+              Detail Pesanan ID Card
             </DialogTitle>
           </DialogHeader>
           {detailOrder && (
@@ -527,53 +517,77 @@ const SuperAdminAddons = () => {
                   <p className="font-bold">Rp {(detailOrder.total_amount || 0).toLocaleString("id-ID")}</p>
                 </div>
                 <div className="bg-muted/50 rounded-lg p-3">
-                  <p className="text-xs text-muted-foreground">Desain</p>
-                  <p className="font-bold">{(detailOrder as any).id_card_designs?.name || "Default"}</p>
-                </div>
-                <div className="bg-muted/50 rounded-lg p-3">
                   <p className="text-xs text-muted-foreground">Status</p>
                   <Badge variant={detailOrder.progress === "completed" ? "default" : "secondary"} className="mt-1">
                     {PROGRESS_STEPS.find((s) => s.key === detailOrder.progress)?.label || detailOrder.progress}
                   </Badge>
                 </div>
-                <div className="bg-muted/50 rounded-lg p-3">
-                  <p className="text-xs text-muted-foreground">Tanggal</p>
-                  <p className="font-bold">{new Date(detailOrder.created_at).toLocaleDateString("id-ID")}</p>
+                <div className="bg-muted/50 rounded-lg p-3 col-span-2">
+                  <p className="text-xs text-muted-foreground">Tanggal Pesan</p>
+                  <p className="font-bold">{new Date(detailOrder.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}</p>
                 </div>
               </div>
 
-              {/* Design Preview Portrait */}
-              {(detailOrder as any).id_card_designs?.preview_url && (
-                <div className="text-center">
-                  <p className="text-xs font-semibold text-muted-foreground mb-2">Preview Desain</p>
-                  <img src={(detailOrder as any).id_card_designs.preview_url} alt="Design" className="mx-auto max-w-[200px] aspect-[2/3] object-cover rounded-lg border shadow-sm" />
-                </div>
-              )}
-
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-semibold text-sm flex items-center gap-2">
-                    <Users className="h-4 w-4" /> Daftar Siswa + Barcode ({detailItems.length})
-                  </h4>
-                   {detailItems.length > 0 && (
-                     <Button size="sm" className="h-7 text-xs bg-gradient-to-r from-[#5B6CF9] to-[#4c5ded] hover:from-[#4c5ded] hover:to-[#3d4ede] text-white" onClick={() => downloadOrderCSV(detailOrder, detailItems)}>
-                       <Download className="h-3 w-3 mr-1" /> Download CSV
-                     </Button>
+              {/* Design chosen - prominent */}
+              <div className="border rounded-xl p-4 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-950/20">
+                <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                  <Image className="h-4 w-4 text-emerald-600" /> Desain yang Dipilih
+                </h4>
+                <div className="flex items-start gap-4">
+                  {(detailOrder as any).id_card_designs?.preview_url ? (
+                    <img src={(detailOrder as any).id_card_designs.preview_url} alt="Design" className="w-28 aspect-[2/3] object-cover rounded-lg border shadow-sm shrink-0" />
+                  ) : (
+                    <div className="w-28 aspect-[2/3] bg-muted rounded-lg border flex items-center justify-center shrink-0">
+                      <Image className="h-8 w-8 text-muted-foreground/30" />
+                    </div>
                   )}
+                  <div>
+                    <p className="font-bold text-lg">{(detailOrder as any).id_card_designs?.name || "Desain Default"}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Desain kartu identitas yang dipilih sekolah untuk pesanan ini</p>
+                    <p className="text-sm font-semibold mt-2 text-emerald-700 dark:text-emerald-400">Rp {(detailOrder.price_per_card || 7000).toLocaleString("id-ID")} / kartu</p>
+                  </div>
                 </div>
+              </div>
+
+              {/* Student list with barcode view */}
+              <div>
+                <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                  <Users className="h-4 w-4" /> Daftar Siswa ({detailItems.length})
+                </h4>
                 {detailLoading ? (
                   <div className="flex justify-center py-4"><div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" /></div>
                 ) : (
-                  <div className="max-h-48 overflow-y-auto border rounded-lg divide-y">
+                  <div className="max-h-64 overflow-y-auto border rounded-lg divide-y">
                     {detailItems.map((item, i) => (
-                      <div key={item.id} className="flex items-center gap-3 p-2.5 text-sm">
-                        <span className="text-xs text-muted-foreground w-6 text-center">{i + 1}</span>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium truncate">{item.student_name}</p>
-                          <p className="text-xs text-muted-foreground">{item.student_class} • NIS: {(item as any).students?.student_id || "-"}</p>
+                      <div key={item.id} className="p-3">
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs text-muted-foreground w-6 text-center font-bold">{i + 1}</span>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm truncate">{item.student_name}</p>
+                            <p className="text-xs text-muted-foreground">{item.student_class} • NIS: {(item as any).students?.student_id || "-"}</p>
+                          </div>
+                          {(item as any).students?.qr_code && (
+                            <Button
+                              size="sm"
+                              className="h-7 text-xs bg-gradient-to-r from-[#5B6CF9] to-[#4c5ded] hover:from-[#4c5ded] hover:to-[#3d4ede] text-white shrink-0"
+                              onClick={() => setViewBarcodeStudent(viewBarcodeStudent?.id === item.id ? null : { id: item.id, name: item.student_name, class: item.student_class, qr_code: (item as any).students.qr_code, student_id: (item as any).students.student_id })}
+                            >
+                              <Eye className="h-3 w-3 mr-1" /> {viewBarcodeStudent?.id === item.id ? "Tutup" : "Lihat Barcode"}
+                            </Button>
+                          )}
                         </div>
-                        {(item as any).students?.qr_code && (
-                          <code className="text-[9px] bg-muted px-1.5 py-0.5 rounded font-mono text-muted-foreground shrink-0">{(item as any).students.qr_code}</code>
+                        {/* Inline barcode preview */}
+                        {viewBarcodeStudent?.id === item.id && (
+                          <div className="mt-3 p-4 bg-white dark:bg-gray-900 rounded-lg border flex flex-col items-center">
+                            <QRCodeDisplay
+                              data={viewBarcodeStudent.qr_code}
+                              size={160}
+                              studentName={viewBarcodeStudent.name}
+                              studentClass={viewBarcodeStudent.class}
+                              schoolName={detailOrder.schools?.name}
+                              autoFrame={true}
+                            />
+                          </div>
                         )}
                       </div>
                     ))}
