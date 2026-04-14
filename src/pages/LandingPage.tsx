@@ -473,27 +473,37 @@ const LandingPage = () => {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-16">
             {PROBLEMS.map((p, i) => (
               <motion.div key={p.title} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
-                className="group bg-white dark:bg-slate-800/50 border border-red-100 dark:border-red-500/10 rounded-2xl p-6 hover:border-red-200 dark:hover:border-red-500/25 hover:shadow-lg hover:shadow-red-500/5 transition-all duration-300">
-                <div className="h-10 w-10 rounded-xl bg-red-50 dark:bg-red-500/10 flex items-center justify-center mb-4 group-hover:bg-red-100 dark:group-hover:bg-red-500/15 transition-colors">
-                  <p.icon className="h-5 w-5 text-red-500 dark:text-red-400" />
+                whileHover={{ y: -8, scale: 1.02 }}
+                className="group relative bg-white dark:bg-slate-800/60 border border-red-100 dark:border-red-500/10 rounded-2xl p-6 cursor-default overflow-hidden transition-shadow duration-300 hover:shadow-2xl hover:shadow-red-500/10">
+                {/* Animated corner accent */}
+                <div className="absolute top-0 right-0 w-20 h-20 bg-red-500/5 rounded-bl-[3rem] group-hover:w-28 group-hover:h-28 group-hover:bg-red-500/10 transition-all duration-500" />
+                {/* Number badge */}
+                <span className="absolute top-3 right-4 text-5xl font-black text-red-500/[0.06] group-hover:text-red-500/[0.12] transition-colors duration-500 select-none">0{i + 1}</span>
+                <div className="relative">
+                  <div className="h-11 w-11 rounded-xl bg-red-50 dark:bg-red-500/10 flex items-center justify-center mb-4 group-hover:bg-red-100 dark:group-hover:bg-red-500/20 group-hover:scale-110 transition-all duration-300">
+                    <p.icon className="h-5 w-5 text-red-500 dark:text-red-400" />
+                  </div>
+                  <h3 className="font-bold text-slate-900 dark:text-white text-base mb-1.5">{p.title}</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{p.desc}</p>
                 </div>
-                <h3 className="font-bold text-slate-900 dark:text-white text-base mb-1.5">{p.title}</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{p.desc}</p>
               </motion.div>
             ))}
           </div>
 
           {/* Arrow */}
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="flex flex-col items-center mb-16">
-            <div className="h-14 w-14 rounded-full bg-gradient-to-br from-indigo-600 to-blue-600 flex items-center justify-center shadow-xl shadow-indigo-500/20">
+            <motion.div
+              animate={{ y: [0, 8, 0] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              className="h-14 w-14 rounded-full bg-[#5B6CF9] flex items-center justify-center shadow-xl shadow-indigo-500/25">
               <ArrowDown className="h-6 w-6 text-white" />
-            </div>
-            <p className="mt-3 font-bold text-indigo-600 dark:text-indigo-400 text-sm">Solusi Kami</p>
+            </motion.div>
+            <p className="mt-3 font-bold text-[#5B6CF9] text-sm">Solusi Kami</p>
           </motion.div>
 
           {/* Solutions */}
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-14">
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-400 mb-3 block">Jawaban Tepat</span>
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#5B6CF9] mb-3 block">Jawaban Tepat</span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               ATSkolla — Absensi Digital Sekolah
             </h2>
@@ -503,16 +513,21 @@ const LandingPage = () => {
           <div className="grid sm:grid-cols-2 gap-5">
             {SOLUTIONS.map((s, i) => (
               <motion.div key={s.solution} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
-                className="group bg-white dark:bg-slate-800/50 border border-indigo-100 dark:border-indigo-500/10 rounded-2xl p-6 hover:border-indigo-200 dark:hover:border-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/5 transition-all duration-300">
+                whileHover={{ y: -6, scale: 1.01 }}
+                className="group relative bg-white dark:bg-slate-800/60 border border-indigo-100 dark:border-indigo-500/10 rounded-2xl p-6 cursor-default overflow-hidden transition-shadow duration-300 hover:shadow-2xl hover:shadow-indigo-500/10">
+                {/* Animated bg stripe */}
+                <div className="absolute inset-y-0 left-0 w-1 bg-[#5B6CF9]/0 group-hover:bg-[#5B6CF9] transition-all duration-300 rounded-l-2xl" />
                 <div className="flex items-start gap-4">
-                  <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-indigo-600 to-blue-600 flex items-center justify-center shrink-0 shadow-lg shadow-indigo-500/15 group-hover:scale-105 transition-transform">
-                    <s.icon className="h-5 w-5 text-white" />
+                  <div className="h-12 w-12 rounded-xl bg-[#5B6CF9] flex items-center justify-center shrink-0 shadow-lg shadow-indigo-500/20 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                    <s.icon className="h-5.5 w-5.5 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
-                      <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400">{s.problem}</span>
-                      <ArrowRight className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
-                      <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">{s.solution}</span>
+                      <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400 line-through opacity-70">{s.problem}</span>
+                      <motion.span animate={{ x: [0, 4, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
+                        <ArrowRight className="h-3.5 w-3.5 text-[#5B6CF9] shrink-0" />
+                      </motion.span>
+                      <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-[#5B6CF9]">{s.solution}</span>
                     </div>
                     <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-1">{s.solution}</h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{s.desc}</p>
