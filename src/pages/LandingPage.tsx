@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import heroDashboard from "@/assets/hero-dashboard.png";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { cn } from "@/lib/utils";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
