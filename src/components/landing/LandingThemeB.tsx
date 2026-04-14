@@ -309,9 +309,8 @@ const LandingThemeB = () => {
           </motion.div>
         </div>
 
-        {/* Mobile buttons - below image */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
-          className="relative z-30 flex sm:hidden flex-col gap-2.5 px-6 mt-6 pb-14">
+        {/* Mobile buttons - pinned near bottom */}
+        <div className="relative z-30 flex sm:hidden flex-col gap-2.5 px-6 mt-auto pb-16">
           <button onClick={() => navigate("/register")}
             className="inline-flex items-center justify-center gap-2 bg-white text-[#5B6CF9] px-6 py-3 rounded-2xl font-bold text-sm transition-all shadow-xl shadow-black/10 active:scale-[0.98]">
             <Zap className="h-4 w-4" /> {get("cta_text", "Mulai Gratis Sekarang")}
@@ -320,7 +319,7 @@ const LandingThemeB = () => {
             className="inline-flex items-center justify-center gap-2 bg-white/10 text-white px-6 py-3 rounded-2xl font-semibold text-sm transition-all border border-white/15">
             <Play className="h-4 w-4" /> Lihat Demo
           </a>
-        </motion.div>
+        </div>
 
         {/* Rounded bottom edge */}
         <div className="absolute bottom-0 left-0 right-0 h-10 sm:h-14 bg-white dark:bg-slate-950 rounded-t-[2rem] sm:rounded-t-[3rem] z-[5]" />
