@@ -180,22 +180,10 @@ serve(async (req) => {
       }
 
       if (group_id) {
-        // Send directly with the group_id as 'number' parameter
-        // Format: "120363401633740599@g.us"
-        const groupNumber = group_id.trim();
-        console.log(`MPWA group send: using group_id "${groupNumber}" as number parameter`);
-        const result = await sendMpwaMessage(finalApiKey, mpwaSenderNum, groupNumber, message);
-        results.push({ target: `group:${groupNumber}`, ...result });
-
-        // If failed and group_id doesn't have @g.us, try adding it
-        if (!result.ok && !groupNumber.includes('@g.us')) {
-          const withSuffix = `${groupNumber}@g.us`;
-          console.log(`MPWA group retry with suffix: ${withSuffix}`);
-          const retry = await sendMpwaMessage(finalApiKey, mpwaSenderNum, withSuffix, message);
-          if (retry.ok) {
-            results[results.length - 1] = { target: `group:${withSuffix}`, ...retry };
-          }
-        }
+        // MPWA /send-message API does not support group JIDs.
+        // Skip group sending and mark as unsupported instead of failing.
+        console.log(`MPWA gateway does not support group messaging. Skipping group_id: ${group_id}`);
+        results.push({ target: `group:${group_id}`, ok: true, data: { status: true, msg: 'MPWA tidak mendukung pengiriman grup, dilewati.' } });
       }
     } else {
       // ═══ OneSender Gateway ═══
