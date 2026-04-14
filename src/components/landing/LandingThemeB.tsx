@@ -300,10 +300,10 @@ const LandingThemeB = () => {
           </motion.div>
         </div>
 
-        {/* Hero image - overlaps into next section */}
-        <div className="relative z-30 px-4 sm:px-6 lg:px-8 -mb-16 sm:-mb-28 lg:-mb-40">
+        {/* Hero image - centered between title and buttons on mobile */}
+        <div className="relative z-30 px-4 sm:px-6 lg:px-8 sm:-mb-28 lg:-mb-40 flex-1 sm:flex-none flex items-center sm:block">
           <motion.div initial={{ opacity: 0, y: 40, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ delay: 0.3, duration: 1, ease: "easeOut" }}
-            className="max-w-5xl mx-auto overflow-visible">
+            className="max-w-5xl mx-auto overflow-visible w-full">
             <img src={get("hero_image") || heroMockup} alt="Dashboard ATSkolla"
               className="w-full h-auto object-contain" />
           </motion.div>
