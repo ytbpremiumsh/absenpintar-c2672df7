@@ -244,11 +244,6 @@ const LandingThemeB = () => {
             animate={{ top: ['100%', '0%'] }}
             transition={{ duration: 12, repeat: Infinity, ease: 'linear' }}
           />
-          {/* Corner accent shapes */}
-          <div className="absolute top-16 left-8 w-24 h-24 border border-white/[0.07] rounded-lg rotate-12" />
-          <div className="absolute top-32 right-12 w-16 h-16 border border-white/[0.05] rounded-full" />
-          <div className="absolute bottom-1/3 left-16 w-20 h-20 border border-white/[0.06] rounded-lg -rotate-6" />
-          <div className="absolute top-1/4 right-1/4 w-32 h-32 border border-white/[0.04] rounded-2xl rotate-45" />
           {/* Data stream lines */}
           <svg className="absolute inset-0 w-full h-full opacity-[0.04]" xmlns="http://www.w3.org/2000/svg">
             <line x1="10%" y1="0" x2="30%" y2="100%" stroke="white" strokeWidth="1" strokeDasharray="6 12" />
@@ -263,7 +258,7 @@ const LandingThemeB = () => {
         <div className="absolute top-1/3 -right-32 w-[350px] h-[350px] bg-violet-400/[0.06] rounded-full blur-3xl pointer-events-none" />
 
         {/* Text content */}
-        <div className="relative z-10 flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 pt-20 pb-4 flex-shrink-0">
+        <div className="relative z-10 flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 pt-20 sm:pt-20 pb-4 flex-shrink-0">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="text-center">
             <span className="inline-flex items-center gap-2 bg-white/10 border border-white/15 rounded-full px-4 py-1.5 text-xs font-bold text-white/90 mb-4">
               <Sparkles className="h-3.5 w-3.5" /> Platform Absensi Digital #1
@@ -271,7 +266,7 @@ const LandingThemeB = () => {
           </motion.div>
 
           <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.7 }}
-            className="text-center text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-extrabold tracking-tight leading-[1.15] max-w-3xl">
+            className="text-center text-3xl sm:text-3xl lg:text-4xl xl:text-5xl font-extrabold tracking-tight leading-[1.15] max-w-3xl">
             <span className="block text-white mb-2">
               {get("hero_title", "ATSkolla")}
             </span>
@@ -287,7 +282,7 @@ const LandingThemeB = () => {
           </motion.h1>
 
           <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25, duration: 0.6 }}
-            className="mt-3 text-xs sm:text-sm text-white/60 max-w-lg mx-auto leading-relaxed text-center">
+            className="mt-3 text-sm sm:text-sm text-white/60 max-w-lg mx-auto leading-relaxed text-center">
             {get("hero_subtitle", "Platform absensi modern dengan barcode scan & face recognition AI. Dirancang khusus untuk sekolah Indonesia.")}
           </motion.p>
 
@@ -305,9 +300,9 @@ const LandingThemeB = () => {
         </div>
 
         {/* Hero image - overlaps into next section */}
-        <div className="relative z-30 px-2 sm:px-6 lg:px-8 -mb-16 sm:-mb-28 lg:-mb-40">
+        <div className="relative z-30 px-4 sm:px-6 lg:px-8 -mb-16 sm:-mb-28 lg:-mb-40">
           <motion.div initial={{ opacity: 0, y: 40, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ delay: 0.3, duration: 1, ease: "easeOut" }}
-            className="max-w-5xl mx-auto overflow-hidden">
+            className="max-w-5xl mx-auto overflow-visible">
             <img src={get("hero_image") || heroMockup} alt="Dashboard ATSkolla"
               className="w-full h-auto object-contain" />
           </motion.div>
