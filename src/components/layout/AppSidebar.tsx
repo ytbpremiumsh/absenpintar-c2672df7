@@ -200,6 +200,14 @@ export function AppSidebar() {
               </SidebarGroupContent>
             </SidebarGroup>
             <SidebarGroup>
+              {renderGroupLabel("Jadwal")}
+              <SidebarGroupContent>
+                <SidebarMenu className="space-y-1">
+                  {renderNavItems(scheduleNav)}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+            <SidebarGroup>
               {renderGroupLabel("Laporan")}
               <SidebarGroupContent>
                 <SidebarMenu className="space-y-1">
@@ -224,6 +232,13 @@ export function AppSidebar() {
               {renderGroupLabel("Data Sekolah")}
               <SidebarGroupContent>
                 <SidebarMenu className="space-y-1">{renderNavItems(dataNav)}</SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+            <SidebarGroup>
+              {renderGroupLabel("Jadwal")}
+              <SidebarGroupContent>
+                <SidebarMenu className="space-y-1">{renderNavItems(scheduleNav)}</SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
 
