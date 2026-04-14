@@ -32,17 +32,19 @@ const formatPhoneNumber = (value: string) => {
 const sendMpwaMessage = async (
   apiKey: string,
   sender: string,
-  number: string,
+  recipient: string,
   message: string,
   isGroup: boolean = false,
 ): Promise<{ ok: boolean; data: any }> => {
-  const payload: Record<string, any> = { api_key: apiKey, sender, number, message };
+  // For group messages, MPWA uses 'chatId' parameter instead of 'number'
+  const payload: Record<string, any> = { api_key: apiKey, sender, message };
   if (isGroup) {
-    payload.isGroup = true;
-    payload.full = 1;
+    payload.chatId = recipient;
+  } else {
+    payload.number = recipient;
   }
 
-  console.log(`MPWA POST to ${MPWA_SEND_URL} | sender: ${sender} | number: ${number} | isGroup: ${isGroup} | msg_len: ${message.length}`);
+  console.log(`MPWA POST to ${MPWA_SEND_URL} | sender: ${sender} | ${isGroup ? 'chatId' : 'number'}: ${recipient} | isGroup: ${isGroup} | msg_len: ${message.length}`);
 
   try {
     const response = await fetch(MPWA_SEND_URL, {
@@ -61,11 +63,12 @@ const sendMpwaMessage = async (
     }
 
     // Fallback: try GET method
-    console.log(`MPWA POST failed, trying GET fallback for number: ${number}`);
-    const params = new URLSearchParams({ api_key: apiKey, sender, number, message });
+    console.log(`MPWA POST failed, trying GET fallback`);
+    const params = new URLSearchParams({ api_key: apiKey, sender, message });
     if (isGroup) {
-      params.set('isGroup', 'true');
-      params.set('full', '1');
+      params.set('chatId', recipient);
+    } else {
+      params.set('number', recipient);
     }
     const getResponse = await fetch(`${MPWA_SEND_URL}?${params.toString()}`);
     const getText = await getResponse.text();
@@ -79,7 +82,7 @@ const sendMpwaMessage = async (
 
     return { ok: false, data: getParsed };
   } catch (err) {
-    console.error(`MPWA send error for ${number}:`, err);
+    console.error(`MPWA send error for ${recipient}:`, err);
     return { ok: false, data: { status: false, msg: String(err) } };
   }
 };
