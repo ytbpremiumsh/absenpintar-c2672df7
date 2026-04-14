@@ -5,7 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Server, Database, Cpu, HardDrive, MemoryStick, Globe, Code2, Layers,
-  Activity, Zap, Clock, RefreshCw, Shield, Box, Gauge
+  Activity, Zap, RefreshCw, Shield, Box
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -100,7 +100,7 @@ export default function SuperAdminServerInfo() {
   const fetchDbStats = async () => {
     try {
       // Get table list to count
-      const { data: tables } = await supabase.from("schools").select("id", { count: "exact", head: true });
+      await supabase.from("schools").select("id", { count: "exact", head: true });
       
       // Approximate stats from known tables
       const tableNames = [

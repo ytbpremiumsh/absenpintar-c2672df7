@@ -65,6 +65,7 @@ import AffiliateDashboard from "./pages/AffiliateDashboard";
 import SuperAdminAffiliate from "./pages/super-admin/SuperAdminAffiliate";
 import SuperAdminBackup from "./pages/super-admin/SuperAdminBackup";
 import SuperAdminAddons from "./pages/super-admin/SuperAdminAddons";
+import SuperAdminServerInfo from "./pages/super-admin/SuperAdminServerInfo";
 import CustomDomain from "./pages/CustomDomain";
 import Addons from "./pages/Addons";
 import OrderIdCard from "./pages/OrderIdCard";
@@ -119,6 +120,7 @@ const App = () => (
               <Route path="/super-admin/affiliate" element={<SuperAdminAffiliate />} />
               <Route path="/super-admin/backup" element={<SuperAdminBackup />} />
               <Route path="/super-admin/addons" element={<SuperAdminAddons />} />
+              <Route path="/super-admin/server-info" element={<SuperAdminServerInfo />} />
             </Route>
             {/* School Admin / Staff */}
             <Route element={<AppLayout />}>
