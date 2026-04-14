@@ -209,8 +209,11 @@ const LandingThemeB = () => {
       </nav>
 
       {/* ─── Hero Section (1 screen) ─── */}
-      <section className="relative h-screen flex flex-col overflow-hidden bg-[#5B6CF9]">
-        <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '28px 28px' }} />
+      <section className="relative min-h-screen flex flex-col overflow-visible bg-[#5B6CF9]">
+        {/* Premium grid texture */}
+        <div className="absolute inset-0 opacity-[0.06] pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.07) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+        {/* Subtle radial glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-white/[0.04] rounded-full blur-3xl pointer-events-none" />
 
         {/* Text content */}
         <div className="relative z-10 flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 pt-20 pb-4 flex-shrink-0">
@@ -254,12 +257,12 @@ const LandingThemeB = () => {
           </motion.div>
         </div>
 
-        {/* Hero image - fills remaining space, no border */}
-        <div className="relative z-20 flex-1 min-h-0 px-4 sm:px-6 lg:px-8 pb-0">
+        {/* Hero image - overlaps into next section */}
+        <div className="relative z-30 px-4 sm:px-6 lg:px-8 -mb-24 sm:-mb-32 lg:-mb-40">
           <motion.div initial={{ opacity: 0, y: 40, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ delay: 0.3, duration: 1, ease: "easeOut" }}
-            className="max-w-5xl mx-auto h-full">
+            className="max-w-5xl mx-auto">
             <img src={get("hero_image") || heroMockup} alt="Dashboard ATSkolla"
-              className="w-full h-full object-cover object-top" />
+              className="w-full rounded-2xl shadow-2xl shadow-black/25" />
           </motion.div>
         </div>
 
