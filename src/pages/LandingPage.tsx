@@ -284,56 +284,39 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-white overflow-x-hidden">
-      {/* ─── Floating Navbar (mobile-style) ─── */}
-      <nav className={cn(
-        "fixed top-3 left-3 right-3 z-50 transition-all duration-300 rounded-2xl",
-        scrolled
-          ? "bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl shadow-lg border border-slate-200/80 dark:border-slate-700/50"
-          : "bg-white/10 backdrop-blur-lg border border-white/20"
-      )}>
+      {/* ─── Floating Navbar ─── */}
+      <nav className="fixed top-3 left-3 right-3 z-50 transition-all duration-300 rounded-2xl bg-white dark:bg-slate-900 shadow-lg border border-slate-200/80 dark:border-slate-700/50">
         <div className="px-4 sm:px-5 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <img src={headerLogo} alt="ATSkolla" className="h-8 sm:h-9 object-contain" />
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
             <ThemeToggle />
-            <button onClick={() => navigate("/login")} className={cn(
-              "text-xs sm:text-sm font-semibold px-3 py-1.5 transition-colors rounded-lg",
-              scrolled
-                ? "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
-                : "text-white/80 hover:text-white hover:bg-white/10"
-            )}>
+            <button onClick={() => navigate("/login")} className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-3 py-1.5 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
               Masuk
             </button>
-            <button onClick={() => navigate("/register")} className={cn(
-              "inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all hover:scale-[1.02] active:scale-[0.98]",
-              scrolled
-                ? "bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40"
-                : "bg-white text-[#5B6CF9] shadow-lg shadow-black/10"
-            )}>
+            <button onClick={() => navigate("/register")} className="inline-flex items-center gap-1.5 bg-[#5B6CF9] text-white px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-md shadow-indigo-500/20 hover:scale-[1.02] active:scale-[0.98]">
               Mulai Gratis <ArrowRight className="h-3 w-3" />
             </button>
           </div>
         </div>
       </nav>
 
-      {/* ─── Hero Section ─── */}
-      <section className="relative min-h-screen flex flex-col overflow-hidden bg-[#5B6CF9]">
-        {/* Subtle dot pattern */}
+      {/* ─── Hero Section (1 screen) ─── */}
+      <section className="relative h-screen flex flex-col overflow-hidden bg-[#5B6CF9]">
         <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '28px 28px' }} />
 
-        {/* Main content - takes full screen, text centered */}
-        <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 pt-20 pb-6">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-            className="text-center">
-            <span className="inline-flex items-center gap-2 bg-white/10 border border-white/15 rounded-full px-4 py-1.5 text-xs font-bold text-white/90 mb-6">
+        {/* Text content */}
+        <div className="relative z-10 flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 pt-20 pb-4 flex-shrink-0">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="text-center">
+            <span className="inline-flex items-center gap-2 bg-white/10 border border-white/15 rounded-full px-4 py-1.5 text-xs font-bold text-white/90 mb-4">
               <Sparkles className="h-3.5 w-3.5" /> Platform Absensi Digital #1
             </span>
           </motion.div>
 
           <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.7 }}
-            className="text-center text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight leading-[1.1] max-w-4xl">
-            <span className="block text-white mb-3">
+            className="text-center text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-extrabold tracking-tight leading-[1.15] max-w-3xl">
+            <span className="block text-white mb-2">
               {get("hero_title", "ATSkolla")}
             </span>
             <span className="block min-h-[1.2em]">
@@ -348,39 +331,39 @@ const LandingPage = () => {
           </motion.h1>
 
           <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.6 }}
-            className="mt-5 text-sm sm:text-base text-white/60 max-w-xl mx-auto leading-relaxed text-center">
+            className="mt-3 text-xs sm:text-sm text-white/60 max-w-lg mx-auto leading-relaxed text-center">
             {get("hero_subtitle", "Platform absensi modern dengan barcode scan & face recognition AI. Dirancang khusus untuk sekolah Indonesia.")}
           </motion.p>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }}
-            className="mt-7 flex flex-col sm:flex-row gap-3 justify-center">
+            className="mt-5 flex flex-col sm:flex-row gap-3 justify-center">
             <button onClick={() => navigate("/register")}
-              className="inline-flex items-center justify-center gap-2 bg-white text-[#5B6CF9] px-7 py-3 rounded-2xl font-bold transition-all shadow-xl shadow-black/10 hover:shadow-black/20 hover:scale-[1.02] active:scale-[0.98] text-sm">
+              className="inline-flex items-center justify-center gap-2 bg-white text-[#5B6CF9] px-6 py-2.5 rounded-2xl font-bold transition-all shadow-xl shadow-black/10 hover:shadow-black/20 hover:scale-[1.02] active:scale-[0.98] text-sm">
               <Zap className="h-4 w-4" /> {get("cta_text", "Coba Gratis Sekarang")}
             </button>
             <a href="#how-it-works"
-              className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 text-white px-7 py-3 rounded-2xl font-semibold transition-all text-sm border border-white/15">
+              className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 text-white px-6 py-2.5 rounded-2xl font-semibold transition-all text-sm border border-white/15">
               <Play className="h-4 w-4" /> Cara Kerja
             </a>
           </motion.div>
         </div>
 
-        {/* Hero image at bottom center, overlapping the rounded edge */}
-        <div className="relative z-10 px-4 sm:px-6 lg:px-8 pb-0">
-          <motion.div initial={{ opacity: 0, y: 50, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ delay: 0.5, duration: 1, ease: "easeOut" }}
-            className="max-w-4xl mx-auto">
+        {/* Hero image - fills remaining space, no border */}
+        <div className="relative z-10 flex-1 min-h-0 px-4 sm:px-6 lg:px-8 pb-0">
+          <motion.div initial={{ opacity: 0, y: 40, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ delay: 0.5, duration: 1, ease: "easeOut" }}
+            className="max-w-4xl mx-auto h-full">
             <motion.img
               src={get("hero_image") || heroDashboard}
               alt="Dashboard ATSkolla"
-              className="w-full h-auto rounded-t-2xl border border-white/15 border-b-0 shadow-2xl shadow-black/20"
+              className="w-full h-full object-cover object-top rounded-t-2xl shadow-2xl shadow-black/20"
               whileHover={{ scale: 1.01 }}
               transition={{ duration: 0.4 }}
             />
           </motion.div>
         </div>
 
-        {/* Rounded bottom edge - solid color transition */}
-        <div className="absolute bottom-0 left-0 right-0 h-12 sm:h-16 bg-white dark:bg-slate-950 rounded-t-[2rem] sm:rounded-t-[3rem] z-[5]" />
+        {/* Rounded bottom edge */}
+        <div className="absolute bottom-0 left-0 right-0 h-10 sm:h-14 bg-white dark:bg-slate-950 rounded-t-[2rem] sm:rounded-t-[3rem] z-[5]" />
       </section>
 
       {/* ─── Hero Stats Banner ─── */}

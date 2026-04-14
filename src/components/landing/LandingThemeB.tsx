@@ -2,11 +2,12 @@ import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
+import TypingEffect from "@/components/TypingEffect";
 import {
   ArrowRight, CheckCircle2, Mail, Phone, MapPin,
-  Zap, QrCode, GraduationCap, Shield,
+  Zap, QrCode, GraduationCap,
   Star, ChevronRight, Sparkles, Play,
-  Quote, ChevronLeft, Code, HeartHandshake, Award,
+  Quote, ChevronLeft, Award,
   Monitor, FileBarChart, Bell, UserCheck, BarChart3,
   Lock, Smartphone, TrendingUp, AlertTriangle, XCircle, Clock, FileText, Globe, Users, ArrowDown,
 } from "lucide-react";
