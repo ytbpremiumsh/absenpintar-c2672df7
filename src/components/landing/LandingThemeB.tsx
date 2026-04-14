@@ -271,7 +271,7 @@ const LandingThemeB = () => {
       </section>
 
       {/* ─── Trusted Schools & Stats ─── */}
-      <section className="py-16 sm:py-24 bg-slate-50/80 dark:bg-slate-900/30 border-y border-slate-200/50 dark:border-slate-800/50">
+      <section className="pt-32 sm:pt-44 lg:pt-52 pb-16 sm:pb-24 bg-slate-50/80 dark:bg-slate-900/30 border-y border-slate-200/50 dark:border-slate-800/50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-10">
             <span className="inline-block text-xs font-bold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 px-4 py-1.5 rounded-full mb-4">Kepercayaan</span>
