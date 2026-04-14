@@ -101,12 +101,12 @@ export function LiveScheduleWidget({ schoolId }: { schoolId: string }) {
   const status = getStatus(current.start_time, current.end_time, now);
 
   return (
-    <Card className="rounded-2xl border border-border/60 shadow-sm overflow-hidden">
-      <CardHeader className="pb-2">
+    <Card className="rounded-2xl border border-border/60 shadow-sm overflow-hidden max-h-[180px]">
+      <CardHeader className="pb-1 pt-3 px-4">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
             <Radio className="h-4 w-4 text-green-500 animate-pulse" />
-            Jadwal Live Hari Ini
+            Jadwal Hari Ini
           </CardTitle>
           <Button variant="ghost" size="sm" className="text-xs h-7 text-primary" onClick={() => navigate("/live-schedule")}>
             Lihat Semua
