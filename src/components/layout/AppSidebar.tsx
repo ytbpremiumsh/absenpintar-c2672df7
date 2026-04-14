@@ -17,6 +17,8 @@ import {
   PenLine,
   Sparkles,
   Package,
+  CalendarDays,
+  Radio,
 } from "lucide-react";
 import atskollaLogo from "@/assets/Logo_atskolla.png";
 import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
@@ -51,6 +53,11 @@ const dataNav = [
   { title: "Wali Murid", url: "/teachers", icon: UserCheck, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
   { title: "Wali Kelas", url: "/wali-kelas", icon: ClipboardCheck, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
   { title: "Staff / Operator", url: "/staff", icon: UsersRound, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
+];
+
+const scheduleNav = [
+  { title: "Jadwal Mengajar", url: "/teaching-schedule", icon: CalendarDays, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
+  { title: "Jadwal Live", url: "/live-schedule", icon: Radio, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
 ];
 
 const whatsappNav = [
@@ -193,6 +200,14 @@ export function AppSidebar() {
               </SidebarGroupContent>
             </SidebarGroup>
             <SidebarGroup>
+              {renderGroupLabel("Jadwal")}
+              <SidebarGroupContent>
+                <SidebarMenu className="space-y-1">
+                  {renderNavItems(scheduleNav)}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+            <SidebarGroup>
               {renderGroupLabel("Laporan")}
               <SidebarGroupContent>
                 <SidebarMenu className="space-y-1">
@@ -217,6 +232,13 @@ export function AppSidebar() {
               {renderGroupLabel("Data Sekolah")}
               <SidebarGroupContent>
                 <SidebarMenu className="space-y-1">{renderNavItems(dataNav)}</SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+            <SidebarGroup>
+              {renderGroupLabel("Jadwal")}
+              <SidebarGroupContent>
+                <SidebarMenu className="space-y-1">{renderNavItems(scheduleNav)}</SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
 

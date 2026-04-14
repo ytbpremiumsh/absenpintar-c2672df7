@@ -70,6 +70,8 @@ import CustomDomain from "./pages/CustomDomain";
 import Addons from "./pages/Addons";
 import OrderIdCard from "./pages/OrderIdCard";
 import WaCredit from "./pages/WaCredit";
+import TeachingSchedule from "./pages/TeachingSchedule";
+import LiveSchedule from "./pages/LiveSchedule";
 
 const queryClient = new QueryClient();
 
@@ -149,6 +151,8 @@ const App = () => (
               <Route path="/custom-domain" element={<CustomDomain />} />
               <Route path="/order-idcard" element={<OrderIdCard />} />
               <Route path="/wa-credit" element={<WaCredit />} />
+              <Route path="/teaching-schedule" element={<TeachingSchedule />} />
+              <Route path="/live-schedule" element={<LiveSchedule />} />
               <Route path="/wa-templates" element={<Navigate to="/whatsapp" replace />} />
               <Route path="/wa-broadcast" element={<Navigate to="/whatsapp" replace />} />
               <Route path="/wa-history" element={<Navigate to="/whatsapp" replace />} />
