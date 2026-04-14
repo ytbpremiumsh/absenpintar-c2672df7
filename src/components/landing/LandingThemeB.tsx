@@ -255,11 +255,11 @@ const LandingThemeB = () => {
         </div>
 
         {/* Hero image - fills remaining space, no border */}
-        <div className="relative z-10 flex-1 min-h-0 px-4 sm:px-6 lg:px-8 pb-0">
+        <div className="relative z-20 flex-1 min-h-0 px-4 sm:px-6 lg:px-8 pb-0">
           <motion.div initial={{ opacity: 0, y: 40, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ delay: 0.3, duration: 1, ease: "easeOut" }}
             className="max-w-5xl mx-auto h-full">
             <img src={get("hero_image") || heroMockup} alt="Dashboard ATSkolla"
-              className="w-full h-full object-cover object-top rounded-t-2xl shadow-2xl shadow-black/20" />
+              className="w-full h-full object-cover object-top" />
           </motion.div>
         </div>
 
