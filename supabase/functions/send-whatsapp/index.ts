@@ -180,10 +180,9 @@ serve(async (req) => {
       }
 
       if (group_id) {
-        // MPWA /send-message API does not support group JIDs.
-        // Skip group sending and mark as unsupported instead of failing.
-        console.log(`MPWA gateway does not support group messaging. Skipping group_id: ${group_id}`);
-        results.push({ target: `group:${group_id}`, ok: true, data: { status: true, msg: 'MPWA tidak mendukung pengiriman grup, dilewati.' } });
+        // Send to group using the same /send-message endpoint with group JID as number
+        const result = await sendMpwaMessage(finalApiKey, mpwaSenderNum, group_id, message);
+        results.push({ target: `group:${group_id}`, ...result });
       }
     } else {
       // ═══ OneSender Gateway ═══
