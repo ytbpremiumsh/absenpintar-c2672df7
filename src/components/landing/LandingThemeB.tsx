@@ -184,75 +184,94 @@ const LandingThemeB = () => {
         "fixed top-3 left-3 right-3 z-50 transition-all duration-300 rounded-2xl",
         scrolled
           ? "bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl shadow-lg border border-slate-200/80 dark:border-slate-700/50"
-          : "bg-white/70 dark:bg-slate-900/60 backdrop-blur-lg border border-slate-200/50 dark:border-slate-700/30"
+          : "bg-white/10 backdrop-blur-lg border border-white/15"
       )}>
         <div className="px-4 sm:px-5 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <img src={headerLogo} alt="ATSkolla" className="h-8 sm:h-9 object-contain" />
           </div>
           <div className="hidden md:flex items-center gap-6">
-            <a href="#features" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Fitur</a>
-            <a href="#how-it-works" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Cara Kerja</a>
-            {showPricing && <a href="#pricing" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Harga</a>}
-            <a href="#contact" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Kontak</a>
+            {[
+              { href: "#features", label: "Fitur" },
+              { href: "#how-it-works", label: "Cara Kerja" },
+              ...(showPricing ? [{ href: "#pricing", label: "Harga" }] : []),
+              { href: "#contact", label: "Kontak" },
+            ].map(link => (
+              <a key={link.href} href={link.href} className={cn(
+                "text-sm font-medium transition-colors",
+                scrolled ? "text-slate-600 dark:text-slate-300 hover:text-indigo-600" : "text-white/70 hover:text-white"
+              )}>{link.label}</a>
+            ))}
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
             <ThemeToggle />
-            <button onClick={() => navigate("/login")} className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300 px-3 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+            <button onClick={() => navigate("/login")} className={cn(
+              "text-xs sm:text-sm font-semibold px-3 py-1.5 rounded-lg transition-colors",
+              scrolled ? "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800" : "text-white/80 hover:text-white hover:bg-white/10"
+            )}>
               Masuk
             </button>
-            <button onClick={() => navigate("/register")} className="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-md shadow-indigo-500/20">
+            <button onClick={() => navigate("/register")} className={cn(
+              "inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all hover:scale-[1.02] active:scale-[0.98]",
+              scrolled ? "bg-[#5B6CF9] text-white shadow-md shadow-indigo-500/20" : "bg-white text-[#5B6CF9] shadow-lg shadow-black/10"
+            )}>
               Coba Gratis <ArrowRight className="h-3 w-3" />
             </button>
           </div>
         </div>
       </nav>
 
-      {/* ─── Hero Section with Curved Background (fits one screen) ─── */}
-      <section className="relative min-h-screen flex flex-col justify-center overflow-hidden">
-        <div className="absolute inset-x-0 top-0 h-[70%] sm:h-[65%] bg-gradient-to-br from-indigo-600 via-indigo-700 to-blue-800" />
-        <div className="absolute inset-x-0 top-[65%] sm:top-[60%] h-[15%]" style={{ background: "linear-gradient(to bottom, #4338ca, transparent)" }} />
-        <div className="absolute top-20 left-10 w-72 h-72 bg-white/5 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute top-40 right-10 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl pointer-events-none" />
-        <svg className="absolute bottom-0 left-0 right-0 w-full" viewBox="0 0 1440 120" fill="none" preserveAspectRatio="none" style={{ height: "80px" }}>
-          <path d="M0,60 C360,120 1080,0 1440,60 L1440,120 L0,120 Z" className="fill-white dark:fill-slate-950" />
-        </svg>
+      {/* ─── Hero Section ─── */}
+      <section className="relative min-h-screen flex flex-col overflow-hidden bg-[#5B6CF9]">
+        <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '28px 28px' }} />
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16">
-          <div className="grid lg:grid-cols-2 gap-10 items-center">
-            <div>
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-                <span className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-1.5 text-xs font-bold text-white/90 mb-6">
-                  <Sparkles className="h-3.5 w-3.5" /> Platform Absensi Digital #1
-                </span>
-              </motion.div>
-              <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.7 }}
-                className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-extrabold text-white leading-[1.1] tracking-tight">
-                {get("hero_title", "Absensi Digital")} <br />
-                <span className="text-indigo-200">Sekolah Modern</span>
-              </motion.h1>
-              <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25, duration: 0.6 }}
-                className="mt-5 text-base sm:text-lg text-white/70 max-w-lg leading-relaxed">
-                {get("hero_subtitle", "Platform absensi modern dengan barcode scan & face recognition AI. Dirancang khusus untuk sekolah Indonesia.")}
-              </motion.p>
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
-                className="mt-8 flex flex-col sm:flex-row gap-3">
-                <button onClick={() => navigate("/register")}
-                  className="inline-flex items-center justify-center gap-2 bg-white text-indigo-700 px-7 py-3.5 rounded-xl font-bold text-sm transition-all shadow-xl hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98]">
-                  <Zap className="h-4 w-4" /> {get("cta_text", "Mulai Gratis Sekarang")}
-                </button>
-                <a href="#how-it-works"
-                  className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white px-7 py-3.5 rounded-xl font-semibold text-sm transition-all border border-white/20">
-                  <Play className="h-4 w-4" /> Lihat Demo
-                </a>
-              </motion.div>
-            </div>
-            <motion.div initial={{ opacity: 0, x: 60, scale: 0.9 }} animate={{ opacity: 1, x: 0, scale: 1 }} transition={{ delay: 0.3, duration: 1, ease: "easeOut" }}
-              className="relative hidden lg:block">
-              <img src={get("hero_image") || heroMockup} alt="Dashboard ATSkolla" className="w-full h-auto drop-shadow-2xl" width={1280} height={800} />
-            </motion.div>
-          </div>
+        {/* Main content - full screen centered typing */}
+        <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 pt-20 pb-6">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="text-center">
+            <span className="inline-flex items-center gap-2 bg-white/10 border border-white/15 rounded-full px-4 py-1.5 text-xs font-bold text-white/90 mb-6">
+              <Sparkles className="h-3.5 w-3.5" /> Platform Absensi Digital #1
+            </span>
+          </motion.div>
+
+          <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.7 }}
+            className="text-center text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight leading-[1.1] max-w-4xl">
+            <span className="block text-white mb-3">
+              {get("hero_title", "ATSkolla")}
+            </span>
+            <span className="block text-white/75 min-h-[1.2em]">
+              {get("hero_subtitle_typing", "Absensi Digital Sekolah Modern")}
+            </span>
+          </motion.h1>
+
+          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25, duration: 0.6 }}
+            className="mt-5 text-sm sm:text-base text-white/60 max-w-xl mx-auto leading-relaxed text-center">
+            {get("hero_subtitle", "Platform absensi modern dengan barcode scan & face recognition AI. Dirancang khusus untuk sekolah Indonesia.")}
+          </motion.p>
+
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
+            className="mt-7 flex flex-col sm:flex-row gap-3">
+            <button onClick={() => navigate("/register")}
+              className="inline-flex items-center justify-center gap-2 bg-white text-[#5B6CF9] px-7 py-3 rounded-2xl font-bold text-sm transition-all shadow-xl shadow-black/10 hover:shadow-black/20 hover:scale-[1.02] active:scale-[0.98]">
+              <Zap className="h-4 w-4" /> {get("cta_text", "Mulai Gratis Sekarang")}
+            </button>
+            <a href="#how-it-works"
+              className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 text-white px-7 py-3 rounded-2xl font-semibold text-sm transition-all border border-white/15">
+              <Play className="h-4 w-4" /> Lihat Demo
+            </a>
+          </motion.div>
         </div>
+
+        {/* Hero image at bottom center */}
+        <div className="relative z-10 px-4 sm:px-6 lg:px-8 pb-0">
+          <motion.div initial={{ opacity: 0, y: 50, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ delay: 0.3, duration: 1, ease: "easeOut" }}
+            className="max-w-5xl mx-auto">
+            <img src={get("hero_image") || heroMockup} alt="Dashboard ATSkolla"
+              className="w-full h-auto rounded-t-2xl border border-white/15 border-b-0 shadow-2xl shadow-black/20" />
+          </motion.div>
+        </div>
+
+        {/* Rounded bottom edge */}
+        <div className="absolute bottom-0 left-0 right-0 h-12 sm:h-16 bg-white dark:bg-slate-950 rounded-t-[2rem] sm:rounded-t-[3rem] z-[5]" />
       </section>
 
       {/* ─── Trusted Schools & Stats ─── */}
@@ -298,32 +317,48 @@ const LandingThemeB = () => {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-16">
             {PROBLEMS.map((p, i) => (
               <motion.div key={p.title} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
-                className="group bg-white dark:bg-slate-800/50 border border-red-100 dark:border-red-500/10 rounded-2xl p-6 hover:border-red-200 dark:hover:border-red-500/25 hover:shadow-lg hover:shadow-red-500/5 transition-all duration-300">
-                <div className="h-10 w-10 rounded-xl bg-red-50 dark:bg-red-500/10 flex items-center justify-center mb-4"><p.icon className="h-5 w-5 text-red-500 dark:text-red-400" /></div>
-                <h3 className="font-bold text-slate-900 dark:text-white text-base mb-1.5">{p.title}</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{p.desc}</p>
+                whileHover={{ y: -8, scale: 1.02 }}
+                className="group relative bg-white dark:bg-slate-800/60 border border-red-100 dark:border-red-500/10 rounded-2xl p-6 cursor-default overflow-hidden transition-shadow duration-300 hover:shadow-2xl hover:shadow-red-500/10">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-red-500/5 rounded-bl-[3rem] group-hover:w-28 group-hover:h-28 group-hover:bg-red-500/10 transition-all duration-500" />
+                <span className="absolute top-3 right-4 text-5xl font-black text-red-500/[0.06] group-hover:text-red-500/[0.12] transition-colors duration-500 select-none">0{i + 1}</span>
+                <div className="relative">
+                  <div className="h-11 w-11 rounded-xl bg-red-50 dark:bg-red-500/10 flex items-center justify-center mb-4 group-hover:bg-red-100 dark:group-hover:bg-red-500/20 group-hover:scale-110 transition-all duration-300">
+                    <p.icon className="h-5 w-5 text-red-500 dark:text-red-400" />
+                  </div>
+                  <h3 className="font-bold text-slate-900 dark:text-white text-base mb-1.5">{p.title}</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{p.desc}</p>
+                </div>
               </motion.div>
             ))}
           </div>
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="flex flex-col items-center mb-16">
-            <div className="h-14 w-14 rounded-full bg-gradient-to-br from-indigo-600 to-blue-600 flex items-center justify-center shadow-xl shadow-indigo-500/20"><ArrowDown className="h-6 w-6 text-white" /></div>
-            <p className="mt-3 font-bold text-indigo-600 dark:text-indigo-400 text-sm">Solusi Kami</p>
+            <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              className="h-14 w-14 rounded-full bg-[#5B6CF9] flex items-center justify-center shadow-xl shadow-indigo-500/25">
+              <ArrowDown className="h-6 w-6 text-white" />
+            </motion.div>
+            <p className="mt-3 font-bold text-[#5B6CF9] text-sm">Solusi Kami</p>
           </motion.div>
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-14">
-            <span className="inline-block text-xs font-bold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 px-4 py-1.5 rounded-full mb-4">Jawaban Tepat</span>
+            <span className="inline-block text-xs font-bold uppercase tracking-[0.2em] text-[#5B6CF9] bg-indigo-50 dark:bg-indigo-500/10 px-4 py-1.5 rounded-full mb-4">Jawaban Tepat</span>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">ATSkolla — Absensi Digital Sekolah</h2>
           </motion.div>
           <div className="grid sm:grid-cols-2 gap-5">
             {SOLUTIONS.map((s, i) => (
               <motion.div key={s.solution} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
-                className="group bg-white dark:bg-slate-800/50 border border-indigo-100 dark:border-indigo-500/10 rounded-2xl p-6 hover:border-indigo-200 dark:hover:border-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/5 transition-all duration-300">
+                whileHover={{ y: -6, scale: 1.01 }}
+                className="group relative bg-white dark:bg-slate-800/60 border border-indigo-100 dark:border-indigo-500/10 rounded-2xl p-6 cursor-default overflow-hidden transition-shadow duration-300 hover:shadow-2xl hover:shadow-indigo-500/10">
+                <div className="absolute inset-y-0 left-0 w-1 bg-[#5B6CF9]/0 group-hover:bg-[#5B6CF9] transition-all duration-300 rounded-l-2xl" />
                 <div className="flex items-start gap-4">
-                  <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-indigo-600 to-blue-600 flex items-center justify-center shrink-0 shadow-lg shadow-indigo-500/15"><s.icon className="h-5 w-5 text-white" /></div>
+                  <div className="h-12 w-12 rounded-xl bg-[#5B6CF9] flex items-center justify-center shrink-0 shadow-lg shadow-indigo-500/20 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                    <s.icon className="h-5 w-5 text-white" />
+                  </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
-                      <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400">{s.problem}</span>
-                      <ArrowRight className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
-                      <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">{s.solution}</span>
+                      <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400 line-through opacity-70">{s.problem}</span>
+                      <motion.span animate={{ x: [0, 4, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
+                        <ArrowRight className="h-3.5 w-3.5 text-[#5B6CF9] shrink-0" />
+                      </motion.span>
+                      <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-[#5B6CF9]">{s.solution}</span>
                     </div>
                     <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-1">{s.solution}</h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{s.desc}</p>
