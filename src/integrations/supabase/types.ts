@@ -1346,6 +1346,64 @@ export type Database = {
           },
         ]
       }
+      subject_attendance: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          notes: string | null
+          school_id: string
+          status: string
+          student_id: string
+          teacher_id: string
+          teaching_schedule_id: string
+        }
+        Insert: {
+          created_at?: string
+          date?: string
+          id?: string
+          notes?: string | null
+          school_id: string
+          status?: string
+          student_id: string
+          teacher_id: string
+          teaching_schedule_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          notes?: string | null
+          school_id?: string
+          status?: string
+          student_id?: string
+          teacher_id?: string
+          teaching_schedule_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subject_attendance_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subject_attendance_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subject_attendance_teaching_schedule_id_fkey"
+            columns: ["teaching_schedule_id"]
+            isOneToOne: false
+            referencedRelation: "teaching_schedules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subjects: {
         Row: {
           code: string | null

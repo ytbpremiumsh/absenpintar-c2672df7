@@ -5,11 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 import {
-  Plus, Trash2, Users2, Mail, Lock, Loader2, Phone, Shield, Pencil, Eye,
+  Plus, Trash2, Users2, Mail, Lock, Loader2, Phone, Shield, Pencil, Eye, GraduationCap,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -34,6 +35,7 @@ const ManageStaff = () => {
   const [formEmail, setFormEmail] = useState("");
   const [formPassword, setFormPassword] = useState("");
   const [formPhone, setFormPhone] = useState("");
+  const [formRole, setFormRole] = useState<"staff" | "teacher">("staff");
 
   // Detail/Edit
   const [detailDialog, setDetailDialog] = useState(false);
@@ -53,12 +55,14 @@ const ManageStaff = () => {
     if (!profiles || profiles.length === 0) { setStaff([]); setLoading(false); return; }
 
     const userIds = profiles.map((p) => p.user_id);
-    const { data: roles } = await supabase.from("user_roles").select("user_id, role").in("user_id", userIds).eq("role", "staff");
+    const { data: roles } = await supabase.from("user_roles").select("user_id, role").in("user_id", userIds).in("role", ["staff", "teacher"]);
 
-    const staffUserIds = new Set((roles || []).map((r) => r.user_id));
+    const roleMap = new Map<string, string>();
+    (roles || []).forEach((r) => roleMap.set(r.user_id, r.role));
+
     const staffList: StaffMember[] = profiles
-      .filter((p) => staffUserIds.has(p.user_id))
-      .map((p) => ({ user_id: p.user_id, full_name: p.full_name, role: "staff" }));
+      .filter((p) => roleMap.has(p.user_id))
+      .map((p) => ({ user_id: p.user_id, full_name: p.full_name, role: roleMap.get(p.user_id) || "staff" }));
 
     setStaff(staffList);
     setLoading(false);
@@ -74,24 +78,46 @@ const ManageStaff = () => {
     setCreating(true);
     try {
       const res = await supabase.functions.invoke("create-user", {
-        body: { email: formEmail, password: formPassword, full_name: formName, role: "staff", school_id: schoolId, phone: formPhone },
+        body: { email: formEmail, password: formPassword, full_name: formName, role: formRole, school_id: schoolId, phone: formPhone },
       });
       if (res.error) throw new Error(res.error.message);
       if (res.data?.error) throw new Error(res.data.error);
 
-      toast.success(`Staff ${formName} berhasil ditambahkan`);
+      const roleLabel = formRole === "teacher" ? "Guru" : "Staff";
+      toast.success(`${roleLabel} ${formName} berhasil ditambahkan`);
       setShowDialog(false);
-      setFormName(""); setFormEmail(""); setFormPassword(""); setFormPhone("");
+      setFormName(""); setFormEmail(""); setFormPassword(""); setFormPhone(""); setFormRole("staff");
       fetchStaff();
     } catch (err: any) {
-      toast.error(err.message || "Gagal membuat akun staff");
+      toast.error(err.message || "Gagal membuat akun");
     } finally { setCreating(false); }
   };
 
   const handleDelete = async (member: StaffMember) => {
-    if (!confirm(`Hapus staff ${member.full_name}? Akun tidak akan dihapus, hanya role staff yang dicabut.`)) return;
-    const { error } = await supabase.from("user_roles").delete().eq("user_id", member.user_id).eq("role", "staff");
-    if (error) { toast.error("Gagal menghapus role staff"); } else { toast.success(`Role staff ${member.full_name} berhasil dicabut`); fetchStaff(); }
+    const label = member.role === "teacher" ? "guru" : "staff";
+    if (!confirm(`Hapus ${label} ${member.full_name}? Akun tidak akan dihapus, hanya role yang dicabut.`)) return;
+    const { error } = await supabase.from("user_roles").delete().eq("user_id", member.user_id).eq("role", member.role as any);
+    if (error) { toast.error(`Gagal menghapus role ${label}`); } else { toast.success(`Role ${label} ${member.full_name} berhasil dicabut`); fetchStaff(); }
+  };
+
+  const handleToggleOperator = async (member: StaffMember) => {
+    if (member.role === "staff") {
+      // Already operator
+      toast.info(`${member.full_name} sudah menjadi operator`);
+      return;
+    }
+    // Add staff role to teacher (make them also operator)
+    const { error } = await supabase.from("user_roles").insert({ user_id: member.user_id, role: "staff" });
+    if (error) {
+      if (error.code === "23505") {
+        toast.info(`${member.full_name} sudah memiliki akses operator`);
+      } else {
+        toast.error("Gagal menambah akses operator");
+      }
+    } else {
+      toast.success(`${member.full_name} sekarang juga bisa menjadi operator`);
+      fetchStaff();
+    }
   };
 
   const openDetail = (member: StaffMember) => {
@@ -127,12 +153,27 @@ const ManageStaff = () => {
     fetchStaff();
   };
 
+  const getRoleBadge = (role: string) => {
+    if (role === "teacher") {
+      return (
+        <Badge variant="secondary" className="text-[10px] bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-400 border-0">
+          <GraduationCap className="h-3 w-3 mr-1" /> Guru
+        </Badge>
+      );
+    }
+    return (
+      <Badge variant="secondary" className="text-[10px]">
+        <Shield className="h-3 w-3 mr-1" /> Staff / Operator
+      </Badge>
+    );
+  };
+
   return (
     <PremiumGate featureLabel="Kelola Staff / Operator" featureKey="canMultiStaff" requiredPlan="School">
     <div className="space-y-6">
-      <PageHeader icon={Shield} title="Kelola Staff / Operator" subtitle="Tambah dan kelola akun staff yang bisa mengoperasikan sistem" actions={
+      <PageHeader icon={Shield} title="Kelola Staff & Guru" subtitle="Tambah dan kelola akun staff/operator dan guru" actions={
         <Button onClick={() => setShowDialog(true)} className="bg-white/20 hover:bg-white/30 text-white border border-white/20 rounded-xl text-xs">
-          <Plus className="h-4 w-4 mr-2" /> Tambah Staff
+          <Plus className="h-4 w-4 mr-2" /> Tambah Akun
         </Button>
       } />
 
@@ -142,9 +183,9 @@ const ManageStaff = () => {
         <Card className="border-0 shadow-card">
           <CardContent className="p-10 text-center">
             <Users2 className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
-            <p className="text-muted-foreground">Belum ada staff/operator ditambahkan</p>
+            <p className="text-muted-foreground">Belum ada staff/guru ditambahkan</p>
             <Button variant="outline" className="mt-4" onClick={() => setShowDialog(true)}>
-              <Plus className="h-4 w-4 mr-2" /> Tambah Staff Pertama
+              <Plus className="h-4 w-4 mr-2" /> Tambah Pertama
             </Button>
           </CardContent>
         </Card>
@@ -155,16 +196,19 @@ const ManageStaff = () => {
               <Card className="border-0 shadow-card hover:shadow-elevated transition-all h-full">
                 <CardContent className="p-5">
                   <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 rounded-xl gradient-primary flex items-center justify-center text-primary-foreground text-lg font-bold shrink-0">
+                    <div className={`h-12 w-12 rounded-xl flex items-center justify-center text-primary-foreground text-lg font-bold shrink-0 ${member.role === "teacher" ? "bg-violet-500" : "gradient-primary"}`}>
                       {member.full_name.charAt(0)}
                     </div>
                     <div className="min-w-0 flex-1">
                       <h3 className="font-bold text-sm truncate">{member.full_name}</h3>
-                      <Badge variant="secondary" className="text-[10px] mt-1">
-                        <Shield className="h-3 w-3 mr-1" /> Staff / Operator
-                      </Badge>
+                      {getRoleBadge(member.role)}
                     </div>
                     <div className="flex gap-1 shrink-0">
+                      {member.role === "teacher" && (
+                        <Button variant="ghost" size="icon" className="h-8 w-8" title="Jadikan Operator" onClick={() => handleToggleOperator(member)}>
+                          <Shield className="h-3.5 w-3.5 text-amber-500" />
+                        </Button>
+                      )}
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openDetail(member)}>
                         <Eye className="h-3.5 w-3.5 text-primary" />
                       </Button>
@@ -184,19 +228,35 @@ const ManageStaff = () => {
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Tambah Staff / Operator Baru</DialogTitle>
-            <DialogDescription>Buat akun login untuk staff yang bisa mengoperasikan sistem absensi</DialogDescription>
+            <DialogTitle>Tambah Staff / Guru Baru</DialogTitle>
+            <DialogDescription>Buat akun login untuk staff operator atau guru yang bisa mengakses sistem</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 pt-2">
             <div className="space-y-2">
+              <Label>Tipe Akun</Label>
+              <Select value={formRole} onValueChange={(v) => setFormRole(v as "staff" | "teacher")}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="staff">
+                    <span className="flex items-center gap-2"><Shield className="h-4 w-4" /> Staff / Operator</span>
+                  </SelectItem>
+                  <SelectItem value="teacher">
+                    <span className="flex items-center gap-2"><GraduationCap className="h-4 w-4" /> Guru</span>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
               <Label>Nama Lengkap</Label>
-              <Input placeholder="Nama staff" value={formName} onChange={(e) => setFormName(e.target.value)} />
+              <Input placeholder="Nama lengkap" value={formName} onChange={(e) => setFormName(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label>Email (untuk login)</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="staff@sekolah.com" type="email" value={formEmail} onChange={(e) => setFormEmail(e.target.value)} className="pl-9" />
+                <Input placeholder="email@sekolah.com" type="email" value={formEmail} onChange={(e) => setFormEmail(e.target.value)} className="pl-9" />
               </div>
             </div>
             <div className="space-y-2">
@@ -214,7 +274,7 @@ const ManageStaff = () => {
               </div>
             </div>
             <Button onClick={handleCreate} disabled={creating} className="w-full gradient-primary hover:opacity-90">
-              {creating ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Membuat...</> : <><Plus className="h-4 w-4 mr-2" /> Buat Akun Staff</>}
+              {creating ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Membuat...</> : <><Plus className="h-4 w-4 mr-2" /> Buat Akun {formRole === "teacher" ? "Guru" : "Staff"}</>}
             </Button>
           </div>
         </DialogContent>
@@ -225,14 +285,14 @@ const ManageStaff = () => {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-primary" />
-              {editMode ? "Edit Staff" : "Detail Staff"}
+              {selectedStaff?.role === "teacher" ? <GraduationCap className="h-5 w-5 text-violet-500" /> : <Shield className="h-5 w-5 text-primary" />}
+              {editMode ? "Edit Data" : "Detail"}
             </DialogTitle>
           </DialogHeader>
           {selectedStaff && (
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <div className="h-14 w-14 rounded-xl gradient-primary flex items-center justify-center text-primary-foreground text-xl font-bold shrink-0">
+                <div className={`h-14 w-14 rounded-xl flex items-center justify-center text-primary-foreground text-xl font-bold shrink-0 ${selectedStaff.role === "teacher" ? "bg-violet-500" : "gradient-primary"}`}>
                   {selectedStaff.full_name.charAt(0)}
                 </div>
                 <div className="flex-1">
@@ -244,9 +304,7 @@ const ManageStaff = () => {
                   ) : (
                     <h3 className="font-bold text-lg">{selectedStaff.full_name}</h3>
                   )}
-                  <Badge variant="secondary" className="text-[10px] mt-1">
-                    <Shield className="h-3 w-3 mr-1" /> Staff / Operator
-                  </Badge>
+                  {getRoleBadge(selectedStaff.role)}
                 </div>
               </div>
 
