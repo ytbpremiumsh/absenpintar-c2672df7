@@ -40,8 +40,8 @@ const TypingEffect = ({ texts, speed = 70, deleteSpeed = 40, pauseTime = 2000, c
 
   return (
     <span className={className}>
-      {displayed}
-      <span className="inline-block w-[3px] h-[0.85em] bg-primary animate-pulse ml-1 align-middle rounded-full" />
+      <span className="bg-white/[0.12] px-1.5 py-0.5 rounded-md">{displayed}</span>
+      <span className="inline-block w-[3px] h-[0.85em] bg-white animate-[blink_1s_step-end_infinite] ml-0.5 align-middle rounded-sm" />
     </span>
   );
 };
