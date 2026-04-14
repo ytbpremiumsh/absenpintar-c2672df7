@@ -96,7 +96,7 @@ const ManageStaff = () => {
   const handleDelete = async (member: StaffMember) => {
     const label = member.role === "teacher" ? "guru" : "staff";
     if (!confirm(`Hapus ${label} ${member.full_name}? Akun tidak akan dihapus, hanya role yang dicabut.`)) return;
-    const { error } = await supabase.from("user_roles").delete().eq("user_id", member.user_id).eq("role", member.role);
+    const { error } = await supabase.from("user_roles").delete().eq("user_id", member.user_id).eq("role", member.role as any);
     if (error) { toast.error(`Gagal menghapus role ${label}`); } else { toast.success(`Role ${label} ${member.full_name} berhasil dicabut`); fetchStaff(); }
   };
 

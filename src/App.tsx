@@ -154,6 +154,7 @@ const App = () => (
               <Route path="/wa-credit" element={<WaCredit />} />
               <Route path="/teaching-schedule" element={<TeachingSchedule />} />
               <Route path="/live-schedule" element={<LiveSchedule />} />
+              <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
               <Route path="/wa-templates" element={<Navigate to="/whatsapp" replace />} />
               <Route path="/wa-broadcast" element={<Navigate to="/whatsapp" replace />} />
               <Route path="/wa-history" element={<Navigate to="/whatsapp" replace />} />
