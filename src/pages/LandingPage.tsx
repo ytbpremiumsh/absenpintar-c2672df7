@@ -307,60 +307,52 @@ const LandingPage = () => {
         </div>
       </nav>
 
-      {/* ─── Hero Section (fits one screen) ─── */}
-      <section className="relative min-h-screen flex flex-col justify-center overflow-hidden bg-gradient-to-b from-slate-50 via-white to-white dark:from-slate-950 dark:via-slate-950 dark:to-slate-950">
+      {/* ─── Hero Section ─── */}
+      <section className="relative min-h-screen flex flex-col justify-center overflow-hidden bg-[#5B6CF9] dark:bg-[#4a59d4] rounded-b-[2.5rem] sm:rounded-b-[3.5rem]">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1100px] h-[700px] bg-indigo-500/6 rounded-full blur-[160px]" />
-          <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-teal-500/5 rounded-full blur-[100px]" />
-          <div className="absolute top-1/4 left-0 w-[350px] h-[350px] bg-blue-400/4 rounded-full blur-[100px]" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-white/5 rounded-full blur-[160px]" />
+          <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-indigo-800/20 rounded-full blur-[100px]" />
         </div>
-        <div className="absolute inset-0 grid-bg opacity-40 pointer-events-none" />
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '32px 32px' }} />
 
-        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-24 pb-8">
-          {/* Centered Text Content */}
+        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-24 pb-10">
+          {/* Centered Text Content - vertical layout */}
           <div className="text-center">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-              <span className="inline-flex items-center gap-2 bg-indigo-500/8 border border-indigo-500/15 rounded-full px-4 py-1.5 text-xs font-bold text-indigo-700 dark:text-indigo-300 mb-4">
+              <span className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-xs font-bold text-white/90 mb-5">
                 <Sparkles className="h-3.5 w-3.5" /> Platform Absensi Digital #1 untuk Sekolah Indonesia
               </span>
             </motion.div>
 
             <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.7 }}
-              className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-extrabold tracking-tight leading-[1.1]">
-              <span className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 dark:from-white dark:via-slate-100 dark:to-slate-200 bg-clip-text text-transparent">
-                {get("hero_title", "ATSkolla ")}
+              className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-extrabold tracking-tight leading-[1.15]">
+              <span className="block text-white mb-2">
+                {get("hero_title", "ATSkolla")}
               </span>
-              <br className="hidden sm:block" />
-              <span className="relative inline-block">
+              <span className="block">
                 <TypingEffect
                   texts={["Absensi Digital Sekolah", "Cepat, Aman & Modern", "Scan Barcode & Face AI"]}
                   speed={60}
                   deleteSpeed={35}
                   pauseTime={2500}
-                  className="bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-500 dark:from-indigo-400 dark:via-blue-400 dark:to-indigo-300 bg-clip-text text-transparent"
-                />
-                <motion.span
-                  initial={{ scaleX: 0 }}
-                  animate={{ scaleX: 1 }}
-                  transition={{ delay: 0.8, duration: 0.6, ease: "easeOut" }}
-                  className="absolute -bottom-1 left-0 right-0 h-2 sm:h-3 bg-indigo-500/10 dark:bg-indigo-400/15 rounded-full origin-left -skew-x-3"
+                  className="text-white/80"
                 />
               </span>
             </motion.h1>
 
             <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35, duration: 0.6 }}
-              className="mt-4 text-sm sm:text-base text-slate-500 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
+              className="mt-5 text-sm sm:text-base text-white/70 max-w-2xl mx-auto leading-relaxed">
               {get("hero_subtitle", "Platform absensi modern dengan barcode scan & face recognition AI. Dirancang khusus untuk sekolah Indonesia — cepat, aman, dan mudah digunakan.")}
             </motion.p>
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }}
-              className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+              className="mt-7 flex flex-col sm:flex-row gap-3 justify-center">
               <button onClick={() => navigate("/register")}
-                className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-7 py-3 rounded-2xl font-bold transition-all shadow-xl shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:scale-[1.02] active:scale-[0.98] text-sm">
+                className="inline-flex items-center justify-center gap-2 bg-white text-[#5B6CF9] px-7 py-3 rounded-2xl font-bold transition-all shadow-xl shadow-black/10 hover:shadow-black/20 hover:scale-[1.02] active:scale-[0.98] text-sm">
                 <Zap className="h-4 w-4" /> {get("cta_text", "Coba Gratis Sekarang")}
               </button>
               <a href="#how-it-works"
-                className="inline-flex items-center justify-center gap-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-7 py-3 rounded-2xl font-semibold transition-all text-sm border border-slate-200 dark:border-slate-700 shadow-sm">
+                className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white px-7 py-3 rounded-2xl font-semibold transition-all text-sm border border-white/20">
                 <Play className="h-4 w-4" /> Cara Kerja
               </a>
             </motion.div>
@@ -368,11 +360,11 @@ const LandingPage = () => {
 
           {/* Centered Hero Image */}
           <motion.div initial={{ opacity: 0, y: 40, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ delay: 0.5, duration: 1, ease: "easeOut" }}
-            className="relative mt-8 max-w-4xl mx-auto">
+            className="relative mt-10 max-w-4xl mx-auto">
             <motion.img
               src={get("hero_image") || heroDashboard}
               alt="Dashboard ATSkolla"
-              className="relative w-full h-auto rounded-2xl border border-slate-200/50 dark:border-slate-700/50"
+              className="relative w-full h-auto rounded-2xl border border-white/20 shadow-2xl shadow-black/20"
               whileHover={{ scale: 1.01, y: -4 }}
               transition={{ duration: 0.4 }}
             />
