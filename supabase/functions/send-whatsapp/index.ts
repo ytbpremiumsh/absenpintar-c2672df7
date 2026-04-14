@@ -34,10 +34,15 @@ const sendMpwaMessage = async (
   sender: string,
   number: string,
   message: string,
+  isGroup: boolean = false,
 ): Promise<{ ok: boolean; data: any }> => {
-  const payload = { api_key: apiKey, sender, number, message };
+  const payload: Record<string, any> = { api_key: apiKey, sender, number, message };
+  if (isGroup) {
+    payload.isGroup = true;
+    payload.full = 1;
+  }
 
-  console.log(`MPWA POST to ${MPWA_SEND_URL} | sender: ${sender} | number: ${number} | msg_len: ${message.length}`);
+  console.log(`MPWA POST to ${MPWA_SEND_URL} | sender: ${sender} | number: ${number} | isGroup: ${isGroup} | msg_len: ${message.length}`);
 
   try {
     const response = await fetch(MPWA_SEND_URL, {
@@ -58,6 +63,10 @@ const sendMpwaMessage = async (
     // Fallback: try GET method
     console.log(`MPWA POST failed, trying GET fallback for number: ${number}`);
     const params = new URLSearchParams({ api_key: apiKey, sender, number, message });
+    if (isGroup) {
+      params.set('isGroup', 'true');
+      params.set('full', '1');
+    }
     const getResponse = await fetch(`${MPWA_SEND_URL}?${params.toString()}`);
     const getText = await getResponse.text();
     const getParsed = parseJsonSafely(getText);
