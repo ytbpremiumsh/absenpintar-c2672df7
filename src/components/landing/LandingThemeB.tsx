@@ -258,7 +258,7 @@ const LandingThemeB = () => {
         <div className="absolute top-1/3 -right-32 w-[350px] h-[350px] bg-violet-400/[0.06] rounded-full blur-3xl pointer-events-none" />
 
         {/* Text content */}
-        <div className="relative z-10 flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 pt-20 sm:pt-20 pb-2 sm:pb-4 flex-shrink-0">
+        <div className="relative z-10 flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 pt-28 sm:pt-24 pb-2 sm:pb-4 flex-shrink-0">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="text-center">
             <span className="inline-flex items-center gap-2 bg-white/10 border border-white/15 rounded-full px-4 py-1.5 text-xs font-bold text-white/90 mb-3 sm:mb-4">
               <Sparkles className="h-3.5 w-3.5" /> Platform Absensi Digital #1
@@ -311,7 +311,7 @@ const LandingThemeB = () => {
 
         {/* Mobile buttons - below image */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
-          className="relative z-30 flex sm:hidden flex-col gap-2.5 px-6 mt-3 pb-14">
+          className="relative z-30 flex sm:hidden flex-col gap-2.5 px-6 mt-6 pb-14">
           <button onClick={() => navigate("/register")}
             className="inline-flex items-center justify-center gap-2 bg-white text-[#5B6CF9] px-6 py-3 rounded-2xl font-bold text-sm transition-all shadow-xl shadow-black/10 active:scale-[0.98]">
             <Zap className="h-4 w-4" /> {get("cta_text", "Mulai Gratis Sekarang")}
