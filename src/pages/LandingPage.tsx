@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import heroDashboard from "@/assets/hero-dashboard.png";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { cn } from "@/lib/utils";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -283,26 +284,31 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-white overflow-x-hidden">
-      {/* ─── Navbar ─── */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl shadow-sm border-b border-slate-200 dark:border-slate-800" : "bg-transparent"}`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-18 flex items-center justify-between">
+      {/* ─── Floating Navbar (mobile-style) ─── */}
+      <nav className={cn(
+        "fixed top-3 left-3 right-3 z-50 transition-all duration-300 rounded-2xl",
+        scrolled
+          ? "bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl shadow-lg border border-slate-200/80 dark:border-slate-700/50"
+          : "bg-white/70 dark:bg-slate-900/60 backdrop-blur-lg border border-slate-200/50 dark:border-slate-700/30"
+      )}>
+        <div className="px-4 sm:px-5 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <img src={headerLogo} alt="ATSkolla" className="h-9 sm:h-10 object-contain" />
+            <img src={headerLogo} alt="ATSkolla" className="h-8 sm:h-9 object-contain" />
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
             <ThemeToggle />
-            <button onClick={() => navigate("/login")} className="text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-3 sm:px-4 py-2 transition-colors rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800">
+            <button onClick={() => navigate("/login")} className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-3 py-1.5 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
               Masuk
             </button>
-            <button onClick={() => navigate("/register")} className="inline-flex items-center gap-1.5 bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:scale-[1.02] active:scale-[0.98]">
-              Mulai Gratis <ArrowRight className="h-3.5 w-3.5" />
+            <button onClick={() => navigate("/register")} className="inline-flex items-center gap-1.5 bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:scale-[1.02] active:scale-[0.98]">
+              Mulai Gratis <ArrowRight className="h-3 w-3" />
             </button>
           </div>
         </div>
       </nav>
 
-      {/* ─── Hero Section ─── */}
-      <section className="relative pt-20 sm:pt-28 pb-10 sm:pb-16 overflow-hidden bg-gradient-to-b from-slate-50 via-white to-white dark:from-slate-950 dark:via-slate-950 dark:to-slate-950">
+      {/* ─── Hero Section (fits one screen) ─── */}
+      <section className="relative min-h-screen flex flex-col justify-center overflow-hidden bg-gradient-to-b from-slate-50 via-white to-white dark:from-slate-950 dark:via-slate-950 dark:to-slate-950">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1100px] h-[700px] bg-indigo-500/6 rounded-full blur-[160px]" />
           <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-teal-500/5 rounded-full blur-[100px]" />
@@ -310,7 +316,7 @@ const LandingPage = () => {
         </div>
         <div className="absolute inset-0 grid-bg opacity-40 pointer-events-none" />
 
-        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-24 pb-8">
           {/* Centered Text Content */}
           <div className="text-center">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
@@ -362,7 +368,7 @@ const LandingPage = () => {
 
           {/* Centered Hero Image */}
           <motion.div initial={{ opacity: 0, y: 40, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ delay: 0.5, duration: 1, ease: "easeOut" }}
-            className="relative mt-8 sm:mt-12 max-w-4xl mx-auto">
+            className="relative mt-8 max-w-4xl mx-auto">
             <motion.img
               src={get("hero_image") || heroDashboard}
               alt="Dashboard ATSkolla"

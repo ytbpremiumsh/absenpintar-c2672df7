@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageHeader } from "@/components/PageHeader";
-import { Clock, BookOpen, Users, MapPin, CheckCircle2, PlayCircle, Timer, Coffee, Radio, ChevronLeft, ChevronRight } from "lucide-react";
+import { Clock, BookOpen, Users, MapPin, CheckCircle2, PlayCircle, Timer, Coffee, Radio, ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -75,6 +75,25 @@ function StatusBadge({ status, startTime, now, isToday }: { status: ScheduleStat
   );
 }
 
+/** Get the date for a specific day_of_week index relative to the current week */
+function getDateForDay(dayIdx: number, now: Date): Date {
+  const jsDay = now.getDay(); // 0=Sun
+  const todayIdx = jsDay === 0 ? 6 : jsDay - 1; // 0=Mon
+  const diff = dayIdx - todayIdx;
+  const d = new Date(now);
+  d.setDate(d.getDate() + diff);
+  return d;
+}
+
+function formatIndonesianDate(d: Date): string {
+  return d.toLocaleDateString("id-ID", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
 export default function LiveSchedule() {
   const { profile } = useAuth();
   const schoolId = profile?.school_id;
@@ -87,7 +106,6 @@ export default function LiveSchedule() {
   const [filterTeacher, setFilterTeacher] = useState<string>("all");
   const [filterClass, setFilterClass] = useState<string>("all");
 
-  // Selected day index (0=Monday ... 6=Sunday in our system)
   const jsDay = now.getDay();
   const todayIdx = jsDay === 0 ? 6 : jsDay - 1;
   const [selectedDay, setSelectedDay] = useState(todayIdx);
@@ -124,6 +142,7 @@ export default function LiveSchedule() {
   const getClassName = (id: string) => classes.find((c) => c.id === id)?.name || "—";
 
   const isToday = selectedDay === todayIdx;
+  const selectedDate = getDateForDay(selectedDay, now);
 
   const daySchedules = useMemo(() => {
     let filtered = schedules.filter((s) => s.day_of_week === selectedDay);
@@ -136,7 +155,6 @@ export default function LiveSchedule() {
   const doneCount = daySchedules.filter((s) => getStatus(s.start_time, s.end_time, now, isToday) === "done").length;
   const upcomingCount = daySchedules.filter((s) => getStatus(s.start_time, s.end_time, now, isToday) === "upcoming").length;
 
-  // Day counts for badges
   const dayCounts = useMemo(() => {
     const counts: Record<number, number> = {};
     for (let d = 0; d < 7; d++) {
@@ -158,40 +176,49 @@ export default function LiveSchedule() {
 
   return (
     <div className="p-4 md:p-6 space-y-4">
-      <PageHeader icon={Radio} title="Jadwal Live" subtitle={`${now.toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })} — ${now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}`} />
+      <PageHeader
+        icon={Radio}
+        title="Jadwal Live"
+        subtitle={`${formatIndonesianDate(now)} — ${now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}`}
+      />
 
-      {/* Day selector - swipeable */}
+      {/* Day selector with dates */}
       <div className="relative">
         <div
           ref={scrollRef}
           className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
-          {DAYS.map((day, idx) => (
-            <button
-              key={idx}
-              onClick={() => setSelectedDay(idx)}
-              className={cn(
-                "snap-start shrink-0 flex flex-col items-center gap-1 px-4 py-2.5 rounded-xl border transition-all min-w-[72px]",
-                selectedDay === idx
-                  ? "bg-primary text-primary-foreground border-primary shadow-md"
-                  : idx === todayIdx
-                    ? "bg-primary/10 border-primary/30 text-primary"
-                    : "bg-card border-border hover:bg-accent"
-              )}
-            >
-              <span className="text-xs font-medium">{DAYS_SHORT[idx]}</span>
-              <span className="text-lg font-bold">{dayCounts[idx]}</span>
-              <span className="text-[10px] opacity-70">mapel</span>
-              {idx === todayIdx && selectedDay !== idx && (
-                <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-              )}
-            </button>
-          ))}
+          {DAYS.map((day, idx) => {
+            const dayDate = getDateForDay(idx, now);
+            return (
+              <button
+                key={idx}
+                onClick={() => setSelectedDay(idx)}
+                className={cn(
+                  "snap-start shrink-0 flex flex-col items-center gap-0.5 px-3 py-2.5 rounded-xl border transition-all min-w-[68px]",
+                  selectedDay === idx
+                    ? "bg-primary text-primary-foreground border-primary shadow-md"
+                    : idx === todayIdx
+                      ? "bg-primary/10 border-primary/30 text-primary"
+                      : "bg-card border-border hover:bg-accent"
+                )}
+              >
+                <span className="text-xs font-medium">{DAYS_SHORT[idx]}</span>
+                <span className="text-lg font-bold">{dayDate.getDate()}</span>
+                <span className="text-[10px] opacity-70">
+                  {dayDate.toLocaleDateString("id-ID", { month: "short" })}
+                </span>
+                {idx === todayIdx && selectedDay !== idx && (
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* Stats cards - horizontal scroll */}
+      {/* Stats cards */}
       <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide" style={{ scrollbarWidth: "none" }}>
         <Card className="border-green-500/30 bg-green-500/5 shrink-0 min-w-[120px] flex-1">
           <CardContent className="p-3 text-center">
@@ -223,16 +250,22 @@ export default function LiveSchedule() {
         </Card>
       </div>
 
-      {/* Header for selected day */}
+      {/* Header for selected day with full Indonesian date */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSelectedDay((p) => (p === 0 ? 6 : p - 1))}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <h3 className="font-semibold text-lg">
-            {DAYS[selectedDay]}
-            {isToday && <Badge variant="outline" className="ml-2 text-[10px]">Hari Ini</Badge>}
-          </h3>
+          <div>
+            <h3 className="font-semibold text-lg flex items-center gap-2">
+              {DAYS[selectedDay]}
+              {isToday && <Badge variant="outline" className="text-[10px]">Hari Ini</Badge>}
+            </h3>
+            <p className="text-xs text-muted-foreground flex items-center gap-1">
+              <CalendarDays className="h-3 w-3" />
+              {formatIndonesianDate(selectedDate)}
+            </p>
+          </div>
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSelectedDay((p) => (p === 6 ? 0 : p + 1))}>
             <ChevronRight className="h-4 w-4" />
           </Button>
