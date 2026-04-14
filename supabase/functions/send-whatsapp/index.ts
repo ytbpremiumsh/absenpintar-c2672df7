@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-const MPWA_BASE = 'https://app.ayopintar.com';
+const MPWA_SEND_URL = 'https://app.ayopintar.com/send-message';
 
 const parseJsonSafely = (text: string) => {
   try {
@@ -24,84 +24,55 @@ const formatPhoneNumber = (value: string) => {
   return formatted;
 };
 
-const normalizeGroupCandidates = (groupId: string) => {
-  const trimmed = groupId.trim();
-  const compact = trimmed.replace(/\s+/g, '');
-  const withoutSuffix = compact.replace(/@g\.us$/i, '');
-  const withSuffix = withoutSuffix ? `${withoutSuffix}@g.us` : '';
-  const digitsOnly = withoutSuffix.replace(/\D/g, '');
+/**
+ * Send a message via MPWA /send-message endpoint.
+ * Works for both personal numbers and group IDs.
+ * Group IDs should be in format like "120363401633740599@g.us"
+ */
+const sendMpwaMessage = async (
+  apiKey: string,
+  sender: string,
+  number: string,
+  message: string,
+): Promise<{ ok: boolean; data: any }> => {
+  const payload = { api_key: apiKey, sender, number, message };
 
-  return [...new Set([compact, withSuffix, withoutSuffix, digitsOnly].filter(Boolean))];
-};
+  console.log(`MPWA POST to ${MPWA_SEND_URL} | sender: ${sender} | number: ${number} | msg_len: ${message.length}`);
 
-const toReplayableResponse = async (response: Response) => {
-  const text = await response.text();
+  try {
+    const response = await fetch(MPWA_SEND_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
 
-  return {
-    response: new Response(text, {
-      status: response.status,
-      headers: {
-        'Content-Type': response.headers.get('content-type') || 'application/json',
-      },
-    }),
-    parsed: parseJsonSafely(text),
-  };
-};
+    const text = await response.text();
+    const parsed = parseJsonSafely(text);
 
-const sendMpwaGroupMessage = async ({
-  url,
-  apiKey,
-  sender,
-  groupId,
-  message,
-}: {
-  url: string;
-  apiKey: string;
-  sender: string;
-  groupId: string;
-  message: string;
-}) => {
-  const candidates = normalizeGroupCandidates(groupId);
-
-  // Build attempts: for each candidate, try POST then GET
-  const attempts: { label: string; method: 'POST' | 'GET'; payload: Record<string, string> }[] = [];
-  for (const candidate of candidates) {
-    attempts.push({ label: `POST:number:${candidate}`, method: 'POST', payload: { api_key: apiKey, sender, number: candidate, message } });
-    attempts.push({ label: `GET:number:${candidate}`, method: 'GET', payload: { api_key: apiKey, sender, number: candidate, message } });
-  }
-
-  console.log(`MPWA sending to group: ${groupId}, sender: ${sender}, attempts: ${attempts.map((a) => a.label).join(', ')}`);
-
-  let lastResponse: Response | null = null;
-
-  for (const attempt of attempts) {
-    let rawResponse: Response;
-    if (attempt.method === 'GET') {
-      const params = new URLSearchParams(attempt.payload);
-      rawResponse = await fetch(`${url}?${params.toString()}`);
-    } else {
-      rawResponse = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(attempt.payload),
-      });
-    }
-
-    const { response, parsed } = await toReplayableResponse(rawResponse);
+    console.log(`MPWA POST response: status=${response.status} body=${text.substring(0, 300)}`);
 
     if (response.ok && parsed?.status !== false) {
-      console.log(`MPWA group send succeeded with ${attempt.label}`);
-      return response;
+      return { ok: true, data: parsed };
     }
 
-    console.warn(`MPWA group send failed with ${attempt.label}: ${JSON.stringify(parsed).substring(0, 200)}`);
-    lastResponse = response;
-  }
+    // Fallback: try GET method
+    console.log(`MPWA POST failed, trying GET fallback for number: ${number}`);
+    const params = new URLSearchParams({ api_key: apiKey, sender, number, message });
+    const getResponse = await fetch(`${MPWA_SEND_URL}?${params.toString()}`);
+    const getText = await getResponse.text();
+    const getParsed = parseJsonSafely(getText);
 
-  return lastResponse || new Response(JSON.stringify({ status: false, msg: 'Gagal mengirim pesan grup' }), {
-    status: 500,
-    headers: { 'Content-Type': 'application/json' },
-  });
+    console.log(`MPWA GET response: status=${getResponse.status} body=${getText.substring(0, 300)}`);
+
+    if (getResponse.ok && getParsed?.status !== false) {
+      return { ok: true, data: getParsed };
+    }
+
+    return { ok: false, data: getParsed };
+  } catch (err) {
+    console.error(`MPWA send error for ${number}:`, err);
+    return { ok: false, data: { status: false, msg: String(err) } };
+  }
 };
 
 serve(async (req) => {
@@ -168,7 +139,7 @@ serve(async (req) => {
           });
         }
 
-        finalApiUrl = 'https://app.ayopintar.com/send-message';
+        finalApiUrl = MPWA_SEND_URL;
       } else {
         finalApiUrl = integration.api_url;
         finalApiKey = integration.api_key;
@@ -182,7 +153,7 @@ serve(async (req) => {
       });
     }
 
-    // ═══ Check & deduct WA credits ═══
+    // ═══ Check WA credits ═══
     if (school_id) {
       const messageCount = (phone ? 1 : 0) + (group_id ? 1 : 0);
       const { data: credit } = await supabaseAdmin
@@ -198,39 +169,33 @@ serve(async (req) => {
       }
     }
 
-    const sendRequests: Promise<Response>[] = [];
+    const results: { target: string; ok: boolean; data: any }[] = [];
 
     if (gatewayType === 'mpwa') {
-      // ═══ MPWA Gateway ═══
-      const mpwaSendUrl = finalApiUrl || `${MPWA_BASE}/send-message`;
-
+      // ═══ MPWA Gateway - same /send-message for phone & group ═══
       if (phone) {
         const formattedPhone = formatPhoneNumber(phone);
-        console.log(`MPWA sending to phone: ${formattedPhone}, sender: ${mpwaSenderNum}`);
-        sendRequests.push(
-          fetch(mpwaSendUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              api_key: finalApiKey,
-              sender: mpwaSenderNum,
-              number: formattedPhone,
-              message: message,
-            }),
-          })
-        );
+        const result = await sendMpwaMessage(finalApiKey, mpwaSenderNum, formattedPhone, message);
+        results.push({ target: `phone:${formattedPhone}`, ...result });
       }
 
       if (group_id) {
-        sendRequests.push(
-          sendMpwaGroupMessage({
-            url: mpwaSendUrl,
-            apiKey: finalApiKey,
-            sender: mpwaSenderNum,
-            groupId: group_id,
-            message,
-          })
-        );
+        // Send directly with the group_id as 'number' parameter
+        // Format: "120363401633740599@g.us"
+        const groupNumber = group_id.trim();
+        console.log(`MPWA group send: using group_id "${groupNumber}" as number parameter`);
+        const result = await sendMpwaMessage(finalApiKey, mpwaSenderNum, groupNumber, message);
+        results.push({ target: `group:${groupNumber}`, ...result });
+
+        // If failed and group_id doesn't have @g.us, try adding it
+        if (!result.ok && !groupNumber.includes('@g.us')) {
+          const withSuffix = `${groupNumber}@g.us`;
+          console.log(`MPWA group retry with suffix: ${withSuffix}`);
+          const retry = await sendMpwaMessage(finalApiKey, mpwaSenderNum, withSuffix, message);
+          if (retry.ok) {
+            results[results.length - 1] = { target: `group:${withSuffix}`, ...retry };
+          }
+        }
       }
     } else {
       // ═══ OneSender Gateway ═══
@@ -243,38 +208,35 @@ serve(async (req) => {
 
       if (phone) {
         const formattedPhone = formatPhoneNumber(phone);
-        sendRequests.push(
-          fetch(finalApiUrl, {
+        try {
+          const r = await fetch(finalApiUrl, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${finalApiKey}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({ recipient_type: 'individual', to: formattedPhone, type: 'text', text: { body: message } }),
-          })
-        );
+          });
+          const data = parseJsonSafely(await r.text());
+          results.push({ target: `phone:${formattedPhone}`, ok: r.ok, data });
+        } catch (err) {
+          results.push({ target: `phone:${formattedPhone}`, ok: false, data: { error: String(err) } });
+        }
       }
 
       if (group_id) {
-        sendRequests.push(
-          fetch(finalApiUrl, {
+        try {
+          const r = await fetch(finalApiUrl, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${finalApiKey}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({ recipient_type: 'group', to: group_id, type: 'text', text: { body: message } }),
-          })
-        );
+          });
+          const data = parseJsonSafely(await r.text());
+          results.push({ target: `group:${group_id}`, ok: r.ok, data });
+        } catch (err) {
+          results.push({ target: `group:${group_id}`, ok: false, data: { error: String(err) } });
+        }
       }
     }
 
-    const responses = await Promise.all(sendRequests);
-
-    // Safe JSON parsing for responses
-    const results = await Promise.all(responses.map(async (r) => parseJsonSafely(await r.text())));
-
-    // For MPWA, check status field; for OneSender, check HTTP status
-    let hasError: boolean;
-    if (gatewayType === 'mpwa') {
-      hasError = results.some((r: any) => r.status === false);
-    } else {
-      hasError = responses.some(r => !r.ok);
-    }
+    const hasError = results.some(r => !r.ok);
 
     // Log message to wa_message_logs
     if (school_id) {
