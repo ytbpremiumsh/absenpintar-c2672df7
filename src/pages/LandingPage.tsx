@@ -306,6 +306,73 @@ const LandingPage = () => {
       <section className="relative h-screen flex flex-col overflow-hidden bg-[#5B6CF9]">
         <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '28px 28px' }} />
 
+        {/* Floating scan animation elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none z-[1]">
+          {[
+            { top: '12%', left: '4%', delay: 0 },
+            { top: '22%', left: '92%', delay: 1 },
+            { top: '65%', left: '6%', delay: 0.5 },
+            { top: '75%', left: '88%', delay: 1.5 },
+            { top: '45%', left: '2%', delay: 2 },
+            { top: '50%', left: '96%', delay: 0.8 },
+          ].map((dot, i) => (
+            <motion.div
+              key={`hero-dot-${i}`}
+              className="absolute w-2 h-2 rounded-full bg-white"
+              style={{ top: dot.top, left: dot.left }}
+              animate={{ opacity: [0.1, 0.4, 0.1], scale: [1, 1.5, 1] }}
+              transition={{ duration: 3, repeat: Infinity, delay: dot.delay }}
+            />
+          ))}
+
+          {/* Scan line */}
+          <motion.div
+            className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"
+            animate={{ top: ['0%', '100%'] }}
+            transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
+          />
+
+          {/* Barcode visualization - left */}
+          <div className="hidden lg:flex absolute left-[6%] top-1/2 -translate-y-1/2 flex-col items-center gap-1 opacity-15">
+            {Array.from({ length: 20 }, (_, i) => (
+              <motion.div
+                key={`bar-l-${i}`}
+                className="bg-white rounded-full"
+                style={{ width: Math.random() * 35 + 15, height: 2 }}
+                animate={{ opacity: [0.3, 0.7, 0.3], scaleX: [0.8, 1, 0.8] }}
+                transition={{ duration: 2, repeat: Infinity, delay: i * 0.08 }}
+              />
+            ))}
+          </div>
+
+          {/* Barcode visualization - right */}
+          <div className="hidden lg:flex absolute right-[6%] top-1/2 -translate-y-1/2 flex-col items-center gap-1 opacity-15">
+            {Array.from({ length: 20 }, (_, i) => (
+              <motion.div
+                key={`bar-r-${i}`}
+                className="bg-white rounded-full"
+                style={{ width: Math.random() * 35 + 15, height: 2 }}
+                animate={{ opacity: [0.3, 0.7, 0.3], scaleX: [0.8, 1, 0.8] }}
+                transition={{ duration: 2, repeat: Infinity, delay: i * 0.08 + 0.5 }}
+              />
+            ))}
+          </div>
+
+          {/* QR outline - left */}
+          <motion.div
+            className="hidden lg:block absolute left-[12%] top-[18%] w-24 h-24 border-2 border-white/10 rounded-2xl"
+            animate={{ rotate: [0, 5, -5, 0], scale: [1, 1.03, 1] }}
+            transition={{ duration: 6, repeat: Infinity }}
+          />
+
+          {/* QR outline - right */}
+          <motion.div
+            className="hidden lg:block absolute right-[12%] bottom-[25%] w-20 h-20 border-2 border-white/10 rounded-xl"
+            animate={{ rotate: [0, -5, 5, 0], scale: [1, 1.05, 1] }}
+            transition={{ duration: 7, repeat: Infinity, delay: 1 }}
+          />
+        </div>
+
         {/* Text content */}
         <div className="relative z-10 flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 pt-20 pb-4 flex-shrink-0">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="text-center">
