@@ -37,7 +37,13 @@ const Login = () => {
     const { error } = await signIn(email, password);
     if (error) {
       setLoading(false);
-      toast.error("Login gagal: " + error);
+      if (error.includes("Invalid login credentials")) {
+        toast.error("Email atau password salah. Pastikan email sudah terverifikasi.");
+      } else if (error.includes("Email not confirmed")) {
+        toast.error("Email belum diverifikasi. Silakan cek inbox email Anda.");
+      } else {
+        toast.error("Login gagal: " + error);
+      }
       return;
     }
     toast.success("Login berhasil!");
