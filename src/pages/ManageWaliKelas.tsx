@@ -30,19 +30,10 @@ interface ClassTeacher {
   user_name?: string;
 }
 
-const ManageWaliKelas = () => {
-  const { profile } = useAuth();
-  const [assignments, setAssignments] = useState<ClassTeacher[]>([]);
-  const [classes, setClasses] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showDialog, setShowDialog] = useState(false);
-  const [creating, setCreating] = useState(false);
-
-  const [formName, setFormName] = useState("");
-  const [formEmail, setFormEmail] = useState("");
-  const [formPassword, setFormPassword] = useState("");
-  const [formClass, setFormClass] = useState("");
-  const [formPhone, setFormPhone] = useState("");
+interface TeacherOption {
+  user_id: string;
+  full_name: string;
+}
 
   // Edit/Detail
   const [detailDialog, setDetailDialog] = useState(false);
