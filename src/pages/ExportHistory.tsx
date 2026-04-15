@@ -148,18 +148,34 @@ const ExportHistory = () => {
       const startDate = `${year}-${String(month + 1).padStart(2, "0")}-01`;
       const endDate = `${year}-${String(month + 1).padStart(2, "0")}-${String(new Date(year, month + 1, 0).getDate()).padStart(2, "0")}`;
 
-      const [studentsRes, datangRes, pulangRes] = await Promise.all([
-        supabase.from("students").select("id, name, student_id, photo_url").eq("school_id", profile.school_id).eq("class", selectedClass).order("name"),
-        supabase.from("attendance_logs").select("student_id, date, status, attendance_type").eq("school_id", profile.school_id).eq("attendance_type", "datang").gte("date", startDate).lte("date", endDate),
-        supabase.from("attendance_logs").select("student_id, date, status, attendance_type").eq("school_id", profile.school_id).eq("attendance_type", "pulang").gte("date", startDate).lte("date", endDate),
-      ]);
+      const studentsRes = await supabase.from("students").select("id, name, student_id, photo_url").eq("school_id", profile.school_id).eq("class", selectedClass).order("name");
       setStudents(studentsRes.data || []);
-      setDatangLogs(datangRes.data || []);
-      setPulangLogs(pulangRes.data || []);
+
+      if (isTeacherOnly && user) {
+        // For teachers: use subject_attendance data
+        const { data: subjectLogs } = await supabase
+          .from("subject_attendance")
+          .select("student_id, date, status")
+          .eq("school_id", profile.school_id)
+          .eq("teacher_id", user.id)
+          .gte("date", startDate)
+          .lte("date", endDate);
+        // Map subject_attendance to the same format as attendance_logs
+        const mapped = (subjectLogs || []).map(l => ({ ...l, attendance_type: "datang" }));
+        setDatangLogs(mapped);
+        setPulangLogs([]);
+      } else {
+        const [datangRes, pulangRes] = await Promise.all([
+          supabase.from("attendance_logs").select("student_id, date, status, attendance_type").eq("school_id", profile.school_id).eq("attendance_type", "datang").gte("date", startDate).lte("date", endDate),
+          supabase.from("attendance_logs").select("student_id, date, status, attendance_type").eq("school_id", profile.school_id).eq("attendance_type", "pulang").gte("date", startDate).lte("date", endDate),
+        ]);
+        setDatangLogs(datangRes.data || []);
+        setPulangLogs(pulangRes.data || []);
+      }
       setLoading(false);
     };
     fetchData();
-  }, [profile?.school_id, selectedClass, currentMonth]);
+  }, [profile?.school_id, selectedClass, currentMonth, isTeacherOnly, user]);
 
   const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
 
