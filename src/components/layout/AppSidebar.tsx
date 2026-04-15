@@ -75,13 +75,13 @@ export function AppSidebar() {
   const { isMobile, setOpenMobile } = useSidebar();
   const location = useLocation();
   const navigate = useNavigate();
-  const { signOut, roles, profile } = useAuth();
+  const { signOut, roles, profile, user } = useAuth();
   const features = useSubscriptionFeatures();
   const isActive = (path: string) => location.pathname.startsWith(path);
 
   const [schoolData, setSchoolData] = useState<{ name: string; logo: string | null } | null>(null);
   const [platformLogo, setPlatformLogo] = useState<string | null>(null);
-  
+  const [isWaliKelas, setIsWaliKelas] = useState(false);
 
   const isPremiumBrand = ["School", "Premium"].includes(features.planName);
 
@@ -100,6 +100,13 @@ export function AppSidebar() {
     });
   }, [profile?.school_id]);
 
+  // Check if teacher is also wali kelas
+  useEffect(() => {
+    if (!user || !profile?.school_id) return;
+    supabase.from("class_teachers").select("id").eq("user_id", user.id).eq("school_id", profile.school_id).limit(1).then(({ data }) => {
+      setIsWaliKelas((data || []).length > 0);
+    });
+  }, [user, profile?.school_id]);
 
   const isTeacherOnly = roles.includes("teacher") && !roles.includes("school_admin") && !roles.includes("staff");
 
