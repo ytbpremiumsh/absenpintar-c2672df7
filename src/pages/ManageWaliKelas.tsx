@@ -285,7 +285,7 @@ const ManageWaliKelas = () => {
                 <SelectContent>
                   {teacherOptions.length === 0 ? (
                     <div className="p-3 text-center text-sm text-muted-foreground">
-                      Belum ada guru. Tambahkan di halaman Guru dan Staff terlebih dahulu.
+                      Belum ada guru. Tambahkan di halaman Guru & Staff terlebih dahulu.
                     </div>
                   ) : (
                     teacherOptions.map((t) => (
