@@ -186,8 +186,7 @@ export default function LiveSchedule() {
       <div className="relative">
         <div
           ref={scrollRef}
-          className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory"
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          className="grid grid-cols-7 gap-1.5 sm:gap-2"
         >
           {DAYS.map((day, idx) => {
             const dayDate = getDateForDay(idx, now);
@@ -196,7 +195,7 @@ export default function LiveSchedule() {
                 key={idx}
                 onClick={() => setSelectedDay(idx)}
                 className={cn(
-                  "snap-start shrink-0 flex flex-col items-center gap-0.5 px-3 py-2.5 rounded-xl border transition-all min-w-[68px]",
+                  "flex flex-col items-center gap-0.5 py-2 sm:py-2.5 rounded-xl border transition-all",
                   selectedDay === idx
                     ? "bg-primary text-primary-foreground border-primary shadow-md"
                     : idx === todayIdx
@@ -204,9 +203,9 @@ export default function LiveSchedule() {
                       : "bg-card border-border hover:bg-accent"
                 )}
               >
-                <span className="text-xs font-medium">{DAYS_SHORT[idx]}</span>
-                <span className="text-lg font-bold">{dayDate.getDate()}</span>
-                <span className="text-[10px] opacity-70">
+                <span className="text-[10px] sm:text-xs font-medium">{DAYS_SHORT[idx]}</span>
+                <span className="text-sm sm:text-lg font-bold">{dayDate.getDate()}</span>
+                <span className="text-[9px] sm:text-[10px] opacity-70">
                   {dayDate.toLocaleDateString("id-ID", { month: "short" })}
                 </span>
                 {idx === todayIdx && selectedDay !== idx && (

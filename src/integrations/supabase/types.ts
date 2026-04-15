@@ -1150,6 +1150,8 @@ export type Database = {
           mpwa_connected: boolean
           mpwa_sender: string | null
           school_id: string
+          teaching_reminder_enabled: boolean | null
+          teaching_reminder_template: string | null
           updated_at: string
           wa_delivery_target: string | null
           wa_enabled: boolean | null
@@ -1170,6 +1172,8 @@ export type Database = {
           mpwa_connected?: boolean
           mpwa_sender?: string | null
           school_id: string
+          teaching_reminder_enabled?: boolean | null
+          teaching_reminder_template?: string | null
           updated_at?: string
           wa_delivery_target?: string | null
           wa_enabled?: boolean | null
@@ -1190,6 +1194,8 @@ export type Database = {
           mpwa_connected?: boolean
           mpwa_sender?: string | null
           school_id?: string
+          teaching_reminder_enabled?: boolean | null
+          teaching_reminder_template?: string | null
           updated_at?: string
           wa_delivery_target?: string | null
           wa_enabled?: boolean | null

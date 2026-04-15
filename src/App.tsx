@@ -4,10 +4,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { DynamicFavicon } from "@/components/DynamicFavicon";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "@/hooks/useAuth";
+import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { SuperAdminLayout } from "@/components/layout/SuperAdminLayout";
+import { LoadingScreen } from "@/components/LoadingScreen";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
@@ -76,6 +77,90 @@ import TeacherDashboard from "./pages/TeacherDashboard";
 
 const queryClient = new QueryClient();
 
+function AppRoutes() {
+  const { loading } = useAuth();
+  if (loading) return <LoadingScreen />;
+  return (
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/live/:schoolId" element={<PublicMonitoring />} />
+      <Route path="/live/:schoolId/:className" element={<PublicClassMonitoring />} />
+      <Route path="/attendance/:schoolId" element={<PublicAttendanceMonitoring />} />
+      <Route path="/fitur" element={<Presentation />} />
+      <Route path="/business-model" element={<BusinessModel />} />
+      <Route path="/penawaran" element={<Penawaran />} />
+      <Route path="/proposal" element={<Proposal />} />
+      <Route path="/pitchdeck" element={<PitchDeck />} />
+      <Route path="/affiliate/register" element={<AffiliateRegister />} />
+      <Route path="/affiliate/login" element={<AffiliateLogin />} />
+      <Route path="/affiliate/dashboard" element={<AffiliateDashboard />} />
+      {/* Super Admin */}
+      <Route element={<SuperAdminLayout />}>
+        <Route path="/super-admin" element={<SuperAdminDashboard />} />
+        <Route path="/super-admin/schools" element={<SuperAdminSchools />} />
+        <Route path="/super-admin/plans" element={<SuperAdminPlans />} />
+        <Route path="/super-admin/subscriptions" element={<SuperAdminSubscriptions />} />
+        <Route path="/super-admin/payments" element={<SuperAdminPayments />} />
+        <Route path="/super-admin/whatsapp" element={<SuperAdminWhatsApp />} />
+        <Route path="/super-admin/branches" element={<SuperAdminBranches />} />
+        <Route path="/super-admin/announcements" element={<SuperAdminAnnouncements />} />
+        <Route path="/super-admin/tickets" element={<SuperAdminTickets />} />
+        <Route path="/super-admin/landing" element={<SuperAdminLanding />} />
+        <Route path="/super-admin/registration-wa" element={<SuperAdminRegistrationWA />} />
+        <Route path="/super-admin/fitur" element={<SuperAdminPresentation />} />
+        <Route path="/super-admin/business-model" element={<SuperAdminBusinessModel />} />
+        <Route path="/super-admin/testimonials" element={<SuperAdminTestimonials />} />
+        <Route path="/super-admin/login-logs" element={<SuperAdminLoginLogs />} />
+        <Route path="/super-admin/referral" element={<SuperAdminReferral />} />
+        <Route path="/super-admin/penawaran" element={<SuperAdminPenawaran />} />
+        <Route path="/super-admin/affiliate" element={<SuperAdminAffiliate />} />
+        <Route path="/super-admin/backup" element={<SuperAdminBackup />} />
+        <Route path="/super-admin/addons" element={<SuperAdminAddons />} />
+        <Route path="/super-admin/server-info" element={<SuperAdminServerInfo />} />
+      </Route>
+      {/* School Admin / Staff */}
+      <Route element={<AppLayout />}>
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/monitoring" element={<Monitoring />} />
+        <Route path="/scan" element={<ScanQR />} />
+        <Route path="/classes" element={<Classes />} />
+        <Route path="/students" element={<Students />} />
+        <Route path="/students/:id" element={<StudentDetail />} />
+        <Route path="/teachers" element={<Teachers />} />
+        <Route path="/wali-kelas" element={<ManageWaliKelas />} />
+        <Route path="/staff" element={<ManageStaff />} />
+        <Route path="/wali-kelas-dashboard" element={<WaliKelasDashboard />} />
+        <Route path="/wali-kelas-attendance" element={<WaliKelasAttendance />} />
+        <Route path="/wali-kelas-students" element={<WaliKelasStudents />} />
+        <Route path="/history" element={<History />} />
+        <Route path="/export-history" element={<ExportHistory />} />
+        <Route path="/edit-attendance" element={<EditAttendance />} />
+        <Route path="/subscription" element={<Subscription />} />
+        <Route path="/school-settings" element={<SchoolSettings />} />
+        <Route path="/account-settings" element={<AccountSettings />} />
+        <Route path="/support" element={<SupportTickets />} />
+        <Route path="/referral" element={<ReferralDashboard />} />
+        <Route path="/whatsapp" element={<WhatsAppSettings />} />
+        <Route path="/addons" element={<Addons />} />
+        <Route path="/custom-domain" element={<CustomDomain />} />
+        <Route path="/order-idcard" element={<OrderIdCard />} />
+        <Route path="/wa-credit" element={<WaCredit />} />
+        <Route path="/teaching-schedule" element={<TeachingSchedule />} />
+        <Route path="/live-schedule" element={<LiveSchedule />} />
+        <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
+        <Route path="/wa-templates" element={<Navigate to="/whatsapp" replace />} />
+        <Route path="/wa-broadcast" element={<Navigate to="/whatsapp" replace />} />
+        <Route path="/wa-history" element={<Navigate to="/whatsapp" replace />} />
+        <Route path="/whatsapp-settings" element={<Navigate to="/whatsapp" replace />} />
+      </Route>
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
@@ -85,83 +170,7 @@ const App = () => (
       <DynamicFavicon />
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/live/:schoolId" element={<PublicMonitoring />} />
-            <Route path="/live/:schoolId/:className" element={<PublicClassMonitoring />} />
-            <Route path="/attendance/:schoolId" element={<PublicAttendanceMonitoring />} />
-            <Route path="/fitur" element={<Presentation />} />
-            <Route path="/business-model" element={<BusinessModel />} />
-            <Route path="/penawaran" element={<Penawaran />} />
-            <Route path="/proposal" element={<Proposal />} />
-            <Route path="/pitchdeck" element={<PitchDeck />} />
-            <Route path="/affiliate/register" element={<AffiliateRegister />} />
-            <Route path="/affiliate/login" element={<AffiliateLogin />} />
-            <Route path="/affiliate/dashboard" element={<AffiliateDashboard />} />
-            {/* Super Admin */}
-            <Route element={<SuperAdminLayout />}>
-              <Route path="/super-admin" element={<SuperAdminDashboard />} />
-              <Route path="/super-admin/schools" element={<SuperAdminSchools />} />
-              <Route path="/super-admin/plans" element={<SuperAdminPlans />} />
-              <Route path="/super-admin/subscriptions" element={<SuperAdminSubscriptions />} />
-              <Route path="/super-admin/payments" element={<SuperAdminPayments />} />
-              <Route path="/super-admin/whatsapp" element={<SuperAdminWhatsApp />} />
-              <Route path="/super-admin/branches" element={<SuperAdminBranches />} />
-              <Route path="/super-admin/announcements" element={<SuperAdminAnnouncements />} />
-              <Route path="/super-admin/tickets" element={<SuperAdminTickets />} />
-              <Route path="/super-admin/landing" element={<SuperAdminLanding />} />
-              <Route path="/super-admin/registration-wa" element={<SuperAdminRegistrationWA />} />
-              <Route path="/super-admin/fitur" element={<SuperAdminPresentation />} />
-              <Route path="/super-admin/business-model" element={<SuperAdminBusinessModel />} />
-              <Route path="/super-admin/testimonials" element={<SuperAdminTestimonials />} />
-              <Route path="/super-admin/login-logs" element={<SuperAdminLoginLogs />} />
-              <Route path="/super-admin/referral" element={<SuperAdminReferral />} />
-              <Route path="/super-admin/penawaran" element={<SuperAdminPenawaran />} />
-              <Route path="/super-admin/affiliate" element={<SuperAdminAffiliate />} />
-              <Route path="/super-admin/backup" element={<SuperAdminBackup />} />
-              <Route path="/super-admin/addons" element={<SuperAdminAddons />} />
-              <Route path="/super-admin/server-info" element={<SuperAdminServerInfo />} />
-            </Route>
-            {/* School Admin / Staff */}
-            <Route element={<AppLayout />}>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/monitoring" element={<Monitoring />} />
-              <Route path="/scan" element={<ScanQR />} />
-              <Route path="/classes" element={<Classes />} />
-              <Route path="/students" element={<Students />} />
-              <Route path="/students/:id" element={<StudentDetail />} />
-              <Route path="/teachers" element={<Teachers />} />
-              <Route path="/wali-kelas" element={<ManageWaliKelas />} />
-              <Route path="/staff" element={<ManageStaff />} />
-              <Route path="/wali-kelas-dashboard" element={<WaliKelasDashboard />} />
-              <Route path="/wali-kelas-attendance" element={<WaliKelasAttendance />} />
-              <Route path="/wali-kelas-students" element={<WaliKelasStudents />} />
-              <Route path="/history" element={<History />} />
-              <Route path="/export-history" element={<ExportHistory />} />
-              <Route path="/edit-attendance" element={<EditAttendance />} />
-              <Route path="/subscription" element={<Subscription />} />
-              <Route path="/school-settings" element={<SchoolSettings />} />
-              <Route path="/account-settings" element={<AccountSettings />} />
-              <Route path="/support" element={<SupportTickets />} />
-              <Route path="/referral" element={<ReferralDashboard />} />
-              <Route path="/whatsapp" element={<WhatsAppSettings />} />
-              <Route path="/addons" element={<Addons />} />
-              <Route path="/custom-domain" element={<CustomDomain />} />
-              <Route path="/order-idcard" element={<OrderIdCard />} />
-              <Route path="/wa-credit" element={<WaCredit />} />
-              <Route path="/teaching-schedule" element={<TeachingSchedule />} />
-              <Route path="/live-schedule" element={<LiveSchedule />} />
-              <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
-              <Route path="/wa-templates" element={<Navigate to="/whatsapp" replace />} />
-              <Route path="/wa-broadcast" element={<Navigate to="/whatsapp" replace />} />
-              <Route path="/wa-history" element={<Navigate to="/whatsapp" replace />} />
-              <Route path="/whatsapp-settings" element={<Navigate to="/whatsapp" replace />} />
-            </Route>
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <AppRoutes />
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

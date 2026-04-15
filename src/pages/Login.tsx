@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff, Loader2, ArrowRight, Lock, Mail, Shield, QrCode, Scan } from "lucide-react";
+import { Eye, EyeOff, Loader2, ArrowRight, Lock, Mail, Shield, QrCode, Scan, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 
@@ -37,7 +37,13 @@ const Login = () => {
     const { error } = await signIn(email, password);
     if (error) {
       setLoading(false);
-      toast.error("Login gagal: " + error);
+      if (error.includes("Invalid login credentials")) {
+        toast.error("Email atau password salah. Pastikan email sudah terverifikasi.");
+      } else if (error.includes("Email not confirmed")) {
+        toast.error("Email belum diverifikasi. Silakan cek inbox email Anda.");
+      } else {
+        toast.error("Login gagal: " + error);
+      }
       return;
     }
     toast.success("Login berhasil!");
@@ -80,6 +86,14 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex relative overflow-hidden bg-[#5B6CF9]">
+      {/* Back to home button */}
+      <button
+        onClick={() => navigate("/")}
+        className="absolute top-4 left-4 z-50 flex items-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/15 text-white px-3 py-2 rounded-xl text-sm font-medium transition-all backdrop-blur-sm"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Kembali
+      </button>
       {/* Animated background */}
       <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px)', backgroundSize: '48px 48px' }} />
 
