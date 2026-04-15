@@ -45,7 +45,7 @@ serve(async (req) => {
       return sid;
     };
 
-    const siteUrl = "https://absenpintar.lovable.app";
+    const siteUrl = "https://atskolla.com";
 
     const createMayarLink = async (name: string, amount: number, description: string, redirectUrl: string) => {
       const mayarRes = await fetch("https://api.mayar.id/hl/v1/payment/create", {
@@ -54,6 +54,7 @@ serve(async (req) => {
         body: JSON.stringify({ name, amount, description, email: user.email || "noemail@school.com", mobile: "08000000000", redirectUrl }),
       });
       const mayarData = await mayarRes.json();
+      console.log("Mayar response status:", mayarRes.status, "body:", JSON.stringify(mayarData));
       if (!mayarRes.ok) throw new Error(`Mayar API error: ${mayarData?.message || JSON.stringify(mayarData)}`);
       if (!mayarData?.data?.link) throw new Error("Mayar tidak mengembalikan link pembayaran");
       return mayarData.data;
@@ -94,7 +95,7 @@ serve(async (req) => {
 
       const redirectUrl = `${siteUrl}/order-idcard?status=success`;
       const paymentLink = await createMayarLink(
-        `ID Card ${order.total_cards} kartu - ${school?.name || "Sekolah"}`,
+        `Cetak ID Card ${order.total_cards} Kartu`,
         amount,
         `Cetak ID Card ${order.total_cards} kartu - ${school?.name || "Sekolah"}`,
         redirectUrl
@@ -131,9 +132,9 @@ serve(async (req) => {
 
       const redirectUrl = `${siteUrl}/custom-domain?status=success`;
       const paymentLink = await createMayarLink(
-        `Add-on Custom Domain - ${school?.name || "Sekolah"}`,
+        `Add-on Custom Domain`,
         addonAmount,
-        `Add-on Custom Domain - (${school?.name || "Sekolah"})`,
+        `Add-on Custom Domain - ${school?.name || "Sekolah"}`,
         redirectUrl
       );
 
@@ -162,7 +163,6 @@ serve(async (req) => {
       const schoolId = await resolveSchoolId();
       const { data: school } = await supabaseAdmin.from("schools").select("name").eq("id", schoolId).maybeSingle();
 
-      // Get price from platform_settings
       const { data: priceSetting } = await supabaseAdmin.from("platform_settings").select("value").eq("key", "wa_credit_price").maybeSingle();
       const pricePerPack = parseInt(priceSetting?.value || "50000");
       const { data: creditSetting } = await supabaseAdmin.from("platform_settings").select("value").eq("key", "wa_credit_per_pack").maybeSingle();
@@ -179,11 +179,11 @@ serve(async (req) => {
         });
       }
 
-      const redirectUrl = `${siteUrl}/addons?status=wa_credit_success`;
+      const redirectUrl = `${siteUrl}/wa-credit?status=success`;
       const paymentLink = await createMayarLink(
-        `Kredit WA ${totalCredits} pesan - ${school?.name || "Sekolah"}`,
+        `Top-up Kredit WA ${totalCredits} Pesan`,
         totalAmount,
-        `Top-up Kredit WhatsApp ${totalCredits} pesan - (${school?.name || "Sekolah"})`,
+        `Top-up Kredit WhatsApp ${totalCredits} pesan - ${school?.name || "Sekolah"}`,
         redirectUrl
       );
 
@@ -238,9 +238,9 @@ serve(async (req) => {
 
     const redirectUrl = `${siteUrl}/subscription?status=success`;
     const paymentLink = await createMayarLink(
-      `Paket ${plan.name} - ${school?.name || "Sekolah"}`,
+      `Langganan Paket ${plan.name}`,
       plan.price,
-      `Paket ${plan.name} - (${school?.name || "Sekolah"})`,
+      `Langganan Paket ${plan.name} - ${school?.name || "Sekolah"}`,
       redirectUrl
     );
 
@@ -253,7 +253,7 @@ serve(async (req) => {
   } catch (error) {
     console.error("create-mayar-payment error:", error);
     return new Response(JSON.stringify({ success: false, error: error.message }), {
-      status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
