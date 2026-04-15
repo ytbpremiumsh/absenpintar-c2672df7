@@ -53,7 +53,7 @@ function AppContent() {
 
   const isTeacherOnly = roles.includes("teacher") && !roles.includes("school_admin") && !roles.includes("staff");
   if (isTeacherOnly && location.pathname === "/dashboard") {
-    return <Navigate to="/wali-kelas-dashboard" replace />;
+    return <Navigate to="/teacher-dashboard" replace />;
   }
 
   const initials = profile?.full_name
