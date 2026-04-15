@@ -62,9 +62,13 @@ const History = () => {
 
   useEffect(() => {
     if (!isTeacherOnly || !user) { setTeacherClasses(null); return; }
-    supabase.from("class_teachers").select("class_name").eq("user_id", user.id)
-      .then(({ data }) => {
-        setTeacherClasses(data?.map(d => d.class_name) || []);
+    // For teachers: get classes from teaching_schedules
+    supabase.from("teaching_schedules").select("class_id").eq("teacher_id", user.id).eq("is_active", true)
+      .then(async ({ data }) => {
+        if (!data || data.length === 0) { setTeacherClasses([]); return; }
+        const classIds = [...new Set(data.map(d => d.class_id))];
+        const { data: classData } = await supabase.from("classes").select("name").in("id", classIds);
+        setTeacherClasses(classData?.map(d => d.name) || []);
       });
   }, [isTeacherOnly, user]);
 
@@ -74,32 +78,51 @@ const History = () => {
 
     setLoading(true);
 
-    let logsQuery = supabase.from("attendance_logs")
-      .select("*, students(name, class, student_id)")
-      .eq("school_id", profile.school_id)
-      .eq("attendance_type", attendanceTypeTab)
-      .gte("date", startDate).lte("date", endDate)
-      .order("date", { ascending: false })
-      .limit(5000);
+    if (isTeacherOnly && user) {
+      // Teachers: use subject_attendance
+      const { data: subjectLogs } = await supabase
+        .from("subject_attendance")
+        .select("student_id, date, status, students(name, class, student_id)")
+        .eq("school_id", profile.school_id)
+        .eq("teacher_id", user.id)
+        .gte("date", startDate)
+        .lte("date", endDate)
+        .order("date", { ascending: false })
+        .limit(5000);
 
-    let studentsQuery = supabase.from("students").select("id, name, class, student_id")
-      .eq("school_id", profile.school_id);
+      const mapped = (subjectLogs || []).map((l: any) => ({
+        ...l,
+        attendance_type: "datang",
+        method: "mapel",
+      }));
 
-    if (isTeacherOnly && teacherClasses && teacherClasses.length > 0) {
-      studentsQuery = studentsQuery.in("class", teacherClasses);
+      let studentsQuery = supabase.from("students").select("id, name, class, student_id").eq("school_id", profile.school_id);
+      if (teacherClasses && teacherClasses.length > 0) {
+        studentsQuery = studentsQuery.in("class", teacherClasses);
+      }
+      const { data: studentsData } = await studentsQuery;
+
+      setLogs(mapped);
+      setAllStudents(studentsData || []);
+    } else {
+      let logsQuery = supabase.from("attendance_logs")
+        .select("*, students(name, class, student_id)")
+        .eq("school_id", profile.school_id)
+        .eq("attendance_type", attendanceTypeTab)
+        .gte("date", startDate).lte("date", endDate)
+        .order("date", { ascending: false })
+        .limit(5000);
+
+      let studentsQuery = supabase.from("students").select("id, name, class, student_id")
+        .eq("school_id", profile.school_id);
+
+      const [logsRes, studentsRes] = await Promise.all([logsQuery, studentsQuery]);
+      setLogs(logsRes.data || []);
+      setAllStudents(studentsRes.data || []);
     }
 
-    const [logsRes, studentsRes] = await Promise.all([logsQuery, studentsQuery]);
-
-    let filteredLogs = logsRes.data || [];
-    if (isTeacherOnly && teacherClasses && teacherClasses.length > 0) {
-      filteredLogs = filteredLogs.filter((l: any) => teacherClasses.includes(l.students?.class));
-    }
-
-    setLogs(filteredLogs);
-    setAllStudents(studentsRes.data || []);
     setLoading(false);
-  }, [profile?.school_id, startDate, endDate, isTeacherOnly, teacherClasses, attendanceTypeTab]);
+  }, [profile?.school_id, startDate, endDate, isTeacherOnly, teacherClasses, attendanceTypeTab, user]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
