@@ -807,6 +807,43 @@ const WhatsAppSettings = () => {
               </Card>
             ))}
 
+            {/* Teaching Reminder Template */}
+            <Card className="border-0 shadow-card overflow-hidden">
+              <div className="px-4 py-3 border-b border-border bg-muted/20">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-primary" />
+                      Pengingat Jadwal Mengajar
+                    </h3>
+                    <p className="text-[10px] text-muted-foreground">Notifikasi otomatis 15 menit sebelum jadwal mengajar dimulai</p>
+                  </div>
+                  <Switch checked={teachingReminderEnabled} onCheckedChange={setTeachingReminderEnabled} />
+                </div>
+              </div>
+              {teachingReminderEnabled && (
+                <CardContent className="p-4">
+                  <Textarea rows={8} className="font-mono text-xs bg-muted/30 border-border/50 focus:bg-background transition-colors" value={teachingReminderTemplate} onChange={(e) => setTeachingReminderTemplate(e.target.value)} />
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {[
+                      { key: "{teacher_name}", label: "Nama Guru" },
+                      { key: "{subject_name}", label: "Mata Pelajaran" },
+                      { key: "{class_name}", label: "Nama Kelas" },
+                      { key: "{start_time}", label: "Jam Mulai" },
+                      { key: "{end_time}", label: "Jam Selesai" },
+                      { key: "{room}", label: "Ruangan" },
+                    ].map((p) => (
+                      <button key={p.key} type="button"
+                        className="rounded-full bg-primary/5 border border-primary/10 px-2.5 py-1 text-[10px] text-foreground transition hover:bg-primary/10 hover:border-primary/20 font-medium"
+                        onClick={() => setTeachingReminderTemplate((prev) => prev + p.key)}>
+                        {p.key} <span className="text-muted-foreground">({p.label})</span>
+                      </button>
+                    ))}
+                  </div>
+                </CardContent>
+              )}
+            </Card>
+
             <Button onClick={handleSaveSettings} disabled={saving} className="gradient-primary hover:opacity-90 shadow-md h-10 px-6">
               {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
               Simpan Pengaturan
