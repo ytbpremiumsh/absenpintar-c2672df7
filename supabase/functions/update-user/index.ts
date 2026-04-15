@@ -15,7 +15,6 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    // Verify caller is authenticated and has admin role
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) throw new Error('Unauthorized');
 
@@ -23,7 +22,6 @@ serve(async (req) => {
     const { data: { user: caller }, error: authError } = await supabaseAdmin.auth.getUser(token);
     if (authError || !caller) throw new Error('Unauthorized');
 
-    // Check caller has school_admin or super_admin role
     const { data: roles } = await supabaseAdmin
       .from('user_roles')
       .select('role')
@@ -37,38 +35,42 @@ serve(async (req) => {
     const { user_id, full_name, email, password, phone } = await req.json();
     if (!user_id) throw new Error('user_id is required');
 
-    // Update profile name if provided
-    if (full_name) {
-      await supabaseAdmin.from('profiles').update({ full_name }).eq('user_id', user_id);
+    // Update profile name and phone if provided
+    const profileUpdate: Record<string, string> = {};
+    if (full_name) profileUpdate.full_name = full_name;
+    if (phone) profileUpdate.phone = phone;
+    
+    if (Object.keys(profileUpdate).length > 0) {
+      const { error: profileError } = await supabaseAdmin.from('profiles').update(profileUpdate).eq('user_id', user_id);
+      if (profileError) {
+        console.error('Profile update error:', profileError);
+      }
     }
 
-    // Update auth user (email, password) if provided
-    const authUpdate: any = {};
-    if (email) authUpdate.email = email;
-    if (password && password.length >= 6) authUpdate.password = password;
-    if (phone) {
-      let formattedPhone = phone.replace(/\D/g, '');
-      if (formattedPhone.startsWith('0')) {
-        formattedPhone = '62' + formattedPhone.substring(1);
-      }
-      if (!formattedPhone.startsWith('+')) {
-        formattedPhone = '+' + formattedPhone;
-      }
-      authUpdate.phone = formattedPhone;
+    // Update auth user (email, password) if provided - skip phone to avoid E.164 issues
+    const authUpdate: Record<string, any> = {};
+    if (email) {
+      authUpdate.email = email;
+      authUpdate.email_confirm = true;
     }
+    if (password && password.length >= 6) authUpdate.password = password;
 
     if (Object.keys(authUpdate).length > 0) {
-      if (email) authUpdate.email_confirm = true;
       const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(user_id, authUpdate);
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error('Auth update error:', JSON.stringify(updateError));
+        throw new Error(updateError.message || 'Gagal update auth user');
+      }
     }
 
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 400,
+    console.error('update-user error:', error);
+    const msg = error instanceof Error ? error.message : String(error);
+    return new Response(JSON.stringify({ error: msg }), {
+      status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
