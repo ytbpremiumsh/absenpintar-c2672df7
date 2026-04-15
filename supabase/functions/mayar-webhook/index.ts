@@ -16,8 +16,9 @@ serve(async (req) => {
     const event = body.event;
     const data = body.data;
 
-    if (event !== 'payment.received' && event !== 'payment.completed') {
-      return new Response(JSON.stringify({ message: 'Event ignored' }), {
+    const acceptedEvents = ['payment.received', 'payment.completed', 'payment.success', 'payment.paid'];
+    if (!acceptedEvents.includes(event)) {
+      return new Response(JSON.stringify({ message: 'Event ignored', event }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
