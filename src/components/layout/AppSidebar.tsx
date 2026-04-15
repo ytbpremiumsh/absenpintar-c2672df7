@@ -21,22 +21,6 @@ import {
   Radio,
   BookOpen,
 } from "lucide-react";
-  LogOut,
-  GraduationCap,
-  UserCheck,
-  BarChart3,
-  HelpCircle,
-  ClipboardCheck,
-  UsersRound,
-  MessageCircle,
-  ChevronRight,
-  Crown,
-  PenLine,
-  Sparkles,
-  Package,
-  CalendarDays,
-  Radio,
-} from "lucide-react";
 import atskollaLogo from "@/assets/Logo_atskolla.png";
 import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
 import { NavLink } from "@/components/NavLink";
