@@ -169,6 +169,11 @@ const WhatsAppSettings = () => {
   const [mpwaConnected, setMpwaConnected] = useState(false);
   const [mpwaSenderNumber, setMpwaSenderNumber] = useState("");
   const [onesenderEnabled, setOnesenderEnabled] = useState(true);
+  const [teachingReminderEnabled, setTeachingReminderEnabled] = useState(false);
+  const [teachingReminderTemplate, setTeachingReminderTemplate] = useState('📋 *Pengingat Jadwal Mengajar*\n\nBapak/Ibu *{teacher_name}*,\n\nMata pelajaran *{subject_name}* untuk kelas *{class_name}* akan dimulai dalam 15 menit.\n\nWaktu: {start_time} - {end_time}\nRuangan: {room}\n\n_Pesan otomatis dari ATSkolla_');
+  const [mpwaConnected, setMpwaConnected] = useState(false);
+  const [mpwaSenderNumber, setMpwaSenderNumber] = useState("");
+  const [onesenderEnabled, setOnesenderEnabled] = useState(true);
 
   const [classes, setClasses] = useState<{ id: string; name: string; wa_group_id: string | null }[]>([]);
   const [selectedClass, setSelectedClass] = useState("");
@@ -227,6 +232,8 @@ const WhatsAppSettings = () => {
           setGatewayType(!osEnabled && gt === "onesender" ? "mpwa" : gt);
           setMpwaConnected(d.mpwa_connected || false);
           setMpwaSenderNumber(d.mpwa_sender || "");
+          setTeachingReminderEnabled(d.teaching_reminder_enabled || false);
+          if (d.teaching_reminder_template) setTeachingReminderTemplate(d.teaching_reminder_template);
         } else {
           setGatewayType("mpwa");
         }
@@ -264,6 +271,7 @@ const WhatsAppSettings = () => {
       wa_enabled: waEnabled, wa_delivery_target: deliveryTarget,
       attendance_arrive_template: arriveTemplate, attendance_depart_template: departTemplate,
       attendance_group_template: groupTemplate, gateway_type: gatewayType,
+      teaching_reminder_enabled: teachingReminderEnabled, teaching_reminder_template: teachingReminderTemplate,
     };
     if (!integrationId) {
       const { data: newInt, error: createErr } = await supabase.from("school_integrations").insert({ school_id: schoolId, integration_type: "onesender", is_active: false, ...payload }).select("id").single();
