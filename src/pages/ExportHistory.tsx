@@ -384,6 +384,52 @@ const ExportHistory = () => {
     toast.success("PDF berhasil diunduh!");
   };
 
+  // Export Student Analytics
+  const exportStudentAnalytics = () => {
+    if (isPremiumFeature) { toast.error("Upgrade ke paket Basic untuk export"); return; }
+    if (!activeRows.length) { toast.error("Tidak ada data"); return; }
+
+    let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+    <head><meta charset="utf-8"><style>
+      td, th { border: 1px solid #999; padding: 4px 8px; font-family: Arial; font-size: 10pt; }
+      th { background: #4f46e5; color: white; font-weight: bold; text-align: center; }
+      .name { text-align: left; min-width: 160px; }
+      .title { font-size: 14pt; font-weight: bold; text-align: center; border: none; }
+      .subtitle { font-size: 11pt; text-align: center; border: none; }
+      .good { background: #dcfce7; color: #16a34a; font-weight: bold; }
+      .warn { background: #fef9c3; color: #ca8a04; font-weight: bold; }
+      .bad { background: #fecaca; color: #dc2626; font-weight: bold; }
+    </style></head><body><table>`;
+
+    html += `<tr><td colspan="9" class="title">ANALYTIC KEHADIRAN SISWA</td></tr>`;
+    html += `<tr><td colspan="9" class="subtitle">Kelas: ${selectedClass} — ${monthLabel}</td></tr>`;
+    html += `<tr><td colspan="9"></td></tr>`;
+    html += `<tr><th>NO</th><th>NIS</th><th class="name">NAMA SISWA</th><th>Hadir</th><th>Sakit</th><th>Izin</th><th>Alfa</th><th>Total Hari</th><th>% Kehadiran</th></tr>`;
+
+    activeRows.forEach((s, i) => {
+      const totalDays = s.totals.H + s.totals.S + s.totals.I + s.totals.A;
+      const pct = totalDays > 0 ? Math.round((s.totals.H / totalDays) * 100) : 0;
+      const cls = pct >= 80 ? "good" : pct >= 60 ? "warn" : "bad";
+      html += `<tr><td style="text-align:center">${i + 1}</td><td style="text-align:center">${s.student_id}</td><td class="name">${s.name}</td>`;
+      html += `<td style="text-align:center" class="good">${s.totals.H}</td>`;
+      html += `<td style="text-align:center">${s.totals.S}</td>`;
+      html += `<td style="text-align:center">${s.totals.I}</td>`;
+      html += `<td style="text-align:center" class="bad">${s.totals.A}</td>`;
+      html += `<td style="text-align:center">${totalDays}</td>`;
+      html += `<td style="text-align:center" class="${cls}">${pct}%</td></tr>`;
+    });
+
+    html += `</table></body></html>`;
+    const blob = new Blob([html], { type: "application/vnd.ms-excel" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Analytic-Siswa-${selectedClass}-${monthLabel}.xls`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Analytic siswa berhasil diunduh!");
+  };
+
   const getCellColor = (code: string) => {
     if (code === "✓") return "bg-success/15 text-success";
     switch (code) {
