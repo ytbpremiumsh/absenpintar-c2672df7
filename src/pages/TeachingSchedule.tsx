@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/components/ui/sonner";
 import { Plus, Pencil, Trash2, BookOpen, Clock, Users as UsersIcon, Calendar, Search, GraduationCap, CalendarDays } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
+import { cn } from "@/lib/utils";
 
 const DAYS = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"];
 
