@@ -384,6 +384,52 @@ const ExportHistory = () => {
     toast.success("PDF berhasil diunduh!");
   };
 
+  // Export Student Analytics
+  const exportStudentAnalytics = () => {
+    if (isPremiumFeature) { toast.error("Upgrade ke paket Basic untuk export"); return; }
+    if (!activeRows.length) { toast.error("Tidak ada data"); return; }
+
+    let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+    <head><meta charset="utf-8"><style>
+      td, th { border: 1px solid #999; padding: 4px 8px; font-family: Arial; font-size: 10pt; }
+      th { background: #4f46e5; color: white; font-weight: bold; text-align: center; }
+      .name { text-align: left; min-width: 160px; }
+      .title { font-size: 14pt; font-weight: bold; text-align: center; border: none; }
+      .subtitle { font-size: 11pt; text-align: center; border: none; }
+      .good { background: #dcfce7; color: #16a34a; font-weight: bold; }
+      .warn { background: #fef9c3; color: #ca8a04; font-weight: bold; }
+      .bad { background: #fecaca; color: #dc2626; font-weight: bold; }
+    </style></head><body><table>`;
+
+    html += `<tr><td colspan="9" class="title">ANALYTIC KEHADIRAN SISWA</td></tr>`;
+    html += `<tr><td colspan="9" class="subtitle">Kelas: ${selectedClass} — ${monthLabel}</td></tr>`;
+    html += `<tr><td colspan="9"></td></tr>`;
+    html += `<tr><th>NO</th><th>NIS</th><th class="name">NAMA SISWA</th><th>Hadir</th><th>Sakit</th><th>Izin</th><th>Alfa</th><th>Total Hari</th><th>% Kehadiran</th></tr>`;
+
+    activeRows.forEach((s, i) => {
+      const totalDays = s.totals.H + s.totals.S + s.totals.I + s.totals.A;
+      const pct = totalDays > 0 ? Math.round((s.totals.H / totalDays) * 100) : 0;
+      const cls = pct >= 80 ? "good" : pct >= 60 ? "warn" : "bad";
+      html += `<tr><td style="text-align:center">${i + 1}</td><td style="text-align:center">${s.student_id}</td><td class="name">${s.name}</td>`;
+      html += `<td style="text-align:center" class="good">${s.totals.H}</td>`;
+      html += `<td style="text-align:center">${s.totals.S}</td>`;
+      html += `<td style="text-align:center">${s.totals.I}</td>`;
+      html += `<td style="text-align:center" class="bad">${s.totals.A}</td>`;
+      html += `<td style="text-align:center">${totalDays}</td>`;
+      html += `<td style="text-align:center" class="${cls}">${pct}%</td></tr>`;
+    });
+
+    html += `</table></body></html>`;
+    const blob = new Blob([html], { type: "application/vnd.ms-excel" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Analytic-Siswa-${selectedClass}-${monthLabel}.xls`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Analytic siswa berhasil diunduh!");
+  };
+
   const getCellColor = (code: string) => {
     if (code === "✓") return "bg-success/15 text-success";
     switch (code) {
@@ -488,6 +534,9 @@ const ExportHistory = () => {
           <Button variant="outline" disabled={isPremiumFeature} onClick={exportExcel} className="gap-2 border-primary/30 text-primary hover:bg-primary/5">
             <Download className="h-4 w-4" /> Export Excel {isPremiumFeature && <Lock className="h-3 w-3" />}
           </Button>
+          <Button variant="outline" disabled={isPremiumFeature} onClick={exportStudentAnalytics} className="gap-2 border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/5">
+            <Users className="h-4 w-4" /> Download Analytic Siswa {isPremiumFeature && <Lock className="h-3 w-3" />}
+          </Button>
         </div>
 
         {/* Legend */}
@@ -538,7 +587,7 @@ const ExportHistory = () => {
                       {isPulangMode ? (
                         <th className="px-1 py-2 text-center font-bold text-primary uppercase text-[10px] tracking-wider">Keterangan</th>
                       ) : (
-                        <th colSpan={4} className="px-1 py-2 text-center font-bold text-primary uppercase text-[10px] tracking-wider">Keterangan</th>
+                        <th colSpan={5} className="px-1 py-2 text-center font-bold text-primary uppercase text-[10px] tracking-wider">Keterangan</th>
                       )}
                     </tr>
                     <tr className="border-b border-border bg-muted/30">
@@ -553,6 +602,7 @@ const ExportHistory = () => {
                           <th className="px-1 py-1.5 text-center font-bold text-violet-600 w-7 text-[10px]">S</th>
                           <th className="px-1 py-1.5 text-center font-bold text-amber-600 w-7 text-[10px]">I</th>
                           <th className="px-1 py-1.5 text-center font-bold text-red-600 w-7 text-[10px]">A</th>
+                          <th className="px-1 py-1.5 text-center font-bold text-primary w-10 text-[10px]">%</th>
                         </>
                       )}
                     </tr>
@@ -590,14 +640,21 @@ const ExportHistory = () => {
                         })}
                         {isPulangMode ? (
                           <td className="px-1 py-2 text-center font-bold text-emerald-600">{s.totals.H || 0}</td>
-                        ) : (
-                          <>
-                            <td className="px-1 py-2 text-center font-bold text-emerald-600">{s.totals.H || 0}</td>
-                            <td className="px-1 py-2 text-center font-bold text-violet-600">{s.totals.S || 0}</td>
-                            <td className="px-1 py-2 text-center font-bold text-amber-600">{s.totals.I || 0}</td>
-                            <td className="px-1 py-2 text-center font-bold text-red-600">{s.totals.A || 0}</td>
-                          </>
-                        )}
+                        ) : (() => {
+                            const totalDays = s.totals.H + s.totals.S + s.totals.I + s.totals.A;
+                            const pct = totalDays > 0 ? Math.round((s.totals.H / totalDays) * 100) : 0;
+                            return (
+                              <>
+                                <td className="px-1 py-2 text-center font-bold text-emerald-600">{s.totals.H || 0}</td>
+                                <td className="px-1 py-2 text-center font-bold text-violet-600">{s.totals.S || 0}</td>
+                                <td className="px-1 py-2 text-center font-bold text-amber-600">{s.totals.I || 0}</td>
+                                <td className="px-1 py-2 text-center font-bold text-red-600">{s.totals.A || 0}</td>
+                                <td className={`px-1 py-2 text-center font-bold text-[10px] ${pct >= 80 ? "text-emerald-600" : pct >= 60 ? "text-amber-600" : "text-red-600"}`}>
+                                  {totalDays > 0 ? `${pct}%` : "-"}
+                                </td>
+                              </>
+                            );
+                          })()}
                       </tr>
                     ))}
                   </tbody>

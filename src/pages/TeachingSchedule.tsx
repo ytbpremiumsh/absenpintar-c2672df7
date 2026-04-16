@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/components/ui/sonner";
 import { Plus, Pencil, Trash2, BookOpen, Clock, Users as UsersIcon, Calendar, Search, GraduationCap, CalendarDays } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
+import { cn } from "@/lib/utils";
 
 const DAYS = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"];
 
@@ -48,7 +49,7 @@ interface ClassData {
 }
 
 export default function TeachingSchedule() {
-  const { profile, roles } = useAuth();
+  const { user, profile, roles } = useAuth();
   const isAdmin = roles.includes("school_admin") || roles.includes("super_admin");
   const schoolId = profile?.school_id;
 
@@ -362,8 +363,10 @@ export default function TeachingSchedule() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {items.map((s) => (
-                          <TableRow key={s.id}>
+                      {items.map((s) => {
+                          const isMe = s.teacher_id === user?.id;
+                          return (
+                          <TableRow key={s.id} className={cn(isMe && "bg-primary/5 font-medium")}>
                             <TableCell className="font-mono text-sm">{s.start_time.slice(0, 5)} – {s.end_time.slice(0, 5)}</TableCell>
                             <TableCell>
                               <div className="flex items-center gap-2">
@@ -371,7 +374,10 @@ export default function TeachingSchedule() {
                                 <span className="font-medium">{getSubjectName(s.subject_id)}</span>
                               </div>
                             </TableCell>
-                            <TableCell>{getTeacherName(s.teacher_id)}</TableCell>
+                            <TableCell>
+                              <span className={cn(isMe && "text-primary font-bold")}>{getTeacherName(s.teacher_id)}</span>
+                              {isMe && <Badge className="ml-1.5 bg-primary/15 text-primary border-primary/30 text-[9px] h-4 px-1">Anda</Badge>}
+                            </TableCell>
                             <TableCell><Badge variant="outline">{getClassName(s.class_id)}</Badge></TableCell>
                             <TableCell className="text-muted-foreground">{s.room || "—"}</TableCell>
                             {isAdmin && (
@@ -383,14 +389,17 @@ export default function TeachingSchedule() {
                               </TableCell>
                             )}
                           </TableRow>
-                        ))}
+                          );
+                        })}
                       </TableBody>
                     </Table>
                   </div>
                   {/* Mobile cards */}
                   <div className="md:hidden space-y-2">
-                    {items.map((s) => (
-                      <div key={s.id} className="border rounded-lg p-3 space-y-1.5">
+                    {items.map((s) => {
+                      const isMe = s.teacher_id === user?.id;
+                      return (
+                      <div key={s.id} className={cn("border rounded-lg p-3 space-y-1.5", isMe && "border-primary/30 bg-primary/5")}>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <Clock className="h-3.5 w-3.5 text-muted-foreground" />
@@ -408,12 +417,15 @@ export default function TeachingSchedule() {
                           <span className="font-semibold">{getSubjectName(s.subject_id)}</span>
                         </div>
                         <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                          <span>👨‍🏫 {getTeacherName(s.teacher_id)}</span>
-                          <span>🏫 {getClassName(s.class_id)}</span>
-                          {s.room && <span>📍 {s.room}</span>}
+                          <span className={cn("flex items-center gap-1", isMe && "text-primary font-bold")}>
+                            <UsersIcon className="h-3 w-3" /> {getTeacherName(s.teacher_id)} {isMe && "(Anda)"}
+                          </span>
+                          <span className="flex items-center gap-1"><GraduationCap className="h-3 w-3" /> {getClassName(s.class_id)}</span>
+                          {s.room && <span className="flex items-center gap-1"><BookOpen className="h-3 w-3" /> {s.room}</span>}
                         </div>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </CardContent>
               </Card>
