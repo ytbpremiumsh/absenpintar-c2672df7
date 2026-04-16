@@ -49,7 +49,7 @@ interface ClassData {
 }
 
 export default function TeachingSchedule() {
-  const { profile, roles } = useAuth();
+  const { user, profile, roles } = useAuth();
   const isAdmin = roles.includes("school_admin") || roles.includes("super_admin");
   const schoolId = profile?.school_id;
 
