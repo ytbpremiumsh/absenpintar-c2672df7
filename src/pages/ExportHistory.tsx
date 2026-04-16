@@ -640,14 +640,21 @@ const ExportHistory = () => {
                         })}
                         {isPulangMode ? (
                           <td className="px-1 py-2 text-center font-bold text-emerald-600">{s.totals.H || 0}</td>
-                        ) : (
-                          <>
-                            <td className="px-1 py-2 text-center font-bold text-emerald-600">{s.totals.H || 0}</td>
-                            <td className="px-1 py-2 text-center font-bold text-violet-600">{s.totals.S || 0}</td>
-                            <td className="px-1 py-2 text-center font-bold text-amber-600">{s.totals.I || 0}</td>
-                            <td className="px-1 py-2 text-center font-bold text-red-600">{s.totals.A || 0}</td>
-                          </>
-                        )}
+                        ) : (() => {
+                            const totalDays = s.totals.H + s.totals.S + s.totals.I + s.totals.A;
+                            const pct = totalDays > 0 ? Math.round((s.totals.H / totalDays) * 100) : 0;
+                            return (
+                              <>
+                                <td className="px-1 py-2 text-center font-bold text-emerald-600">{s.totals.H || 0}</td>
+                                <td className="px-1 py-2 text-center font-bold text-violet-600">{s.totals.S || 0}</td>
+                                <td className="px-1 py-2 text-center font-bold text-amber-600">{s.totals.I || 0}</td>
+                                <td className="px-1 py-2 text-center font-bold text-red-600">{s.totals.A || 0}</td>
+                                <td className={`px-1 py-2 text-center font-bold text-[10px] ${pct >= 80 ? "text-emerald-600" : pct >= 60 ? "text-amber-600" : "text-red-600"}`}>
+                                  {totalDays > 0 ? `${pct}%` : "-"}
+                                </td>
+                              </>
+                            );
+                          })()}
                       </tr>
                     ))}
                   </tbody>
