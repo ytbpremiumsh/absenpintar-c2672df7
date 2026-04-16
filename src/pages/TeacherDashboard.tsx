@@ -408,53 +408,85 @@ const TeacherDashboard = () => {
 
       {/* Full Week Schedule */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-        <h2 className="text-lg font-bold mb-3 flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-            <Calendar className="h-4 w-4 text-primary" />
-          </div>
-          Jadwal Minggu Ini
-        </h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold flex items-center gap-2">
+            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-md">
+              <Calendar className="h-4 w-4 text-primary-foreground" />
+            </div>
+            <span>Jadwal Minggu Ini</span>
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary" />
+            </span>
+          </h2>
+          <Badge variant="outline" className="text-[10px] gap-1 border-primary/30 text-primary">
+            <Activity className="h-3 w-3" />
+            {schedules.length} total sesi
+          </Badge>
+        </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          {[1, 2, 3, 4, 5, 6].map((day, idx) => (
-            <motion.div key={day} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + idx * 0.04 }}>
-              <Card className={cn(
-                "border shadow-card h-full transition-all hover:shadow-elevated",
-                day === todayDay && "ring-2 ring-primary border-primary/30"
-              )}>
-                <CardHeader className="pb-2 pt-3 px-3">
-                  <CardTitle className="text-xs font-bold flex items-center justify-between">
-                    <span>{DAYS_SHORT[day]}</span>
-                    {day === todayDay && <Badge className="bg-primary text-primary-foreground text-[8px] h-4 px-1">Hari Ini</Badge>}
-                    {day !== todayDay && (
-                      <span className="text-[10px] font-normal text-muted-foreground">
-                        {(weekSchedules[day] || []).length} sesi
+          {[1, 2, 3, 4, 5, 6].map((day, idx) => {
+            const daySchedules = weekSchedules[day] || [];
+            const isCurrentDay = day === todayDay;
+            const hasActive = isCurrentDay && daySchedules.some(s => getStatus(s.start_time, s.end_time, now) === "active");
+            return (
+              <motion.div key={day} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + idx * 0.04 }}>
+                <Card className={cn(
+                  "border shadow-card h-full transition-all hover:shadow-elevated hover:-translate-y-0.5",
+                  isCurrentDay && "ring-2 ring-primary border-primary/30 bg-gradient-to-b from-primary/5 to-transparent",
+                  hasActive && "ring-2 ring-emerald-500 border-emerald-500/30"
+                )}>
+                  <CardHeader className="pb-2 pt-3 px-3">
+                    <CardTitle className="text-xs font-bold flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        {DAYS_SHORT[day]}
+                        {hasActive && (
+                          <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                          </span>
+                        )}
                       </span>
+                      {isCurrentDay && <Badge className="bg-primary text-primary-foreground text-[8px] h-4 px-1">Hari Ini</Badge>}
+                      {!isCurrentDay && (
+                        <Badge variant="secondary" className="text-[8px] h-4 px-1">
+                          {daySchedules.length}
+                        </Badge>
+                      )}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="px-3 pb-3">
+                    {daySchedules.length === 0 ? (
+                      <p className="text-[10px] text-muted-foreground/60 py-3 text-center">Kosong</p>
+                    ) : (
+                      <div className="space-y-1.5">
+                        {daySchedules.map(s => {
+                          const st = isCurrentDay ? getStatus(s.start_time, s.end_time, now) : "upcoming";
+                          return (
+                            <div
+                              key={s.id}
+                              className={cn(
+                                "flex items-center gap-1.5 p-1.5 rounded-lg transition-colors text-[10px]",
+                                st === "active" ? "bg-emerald-500/10 ring-1 ring-emerald-500/30" :
+                                st === "done" ? "bg-muted/30 opacity-60" : "bg-secondary/40 hover:bg-secondary/60"
+                              )}
+                            >
+                              <div className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: s.subject_color }} />
+                              <div className="flex-1 min-w-0">
+                                <p className="font-semibold truncate text-[10px]">{s.subject_name}</p>
+                                <p className="text-muted-foreground">{s.class_name} · {s.start_time.slice(0, 5)}</p>
+                              </div>
+                              {st === "active" && <PlayCircle className="h-3 w-3 text-emerald-500 shrink-0 animate-pulse" />}
+                            </div>
+                          );
+                        })}
+                      </div>
                     )}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="px-3 pb-3">
-                  {(weekSchedules[day] || []).length === 0 ? (
-                    <p className="text-[10px] text-muted-foreground/60 py-3 text-center">Kosong</p>
-                  ) : (
-                    <div className="space-y-1.5">
-                      {weekSchedules[day].map(s => (
-                        <div
-                          key={s.id}
-                          className="flex items-center gap-1.5 p-1.5 rounded-lg bg-secondary/40 hover:bg-secondary/60 transition-colors text-[10px]"
-                        >
-                          <div className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: s.subject_color }} />
-                          <div className="flex-1 min-w-0">
-                            <p className="font-semibold truncate text-[10px]">{s.subject_name}</p>
-                            <p className="text-muted-foreground">{s.class_name} · {s.start_time.slice(0, 5)}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
+                  </CardContent>
+                </Card>
+              </motion.div>
+            );
+          })}
         </div>
       </motion.div>
 
