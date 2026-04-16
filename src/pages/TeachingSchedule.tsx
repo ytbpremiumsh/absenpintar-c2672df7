@@ -364,7 +364,7 @@ export default function TeachingSchedule() {
                       </TableHeader>
                       <TableBody>
                       {items.map((s) => {
-                          const isMe = s.teacher_id === profile?.user_id;
+                          const isMe = s.teacher_id === user?.id;
                           return (
                           <TableRow key={s.id} className={cn(isMe && "bg-primary/5 font-medium")}>
                             <TableCell className="font-mono text-sm">{s.start_time.slice(0, 5)} – {s.end_time.slice(0, 5)}</TableCell>
@@ -397,7 +397,7 @@ export default function TeachingSchedule() {
                   {/* Mobile cards */}
                   <div className="md:hidden space-y-2">
                     {items.map((s) => {
-                      const isMe = s.teacher_id === profile?.user_id;
+                      const isMe = s.teacher_id === user?.id;
                       return (
                       <div key={s.id} className={cn("border rounded-lg p-3 space-y-1.5", isMe && "border-primary/30 bg-primary/5")}>
                         <div className="flex items-center justify-between">
