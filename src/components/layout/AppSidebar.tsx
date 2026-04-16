@@ -196,11 +196,13 @@ export function AppSidebar() {
         {isTeacherOnly ? (
           <>
             <SidebarGroup>
-              {renderGroupLabel("Menu Guru")}
+              {renderGroupLabel("Guru Mata Pelajaran")}
               <SidebarGroupContent>
                 <SidebarMenu className="space-y-1">
                    {renderNavItems([
                     { title: "Dashboard Guru", url: "/teacher-dashboard", icon: BookOpen, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
+                    { title: "Rekap Absensi Mapel", url: "/export-history", icon: BarChart3, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
+                    { title: "Analytic Mapel", url: "/history", icon: Activity, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
                   ])}
                 </SidebarMenu>
               </SidebarGroupContent>
@@ -214,6 +216,8 @@ export function AppSidebar() {
                       { title: "Dashboard Kelas", url: "/wali-kelas-dashboard", icon: LayoutDashboard, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
                       { title: "Absensi Manual", url: "/wali-kelas-attendance", icon: ClipboardCheck, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
                       { title: "Siswa Kelas Saya", url: "/wali-kelas-students", icon: Users, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
+                      { title: "Rekap Absensi Kelas", url: "/wali-kelas-export", icon: BarChart3, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
+                      { title: "Analytic Kelas Wali", url: "/wali-kelas-history", icon: Activity, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
                     ])}
                   </SidebarMenu>
                 </SidebarGroupContent>
@@ -224,17 +228,6 @@ export function AppSidebar() {
               <SidebarGroupContent>
                 <SidebarMenu className="space-y-1">
                   {renderNavItems(scheduleNav)}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-            <SidebarGroup>
-              {renderGroupLabel("Laporan Mapel")}
-              <SidebarGroupContent>
-                <SidebarMenu className="space-y-1">
-                  {renderNavItems([
-                    { title: "Rekap Absensi Mapel", url: "/export-history", icon: BarChart3, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
-                    { title: "Analytic Mapel", url: "/history", icon: Activity, accent: "from-[#5B6CF9]/85 to-[#4c5ded]" },
-                  ])}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>

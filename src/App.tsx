@@ -23,6 +23,8 @@ import ManageStaff from "./pages/ManageStaff";
 import WaliKelasDashboard from "./pages/WaliKelasDashboard";
 import WaliKelasAttendance from "./pages/WaliKelasAttendance";
 import WaliKelasStudents from "./pages/WaliKelasStudents";
+import WaliKelasExportHistory from "./pages/WaliKelasExportHistory";
+import WaliKelasHistoryPage from "./pages/WaliKelasHistory";
 import History from "./pages/History";
 import Subscription from "./pages/Subscription";
 import PublicMonitoring from "./pages/PublicMonitoring";
@@ -135,6 +137,8 @@ function AppRoutes() {
         <Route path="/wali-kelas-dashboard" element={<WaliKelasDashboard />} />
         <Route path="/wali-kelas-attendance" element={<WaliKelasAttendance />} />
         <Route path="/wali-kelas-students" element={<WaliKelasStudents />} />
+        <Route path="/wali-kelas-export" element={<WaliKelasExportHistory />} />
+        <Route path="/wali-kelas-history" element={<WaliKelasHistoryPage />} />
         <Route path="/history" element={<History />} />
         <Route path="/export-history" element={<ExportHistory />} />
         <Route path="/edit-attendance" element={<EditAttendance />} />
