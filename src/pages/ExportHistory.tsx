@@ -602,6 +602,7 @@ const ExportHistory = () => {
                           <th className="px-1 py-1.5 text-center font-bold text-violet-600 w-7 text-[10px]">S</th>
                           <th className="px-1 py-1.5 text-center font-bold text-amber-600 w-7 text-[10px]">I</th>
                           <th className="px-1 py-1.5 text-center font-bold text-red-600 w-7 text-[10px]">A</th>
+                          <th className="px-1 py-1.5 text-center font-bold text-primary w-10 text-[10px]">%</th>
                         </>
                       )}
                     </tr>
