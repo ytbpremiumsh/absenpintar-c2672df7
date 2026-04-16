@@ -1,6 +1,23 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
 
 export function LoadingScreen() {
+  const [logo, setLogo] = useState("/images/logo-atskolla.png");
+
+  useEffect(() => {
+    supabase
+      .from("platform_settings")
+      .select("key, value")
+      .in("key", ["login_logo_url"])
+      .then(({ data }) => {
+        if (data) {
+          const map = Object.fromEntries(data.map((d) => [d.key, d.value]));
+          if (map.login_logo_url) setLogo(map.login_logo_url);
+        }
+      });
+  }, []);
+
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#5B6CF9]">
       {/* Grid pattern */}
@@ -27,21 +44,11 @@ export function LoadingScreen() {
             transition={{ duration: 2, repeat: Infinity }}
           />
           <img
-            src="/images/logo-atskolla.png"
+            src={logo}
             alt="ATSkolla"
-            className="h-20 w-20 rounded-2xl shadow-2xl relative z-10"
+            className="h-20 w-20 rounded-2xl shadow-2xl relative z-10 object-contain"
           />
         </motion.div>
-
-        {/* Brand name */}
-        <motion.span
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="text-white font-bold text-xl tracking-tight"
-        >
-          ATSkolla
-        </motion.span>
 
         {/* Loading bars animation */}
         <div className="flex items-end gap-1 h-6">
@@ -61,7 +68,7 @@ export function LoadingScreen() {
           transition={{ delay: 0.5 }}
           className="text-white/50 text-xs"
         >
-          Memuat sistem...
+          Loading halaman...
         </motion.p>
       </div>
     </div>
