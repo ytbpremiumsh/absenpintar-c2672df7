@@ -386,13 +386,6 @@ const Dashboard = () => {
         ))}
       </div>
 
-      {/* Live Schedule Widget - Full width */}
-      {profile?.school_id && (
-        <div className="col-span-full">
-          <LiveScheduleWidget schoolId={profile.school_id} />
-        </div>
-      )}
-
       {/* Charts */}
       <div className="grid lg:grid-cols-3 gap-4">
         <Card className="lg:col-span-2 rounded-2xl border border-border/60 shadow-sm">
@@ -472,6 +465,13 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Live Schedule Widget - placed below Status Kehadiran */}
+      {profile?.school_id && (
+        <div className="col-span-full">
+          <LiveScheduleWidget schoolId={profile.school_id} />
+        </div>
+      )}
 
       {/* Quick Actions */}
       <div>
