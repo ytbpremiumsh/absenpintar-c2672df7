@@ -1,11 +1,11 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Radio, PlayCircle, Timer, CheckCircle2, Clock, Users, BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
+import { Radio, PlayCircle, Timer, CheckCircle2, Users, BookOpen, MapPin, ChevronRight, Calendar, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Schedule {
   id: string;
@@ -38,6 +38,16 @@ function getStatus(startTime: string, endTime: string, now: Date): ScheduleStatu
   return "upcoming";
 }
 
+// Premium gradient palette (cycled per index when subject color is fallback)
+const GRADIENTS = [
+  { from: "from-violet-500", to: "to-fuchsia-500", solid: "bg-violet-500", text: "text-violet-600", soft: "bg-violet-500/10" },
+  { from: "from-amber-400", to: "to-orange-500", solid: "bg-amber-500", text: "text-amber-600", soft: "bg-amber-500/10" },
+  { from: "from-sky-500", to: "to-blue-600", solid: "bg-sky-500", text: "text-sky-600", soft: "bg-sky-500/10" },
+  { from: "from-emerald-500", to: "to-teal-600", solid: "bg-emerald-500", text: "text-emerald-600", soft: "bg-emerald-500/10" },
+  { from: "from-pink-500", to: "to-rose-500", solid: "bg-pink-500", text: "text-pink-600", soft: "bg-pink-500/10" },
+  { from: "from-indigo-500", to: "to-purple-600", solid: "bg-indigo-500", text: "text-indigo-600", soft: "bg-indigo-500/10" },
+];
+
 export function LiveScheduleWidget({ schoolId }: { schoolId: string }) {
   const navigate = useNavigate();
   const [schedules, setSchedules] = useState<Schedule[]>([]);
@@ -45,7 +55,6 @@ export function LiveScheduleWidget({ schoolId }: { schoolId: string }) {
   const [classes, setClasses] = useState<ClassData[]>([]);
   const [teachers, setTeachers] = useState<TeacherProfile[]>([]);
   const [now, setNow] = useState(new Date());
-  const [currentSlide, setCurrentSlide] = useState(0);
 
   const jsDay = now.getDay();
   const todayIdx = jsDay === 0 ? 6 : jsDay - 1;
@@ -72,7 +81,6 @@ export function LiveScheduleWidget({ schoolId }: { schoolId: string }) {
 
   const getTeacherName = (id: string) => teachers.find((t) => t.user_id === id)?.full_name || "—";
   const getSubjectName = (id: string) => subjects.find((s) => s.id === id)?.name || "—";
-  const getSubjectColor = (id: string) => subjects.find((s) => s.id === id)?.color || "#3B82F6";
   const getClassName = (id: string) => classes.find((c) => c.id === id)?.name || "—";
 
   const todaySchedules = useMemo(() => {
@@ -85,102 +93,231 @@ export function LiveScheduleWidget({ schoolId }: { schoolId: string }) {
   const upcomingCount = todaySchedules.filter((s) => getStatus(s.start_time, s.end_time, now) === "upcoming").length;
   const doneCount = todaySchedules.filter((s) => getStatus(s.start_time, s.end_time, now) === "done").length;
 
-  // Auto-advance carousel
-  useEffect(() => {
-    if (todaySchedules.length <= 1) return;
-    const interval = setInterval(() => {
-      setCurrentSlide((p) => (p + 1) % todaySchedules.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [todaySchedules.length]);
+  // Find currently active or next upcoming
+  const featuredIdx = useMemo(() => {
+    const active = todaySchedules.findIndex(s => getStatus(s.start_time, s.end_time, now) === "active");
+    if (active !== -1) return active;
+    const upcoming = todaySchedules.findIndex(s => getStatus(s.start_time, s.end_time, now) === "upcoming");
+    return upcoming !== -1 ? upcoming : 0;
+  }, [todaySchedules, now]);
 
-  if (todaySchedules.length === 0) return null;
+  if (todaySchedules.length === 0) {
+    return (
+      <Card className="rounded-3xl border-0 shadow-elevated overflow-hidden">
+        <div className="relative bg-gradient-to-br from-primary via-primary to-[#4c5ded] p-6 text-white">
+          <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
+          <div className="relative flex items-center gap-3">
+            <div className="h-11 w-11 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center">
+              <Calendar className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-[11px] uppercase tracking-wider opacity-80">Jadwal Hari Ini</p>
+              <h3 className="font-bold text-lg">Tidak ada jadwal mengajar</h3>
+            </div>
+          </div>
+        </div>
+      </Card>
+    );
+  }
 
-  const current = todaySchedules[currentSlide];
-  if (!current) return null;
-  const status = getStatus(current.start_time, current.end_time, now);
+  const todayDateLabel = now.toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long" });
 
   return (
-    <Card className="rounded-2xl border border-border/60 shadow-sm overflow-hidden max-h-[145px]">
-      <CardHeader className="pb-0 pt-2 px-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-xs font-semibold flex items-center gap-1.5">
-            <Radio className="h-3 w-3 text-green-500 animate-pulse" />
-            Jadwal Hari Ini
-          </CardTitle>
-          <Button variant="ghost" size="sm" className="text-[10px] h-5 px-2 text-primary" onClick={() => navigate("/live-schedule")}>
+    <Card className="rounded-3xl border-0 shadow-elevated overflow-hidden">
+      {/* Premium Hero Header */}
+      <div className="relative bg-gradient-to-br from-primary via-primary to-[#4c5ded] px-5 pt-5 pb-14 sm:px-6 sm:pt-6 sm:pb-16 text-white overflow-hidden">
+        {/* Decorative blobs */}
+        <div className="absolute -top-16 -right-16 h-56 w-56 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute top-4 right-24 h-20 w-20 rounded-full bg-white/5 blur-2xl" />
+        <svg className="absolute top-0 right-0 opacity-10 pointer-events-none" width="160" height="160" viewBox="0 0 160 160" fill="none">
+          <pattern id="dots-live" x="0" y="0" width="18" height="18" patternUnits="userSpaceOnUse">
+            <circle cx="2" cy="2" r="1.2" fill="white" />
+          </pattern>
+          <rect width="160" height="160" fill="url(#dots-live)" />
+        </svg>
+
+        <div className="relative z-10 flex items-start justify-between gap-3 flex-wrap">
+          <div>
+            <p className="text-[11px] font-medium uppercase tracking-wider opacity-80">{todayDateLabel}</p>
+            <h2 className="text-xl sm:text-2xl font-bold leading-tight mt-0.5 flex items-center gap-2">
+              <Radio className="h-5 w-5 animate-pulse" />
+              Jadwal Live
+            </h2>
+          </div>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => navigate("/live-schedule")}
+            className="bg-white/15 hover:bg-white/25 text-white border border-white/20 backdrop-blur rounded-full text-[11px] h-8 px-3 gap-1"
+          >
             Lihat Semua
+            <ChevronRight className="h-3.5 w-3.5" />
           </Button>
         </div>
-        <div className="flex gap-2 text-[10px] text-muted-foreground">
-          <span className="flex items-center gap-0.5"><PlayCircle className="h-2.5 w-2.5 text-green-500" />{activeCount} aktif</span>
-          <span className="flex items-center gap-0.5"><Timer className="h-2.5 w-2.5 text-amber-500" />{upcomingCount} akan datang</span>
-          <span className="flex items-center gap-0.5"><CheckCircle2 className="h-2.5 w-2.5 text-muted-foreground" />{doneCount} selesai</span>
-        </div>
-      </CardHeader>
-      <CardContent className="pb-2 pt-1 px-3">
-        <div className={cn(
-          "rounded-lg p-2 border transition-all",
-          status === "active" && "border-green-500/30 bg-green-500/5",
-          status === "done" && "border-border bg-muted/30 opacity-60",
-          status === "upcoming" && "border-amber-500/20 bg-amber-500/5"
-        )}>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 shrink-0">
-              <span className={cn("text-[11px] font-bold font-mono", status === "active" ? "text-green-600" : "text-foreground")}>
-                {current.start_time.slice(0, 5)}
-              </span>
-              <span className="text-[10px] text-muted-foreground">–</span>
-              <span className="text-[10px] font-mono text-muted-foreground">{current.end_time.slice(0, 5)}</span>
-            </div>
-            <div className="h-3 w-px bg-border" />
-            <div className="flex-1 min-w-0 flex items-center gap-1.5">
-              <div className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: getSubjectColor(current.subject_id) }} />
-              <span className={cn("font-bold text-xs truncate", status === "active" && "text-green-700 dark:text-green-400")}>
-                {getSubjectName(current.subject_id)}
-              </span>
-              {status === "active" && (
-                <Badge className="bg-green-500/15 text-green-600 border-green-500/30 text-[9px] h-4 px-1 gap-0.5">
-                  <PlayCircle className="h-2 w-2" />Live
-                </Badge>
-              )}
-            </div>
-            <div className="flex gap-2 text-[10px] text-muted-foreground shrink-0">
-              <span className="flex items-center gap-0.5"><Users className="h-2.5 w-2.5" />{getTeacherName(current.teacher_id)}</span>
-              <span className="flex items-center gap-0.5"><BookOpen className="h-2.5 w-2.5" />{getClassName(current.class_id)}</span>
-            </div>
-          </div>
-          {status === "active" && (() => {
-            const currentMin = now.getHours() * 60 + now.getMinutes();
-            const start = timeToMinutes(current.start_time);
-            const end = timeToMinutes(current.end_time);
-            const progress = Math.min(100, Math.max(0, ((currentMin - start) / (end - start)) * 100));
-            return (
-              <div className="mt-1.5">
-                <div className="h-1 rounded-full bg-green-500/20 overflow-hidden">
-                  <div className="h-full rounded-full bg-green-500 transition-all" style={{ width: `${progress}%` }} />
-                </div>
-              </div>
-            );
-          })()}
-        </div>
 
-        {todaySchedules.length > 1 && (
-          <div className="flex items-center justify-between mt-1.5">
-            <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => setCurrentSlide((p) => (p === 0 ? todaySchedules.length - 1 : p - 1))}>
-              <ChevronLeft className="h-3 w-3" />
-            </Button>
-            <div className="flex gap-1">
-              {todaySchedules.map((_, i) => (
-                <button key={i} onClick={() => setCurrentSlide(i)}
-                  className={cn("h-1 rounded-full transition-all", i === currentSlide ? "w-3 bg-primary" : "w-1 bg-muted-foreground/30")} />
-              ))}
-            </div>
-            <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => setCurrentSlide((p) => (p + 1) % todaySchedules.length)}>
-              <ChevronRight className="h-3 w-3" />
-            </Button>
+        {/* Stat pills */}
+        <div className="relative z-10 flex gap-2 mt-4 flex-wrap">
+          <div className="flex items-center gap-1.5 bg-white/15 backdrop-blur border border-white/20 rounded-full px-3 py-1">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute h-full w-full rounded-full bg-emerald-300 opacity-75" />
+              <span className="relative rounded-full h-2 w-2 bg-emerald-300" />
+            </span>
+            <span className="text-[11px] font-bold">{activeCount} Live</span>
           </div>
-        )}
+          <div className="flex items-center gap-1.5 bg-white/15 backdrop-blur border border-white/20 rounded-full px-3 py-1">
+            <Timer className="h-3 w-3" />
+            <span className="text-[11px] font-bold">{upcomingCount} Akan</span>
+          </div>
+          <div className="flex items-center gap-1.5 bg-white/15 backdrop-blur border border-white/20 rounded-full px-3 py-1">
+            <CheckCircle2 className="h-3 w-3" />
+            <span className="text-[11px] font-bold">{doneCount} Selesai</span>
+          </div>
+          <div className="flex items-center gap-1.5 bg-white/15 backdrop-blur border border-white/20 rounded-full px-3 py-1">
+            <Sparkles className="h-3 w-3" />
+            <span className="text-[11px] font-bold">{todaySchedules.length} Total</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Timeline body — overlapping the hero */}
+      <CardContent className="px-3 sm:px-5 -mt-8 pb-5 relative z-10">
+        <div className="bg-card rounded-2xl border border-border/30 shadow-card p-3 sm:p-4">
+          <AnimatePresence mode="popLayout">
+            <div className="space-y-2.5 max-h-[380px] overflow-y-auto pr-1 scrollbar-thin">
+              {todaySchedules.map((s, idx) => {
+                const status = getStatus(s.start_time, s.end_time, now);
+                const palette = GRADIENTS[idx % GRADIENTS.length];
+                const isFeatured = idx === featuredIdx;
+                return (
+                  <motion.div
+                    key={s.id}
+                    layout
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.04 }}
+                    className="relative"
+                  >
+                    {/* Timeline rail */}
+                    <div className="flex gap-3">
+                      {/* Time column */}
+                      <div className="flex flex-col items-end shrink-0 pt-2 w-12 sm:w-14">
+                        <span className={cn(
+                          "text-[11px] sm:text-xs font-bold font-mono tabular-nums",
+                          status === "active" ? "text-emerald-600" : "text-foreground"
+                        )}>
+                          {s.start_time.slice(0, 5)}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground font-mono">
+                          {s.end_time.slice(0, 5)}
+                        </span>
+                      </div>
+
+                      {/* Vertical dot + line */}
+                      <div className="flex flex-col items-center pt-3 shrink-0">
+                        <div className={cn(
+                          "h-2.5 w-2.5 rounded-full ring-4 ring-card relative z-10",
+                          status === "active" && "shadow-[0_0_0_4px_rgba(16,185,129,0.25)]",
+                          palette.solid,
+                          status === "done" && "opacity-40"
+                        )}>
+                          {status === "active" && (
+                            <span className="absolute inset-0 rounded-full animate-ping bg-emerald-400 opacity-60" />
+                          )}
+                        </div>
+                        {idx < todaySchedules.length - 1 && (
+                          <div className="w-px flex-1 bg-border/60 mt-1" style={{ minHeight: 24 }} />
+                        )}
+                      </div>
+
+                      {/* Content card */}
+                      <div className={cn(
+                        "flex-1 rounded-2xl p-3 sm:p-3.5 transition-all relative overflow-hidden",
+                        status === "active"
+                          ? `bg-gradient-to-r ${palette.from} ${palette.to} text-white shadow-lg`
+                          : status === "done"
+                            ? "bg-muted/40 text-muted-foreground opacity-70"
+                            : isFeatured
+                              ? `bg-gradient-to-r ${palette.from} ${palette.to} text-white shadow-md`
+                              : `${palette.soft} border border-border/40`,
+                      )}>
+                        {/* Decorative blob inside active/featured cards */}
+                        {(status === "active" || (isFeatured && status === "upcoming")) && (
+                          <div className="absolute -right-6 -top-6 h-20 w-20 rounded-full bg-white/15 blur-xl pointer-events-none" />
+                        )}
+
+                        <div className="relative z-10 flex items-start justify-between gap-2 mb-1.5">
+                          <div className="min-w-0 flex-1">
+                            <h4 className={cn(
+                              "font-bold text-sm sm:text-[15px] leading-tight truncate",
+                              status === "active" || (isFeatured && status === "upcoming")
+                                ? "text-white"
+                                : status === "done"
+                                  ? "text-muted-foreground line-through"
+                                  : palette.text
+                            )}>
+                              {getSubjectName(s.subject_id)}
+                            </h4>
+                          </div>
+                          {status === "active" && (
+                            <span className="flex items-center gap-1 bg-white/25 backdrop-blur text-white text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0 animate-pulse">
+                              <PlayCircle className="h-2.5 w-2.5" /> LIVE
+                            </span>
+                          )}
+                          {status === "done" && (
+                            <span className="bg-muted text-muted-foreground text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0">
+                              Selesai
+                            </span>
+                          )}
+                          {status === "upcoming" && isFeatured && (
+                            <span className="flex items-center gap-1 bg-white/25 text-white text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0">
+                              <Timer className="h-2.5 w-2.5" /> Berikutnya
+                            </span>
+                          )}
+                        </div>
+
+                        <div className={cn(
+                          "relative z-10 flex flex-wrap gap-x-3 gap-y-1 text-[11px]",
+                          status === "active" || (isFeatured && status === "upcoming")
+                            ? "text-white/90"
+                            : "text-muted-foreground"
+                        )}>
+                          <span className="flex items-center gap-1 truncate max-w-[140px]">
+                            <Users className="h-3 w-3 shrink-0" />
+                            {getTeacherName(s.teacher_id)}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <BookOpen className="h-3 w-3" /> {getClassName(s.class_id)}
+                          </span>
+                          {s.room && (
+                            <span className="flex items-center gap-1">
+                              <MapPin className="h-3 w-3" /> {s.room}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Live progress bar */}
+                        {status === "active" && (() => {
+                          const currentMin = now.getHours() * 60 + now.getMinutes();
+                          const start = timeToMinutes(s.start_time);
+                          const end = timeToMinutes(s.end_time);
+                          const progress = Math.min(100, Math.max(0, ((currentMin - start) / (end - start)) * 100));
+                          return (
+                            <div className="relative z-10 mt-2">
+                              <div className="h-1 rounded-full bg-white/20 overflow-hidden">
+                                <div className="h-full rounded-full bg-white transition-all" style={{ width: `${progress}%` }} />
+                              </div>
+                              <p className="text-[9px] text-white/80 mt-1 font-mono">{Math.round(progress)}% berjalan</p>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </AnimatePresence>
+        </div>
       </CardContent>
     </Card>
   );
