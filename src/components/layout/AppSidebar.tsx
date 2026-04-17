@@ -12,7 +12,7 @@ import {
   ClipboardCheck,
   UsersRound,
   MessageCircle,
-  ChevronRight,
+  
   Crown,
   PenLine,
   Sparkles,
