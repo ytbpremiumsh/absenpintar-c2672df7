@@ -10,7 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Wallet, ArrowDownToLine, CheckCircle2, XCircle, Clock, Loader2, Search, Ban, Play } from "lucide-react";
+import { Users, Wallet, ArrowDownToLine, CheckCircle2, XCircle, Clock, Loader2, Search, Ban, Play, GraduationCap, Smartphone, Building2, CalendarClock, Send } from "lucide-react";
+import { getEstimatedPayoutDate, formatPayoutEstimate } from "@/lib/holidays";
 
 const SuperAdminAffiliate = () => {
   const [loading, setLoading] = useState(true);
