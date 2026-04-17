@@ -112,17 +112,19 @@ function AppContent() {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate("/school-settings")} className="rounded-xl mx-1 px-3 py-2.5 cursor-pointer">
-                  <School className="h-4 w-4 mr-2.5 text-muted-foreground" />
-                  Identitas Sekolah
-                </DropdownMenuItem>
+                {roles.includes("school_admin") && (
+                  <DropdownMenuItem onClick={() => navigate("/school-settings")} className="rounded-xl mx-1 px-3 py-2.5 cursor-pointer">
+                    <School className="h-4 w-4 mr-2.5 text-muted-foreground" />
+                    Identitas Sekolah
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem onClick={() => navigate("/account-settings")} className="rounded-xl mx-1 px-3 py-2.5 cursor-pointer">
                   <KeyRound className="h-4 w-4 mr-2.5 text-muted-foreground" />
                   Ganti Password
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/referral")} className="rounded-xl mx-1 px-3 py-2.5 cursor-pointer">
+                <DropdownMenuItem onClick={() => navigate("/affiliate-teacher")} className="rounded-xl mx-1 px-3 py-2.5 cursor-pointer">
                   <Gift className="h-4 w-4 mr-2.5 text-muted-foreground" />
-                  Referral & Poin
+                  Affiliate & Komisi
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive rounded-xl mx-1 px-3 py-2.5 cursor-pointer">
