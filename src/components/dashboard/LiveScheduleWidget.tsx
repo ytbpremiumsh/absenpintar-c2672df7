@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Radio, PlayCircle, Timer, CheckCircle2, Users, BookOpen, MapPin, ChevronRight, Calendar, Sparkles } from "lucide-react";
+import { Radio, PlayCircle, Timer, CheckCircle2, Users, BookOpen, MapPin, ChevronRight, ChevronLeft, Calendar, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -179,146 +179,184 @@ export function LiveScheduleWidget({ schoolId }: { schoolId: string }) {
         </div>
       </div>
 
-      {/* Timeline body — overlapping the hero */}
+      {/* Single featured card carousel — overlapping the hero */}
       <CardContent className="px-3 sm:px-5 -mt-8 pb-5 relative z-10">
         <div className="bg-card rounded-2xl border border-border/30 shadow-card p-3 sm:p-4">
-          <AnimatePresence mode="popLayout">
-            <div className="space-y-2.5 max-h-[380px] overflow-y-auto pr-1 scrollbar-thin">
-              {todaySchedules.map((s, idx) => {
-                const status = getStatus(s.start_time, s.end_time, now);
-                const palette = GRADIENTS[idx % GRADIENTS.length];
-                const isFeatured = idx === featuredIdx;
-                return (
-                  <motion.div
-                    key={s.id}
-                    layout
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.04 }}
-                    className="relative"
-                  >
-                    {/* Timeline rail */}
-                    <div className="flex gap-3">
-                      {/* Time column */}
-                      <div className="flex flex-col items-end shrink-0 pt-2 w-12 sm:w-14">
-                        <span className={cn(
-                          "text-[11px] sm:text-xs font-bold font-mono tabular-nums",
-                          status === "active" ? "text-emerald-600" : "text-foreground"
-                        )}>
-                          {s.start_time.slice(0, 5)}
-                        </span>
-                        <span className="text-[10px] text-muted-foreground font-mono">
-                          {s.end_time.slice(0, 5)}
-                        </span>
-                      </div>
-
-                      {/* Vertical dot + line */}
-                      <div className="flex flex-col items-center pt-3 shrink-0">
-                        <div className={cn(
-                          "h-2.5 w-2.5 rounded-full ring-4 ring-card relative z-10",
-                          status === "active" && "shadow-[0_0_0_4px_rgba(16,185,129,0.25)]",
-                          palette.solid,
-                          status === "done" && "opacity-40"
-                        )}>
-                          {status === "active" && (
-                            <span className="absolute inset-0 rounded-full animate-ping bg-emerald-400 opacity-60" />
-                          )}
-                        </div>
-                        {idx < todaySchedules.length - 1 && (
-                          <div className="w-px flex-1 bg-border/60 mt-1" style={{ minHeight: 24 }} />
-                        )}
-                      </div>
-
-                      {/* Content card */}
-                      <div className={cn(
-                        "flex-1 rounded-2xl p-3 sm:p-3.5 transition-all relative overflow-hidden",
-                        status === "active"
-                          ? `bg-gradient-to-r ${palette.from} ${palette.to} text-white shadow-lg`
-                          : status === "done"
-                            ? "bg-muted/40 text-muted-foreground opacity-70"
-                            : isFeatured
-                              ? `bg-gradient-to-r ${palette.from} ${palette.to} text-white shadow-md`
-                              : `${palette.soft} border border-border/40`,
-                      )}>
-                        {/* Decorative blob inside active/featured cards */}
-                        {(status === "active" || (isFeatured && status === "upcoming")) && (
-                          <div className="absolute -right-6 -top-6 h-20 w-20 rounded-full bg-white/15 blur-xl pointer-events-none" />
-                        )}
-
-                        <div className="relative z-10 flex items-start justify-between gap-2 mb-1.5">
-                          <div className="min-w-0 flex-1">
-                            <h4 className={cn(
-                              "font-bold text-sm sm:text-[15px] leading-tight truncate",
-                              status === "active" || (isFeatured && status === "upcoming")
-                                ? "text-white"
-                                : status === "done"
-                                  ? "text-muted-foreground line-through"
-                                  : palette.text
-                            )}>
-                              {getSubjectName(s.subject_id)}
-                            </h4>
-                          </div>
-                          {status === "active" && (
-                            <span className="flex items-center gap-1 bg-white/25 backdrop-blur text-white text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0 animate-pulse">
-                              <PlayCircle className="h-2.5 w-2.5" /> LIVE
-                            </span>
-                          )}
-                          {status === "done" && (
-                            <span className="bg-muted text-muted-foreground text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0">
-                              Selesai
-                            </span>
-                          )}
-                          {status === "upcoming" && isFeatured && (
-                            <span className="flex items-center gap-1 bg-white/25 text-white text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0">
-                              <Timer className="h-2.5 w-2.5" /> Berikutnya
-                            </span>
-                          )}
-                        </div>
-
-                        <div className={cn(
-                          "relative z-10 flex flex-wrap gap-x-3 gap-y-1 text-[11px]",
-                          status === "active" || (isFeatured && status === "upcoming")
-                            ? "text-white/90"
-                            : "text-muted-foreground"
-                        )}>
-                          <span className="flex items-center gap-1 truncate max-w-[140px]">
-                            <Users className="h-3 w-3 shrink-0" />
-                            {getTeacherName(s.teacher_id)}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <BookOpen className="h-3 w-3" /> {getClassName(s.class_id)}
-                          </span>
-                          {s.room && (
-                            <span className="flex items-center gap-1">
-                              <MapPin className="h-3 w-3" /> {s.room}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Live progress bar */}
-                        {status === "active" && (() => {
-                          const currentMin = now.getHours() * 60 + now.getMinutes();
-                          const start = timeToMinutes(s.start_time);
-                          const end = timeToMinutes(s.end_time);
-                          const progress = Math.min(100, Math.max(0, ((currentMin - start) / (end - start)) * 100));
-                          return (
-                            <div className="relative z-10 mt-2">
-                              <div className="h-1 rounded-full bg-white/20 overflow-hidden">
-                                <div className="h-full rounded-full bg-white transition-all" style={{ width: `${progress}%` }} />
-                              </div>
-                              <p className="text-[9px] text-white/80 mt-1 font-mono">{Math.round(progress)}% berjalan</p>
-                            </div>
-                          );
-                        })()}
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-          </AnimatePresence>
+          <CarouselCard
+            schedules={todaySchedules}
+            initialIdx={featuredIdx}
+            now={now}
+            getSubjectName={getSubjectName}
+            getClassName={getClassName}
+            getTeacherName={getTeacherName}
+          />
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function CarouselCard({
+  schedules,
+  initialIdx,
+  now,
+  getSubjectName,
+  getClassName,
+  getTeacherName,
+}: {
+  schedules: Schedule[];
+  initialIdx: number;
+  now: Date;
+  getSubjectName: (id: string) => string;
+  getClassName: (id: string) => string;
+  getTeacherName: (id: string) => string;
+}) {
+  const [idx, setIdx] = useState(initialIdx);
+  useEffect(() => { setIdx(initialIdx); }, [initialIdx]);
+
+  if (schedules.length === 0) return null;
+  const safeIdx = ((idx % schedules.length) + schedules.length) % schedules.length;
+  const s = schedules[safeIdx];
+  const status = getStatus(s.start_time, s.end_time, now);
+  const palette = GRADIENTS[safeIdx % GRADIENTS.length];
+
+  const prev = () => setIdx((i) => i - 1);
+  const next = () => setIdx((i) => i + 1);
+
+  return (
+    <div className="relative">
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={s.id}
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -30 }}
+          transition={{ duration: 0.25 }}
+          className={cn(
+            "rounded-2xl p-4 sm:p-5 relative overflow-hidden",
+            status === "active" || status === "upcoming"
+              ? `bg-gradient-to-br ${palette.from} ${palette.to} text-white shadow-lg`
+              : "bg-muted/40 text-muted-foreground"
+          )}
+        >
+          {/* Decorative blobs */}
+          <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-white/15 blur-2xl pointer-events-none" />
+          <div className="absolute -left-6 -bottom-6 h-20 w-20 rounded-full bg-white/10 blur-xl pointer-events-none" />
+
+          <div className="relative z-10 flex items-start justify-between gap-2 mb-3">
+            <div className="flex items-center gap-2">
+              <div className={cn(
+                "h-9 w-9 rounded-xl flex items-center justify-center backdrop-blur",
+                status === "done" ? "bg-muted-foreground/20" : "bg-white/20"
+              )}>
+                <BookOpen className="h-4 w-4" />
+              </div>
+              <div>
+                <p className={cn(
+                  "text-[10px] uppercase tracking-wider font-medium",
+                  status === "done" ? "opacity-70" : "text-white/80"
+                )}>
+                  Sesi {safeIdx + 1} dari {schedules.length}
+                </p>
+                <p className="text-[11px] font-mono font-bold">
+                  {s.start_time.slice(0, 5)} — {s.end_time.slice(0, 5)}
+                </p>
+              </div>
+            </div>
+            {status === "active" && (
+              <span className="flex items-center gap-1 bg-white/25 backdrop-blur text-white text-[10px] font-bold px-2 py-1 rounded-full animate-pulse">
+                <PlayCircle className="h-3 w-3" /> LIVE
+              </span>
+            )}
+            {status === "upcoming" && safeIdx === initialIdx && (
+              <span className="flex items-center gap-1 bg-white/25 text-white text-[10px] font-bold px-2 py-1 rounded-full">
+                <Timer className="h-3 w-3" /> Berikutnya
+              </span>
+            )}
+            {status === "done" && (
+              <span className="bg-muted text-muted-foreground text-[10px] font-bold px-2 py-1 rounded-full">
+                <CheckCircle2 className="h-3 w-3 inline mr-0.5" /> Selesai
+              </span>
+            )}
+          </div>
+
+          <h3 className={cn(
+            "relative z-10 text-lg sm:text-xl font-bold leading-tight mb-2",
+            status === "done" && "line-through"
+          )}>
+            {getSubjectName(s.subject_id)}
+          </h3>
+
+          <div className={cn(
+            "relative z-10 flex flex-wrap gap-x-3 gap-y-1.5 text-[12px]",
+            status === "done" ? "" : "text-white/90"
+          )}>
+            <span className="flex items-center gap-1">
+              <Users className="h-3.5 w-3.5" />
+              {getTeacherName(s.teacher_id)}
+            </span>
+            <span className="flex items-center gap-1">
+              <BookOpen className="h-3.5 w-3.5" /> Kelas {getClassName(s.class_id)}
+            </span>
+            {s.room && (
+              <span className="flex items-center gap-1">
+                <MapPin className="h-3.5 w-3.5" /> {s.room}
+              </span>
+            )}
+          </div>
+
+          {/* Live progress */}
+          {status === "active" && (() => {
+            const currentMin = now.getHours() * 60 + now.getMinutes();
+            const start = timeToMinutes(s.start_time);
+            const end = timeToMinutes(s.end_time);
+            const progress = Math.min(100, Math.max(0, ((currentMin - start) / (end - start)) * 100));
+            return (
+              <div className="relative z-10 mt-3">
+                <div className="h-1.5 rounded-full bg-white/20 overflow-hidden">
+                  <div className="h-full rounded-full bg-white transition-all" style={{ width: `${progress}%` }} />
+                </div>
+                <p className="text-[10px] text-white/85 mt-1 font-mono">{Math.round(progress)}% berjalan</p>
+              </div>
+            );
+          })()}
+        </motion.div>
+      </AnimatePresence>
+
+      {/* Navigation */}
+      {schedules.length > 1 && (
+        <div className="flex items-center justify-between mt-3">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={prev}
+            className="h-8 w-8 rounded-full"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <div className="flex items-center gap-1.5">
+            {schedules.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setIdx(i)}
+                className={cn(
+                  "h-1.5 rounded-full transition-all",
+                  i === safeIdx ? "w-6 bg-primary" : "w-1.5 bg-muted-foreground/30"
+                )}
+                aria-label={`Sesi ${i + 1}`}
+              />
+            ))}
+          </div>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={next}
+            className="h-8 w-8 rounded-full"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+    </div>
   );
 }
