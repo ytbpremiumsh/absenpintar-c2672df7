@@ -2,7 +2,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { MobileFooterNav } from "./MobileFooterNav";
 import { Outlet, Navigate, useNavigate, useLocation } from "react-router-dom";
-import { Settings, LogOut, School, KeyRound, Gift, LayoutGrid, Activity, ScanLine, Users, Clock, HelpCircle, Award } from "lucide-react";
+import { Settings, LogOut, School, KeyRound, Gift, LayoutGrid, Activity, ScanLine, Users, CalendarDays, HelpCircle, Award } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { NotificationBell } from "@/components/NotificationBell";
@@ -18,12 +18,13 @@ import {
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const footerItems = [
-  { label: "Dashboard", icon: LayoutGrid, path: "/dashboard" },
+const buildFooterItems = (isTeacherOnly: boolean) => [
+  { label: "Dashboard", icon: LayoutGrid, path: isTeacherOnly ? "/teacher-dashboard" : "/dashboard" },
   { label: "Monitoring", icon: Activity, path: "/monitoring" },
   { label: "Scan", icon: ScanLine, path: "/scan", isCenter: true },
-  { label: "Siswa", icon: Users, path: "/students" },
-  { label: "Riwayat", icon: Clock, path: "/history" },
+  // Teachers/Wali Kelas → siswa kelas mereka. Admin/Staff sekolah → semua siswa sekolah
+  { label: "Siswa", icon: Users, path: isTeacherOnly ? "/wali-kelas-students" : "/students" },
+  { label: "Jadwal", icon: CalendarDays, path: isTeacherOnly ? "/teaching-schedule" : "/live-schedule" },
 ];
 
 function AppContent() {
@@ -152,7 +153,7 @@ function AppContent() {
         <main className={cn("flex-1 overflow-auto p-3 sm:p-5 md:p-6", isMobileDevice && "pb-24")}>
           <Outlet />
         </main>
-        {isMobileDevice && <MobileFooterNav items={footerItems} />}
+        {isMobileDevice && <MobileFooterNav items={buildFooterItems(isTeacherOnly)} />}
       </div>
     </>
   );
