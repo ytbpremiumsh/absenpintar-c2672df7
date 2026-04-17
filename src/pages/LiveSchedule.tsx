@@ -331,15 +331,16 @@ export default function LiveSchedule() {
                         </div>
                         <StatusBadge status={status} startTime={s.start_time} now={now} isToday={isToday} />
                       </div>
-                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1.5">
-                          <Users className="h-3.5 w-3.5" />{getTeacherName(s.teacher_id)}
+                      <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-sm">
+                        <span className="flex items-center gap-1.5 font-semibold text-foreground bg-primary/10 px-2 py-0.5 rounded-md">
+                          <Users className="h-3.5 w-3.5 text-primary" />
+                          {getTeacherName(s.teacher_id)}
                         </span>
-                        <span className="flex items-center gap-1.5">
+                        <span className="flex items-center gap-1.5 text-muted-foreground">
                           <BookOpen className="h-3.5 w-3.5" />{getClassName(s.class_id)}
                         </span>
                         {s.room && (
-                          <span className="flex items-center gap-1.5">
+                          <span className="flex items-center gap-1.5 text-muted-foreground">
                             <MapPin className="h-3.5 w-3.5" />{s.room}
                           </span>
                         )}
