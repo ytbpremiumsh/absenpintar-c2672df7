@@ -118,6 +118,69 @@ serve(async (req) => {
       }
     }
 
+    // ===== Generate Affiliate Commission (1x per school, only on first paid subscription) =====
+    try {
+      // Skip if Free plan
+      const planPriceCents = (await supabaseAdmin.from('payment_transactions').select('amount').eq('id', payment.id).single()).data?.amount || 0;
+      if (planPriceCents > 0 && approvedPlanName.toLowerCase() !== 'free') {
+        // Find the school admin profile to check who referred them
+        const { data: schoolAdminProfile } = await supabaseAdmin
+          .from('profiles')
+          .select('user_id, referred_by, referral_code')
+          .eq('school_id', payment.school_id)
+          .limit(1)
+          .maybeSingle();
+
+        // The referrer might be tracked via profiles.referred_by (user_id) OR via affiliate_code stored when registering
+        // We look for an affiliate row whose user_id matches the profile that referred this school's admin
+        let referrerUserId: string | null = schoolAdminProfile?.referred_by || null;
+        let affiliateRow: any = null;
+
+        if (referrerUserId) {
+          const { data: aff } = await supabaseAdmin
+            .from('affiliates')
+            .select('id, current_balance, total_earned, commission_rate')
+            .eq('user_id', referrerUserId)
+            .maybeSingle();
+          affiliateRow = aff;
+        }
+
+        // Check if commission already exists for this school (1x per school enforcement)
+        const { data: existingCom } = await supabaseAdmin
+          .from('affiliate_commissions')
+          .select('id')
+          .eq('school_id', payment.school_id)
+          .maybeSingle();
+
+        if (affiliateRow && !existingCom) {
+          const rate = Number(affiliateRow.commission_rate || 50);
+          const commissionAmount = Math.floor((planPriceCents * rate) / 100);
+
+          await supabaseAdmin.from('affiliate_commissions').insert({
+            affiliate_id: affiliateRow.id,
+            school_id: payment.school_id,
+            plan_name: approvedPlanName,
+            plan_price: planPriceCents,
+            commission_rate: rate,
+            commission_amount: commissionAmount,
+            status: 'approved',
+            is_first_payment: true,
+          });
+
+          await supabaseAdmin
+            .from('affiliates')
+            .update({
+              current_balance: (affiliateRow.current_balance || 0) + commissionAmount,
+              total_earned: (affiliateRow.total_earned || 0) + commissionAmount,
+            })
+            .eq('id', affiliateRow.id);
+        }
+      }
+    } catch (e) {
+      console.error('Affiliate commission generation failed:', e);
+      // Don't block payment approval if affiliate logic fails
+    }
+
     return new Response(JSON.stringify({ success: true, expires_at: expiresAt.toISOString() }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
