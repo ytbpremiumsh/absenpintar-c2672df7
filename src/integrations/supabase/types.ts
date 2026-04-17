@@ -21,6 +21,7 @@ export type Database = {
           commission_rate: number
           created_at: string
           id: string
+          is_first_payment: boolean
           paid_at: string | null
           plan_name: string
           plan_price: number
@@ -33,6 +34,7 @@ export type Database = {
           commission_rate: number
           created_at?: string
           id?: string
+          is_first_payment?: boolean
           paid_at?: string | null
           plan_name: string
           plan_price: number
@@ -45,6 +47,7 @@ export type Database = {
           commission_rate?: number
           created_at?: string
           id?: string
+          is_first_payment?: boolean
           paid_at?: string | null
           plan_name?: string
           plan_price?: number
@@ -77,6 +80,8 @@ export type Database = {
           amount: number
           bank_name: string
           created_at: string
+          estimated_payout_at: string | null
+          ewallet_type: string | null
           id: string
           processed_at: string | null
           status: string
@@ -89,6 +94,8 @@ export type Database = {
           amount: number
           bank_name: string
           created_at?: string
+          estimated_payout_at?: string | null
+          ewallet_type?: string | null
           id?: string
           processed_at?: string | null
           status?: string
@@ -101,6 +108,8 @@ export type Database = {
           amount?: number
           bank_name?: string
           created_at?: string
+          estimated_payout_at?: string | null
+          ewallet_type?: string | null
           id?: string
           processed_at?: string | null
           status?: string
@@ -130,6 +139,7 @@ export type Database = {
           total_earned: number
           total_withdrawn: number
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           affiliate_code: string
@@ -145,6 +155,7 @@ export type Database = {
           total_earned?: number
           total_withdrawn?: number
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           affiliate_code?: string
@@ -160,6 +171,7 @@ export type Database = {
           total_earned?: number
           total_withdrawn?: number
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
