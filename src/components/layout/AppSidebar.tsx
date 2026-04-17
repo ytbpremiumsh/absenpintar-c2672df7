@@ -8,7 +8,7 @@ import {
   GraduationCap,
   UserCheck,
   BarChart3,
-  HelpCircle,
+  
   ClipboardCheck,
   UsersRound,
   MessageCircle,

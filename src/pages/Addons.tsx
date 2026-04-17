@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Globe, CreditCard, Package, ChevronRight, Sparkles, ArrowRight, MessageSquare } from "lucide-react";
+import { Globe, CreditCard, Package, Sparkles, ArrowRight, MessageSquare } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -19,6 +18,7 @@ const Addons = () => {
   const [waCredits, setWaCredits] = useState<any>(null);
   const [waCreditPrice, setWaCreditPrice] = useState(50000);
   const [waCreditPerPack, setWaCreditPerPack] = useState(1000);
+  const [waPurchases, setWaPurchases] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -36,14 +36,16 @@ const Addons = () => {
       });
 
       if (profile?.school_id) {
-        const [domRes, orderRes, creditRes] = await Promise.all([
+        const [domRes, orderRes, creditRes, waPayRes] = await Promise.all([
           supabase.from("school_addons").select("*").eq("school_id", profile.school_id).eq("addon_type", "custom_domain").maybeSingle(),
           supabase.from("id_card_orders").select("*, id_card_designs(name)").eq("school_id", profile.school_id).order("created_at", { ascending: false }).limit(5),
           supabase.from("wa_credits").select("*").eq("school_id", profile.school_id).maybeSingle(),
+          supabase.from("payment_transactions").select("id, amount, created_at, status, payment_method").eq("school_id", profile.school_id).like("payment_method", "%wa_credit%").order("created_at", { ascending: false }).limit(5),
         ]);
         setDomainAddon(domRes.data);
         setIdcardOrders(orderRes.data || []);
         setWaCredits(creditRes.data);
+        setWaPurchases(waPayRes.data || []);
       }
       setLoading(false);
     };
@@ -111,19 +113,30 @@ const Addons = () => {
     return map[progress] || progress;
   };
 
-  // Combine recent orders (ID card + WA credit history)
-  const [waPurchases, setWaPurchases] = useState<any[]>([]);
-  useEffect(() => {
-    if (!profile?.school_id) return;
-    supabase
-      .from("payment_transactions")
-      .select("id, amount, created_at, status, payment_method")
-      .eq("school_id", profile.school_id)
-      .like("payment_method", "%wa_credit%")
-      .order("created_at", { ascending: false })
-      .limit(5)
-      .then(({ data }) => setWaPurchases(data || []));
-  }, [profile?.school_id]);
+  const recentHistory: { type: string; label: string; date: string; status: string; amount: number; icon: any; id: string }[] = [];
+  idcardOrders.slice(0, 5).forEach((order) => {
+    recentHistory.push({
+      type: "idcard",
+      label: `${order.total_cards} kartu • ${(order as any).id_card_designs?.name || "Desain Default"}`,
+      date: order.created_at,
+      status: getProgressLabel(order.progress),
+      amount: order.total_amount || 0,
+      icon: CreditCard,
+      id: order.id,
+    });
+  });
+  waPurchases.forEach((tx) => {
+    const statusMap: Record<string, string> = { pending: "Menunggu Bayar", paid: "Berhasil", success: "Berhasil", failed: "Gagal", expired: "Kadaluarsa" };
+    recentHistory.push({
+      type: "wacredit",
+      label: `Top-up Kredit Pesan WhatsApp`,
+      date: tx.created_at,
+      status: statusMap[tx.status] || tx.status,
+      amount: tx.amount || 0,
+      icon: MessageSquare,
+      id: tx.id,
+    });
+  });
 
   const recentHistory: { type: string; label: string; date: string; status: string; amount: number; icon: any; id: string }[] = [];
   idcardOrders.slice(0, 5).forEach((order) => {
