@@ -377,9 +377,6 @@ const WaliKelasExportHistory = () => {
           <Button variant="outline" disabled={isPremiumFeature} onClick={exportExcel} className="gap-2 border-primary/30 text-primary hover:bg-primary/5">
             <Download className="h-4 w-4" /> Export Excel {isPremiumFeature && <Lock className="h-3 w-3" />}
           </Button>
-          <Button variant="outline" disabled={isPremiumFeature} onClick={exportStudentAnalytics} className="gap-2 border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/5">
-            <Users className="h-4 w-4" /> Download Analytic {isPremiumFeature && <Lock className="h-3 w-3" />}
-          </Button>
         </div>
 
         {/* Legend */}
