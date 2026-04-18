@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { Bell, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+// Notifications: only school admins see system-generated notifications.
+// Other roles (teacher/staff) only see manual notifications (created_by NOT NULL).
 import {
   Popover, PopoverContent, PopoverTrigger,
 } from "@/components/ui/popover";
