@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import ProductTour from "@/components/ProductTour";
+// ProductTour disabled per user request
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/compone
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Clock, GraduationCap, TrendingUp, AlertTriangle, ChevronRight, QrCode, School, BarChart3, Zap, Users, Crown, X, Sparkles } from "lucide-react";
 import { LiveScheduleWidget } from "@/components/dashboard/LiveScheduleWidget";
-import { SchoolAnnouncementsWidget } from "@/components/dashboard/SchoolAnnouncementsWidget";
+// SchoolAnnouncementsWidget removed from main attendance dashboard
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -293,7 +293,6 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6">
-      <ProductTour />
       <AnimatePresence>
         {showTrialPopup && subFeatures.isTrial && subFeatures.trialDaysLeft !== null && (
           <motion.div
@@ -467,12 +466,9 @@ const Dashboard = () => {
         </Card>
       </div>
 
-      {/* Live Schedule + Announcements - placed below Status Kehadiran */}
+      {/* Live Schedule - placed below Status Kehadiran */}
       {profile?.school_id && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <LiveScheduleWidget schoolId={profile.school_id} />
-          <SchoolAnnouncementsWidget schoolId={profile.school_id} isAdmin={true} />
-        </div>
+        <LiveScheduleWidget schoolId={profile.school_id} />
       )}
 
       {/* Quick Actions */}

@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { RichContent } from "@/components/RichContent";
 
 interface Announcement {
   id: string;
@@ -166,7 +167,7 @@ export function SchoolAnnouncementsWidget({ schoolId, isAdmin = false }: Props) 
                           <span className="text-[10px] text-muted-foreground ml-auto">{formatRelative(a.created_at)}</span>
                         </div>
                         <p className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">{a.title}</p>
-                        <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{a.message}</p>
+                        <RichContent html={a.message} className="mt-0.5 line-clamp-2 [&_img]:hidden [&_*]:!text-xs [&_*]:!text-muted-foreground [&_*]:!my-0" />
                       </div>
                       <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-0.5 transition-all shrink-0 mt-2" />
                     </div>
@@ -207,7 +208,7 @@ export function SchoolAnnouncementsWidget({ schoolId, isAdmin = false }: Props) 
                 </div>
                 <ScrollArea className="max-h-[55vh]">
                   <div className="p-5">
-                    <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">{selected.message}</p>
+                    <RichContent html={selected.message} />
                   </div>
                 </ScrollArea>
               </>
