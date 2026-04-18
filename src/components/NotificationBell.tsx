@@ -18,6 +18,7 @@ interface Notification {
   type: string;
   is_read: boolean;
   created_at: string;
+  created_by: string | null;
 }
 
 
