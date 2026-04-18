@@ -23,12 +23,23 @@ interface Notification {
 
 
 export function NotificationBell() {
-  const { profile } = useAuth();
+  const { profile, roles } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [open, setOpen] = useState(false);
 
+  const isSchoolAdmin = roles.includes("school_admin");
+
   const stripEmoji = (text: string) =>
     text.replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{1F900}-\u{1F9FF}\u{2702}-\u{27B0}\u{E0020}-\u{E007F}\u{200D}\u{20E3}\u{FE0F}\u2705\u2611\u2714\u274C\u274E\u2B50\u26A0\u2139\uFE0F\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2300}-\u{23FF}\u{2B05}-\u{2B07}\u{2934}\u{2935}\u{25AA}-\u{25FE}\u{25FB}-\u{25FE}\u{1F1E0}-\u{1F1FF}💰💸✅🎉📋📢🔔⚡🏫💡🔥❤️💙💚💛🧡💜🤎🖤🤍]/gu, '').trim();
+
+  const filterForRole = (list: Notification[]) => {
+    let filtered = list.filter((n) => !n.title.includes("Pembayaran Masuk"));
+    // Non school-admin users: hide system-generated notifications (created_by IS NULL)
+    if (!isSchoolAdmin) {
+      filtered = filtered.filter((n) => n.created_by !== null);
+    }
+    return filtered;
+  };
 
   const fetchNotifications = async () => {
     const { data } = await supabase
@@ -37,11 +48,7 @@ export function NotificationBell() {
       .order("created_at", { ascending: false })
       .limit(20);
     if (data) {
-      // Filter out "Pembayaran Masuk" notifications (super admin only)
-      const filtered = (data as Notification[]).filter(
-        (n) => !n.title.includes("Pembayaran Masuk")
-      );
-      setNotifications(filtered);
+      setNotifications(filterForRole(data as Notification[]));
     }
   };
 
@@ -59,6 +66,9 @@ export function NotificationBell() {
           const newNotif = payload.new as Notification;
           // Only add if it's for this school or global
           if (!newNotif.school_id || newNotif.school_id === profile.school_id) {
+            // Apply role-based filter for incoming events too
+            if (newNotif.title.includes("Pembayaran Masuk")) return;
+            if (!isSchoolAdmin && newNotif.created_by === null) return;
             setNotifications((prev) => [newNotif, ...prev].slice(0, 20));
           }
         }
@@ -68,7 +78,8 @@ export function NotificationBell() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [profile]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile, isSchoolAdmin]);
 
   const unreadCount = notifications.filter((n) => !n.is_read).length;
 
