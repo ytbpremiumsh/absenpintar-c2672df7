@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, Loader2, ArrowRight, Lock, Mail, Shield, QrCode, Scan, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import BackendStatusBanner, { isBackendNetworkError } from "@/components/BackendStatusBanner";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -17,6 +18,8 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [loginLogo, setLoginLogo] = useState("/images/logo-atskolla.png");
+  const [networkIssue, setNetworkIssue] = useState(false);
+  const [recheckKey, setRecheckKey] = useState(0);
 
   useEffect(() => {
     supabase
@@ -34,10 +37,15 @@ const Login = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setNetworkIssue(false);
     const { error } = await signIn(email, password);
     if (error) {
       setLoading(false);
-      if (error.includes("Invalid login credentials")) {
+      if (isBackendNetworkError(error)) {
+        setNetworkIssue(true);
+        setRecheckKey((k) => k + 1);
+        toast.error("Server backend sedang gangguan/timeout. Silakan coba lagi sebentar.");
+      } else if (error.includes("Invalid login credentials")) {
         toast.error("Email atau password salah. Pastikan email sudah terverifikasi.");
       } else if (error.includes("Email not confirmed")) {
         toast.error("Email belum diverifikasi. Silakan cek inbox email Anda.");
@@ -227,6 +235,10 @@ const Login = () => {
                   <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider">Koneksi Aman</span>
                 </div>
               </motion.div>
+
+              <div className="mb-4">
+                <BackendStatusBanner forceShow={networkIssue} recheckKey={recheckKey} />
+              </div>
 
               <form onSubmit={handleLogin} className="space-y-5">
                 <motion.div

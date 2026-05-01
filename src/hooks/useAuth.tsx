@@ -70,8 +70,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error: error?.message || null };
+    // Retry with exponential backoff for transient network errors (Failed to fetch / 5xx / 522).
+    const maxAttempts = 3;
+    let lastError: string | null = null;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (!error) return { error: null };
+        const msg = error.message || "";
+        const lower = msg.toLowerCase();
+        const isNetwork =
+          lower.includes("failed to fetch") ||
+          lower.includes("network") ||
+          lower.includes("timeout") ||
+          lower.includes("522") ||
+          lower.includes("524") ||
+          lower.includes("503") ||
+          lower.includes("load failed");
+        if (!isNetwork || attempt === maxAttempts) return { error: msg };
+        lastError = msg;
+      } catch (e: any) {
+        lastError = e?.message || "Network error";
+        if (attempt === maxAttempts) return { error: lastError };
+      }
+      // backoff: 600ms, 1500ms
+      await new Promise((r) => setTimeout(r, attempt === 1 ? 600 : 1500));
+    }
+    return { error: lastError };
   };
 
   const signOut = async () => {
