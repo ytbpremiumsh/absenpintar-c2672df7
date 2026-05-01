@@ -303,7 +303,6 @@ export type Database = {
           is_active: boolean
           name: string
           preview_url: string | null
-          preview_url_back: string | null
           sort_order: number
         }
         Insert: {
@@ -312,7 +311,6 @@ export type Database = {
           is_active?: boolean
           name: string
           preview_url?: string | null
-          preview_url_back?: string | null
           sort_order?: number
         }
         Update: {
@@ -321,7 +319,6 @@ export type Database = {
           is_active?: boolean
           name?: string
           preview_url?: string | null
-          preview_url_back?: string | null
           sort_order?: number
         }
         Relationships: []
