@@ -7,8 +7,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Plus, Search, QrCode, Trash2, Loader2, Users, GraduationCap, Phone, ChevronDown, ChevronRight,
-  Eye, Upload, Download, Camera, Lock, ArrowRightLeft, LayoutGrid, List,
+  Eye, Upload, Download, Camera, Lock, ArrowRightLeft, LayoutGrid, List, MoreVertical, FileSpreadsheet,
 } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
@@ -461,88 +462,133 @@ const Students = () => {
   return (
     <div className="space-y-6">
       <PageHeader icon={Users} title="Data Siswa" subtitle="Kelola data siswa, QR Code, dan kategori kelas" actions={
-        <div className="flex items-center gap-1.5 sm:gap-2 flex-nowrap overflow-x-auto">
-          <Dialog open={promoteDialogOpen} onOpenChange={setPromoteDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm" className="shrink-0 text-xs px-2 sm:px-3 border-border text-foreground">
-                <ArrowRightLeft className="h-3.5 w-3.5 sm:mr-1" /> <span className="hidden sm:inline">Naik Kelas</span>
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>Naik Kelas / Pindah Kelas</DialogTitle>
-                <DialogDescription>Pindahkan semua siswa dari satu kelas ke kelas lain</DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-2">
-                <div className="space-y-2">
-                  <Label>Kelas Asal</Label>
-                  <Select value={promoteFrom} onValueChange={setPromoteFrom}>
-                    <SelectTrigger><SelectValue placeholder="Pilih kelas asal" /></SelectTrigger>
-                    <SelectContent>
-                      {allClasses.map((cls) => (
-                        <SelectItem key={cls} value={cls}>{cls} ({students.filter(s => s.class === cls).length} siswa)</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex justify-center">
-                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <ArrowRightLeft className="h-4 w-4 text-primary" />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Kelas Tujuan</Label>
-                  <Select value={promoteTo} onValueChange={setPromoteTo}>
-                    <SelectTrigger><SelectValue placeholder="Pilih kelas tujuan" /></SelectTrigger>
-                    <SelectContent>
-                      {classOptions.map((cls) => (<SelectItem key={cls} value={cls}>{cls}</SelectItem>))}
-                    </SelectContent>
-                  </Select>
-                  <Input placeholder="Atau ketik kelas baru, cth: 2-A" value={promoteTo}
-                    onChange={(e) => setPromoteTo(e.target.value)} className="h-9 text-sm" />
-                </div>
-                {promoteFrom && (
-                  <div className="bg-secondary/50 rounded-lg p-3">
-                    <p className="text-xs text-muted-foreground">
-                      <strong>{students.filter(s => s.class === promoteFrom).length}</strong> siswa dari <strong>{promoteFrom}</strong> → <strong>{promoteTo || "..."}</strong>
-                    </p>
-                  </div>
-                )}
-                <Button onClick={handlePromoteClass} disabled={promoting || !promoteFrom || !promoteTo} className="w-full bg-[#5B6CF9] hover:bg-[#5065E8] text-white">
-                  {promoting ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <ArrowRightLeft className="h-4 w-4 mr-1" />}
-                  {promoting ? "Memproses..." : "Pindahkan Semua Siswa"}
+        <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+          {/* Desktop: tampilkan semua tombol inline */}
+          <div className="hidden md:flex items-center gap-2 flex-wrap justify-end">
+            <Dialog open={promoteDialogOpen} onOpenChange={setPromoteDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="secondary" size="sm" className="bg-white/15 hover:bg-white/25 text-white border-0">
+                  <ArrowRightLeft className="h-4 w-4 mr-1.5" /> Naik Kelas
                 </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Naik Kelas / Pindah Kelas</DialogTitle>
+                  <DialogDescription>Pindahkan semua siswa dari satu kelas ke kelas lain</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-2">
+                  <div className="space-y-2">
+                    <Label>Kelas Asal</Label>
+                    <Select value={promoteFrom} onValueChange={setPromoteFrom}>
+                      <SelectTrigger><SelectValue placeholder="Pilih kelas asal" /></SelectTrigger>
+                      <SelectContent>
+                        {allClasses.map((cls) => (
+                          <SelectItem key={cls} value={cls}>{cls} ({students.filter(s => s.class === cls).length} siswa)</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex justify-center">
+                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                      <ArrowRightLeft className="h-4 w-4 text-primary" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Kelas Tujuan</Label>
+                    <Select value={promoteTo} onValueChange={setPromoteTo}>
+                      <SelectTrigger><SelectValue placeholder="Pilih kelas tujuan" /></SelectTrigger>
+                      <SelectContent>
+                        {classOptions.map((cls) => (<SelectItem key={cls} value={cls}>{cls}</SelectItem>))}
+                      </SelectContent>
+                    </Select>
+                    <Input placeholder="Atau ketik kelas baru, cth: 2-A" value={promoteTo}
+                      onChange={(e) => setPromoteTo(e.target.value)} className="h-9 text-sm" />
+                  </div>
+                  {promoteFrom && (
+                    <div className="bg-secondary/50 rounded-lg p-3">
+                      <p className="text-xs text-muted-foreground">
+                        <strong>{students.filter(s => s.class === promoteFrom).length}</strong> siswa dari <strong>{promoteFrom}</strong> → <strong>{promoteTo || "..."}</strong>
+                      </p>
+                    </div>
+                  )}
+                  <Button onClick={handlePromoteClass} disabled={promoting || !promoteFrom || !promoteTo} className="w-full bg-[#5B6CF9] hover:bg-[#5065E8] text-white">
+                    {promoting ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <ArrowRightLeft className="h-4 w-4 mr-1" />}
+                    {promoting ? "Memproses..." : "Pindahkan Semua Siswa"}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
 
-          <Button variant="outline" size="sm" onClick={handleDownloadTemplate} className="shrink-0 text-xs px-2 sm:px-3 border-border text-foreground">
-            <Download className="h-3.5 w-3.5 sm:mr-1" /> <span className="hidden sm:inline">Template</span>
-          </Button>
+            <Button variant="secondary" size="sm" onClick={handleDownloadTemplate} className="bg-white/15 hover:bg-white/25 text-white border-0">
+              <FileSpreadsheet className="h-4 w-4 mr-1.5" /> Template
+            </Button>
 
-          <div className="relative shrink-0">
-            {features.canImportExport && (
-              <input type="file" accept=".xlsx,.xls" onChange={handleImportExcel} className="absolute inset-0 opacity-0 cursor-pointer" />
-            )}
-            <Button variant="outline" size="sm"
-              onClick={() => { if (!features.canImportExport) toast.error("Fitur Import tersedia di paket Basic ke atas"); }}
-              className={`text-xs px-2 sm:px-3 border-border text-foreground ${!features.canImportExport ? "opacity-60 cursor-not-allowed" : ""}`}>
-              <Upload className="h-3.5 w-3.5 sm:mr-1" /> <span className="hidden sm:inline">Import</span>
-              {!features.canImportExport && <Lock className="h-3 w-3 ml-1 text-warning" />}
+            <div className="relative">
+              {features.canImportExport && (
+                <input type="file" accept=".xlsx,.xls" onChange={handleImportExcel} className="absolute inset-0 opacity-0 cursor-pointer z-10" />
+              )}
+              <Button variant="secondary" size="sm"
+                onClick={() => { if (!features.canImportExport) toast.error("Fitur Import tersedia di paket Basic ke atas"); }}
+                className={`bg-white/15 hover:bg-white/25 text-white border-0 ${!features.canImportExport ? "opacity-70" : ""}`}>
+                <Upload className="h-4 w-4 mr-1.5" /> Import
+                {!features.canImportExport && <Lock className="h-3 w-3 ml-1" />}
+              </Button>
+            </div>
+
+            <Button variant="secondary" size="sm"
+              onClick={() => { if (features.canImportExport) handleExportExcel(); else toast.error("Fitur Export tersedia di paket Basic ke atas"); }}
+              className={`bg-white/15 hover:bg-white/25 text-white border-0 ${!features.canImportExport ? "opacity-70" : ""}`}>
+              <Download className="h-4 w-4 mr-1.5" /> Export
+              {!features.canImportExport && <Lock className="h-3 w-3 ml-1" />}
             </Button>
           </div>
 
-          <Button variant="outline" size="sm"
-            onClick={() => { if (features.canImportExport) handleExportExcel(); else toast.error("Fitur Export tersedia di paket Basic ke atas"); }}
-            className={`shrink-0 text-xs px-2 sm:px-3 border-border text-foreground ${!features.canImportExport ? "opacity-60 cursor-not-allowed" : ""}`}>
-            <Download className="h-3.5 w-3.5 sm:mr-1" /> <span className="hidden sm:inline">Export</span>
-            {!features.canImportExport && <Lock className="h-3 w-3 ml-1 text-warning" />}
-          </Button>
+          {/* Mobile: dropdown untuk aksi sekunder */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="secondary" size="icon" className="md:hidden bg-white/15 hover:bg-white/25 text-white border-0 h-9 w-9 shrink-0">
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-52">
+              <DropdownMenuLabel>Aksi Lain</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setPromoteDialogOpen(true)}>
+                <ArrowRightLeft className="h-4 w-4 mr-2" /> Naik Kelas
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleDownloadTemplate}>
+                <FileSpreadsheet className="h-4 w-4 mr-2" /> Download Template
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  if (!features.canImportExport) {
+                    toast.error("Fitur Import tersedia di paket Basic ke atas");
+                    return;
+                  }
+                  document.getElementById("mobile-import-input")?.click();
+                }}
+              >
+                <Upload className="h-4 w-4 mr-2" /> Import Excel
+                {!features.canImportExport && <Lock className="h-3 w-3 ml-auto" />}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  if (features.canImportExport) handleExportExcel();
+                  else toast.error("Fitur Export tersedia di paket Basic ke atas");
+                }}
+              >
+                <Download className="h-4 w-4 mr-2" /> Export Excel
+                {!features.canImportExport && <Lock className="h-3 w-3 ml-auto" />}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <input id="mobile-import-input" type="file" accept=".xlsx,.xls" onChange={handleImportExcel} className="hidden" />
 
+          {/* Tombol utama: selalu tampil */}
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-[#5B6CF9] hover:bg-[#5065E8] text-white h-9 shrink-0 text-xs px-2 sm:px-3">
-                <Plus className="h-3.5 w-3.5 sm:mr-1" /> <span className="hidden sm:inline">Tambah Siswa</span>
+              <Button size="sm" className="bg-white text-[#5B6CF9] hover:bg-white/90 font-semibold shrink-0 shadow-md">
+                <Plus className="h-4 w-4 sm:mr-1.5" /> <span className="hidden sm:inline">Tambah Siswa</span><span className="sm:hidden">Tambah</span>
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
