@@ -162,6 +162,18 @@ const SuperAdminPlans = () => {
       </Card>
 
 
+      {/* Preview: matches dashboard sekolah & landing page */}
+      <Card className="border-0 shadow-card">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">Preview Tampilan Paket</CardTitle>
+          <p className="text-xs text-muted-foreground">Tampilan yang sama dengan Dashboard Sekolah & Landing Page</p>
+        </CardHeader>
+        <CardContent>
+          <PlanCardsGrid plans={plans.filter(p => p.is_active) as any} hideCta />
+        </CardContent>
+      </Card>
+
+      {/* Management list (edit / delete / show on landing) */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
         {plans.map((plan) => (
           <Card key={plan.id} className={`border-0 shadow-card relative ${!plan.is_active ? "opacity-60" : ""}`}>
@@ -194,6 +206,7 @@ const SuperAdminPlans = () => {
           </Card>
         ))}
       </div>
+
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-md">
