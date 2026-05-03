@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/PageHeader";
+import { sendManualAttendanceWA } from "@/lib/sendManualAttendanceWA";
 import {
   Pencil, Save, Loader2, GraduationCap, Users, CheckCircle2, XCircle, AlertTriangle,
   LogIn, LogOut, CalendarDays, Search,
@@ -79,9 +80,22 @@ const EditAttendance = () => {
     if (totalChanges === 0) return;
     setSaving(true);
     try {
+      const waTasks: Promise<any>[] = [];
       // Update existing logs
       for (const [logId, newStatus] of Object.entries(editChanges)) {
         await supabase.from("attendance_logs").update({ status: newStatus }).eq("id", logId);
+        const log = logs.find(l => l.id === logId);
+        if (log && newStatus === "hadir") {
+          waTasks.push(sendManualAttendanceWA({
+            schoolId: profile!.school_id!,
+            studentId: log.student_id,
+            status: newStatus,
+            attendanceType: attendanceType as "datang" | "pulang",
+            date: selectedDate,
+            timeStr: log.time || new Date().toTimeString().slice(0, 8),
+            recordedBy: "Manual Admin",
+          }));
+        }
       }
       // Insert new entries for students without logs
       const now = new Date().toTimeString().slice(0, 8);
@@ -95,7 +109,19 @@ const EditAttendance = () => {
           method: "manual",
           attendance_type: attendanceType,
         });
+        if (status === "hadir") {
+          waTasks.push(sendManualAttendanceWA({
+            schoolId: profile!.school_id!,
+            studentId,
+            status,
+            attendanceType: attendanceType as "datang" | "pulang",
+            date: selectedDate,
+            timeStr: now,
+            recordedBy: "Manual Admin",
+          }));
+        }
       }
+      if (waTasks.length > 0) await Promise.allSettled(waTasks);
       toast.success(`${totalChanges} status berhasil diperbarui`);
       setEditChanges({});
       setNewEntries({});

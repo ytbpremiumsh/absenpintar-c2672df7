@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import heroDashboard from "@/assets/hero-dashboard.png";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { PlanCardsGrid } from "@/components/PlanCardsGrid";
 import { cn } from "@/lib/utils";
 
 const fadeUp = {
@@ -721,47 +722,12 @@ const LandingPage = () => {
             <p className="mt-3 text-slate-500 dark:text-slate-400 max-w-lg mx-auto">Harga transparan, tanpa biaya tersembunyi. Mulai gratis, upgrade kapan saja.</p>
           </motion.div>
 
-          <div className="grid sm:grid-cols-3 gap-5 items-stretch">
-            {plans.map((plan, i) => {
-              const featureList = Array.isArray(plan.features) ? plan.features as string[] : [];
-              const isHighlighted = plan.name.toUpperCase() === "SCHOOL" || plans.length === 1;
-              const priceText = plan.price === 0 ? "Gratis" : `Rp ${plan.price.toLocaleString("id-ID")}`;
-              return (
-              <motion.div key={plan.id} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="h-full">
-                <div className={`rounded-2xl p-6 sm:p-7 border transition-all h-full flex flex-col relative overflow-hidden ${
-                  isHighlighted 
-                    ? "border-indigo-300 dark:border-indigo-500/30 bg-white dark:bg-slate-800 shadow-xl shadow-indigo-500/10 ring-2 ring-indigo-500/20" 
-                    : "border-slate-200 dark:border-slate-700/50 bg-white dark:bg-slate-800/50 hover:border-indigo-200 dark:hover:border-indigo-500/15 hover:shadow-lg"
-                }`}>
-                  {isHighlighted && (
-                    <div className="absolute top-0 right-0 bg-gradient-to-r from-indigo-600 to-blue-600 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl">
-                      ⭐ Rekomendasi
-                    </div>
-                  )}
-                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mb-1">{plan.description || ""}</p>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">{plan.name}</h3>
-                  <p className="text-3xl font-extrabold text-indigo-600 dark:text-indigo-400 mt-3">{priceText}<span className="text-xs text-slate-400 font-normal">/bulan</span></p>
-                  {plan.max_students && <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Maks. {plan.max_students} siswa</p>}
-                  <ul className="mt-6 space-y-2.5 flex-1">
-                    {featureList.map((f: string) => (
-                      <li key={f} className="flex items-start gap-2 text-sm">
-                        <CheckCircle2 className="h-4 w-4 text-indigo-500 shrink-0 mt-0.5" />
-                        <span className="text-slate-700 dark:text-slate-200">{f}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <button onClick={() => navigate("/register")} className={`mt-6 w-full py-3 rounded-xl font-bold text-sm transition-all ${
-                    isHighlighted 
-                      ? "bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30" 
-                      : "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:text-indigo-700 dark:hover:text-indigo-300 border border-slate-200 dark:border-slate-600"
-                  }`}>
-                    Mulai Sekarang
-                  </button>
-                </div>
-              </motion.div>
-              );
-            })}
-          </div>
+          <PlanCardsGrid
+            plans={plans as any}
+            ctaLabel="Mulai Sekarang"
+            onSelect={() => navigate("/register")}
+          />
+
         </div>
       </section>
       )}
