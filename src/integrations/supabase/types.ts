@@ -602,6 +602,138 @@ export type Database = {
           },
         ]
       }
+      parent_leave_requests: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          parent_phone: string
+          reason: string | null
+          review_note: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          school_id: string
+          status: string
+          student_id: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          id?: string
+          parent_phone: string
+          reason?: string | null
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          school_id: string
+          status?: string
+          student_id: string
+          type: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          parent_phone?: string
+          reason?: string | null
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          school_id?: string
+          status?: string
+          student_id?: string
+          type?: string
+        }
+        Relationships: []
+      }
+      parent_messages: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          parent_phone: string
+          read_at: string | null
+          school_id: string
+          sender_type: string
+          student_id: string
+          teacher_user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          parent_phone: string
+          read_at?: string | null
+          school_id: string
+          sender_type: string
+          student_id: string
+          teacher_user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          parent_phone?: string
+          read_at?: string | null
+          school_id?: string
+          sender_type?: string
+          student_id?: string
+          teacher_user_id?: string | null
+        }
+        Relationships: []
+      }
+      parent_otps: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          otp_code: string
+          phone: string
+          used: boolean
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          otp_code: string
+          phone: string
+          used?: boolean
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          otp_code?: string
+          phone?: string
+          used?: boolean
+        }
+        Relationships: []
+      }
+      parent_sessions: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          phone: string
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          phone: string
+          token: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          phone?: string
+          token?: string
+        }
+        Relationships: []
+      }
       password_reset_otps: {
         Row: {
           created_at: string
@@ -1352,6 +1484,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      student_grades: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          note: string | null
+          school_id: string
+          school_year: string
+          score: number
+          semester: string
+          student_id: string
+          subject: string
+          term: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          school_id: string
+          school_year: string
+          score: number
+          semester: string
+          student_id: string
+          subject: string
+          term?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          school_id?: string
+          school_year?: string
+          score?: number
+          semester?: string
+          student_id?: string
+          subject?: string
+          term?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       students: {
         Row: {
