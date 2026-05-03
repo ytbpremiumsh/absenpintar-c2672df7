@@ -108,6 +108,90 @@ const ManageStaff = () => {
     } finally { setCreating(false); }
   };
 
+  const downloadTemplate = () => {
+    const data = [
+      { full_name: "Budi Santoso", email: "budi@sekolah.sch.id", password: "rahasia123", role: "teacher", phone: "081234567890" },
+      { full_name: "Siti Aminah", email: "siti@sekolah.sch.id", password: "rahasia123", role: "staff", phone: "081298765432" },
+    ];
+    const ws = XLSX.utils.json_to_sheet(data, { header: ["full_name", "email", "password", "role", "phone"] });
+    ws["!cols"] = [{ wch: 24 }, { wch: 28 }, { wch: 16 }, { wch: 12 }, { wch: 16 }];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Guru-Staff");
+    const info = [
+      ["Petunjuk Import Akun Guru & Staff"],
+      [""],
+      ["Kolom wajib: full_name, email, password, role"],
+      ["Kolom opsional: phone"],
+      [""],
+      ["role harus salah satu dari:"],
+      ["  - teacher  (untuk Guru)"],
+      ["  - staff    (untuk Staff/Operator)"],
+      [""],
+      ["Password minimal 6 karakter."],
+      ["Hapus baris contoh sebelum upload."],
+    ];
+    const wsInfo = XLSX.utils.aoa_to_sheet(info);
+    wsInfo["!cols"] = [{ wch: 60 }];
+    XLSX.utils.book_append_sheet(wb, wsInfo, "Petunjuk");
+    XLSX.writeFile(wb, "Template-Import-Guru-Staff.xlsx");
+    toast.success("Template berhasil diunduh");
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf);
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows: any[] = XLSX.utils.sheet_to_json(ws, { defval: "" });
+      const cleaned = rows
+        .map((r) => ({
+          full_name: String(r.full_name || r.nama || "").trim(),
+          email: String(r.email || "").trim(),
+          password: String(r.password || "").trim(),
+          role: String(r.role || "staff").trim().toLowerCase(),
+          phone: String(r.phone || r.no_wa || "").trim(),
+        }))
+        .filter((r) => r.full_name && r.email);
+      if (cleaned.length === 0) { toast.error("Tidak ada baris valid di file"); return; }
+      setImportRows(cleaned);
+      setImportResults([]);
+      toast.success(`${cleaned.length} baris siap diimport`);
+    } catch (err: any) {
+      toast.error("Gagal baca file: " + err.message);
+    } finally {
+      e.target.value = "";
+    }
+  };
+
+  const handleBulkImport = async () => {
+    if (!schoolId) { toast.error("Data sekolah belum dimuat"); return; }
+    if (importRows.length === 0) return;
+    setImporting(true);
+    const results: { name: string; email: string; ok: boolean; error?: string }[] = [];
+    for (const r of importRows) {
+      try {
+        if (!r.password || r.password.length < 6) throw new Error("Password minimal 6 karakter");
+        if (!["teacher", "staff"].includes(r.role)) throw new Error("Role harus 'teacher' atau 'staff'");
+        const res = await supabase.functions.invoke("create-user", {
+          body: { email: r.email, password: r.password, full_name: r.full_name, role: r.role, school_id: schoolId, phone: r.phone },
+        });
+        if (res.error) throw new Error(res.error.message);
+        if (res.data?.error) throw new Error(res.data.error);
+        results.push({ name: r.full_name, email: r.email, ok: true });
+      } catch (err: any) {
+        results.push({ name: r.full_name, email: r.email, ok: false, error: err.message });
+      }
+      setImportResults([...results]);
+    }
+    setImporting(false);
+    const success = results.filter((r) => r.ok).length;
+    toast.success(`Import selesai: ${success}/${results.length} berhasil`);
+    setImportRows([]);
+    fetchStaff();
+  };
+
   const handleDelete = async (member: StaffMember) => {
     if (!confirm(`Hapus semua role ${member.full_name}? Akun tidak akan dihapus, hanya role yang dicabut.`)) return;
     // Delete all staff/teacher roles
