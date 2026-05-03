@@ -42,6 +42,8 @@ export function PlanCardsGrid({
   onSelect,
   ctaLabel = "Pilih Paket",
   hideCta = false,
+  hidePremiumBadge = false,
+  gridClassName,
 }: Props) {
   if (!plans || plans.length === 0) return null;
 
@@ -49,8 +51,15 @@ export function PlanCardsGrid({
     new Set(plans.flatMap((p) => (p.features || []).filter((f) => !isLimitFeature(f))))
   );
 
+  const defaultGrid =
+    plans.length === 3
+      ? "grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl mx-auto"
+      : plans.length === 2
+      ? "grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl mx-auto"
+      : "grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4";
+
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+    <div className={gridClassName || defaultGrid}>
       {plans.map((plan, i) => {
         const planAllFeatures = plan.features || [];
         const planLimitFeatures = planAllFeatures.filter(isLimitFeature);
