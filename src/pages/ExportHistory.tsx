@@ -418,6 +418,21 @@ const ScanAttendanceRecap = () => {
                 </table>
               </div>
             )}
+
+            {activeRows.length > 0 && (
+              <div className="p-6 border-t border-border">
+                <div className="flex justify-end">
+                  <div className="text-center text-xs text-muted-foreground space-y-1">
+                    <p>{schoolCity || schoolName}, ........................ {selectedYear}</p>
+                    <p className="font-semibold text-foreground">WALI KELAS {selectedClass}</p>
+                    <div className="h-16" />
+                    <p className="font-semibold text-foreground border-b border-foreground inline-block min-w-[180px]">
+                      {waliKelasName ? `( ${waliKelasName} )` : "(.................................)"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
