@@ -11,13 +11,14 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 import {
-  Plus, Trash2, Users2, Mail, Lock, Loader2, Phone, Shield, Pencil, GraduationCap,
+  Plus, Trash2, Users2, Mail, Lock, Loader2, Phone, Shield, Pencil, GraduationCap, Upload, Download, FileSpreadsheet, CheckCircle2, XCircle,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { PremiumGate } from "@/components/PremiumGate";
+import * as XLSX from "xlsx";
 
 interface StaffMember {
   user_id: string;
