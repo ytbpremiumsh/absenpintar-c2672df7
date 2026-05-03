@@ -106,6 +106,82 @@ const WaliKelasAttendance = () => {
     }
   };
 
+  const sendAttendanceWA = async (
+    schoolId: string,
+    studentId: string,
+    status: string,
+    timeStr: string,
+  ) => {
+    try {
+      // Only send WA for "hadir" status
+      if (status !== "hadir") return;
+      const student = students.find(s => s.id === studentId) as any;
+      if (!student) return;
+
+      const [integrationRes, schoolRes, studentFullRes, classRes] = await Promise.all([
+        supabase.from("school_integrations")
+          .select("attendance_arrive_template, attendance_group_template, wa_delivery_target, wa_enabled, is_active")
+          .eq("school_id", schoolId).eq("integration_type", "onesender").maybeSingle(),
+        supabase.from("schools").select("name").eq("id", schoolId).single(),
+        supabase.from("students").select("parent_phone, parent_name").eq("id", studentId).single(),
+        supabase.from("classes").select("wa_group_id").eq("school_id", schoolId).eq("name", selectedClass).maybeSingle(),
+      ]);
+
+      const integration = integrationRes.data as any;
+      if (!integration || integration.wa_enabled === false) return;
+
+      const schoolName = schoolRes.data?.name || "";
+      const parentPhone = studentFullRes.data?.parent_phone || "";
+      const parentName = studentFullRes.data?.parent_name || "";
+      const groupId = classRes.data?.wa_group_id || null;
+      const deliveryTarget = integration.wa_delivery_target || "parent_only";
+
+      const now = new Date();
+      const dayNames = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+      const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+      const dayName = dayNames[now.getDay()];
+      const dateStr = `${now.getDate()} ${monthNames[now.getMonth()]} ${now.getFullYear()}`;
+      const hhmm = timeStr.slice(0, 5);
+      const typeLabel = "Datang (Hadir)";
+
+      const apply = (tpl: string) => tpl
+        .replace(/\{student_name\}/g, student.name)
+        .replace(/\{class\}/g, student.class)
+        .replace(/\{time\}/g, hhmm)
+        .replace(/\{day\}/g, dayName)
+        .replace(/\{date\}/g, dateStr)
+        .replace(/\{student_id\}/g, student.student_id)
+        .replace(/\{method\}/g, "Manual Wali Kelas")
+        .replace(/\{parent_name\}/g, parentName)
+        .replace(/\{school_name\}/g, schoolName)
+        .replace(/\{type\}/g, typeLabel);
+
+      const tasks: Promise<any>[] = [];
+
+      if ((deliveryTarget === "parent_only" || deliveryTarget === "both") && parentPhone) {
+        const tpl = integration.attendance_arrive_template || "";
+        const message = tpl ? apply(tpl)
+          : `📋 *Notifikasi Absensi ${typeLabel}*\n\n${schoolName}\n\nAnanda *${student.name}* (Kelas ${student.class}) telah tercatat ${typeLabel.toLowerCase()} pada ${dayName}, pukul ${hhmm}.\n\nMetode: Manual Wali Kelas\n\n_Pesan otomatis dari ATSkolla_`;
+        tasks.push(supabase.functions.invoke("send-whatsapp", {
+          body: { school_id: schoolId, phone: parentPhone, message, message_type: "attendance", student_name: student.name },
+        }));
+      }
+
+      if ((deliveryTarget === "group_only" || deliveryTarget === "both") && groupId) {
+        const tpl = integration.attendance_group_template || "";
+        const message = tpl ? apply(tpl)
+          : `📋 *Notifikasi Absensi ${typeLabel}*\n\n${schoolName}\n\nSiswa *${student.name}* (Kelas ${student.class}) telah tercatat ${typeLabel.toLowerCase()} pada ${dayName}, pukul ${hhmm}.\n\nMetode: Manual Wali Kelas\n\n_Pesan otomatis dari ATSkolla_`;
+        tasks.push(supabase.functions.invoke("send-whatsapp", {
+          body: { school_id: schoolId, group_id: groupId, message, message_type: "attendance_group", student_name: student.name },
+        }));
+      }
+
+      if (tasks.length > 0) await Promise.allSettled(tasks);
+    } catch {
+      // Silent: don't fail save if WA fails
+    }
+  };
+
   const handleSave = async () => {
     if (changes.size === 0) { toast.info("Tidak ada perubahan"); return; }
     setSaving(true);
@@ -113,6 +189,7 @@ const WaliKelasAttendance = () => {
     const now = new Date().toTimeString().slice(0, 8);
 
     try {
+      const waTasks: Promise<any>[] = [];
       for (const [studentId, status] of changes) {
         const existing = attendance.get(studentId);
         if (existing) {
@@ -123,7 +200,12 @@ const WaliKelasAttendance = () => {
             status, time: now, method: "manual", attendance_type: "datang",
           });
         }
+        // Trigger WA for hadir status (only for today's attendance)
+        if (status === "hadir" && selectedDate === new Date().toISOString().slice(0, 10)) {
+          waTasks.push(sendAttendanceWA(schoolId, studentId, status, now));
+        }
       }
+      if (waTasks.length > 0) await Promise.allSettled(waTasks);
       toast.success(`${changes.size} absensi berhasil disimpan`);
 
       // Refresh
