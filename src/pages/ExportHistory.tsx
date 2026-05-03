@@ -75,7 +75,8 @@ const ScanAttendanceRecap = () => {
   const [pulangLogs, setPulangLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [schoolName, setSchoolName] = useState("");
-  const [schoolAddress, setSchoolAddress] = useState("");
+  const [schoolCity, setSchoolCity] = useState("");
+  const [waliKelasName, setWaliKelasName] = useState("");
   const [rekapTab, setRekapTab] = useState<"datang" | "pulang">("datang");
   const tableRef = useRef<HTMLDivElement>(null);
 
