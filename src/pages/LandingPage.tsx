@@ -725,6 +725,7 @@ const LandingPage = () => {
           <PlanCardsGrid
             plans={plans as any}
             ctaLabel="Mulai Sekarang"
+            hidePremiumBadge
             onSelect={() => navigate("/register")}
           />
 
