@@ -247,8 +247,8 @@ serve(async (req) => {
 
     const expiresFormatted = expiresAt.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 
-    // Auto-provision WhatsApp integration for School/Premium plans
-    if (['School', 'Premium'].includes(planName)) {
+    // Auto-provision WhatsApp integration for Basic/School/Premium plans
+    if (['Basic', 'School', 'Premium'].includes(planName)) {
       const { data: existingInt } = await supabaseAdmin
         .from('school_integrations')
         .select('id')
@@ -281,9 +281,9 @@ serve(async (req) => {
           .eq('id', existingInt.id);
       }
 
-      // Auto-provision 5000 WA credits for School/Premium
+      // Auto-provision 5000 WA credits for Basic/School/Premium
       const { data: existingCredits } = await supabaseAdmin.from('wa_credits')
-        .select('id')
+        .select('id, balance, total_purchased')
         .eq('school_id', payment.school_id)
         .maybeSingle();
 
@@ -294,9 +294,10 @@ serve(async (req) => {
           total_purchased: 5000,
           total_used: 0,
         });
-        console.log(`WA Credits 5000 auto-provisioned for school ${payment.school_id}`);
+        console.log(`WA Credits 5000 auto-provisioned for school ${payment.school_id} (${planName})`);
       }
     }
+
 
     await supabaseAdmin.from('notifications').insert({
       school_id: payment.school_id,
